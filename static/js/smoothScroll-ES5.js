@@ -67,6 +67,6 @@ window.addEventListener("load",function()
 			  );
 		});
 	}else{
-		console.log("WARNING: No elements with class scrollOnClick found.");
+		console.log("警告：未找到具有类scrollOnClick的元素");
 	}
 });
