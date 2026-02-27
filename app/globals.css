@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+:root {
+  --brand-gold: #FFAA00;
+  --brand-white: #FFFFFF;
+  --brand-green: #55FF55;
+
+  --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI",
+               "PingFang SC", "Hiragino Sans GB",
+               "Microsoft YaHei", sans-serif;
+}
+
+/* 深色主题 */
+:root,
+[data-theme="dark"] {
+  --bg-base: #0e0e10;
+  --bg-gradient-from: #0e0e10;
+  --bg-gradient-to: #1a1400;
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-bg-light: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-light: rgba(255, 255, 255, 0.10);
+  --glass-shadow: rgba(0, 0, 0, 0.2);
+  --glass-inset: rgba(255, 255, 255, 0.15);
+  --glass-hover: rgba(255, 255, 255, 0.1);
+  --glass-icon-bg: rgba(255, 255, 255, 0.07);
+  --badge-bg: rgba(0, 0, 0, 0.5);
+  --code-bg: rgba(0, 0, 0, 0.3);
+  --code-block-bg: rgba(0, 0, 0, 0.4);
+  --card-border: 1px solid var(--glass-border);
+  --card-shadow: 0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset);
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: #FFFFFF;
+  --text-muted: rgba(255, 255, 255, 0.48);
+  --text-muted-light: rgba(255, 255, 255, 0.60);
+  --text-muted-lighter: rgba(255, 255, 255, 0.70);
+  --text-dimmed: rgba(255, 255, 255, 0.3);
+  --text-very-dimmed: rgba(255, 255, 255, 0.20);
+  --text-nav: rgba(255, 255, 255, 0.7);
+  --text-nav-hover: rgba(255, 255, 255, 1);
+  --text-nav-active: rgba(255, 255, 255, 1);
+  --text-player-count: #FFFFFF;
+  --text-button: #0e0e10;
+  --border-nav-hover: rgba(255, 255, 255, 0.3);
+  --border-light: rgba(255, 255, 255, 0.05);
+  --scrollbar-track: rgba(0, 0, 0, 0.2);
+  --logo-k: #FFFFFF;
+}
+
+/* 浅色主题 */
+[data-theme="light"] {
+  --bg-base: #fafafa;
+  --bg-gradient-from: #ffffff;
+  --bg-gradient-to: #fff8e6;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-light: rgba(0, 0, 0, 0.03);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-light: rgba(0, 0, 0, 0.06);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
+  --glass-inset: rgba(255, 255, 255, 0.8);
+  --glass-hover: rgba(0, 0, 0, 0.05);
+  --glass-icon-bg: rgba(0, 0, 0, 0.04);
+  --badge-bg: rgba(0, 0, 0, 0.1);
+  --code-bg: rgba(0, 0, 0, 0.06);
+  --code-block-bg: rgba(0, 0, 0, 0.08);
+  --card-border: none;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --text-primary: rgba(0, 0, 0, 0.88);
+  --text-secondary: #000000;
+  --text-muted: rgba(0, 0, 0, 0.45);
+  --text-muted-light: rgba(0, 0, 0, 0.55);
+  --text-muted-lighter: rgba(0, 0, 0, 0.65);
+  --text-dimmed: rgba(0, 0, 0, 0.25);
+  --text-very-dimmed: rgba(0, 0, 0, 0.15);
+  --text-nav: rgba(0, 0, 0, 0.6);
+  --text-nav-hover: rgba(0, 0, 0, 0.88);
+  --text-nav-active: rgba(0, 0, 0, 0.88);
+  --text-player-count: #000000;
+  --text-button: #ffffff;
+  --border-nav-hover: rgba(0, 0, 0, 0.2);
+  --border-light: rgba(0, 0, 0, 0.04);
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --logo-k: #000000;
+}
+
+* {
+  font-family: var(--font-base);
+}
+
+body {
+  font-family: var(--font-base);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-primary);
+  background: linear-gradient(160deg, var(--bg-gradient-from) 0%, var(--bg-gradient-to) 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* 动画关键帧 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  backdrop-filter: blur(10px);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-gold);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e09900;
+}
+
+/* 平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 工具类 */
+.glass-card {
+  backdrop-filter: blur(16px) saturate(150%);
+  background: var(--glass-bg);
+  border: var(--card-border);
+  border-radius: 18px;
+  box-shadow: var(--card-shadow);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+

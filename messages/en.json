@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "title": "Mik Server - Creative Casual Server",
+    "description": "A creative casual Minecraft server that allows any mods, focused on building creation"
+  },
+  "nav": {
+    "home": "Home",
+    "buildings": "Buildings",
+    "map": "Server Map",
+    "bans": "Ban List",
+    "wiki": "Wiki",
+    "join": "Join Us",
+    "subtitle": "Creative Casual Server",
+    "online": "Online"
+  },
+  "home": {
+    "hero": {
+      "badge": "Creative Mode • Mods Allowed • Application Required",
+      "title": "Welcome to Mik Server",
+      "description": "This is a creative casual server that allows any mods (including hacks), as long as you don't destroy buildings or others' creations. Here, you can unleash your creativity, use powerful tools like Axiom and WorldEdit, and explore the infinite possibilities of building with like-minded companions.",
+      "joinButton": "Apply to Join Server",
+      "notice": "This server requires application and is only open to approved players"
+    },
+    "stats": {
+      "activePlayers": "Active Players",
+      "version": "Server Version",
+      "status": "Server Status",
+      "running": "Running"
+    },
+    "announcements": {
+      "title": "Server Announcements",
+      "loading": "Loading...",
+      "empty": "No announcements"
+    },
+    "features": {
+      "vanilla": {
+        "title": "Creative Casual Experience",
+        "description": "The server allows any mods (including hacks) and supports powerful building tools like Axiom and WorldEdit. We are committed to providing maximum freedom for building creators, letting your creativity run wild without restrictions."
+      },
+      "community": {
+        "title": "Curated Player Community",
+        "description": "Through our application system, we carefully select every player who joins the server to ensure a friendly and harmonious community atmosphere. Here, you will meet a group of quality players who love building creation and respect others' works."
+      }
+    }
+  },
+  "buildings": {
+    "title": "Building Gallery",
+    "description": "Showcasing amazing building works by our players",
+    "filters": {
+      "all": "All Buildings",
+      "original": "Original Works",
+      "derivative": "Derivative Works",
+      "replica": "Replicas"
+    },
+    "labels": {
+      "original": "Original",
+      "derivative": "Derivative",
+      "replica": "Replica",
+      "coordinates": "Coordinates:",
+      "builder": "Builder:",
+      "buildDate": "Build Date:",
+      "originalAuthor": "Original Author:",
+      "source": "Source:"
+    },
+    "loading": "Loading...",
+    "empty": "No buildings yet"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Failed to load"
+  },
+  "wiki": {
+    "title": "Game Guide",
+    "description": "Learn about server rules, commands, and gameplay tips",
+    "navigation": "Navigation",
+    "sections": {
+      "gettingStarted": "Getting Started",
+      "rules": "Server Rules",
+      "commands": "Commands",
+      "community": "Community Guide",
+      "tips": "Gameplay Tips"
+    }
+  },
+  "footer": {
+    "text": "© 2021-2026 Encinet. All rights reserved.",
+    "trademark": "Minecraft is a trademark of Mojang AB"
+  },
+  "bans": {
+    "title": "Ban List",
+    "description": "View server ban records",
+    "loading": "Loading...",
+    "empty": "No ban records",
+    "permanent": "Permanent",
+    "temporary": "Temporary",
+    "expired": "Expired",
+    "reason": "Reason",
+    "bannedBy": "Banned By",
+    "bannedAt": "Banned At",
+    "expiresAt": "Expires At"
+  }
+}

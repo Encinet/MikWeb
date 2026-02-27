@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "title": "Mik 米客服务器 - 创造休闲服务器",
+    "description": "一个创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作"
+  },
+  "nav": {
+    "home": "首页",
+    "buildings": "建筑收录",
+    "map": "服务器地图",
+    "bans": "封禁列表",
+    "wiki": "游戏指南",
+    "join": "申请加入",
+    "subtitle": "创造休闲服务器",
+    "online": "在线"
+  },
+  "home": {
+    "hero": {
+      "badge": "创造模式 • 允许 Mod • 申请制",
+      "title": "欢迎来到 Mik 米客服务器",
+      "description": "本服务器为创造休闲向服务器，允许任意 Mod（包含外挂），但前提是不破坏建筑与他人创作。在这里，你可以尽情发挥创造力，使用 Axiom、创世神等强大工具，与志同道合的伙伴一起探索建筑的无限可能。",
+      "joinButton": "申请加入服务器",
+      "notice": "本服务器为申请制，仅向审核通过的玩家开放"
+    },
+    "stats": {
+      "activePlayers": "活跃玩家",
+      "version": "服务器版本",
+      "status": "服务器状态",
+      "running": "运行中"
+    },
+    "announcements": {
+      "title": "服务器公告",
+      "loading": "加载中...",
+      "empty": "暂无公告"
+    },
+    "features": {
+      "vanilla": {
+        "title": "创造休闲体验",
+        "description": "服务器允许任意 Mod（包含外挂），支持 Axiom、创世神等强大建筑工具。我们致力于为建筑创作者提供最大的自由度，让你的创意不受限制。"
+      },
+      "community": {
+        "title": "精选玩家社区",
+        "description": "通过申请制度，我们精心筛选每一位加入服务器的玩家，确保社区氛围友好和谐。在这里，你将遇到一群热爱建筑创作、尊重他人作品的优质玩家。"
+      }
+    }
+  },
+  "buildings": {
+    "title": "建筑收录",
+    "description": "展示服务器内玩家的精彩建筑作品",
+    "filters": {
+      "all": "全部建筑",
+      "original": "原创作品",
+      "derivative": "二创作品",
+      "replica": "搬运作品"
+    },
+    "labels": {
+      "original": "原创",
+      "derivative": "二创",
+      "replica": "搬运",
+      "coordinates": "坐标:",
+      "builder": "建造者:",
+      "buildDate": "建造日期:",
+      "originalAuthor": "原作者:",
+      "source": "来源:"
+    },
+    "loading": "加载中...",
+    "empty": "暂无建筑收录"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "加载失败"
+  },
+  "wiki": {
+    "title": "游戏指南",
+    "description": "了解服务器规则、指令和游戏技巧",
+    "navigation": "导航",
+    "sections": {
+      "gettingStarted": "新手入门",
+      "rules": "服务器规则",
+      "commands": "常用指令",
+      "community": "社区指南",
+      "tips": "游戏技巧"
+    }
+  },
+  "footer": {
+    "text": "© 2021-2026 Encinet. All rights reserved.",
+    "trademark": "Minecraft is a trademark of Mojang AB"
+  },
+  "bans": {
+    "title": "封禁列表",
+    "description": "查看服务器封禁记录",
+    "loading": "加载中...",
+    "empty": "暂无封禁记录",
+    "permanent": "永久封禁",
+    "temporary": "临时封禁",
+    "expired": "已过期",
+    "reason": "封禁原因",
+    "bannedBy": "执行者",
+    "bannedAt": "封禁时间",
+    "expiresAt": "解封时间"
+  }
+}
