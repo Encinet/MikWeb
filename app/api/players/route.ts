@@ -35,11 +35,10 @@ export async function GET(request: Request) {
     // 返回模拟数据作为降级方案
     return NextResponse.json(
       {
-        count: 3,
+        count: 2,
         players: [
-          { name: 'Steve', uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5' },
-          { name: 'Alex', uuid: '8667ba71-b85a-4004-af54-457a9734eed7' },
-          { name: 'Notch', uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5' }
+          { name: 'Aeolic', uuid: '850ab457-2a91-45a5-916d-3cc24dc601c7' },
+          { name: 'Noctiro', uuid: '531983d3-f5e4-4f0b-b1d3-3756be96b611' }
         ]
       },
       {

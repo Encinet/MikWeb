@@ -21,6 +21,11 @@ export default function Navbar() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [playerCount, setPlayerCount] = useState(0);
   const [showPlayerList, setShowPlayerList] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -199,7 +204,11 @@ export default function Navbar() {
                 e.currentTarget.style.color = 'var(--text-nav)';
               }}
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {mounted ? (
+                theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
+              ) : (
+                <div className="w-4 h-4" />
+              )}
             </button>
 
             <button
