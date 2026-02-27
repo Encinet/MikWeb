@@ -58,6 +58,7 @@
       "replica": "Replica",
       "coordinates": "Coordinates:",
       "builder": "Builder:",
+      "builders": "Builders:",
       "buildDate": "Build Date:",
       "originalAuthor": "Original Author:",
       "source": "Source:"

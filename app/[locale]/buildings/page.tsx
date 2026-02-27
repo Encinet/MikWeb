@@ -4,6 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { Building2, MapPin, User, Bell, CheckCircle, Copy } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 
+interface Builder {
+  name: string;
+  uuid: string;
+  weight: number;
+}
+
 interface Building {
   id: number;
   name: {
@@ -17,10 +23,7 @@ interface Building {
     y: number;
     z: number;
   };
-  builder: {
-    name: string;
-    uuid: string;
-  };
+  builders: Builder[];
   buildType: 'original' | 'derivative' | 'replica';
   imageUrl: string;
   buildDate: string;
@@ -206,10 +209,37 @@ export default function BuildingsPage() {
                       </code>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="w-4 h-4 text-green-400 shrink-0" />
-                      <span style={{ color: 'var(--text-muted)' }}>{t('labels.builder')}</span>
-                      <span className="text-green-400 font-medium">{building.builder.name}</span>
+                    <div className="flex items-start gap-2 text-sm">
+                      <User className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <span style={{ color: 'var(--text-muted)' }}>{building.builders.length > 1 ? t('labels.builders') : t('labels.builder')}</span>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          {(() => {
+                            const sortedBuilders = [...building.builders].sort((a, b) => b.weight - a.weight);
+                            const maxWeight = sortedBuilders[0]?.weight || 100;
+
+                            return sortedBuilders.map((builder, idx) => {
+                              const isMainContributor = builder.weight === maxWeight;
+                              const contributionLevel = builder.weight / maxWeight;
+
+                              return (
+                                <span
+                                  key={idx}
+                                  className="text-green-400 transition-all"
+                                  style={{
+                                    fontWeight: isMainContributor ? 600 : 500,
+                                    fontSize: isMainContributor ? '0.875rem' : '0.8125rem',
+                                    opacity: 0.5 + (contributionLevel * 0.5)
+                                  }}
+                                >
+                                  {builder.name}
+                                  {idx < building.builders.length - 1 && ','}
+                                </span>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm">

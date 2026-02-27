@@ -141,10 +141,18 @@ X-API-Key: your-api-key (可选)
       "y": 64,
       "z": -200
     },
-    "builder": {
-      "name": "Steve",
-      "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5"
-    },
+    "builders": [
+      {
+        "name": "Steve",
+        "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
+        "weight": 100
+      },
+      {
+        "name": "Alex",
+        "uuid": "8667ba71-b85a-4004-af54-457a9734eed7",
+        "weight": 50
+      }
+    ],
     "buildType": "original",
     "imageUrl": "/buildings/cathedral.png",
     "buildDate": "2024-01-15",
@@ -166,10 +174,23 @@ X-API-Key: your-api-key (可选)
       "y": 64,
       "z": -600
     },
-    "builder": {
-      "name": "Builder123",
-      "uuid": "f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2"
-    },
+    "builders": [
+      {
+        "name": "Builder123",
+        "uuid": "f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2",
+        "weight": 80
+      },
+      {
+        "name": "Helper456",
+        "uuid": "b0c69a0b-4e9a-4726-a5be-fca90e38aaf5",
+        "weight": 80
+      },
+      {
+        "name": "Assistant789",
+        "uuid": "d1e79f4-44e9-4726-a5be-fca90e38aaf5",
+        "weight": 40
+      }
+    ],
     "buildType": "replica",
     "imageUrl": "/buildings/eiffel.png",
     "buildDate": "2024-01-28",
@@ -192,9 +213,10 @@ X-API-Key: your-api-key (可选)
 - `description` (object): 多语言建筑描述
 - `coordinates` (object): 建筑坐标
   - `x`, `y`, `z` (number): 三维坐标
-- `builder` (object): 建造者信息
+- `builders` (array): 建造者列表（按贡献权重排序）
   - `name` (string): 建造者名称
   - `uuid` (string): 建造者 UUID
+  - `weight` (number): 贡献权重（数值越大表示贡献越大，相同权重视为贡献相等）
 - `buildType` (string): 建筑类型
   - `original`: 原创作品
   - `derivative`: 二创作品

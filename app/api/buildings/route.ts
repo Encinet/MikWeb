@@ -42,10 +42,18 @@ export async function GET(request: Request) {
             'en': 'A magnificent building in the center of the main city, featuring Gothic style, 80 blocks tall, beautifully decorated inside, and a landmark of the server.'
           },
           coordinates: { x: 100, y: 64, z: -200 },
-          builder: {
-            name: 'Steve',
-            uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5'
-          },
+          builders: [
+            {
+              name: 'Steve',
+              uuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5',
+              weight: 100
+            },
+            {
+              name: 'Alex',
+              uuid: '8667ba71-b85a-4004-af54-457a9734eed7',
+              weight: 50
+            }
+          ],
           buildType: 'original',
           imageUrl: '/buildings/cathedral.png',
           buildDate: '2024-01-15',
@@ -63,10 +71,13 @@ export async function GET(request: Request) {
             'en': 'A modern-style villa by the sea with a private dock and infinity pool, offering open views.'
           },
           coordinates: { x: -450, y: 70, z: 320 },
-          builder: {
-            name: 'Alex',
-            uuid: '8667ba71-b85a-4004-af54-457a9734eed7'
-          },
+          builders: [
+            {
+              name: 'Alex',
+              uuid: '8667ba71-b85a-4004-af54-457a9734eed7',
+              weight: 100
+            }
+          ],
           buildType: 'original',
           imageUrl: '/buildings/villa.png',
           buildDate: '2024-02-03',
@@ -84,10 +95,23 @@ export async function GET(request: Request) {
             'en': 'A 1:1 replica of the Eiffel Tower, 324 blocks tall, using numerous iron bars and quartz blocks.'
           },
           coordinates: { x: 800, y: 64, z: -600 },
-          builder: {
-            name: 'Builder123',
-            uuid: 'f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2'
-          },
+          builders: [
+            {
+              name: 'Builder123',
+              uuid: 'f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2',
+              weight: 80
+            },
+            {
+              name: 'Helper456',
+              uuid: 'b0c69a0b-4e9a-4726-a5be-fca90e38aaf5',
+              weight: 80
+            },
+            {
+              name: 'Assistant789',
+              uuid: 'd1e79f4-44e9-4726-a5be-fca90e38aaf5',
+              weight: 40
+            }
+          ],
           buildType: 'replica',
           imageUrl: '/buildings/eiffel.png',
           buildDate: '2024-01-28',
@@ -112,10 +136,13 @@ export async function GET(request: Request) {
             'en': 'A carefully designed underground mining base with automated sorting systems and minecart transport networks.'
           },
           coordinates: { x: 250, y: 12, z: 450 },
-          builder: {
-            name: 'Miner99',
-            uuid: 'c06f8906-4c8a-4911-9c29-ea1dbd1aab82'
-          },
+          builders: [
+            {
+              name: 'Miner99',
+              uuid: 'c06f8906-4c8a-4911-9c29-ea1dbd1aab82',
+              weight: 100
+            }
+          ],
           buildType: 'original',
           imageUrl: '/buildings/mine.png',
           buildDate: '2024-02-10',
@@ -133,10 +160,13 @@ export async function GET(request: Request) {
             'en': 'A derivative work based on Miyazaki\'s Castle in the Sky, incorporating more modern elements and personal style, a dreamy castle floating in the clouds.'
           },
           coordinates: { x: -100, y: 180, z: -100 },
-          builder: {
-            name: 'SkyBuilder',
-            uuid: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-          },
+          builders: [
+            {
+              name: 'SkyBuilder',
+              uuid: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+              weight: 100
+            }
+          ],
           buildType: 'derivative',
           imageUrl: '/buildings/sky-castle.png',
           buildDate: '2024-01-20',
@@ -161,10 +191,13 @@ export async function GET(request: Request) {
             'en': 'Traditional Chinese garden design with pavilions, rockeries, and flowing water, full of Eastern charm.'
           },
           coordinates: { x: 600, y: 68, z: 200 },
-          builder: {
-            name: 'DragonMaster',
-            uuid: '7c9e6679-7425-40de-944b-e07fc1f90ae7'
-          },
+          builders: [
+            {
+              name: 'DragonMaster',
+              uuid: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+              weight: 100
+            }
+          ],
           buildType: 'original',
           imageUrl: '/buildings/chinese-garden.png',
           buildDate: '2024-02-15',
