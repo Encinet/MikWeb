@@ -47,5 +47,3 @@ The server supports the following vanilla commands:
 |---------|-------------|
 | `/pkstart` | Parkour mode (increasing difficulty) |
 | `/spy` | Who is the killer |
-
-> **Tip**: Type `/help` in-game for more commands.

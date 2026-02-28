@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Server, Users, Bell, Zap, Play, Award, MessageCircle, X, Building2, Clock } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ScrollReveal from '@/components/ScrollReveal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 
 export default function HomePage() {
   const t = useTranslations();
@@ -13,10 +15,15 @@ export default function HomePage() {
   const [announcements, setAnnouncements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // 服务器开始运行日期 (2025-07-15)
   const SERVER_START_DATE = new Date('2025-07-15');
   const uptime = Math.floor((Date.now() - SERVER_START_DATE.getTime()) / (1000 * 60 * 60 * 24));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -456,196 +463,200 @@ export default function HomePage() {
         </div>
 
         {/* Announcement Modal */}
-        {showAnnouncementModal && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              backdropFilter: 'blur(20px) saturate(120%)',
-              WebkitBackdropFilter: 'blur(20px) saturate(120%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 9999,
-              padding: '1rem',
-              animation: 'fadeIn 0.2s ease-out'
-            }}
-            onClick={() => setShowAnnouncementModal(false)}
-          >
-            <div
-              style={{
-                backdropFilter: 'blur(24px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '18px',
-                boxShadow: '0 8px 48px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                maxWidth: '800px',
-                width: '100%',
-                maxHeight: '80vh',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                animation: 'slideUp 0.3s ease-out'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div style={{
-                padding: 'clamp(1.5rem, 4vw, 2rem)',
-                borderBottom: '1px solid var(--glass-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                <div className="flex items-center gap-3">
-                  <div style={{
-                    padding: '8px',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(16px) saturate(150%)',
-                    background: 'var(--glass-icon-bg)',
-                    border: '1px solid var(--glass-border)'
-                  }}>
-                    <Bell className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#FFAA00' }} />
-                  </div>
-                  <h3 style={{
-                    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                    fontWeight: 600,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--text-secondary)'
-                  }}>{t('home.announcements.title')}</h3>
-                </div>
-                <button
-                  onClick={() => setShowAnnouncementModal(false)}
+        {mounted &&
+          createPortal(
+            <AnimatePresence>
+              {showAnnouncementModal && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
                   style={{
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    backdropFilter: 'blur(32px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(32px) saturate(180%)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    zIndex: 9999,
+                    padding: '1rem'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--glass-icon-bg)';
-                    e.currentTarget.style.color = 'var(--text-primary)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = 'var(--text-muted)';
-                  }}
+                  onClick={() => setShowAnnouncementModal(false)}
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div style={{
-                padding: 'clamp(1.5rem, 4vw, 2rem)',
-                overflowY: 'auto',
-                flex: 1
-              }}>
-                {isLoading ? (
-                  <div className="text-center py-12">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    transition={{
+                      duration: 0.3,
+                      ease: [0.16, 1, 0.3, 1]
+                    }}
+                    style={{
+                      backdropFilter: 'blur(24px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                      background: 'var(--glass-bg)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '24px',
+                      boxShadow: '0 24px 64px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 var(--glass-inset)',
+                      maxWidth: '800px',
+                      width: '100%',
+                      maxHeight: '85vh',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Modal Header */}
                     <div style={{
-                      display: 'inline-block',
-                      width: '32px',
-                      height: '32px',
-                      border: '4px solid rgba(255, 170, 0, 0.3)',
-                      borderTop: '4px solid #FFAA00',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}></div>
-                    <p style={{
-                      color: 'var(--text-muted)',
-                      marginTop: '1rem'
-                    }}>{t('home.announcements.loading')}</p>
-                  </div>
-                ) : announcements.length === 0 ? (
-                  <div className="text-center py-12">
-                    <p style={{ color: 'var(--text-muted)' }}>{t('home.announcements.empty')}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {announcements.map((announcement: any, i: number) => (
-                      <div
-                        key={i}
-                        style={{
+                      padding: 'clamp(1.5rem, 4vw, 2rem)',
+                      borderBottom: '1px solid var(--glass-border)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}>
+                      <div className="flex items-center gap-3">
+                        <div style={{
+                          padding: '10px',
+                          borderRadius: '14px',
                           backdropFilter: 'blur(16px) saturate(150%)',
                           background: 'var(--glass-icon-bg)',
                           border: '1px solid var(--glass-border)',
+                          boxShadow: '0 4px 12px rgba(255, 170, 0, 0.15)'
+                        }}>
+                          <Bell className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#FFAA00' }} />
+                        </div>
+                        <h3 style={{
+                          fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                          fontWeight: 600,
+                          letterSpacing: '-0.02em',
+                          color: 'var(--text-secondary)'
+                        }}>{t('home.announcements.title')}</h3>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05, backgroundColor: 'var(--glass-icon-bg)' }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowAnnouncementModal(false)}
+                        style={{
+                          padding: '10px',
                           borderRadius: '12px',
-                          padding: 'clamp(1rem, 3vw, 1.5rem)'
+                          border: 'none',
+                          background: 'transparent',
+                          color: 'var(--text-muted)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'var(--text-primary)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--text-muted)';
                         }}
                       >
-                        <div className="flex items-start gap-3 sm:gap-4">
-                          <div style={{
-                            width: '8px',
-                            height: '8px',
-                            marginTop: '8px',
-                            background: '#FFAA00',
-                            borderRadius: '50%',
-                            flexShrink: 0
-                          }}></div>
-                          <div className="flex-1 min-w-0">
-                            <div style={{
-                              fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
-                              color: 'var(--text-muted)',
-                              marginBottom: '8px'
-                            }}>{formatDate(announcement.timestamp)}</div>
-                            <div style={{
-                              color: 'var(--text-primary)',
-                              lineHeight: 1.75,
-                              whiteSpace: 'pre-line',
-                              fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                            }}>{announcement.content}</div>
-                          </div>
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </motion.button>
+                    </div>
+
+                    {/* Modal Content */}
+                    <div style={{
+                      padding: 'clamp(1.5rem, 4vw, 2rem)',
+                      overflowY: 'auto',
+                      flex: 1
+                    }}>
+                      {isLoading ? (
+                        <div className="text-center py-12">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            style={{
+                              display: 'inline-block',
+                              width: '40px',
+                              height: '40px',
+                              border: '4px solid rgba(255, 170, 0, 0.2)',
+                              borderTop: '4px solid #FFAA00',
+                              borderRadius: '50%'
+                            }}
+                          />
+                          <p style={{
+                            color: 'var(--text-muted)',
+                            marginTop: '1rem',
+                            fontSize: '0.95rem'
+                          }}>{t('home.announcements.loading')}</p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+                      ) : announcements.length === 0 ? (
+                        <div className="text-center py-12">
+                          <Bell className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
+                          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>{t('home.announcements.empty')}</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {announcements.map((announcement: any, i: number) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: i * 0.05, duration: 0.3 }}
+                              whileHover={{ scale: 1.01 }}
+                              style={{
+                                backdropFilter: 'blur(16px) saturate(150%)',
+                                background: 'var(--glass-icon-bg)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '16px',
+                                padding: 'clamp(1rem, 3vw, 1.5rem)',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <div className="flex items-start gap-3 sm:gap-4">
+                                <motion.div
+                                  animate={{ scale: [1, 1.2, 1] }}
+                                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                                  style={{
+                                    width: '10px',
+                                    height: '10px',
+                                    marginTop: '8px',
+                                    background: '#FFAA00',
+                                    borderRadius: '50%',
+                                    flexShrink: 0,
+                                    boxShadow: '0 0 12px rgba(255, 170, 0, 0.6)'
+                                  }}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div style={{
+                                    fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
+                                    color: 'var(--text-muted)',
+                                    marginBottom: '8px',
+                                    fontWeight: 500
+                                  }}>{formatDate(announcement.timestamp)}</div>
+                                  <div style={{
+                                    color: 'var(--text-primary)',
+                                    lineHeight: 1.75,
+                                    whiteSpace: 'pre-line',
+                                    fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                                  }}>{announcement.content}</div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>,
+            document.body
+          )}
       </div>
 
-      <style jsx>{`
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }

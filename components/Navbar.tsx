@@ -302,11 +302,12 @@ export default function Navbar() {
                   maxHeight: '400px',
                   overflowY: 'auto',
                   backdropFilter: 'blur(16px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                   background: 'var(--glass-bg)',
                   border: '1px solid var(--glass-border)',
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   boxShadow: '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                  padding: '12px',
+                  padding: '16px',
                   zIndex: 100,
                   animation: 'fadeInDown 0.2s ease-out'
                 }}>
