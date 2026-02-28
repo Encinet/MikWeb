@@ -90,10 +90,6 @@
       "tips": "游戏技巧"
     }
   },
-  "footer": {
-    "text": "© 2021-2026 Encinet. All rights reserved.",
-    "trademark": "Minecraft is a trademark of Mojang AB"
-  },
   "bans": {
     "title": "封禁列表",
     "description": "查看服务器封禁记录",

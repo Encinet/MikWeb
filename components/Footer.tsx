@@ -1,9 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 export default function Footer() {
-  const t = useTranslations('footer');
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer style={{
@@ -19,13 +17,51 @@ export default function Footer() {
           fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
           marginBottom: '8px'
         }}>
-          {t('text')}
+          © 2021-{currentYear}{' '}
+          <a
+            href="https://encinet.netlify.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: 'var(--text-muted)',
+              textDecoration: 'none',
+              transition: 'color 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#FFAA00';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-muted)';
+            }}
+          >
+            Encinet
+          </a>
+          . All rights reserved.
         </p>
         <p style={{
           color: 'var(--text-dimmed)',
           fontSize: '0.75rem'
         }}>
-          {t('trademark')}
+          Minecraft is a trademark of Mojang AB. Encinet is not affiliated with Mojang AB. By using our services, you agree to{' '}
+          <a
+            href="https://www.minecraft.net/en-us/eula"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: 'var(--text-dimmed)',
+              textDecoration: 'underline',
+              transition: 'color 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#FFAA00';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-dimmed)';
+            }}
+          >
+            Mojang's EULA
+          </a>
+          .
         </p>
       </div>
     </footer>
