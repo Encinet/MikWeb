@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { BookOpen, ChevronRight, Home, Wrench, Shield, Users, Zap, Menu, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const iconMap = {
   Home,
@@ -65,6 +66,7 @@ export default function WikiClient({ title, description, navigation, sections, c
               <nav className="space-y-1">
                 {sections.map((section) => {
                   const Icon = iconMap[section.icon as keyof typeof iconMap];
+                  const isActive = activeSection === section.id;
                   return (
                     <button
                       key={section.id}
@@ -73,19 +75,32 @@ export default function WikiClient({ title, description, navigation, sections, c
                         setSidebarOpen(false);
                       }}
                       style={{
-                        color: activeSection === section.id ? '#93c5fd' : 'var(--text-muted-light)'
+                        color: isActive ? '#93c5fd' : 'var(--text-muted-light)'
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                        activeSection === section.id
-                          ? 'bg-blue-500/20 border border-blue-400/30'
-                          : 'hover:bg-white/5 border border-transparent'
-                      }`}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-200 relative hover:bg-white/5"
                     >
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span className="text-sm font-medium">{section.label}</span>
-                      {activeSection === section.id && (
-                        <ChevronRight className="w-4 h-4 ml-auto" />
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeBackground"
+                          className="absolute inset-0 bg-blue-500/20 border border-blue-400/30 rounded-lg"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
                       )}
+                      <Icon className="w-4 h-4 shrink-0 relative z-10" />
+                      <span className="text-sm font-medium relative z-10">{section.label}</span>
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="ml-auto relative z-10"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </button>
                   );
                 })}
@@ -96,7 +111,15 @@ export default function WikiClient({ title, description, navigation, sections, c
           {/* Content */}
           <div className="lg:col-span-3">
             <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-6 sm:p-8">
-              <div className="prose prose-invert prose-blue max-w-none">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeSection}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="prose prose-invert prose-blue max-w-none"
+                >
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -188,7 +211,8 @@ export default function WikiClient({ title, description, navigation, sections, c
                 >
                   {content[activeSection]}
                 </ReactMarkdown>
-              </div>
+              </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>

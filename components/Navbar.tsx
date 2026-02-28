@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useTheme } from 'next-themes';
 import MinecraftAvatar from './MinecraftAvatar';
+import { motion } from 'framer-motion';
 
 interface Player {
   name: string;
@@ -24,6 +25,11 @@ export default function Navbar() {
   const [showPlayerList, setShowPlayerList] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const handleThemeToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -100,22 +106,9 @@ export default function Navbar() {
             </div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6 relative">
             {navItems.map((item) => {
               const isActive = pathname === item.path;
-
-              const baseStyle = {
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 0',
-                fontSize: '14px',
-                fontWeight: 500,
-                transition: 'all 0.2s ease',
-                textDecoration: 'none',
-                position: 'relative' as const,
-                borderBottom: '2px solid transparent'
-              };
 
               if (item.link) {
                 return (
@@ -125,20 +118,24 @@ export default function Navbar() {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      ...baseStyle,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
                       background: item.highlight ? '#FFAA00' : 'transparent',
                       padding: item.highlight ? '8px 16px' : '8px 0',
                       borderRadius: item.highlight ? '8px' : '0',
                       color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                      fontSize: '14px',
                       fontWeight: item.highlight ? 600 : 500,
-                      borderBottom: item.highlight ? 'none' : '2px solid transparent'
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease',
+                      position: 'relative' as const
                     }}
                     onMouseEnter={(e) => {
                       if (item.highlight) {
                         e.currentTarget.style.background = '#e09900';
                       } else {
                         e.currentTarget.style.color = 'var(--text-nav-hover)';
-                        e.currentTarget.style.borderBottom = '2px solid var(--border-nav-hover)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -146,7 +143,6 @@ export default function Navbar() {
                         e.currentTarget.style.background = '#FFAA00';
                       } else {
                         e.currentTarget.style.color = 'var(--text-nav)';
-                        e.currentTarget.style.borderBottom = '2px solid transparent';
                       }
                     }}
                   >
@@ -161,23 +157,34 @@ export default function Navbar() {
                   key={item.id}
                   href={item.path as any}
                   style={{
-                    ...baseStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 0',
                     color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
-                    borderBottom: isActive ? '2px solid #FFAA00' : '2px solid transparent'
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    textDecoration: 'none',
+                    transition: 'color 0.2s ease',
+                    position: 'relative' as const
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--text-nav-hover)';
-                    if (!isActive) {
-                      e.currentTarget.style.borderBottom = '2px solid var(--border-nav-hover)';
-                    }
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = isActive ? 'var(--text-nav-active)' : 'var(--text-nav)';
-                    e.currentTarget.style.borderBottom = isActive ? '2px solid #FFAA00' : '2px solid transparent';
                   }}
                 >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+                  <item.icon className="w-4 h-4 relative z-10" />
+                  <span className="relative z-10">{item.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="navUnderline"
+                      className="absolute bottom-0 left-0 right-0 h-0.5"
+                      style={{ backgroundColor: '#FFAA00' }}
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Link>
               );
             })}
@@ -200,7 +207,7 @@ export default function Navbar() {
             </button>
 
             <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={handleThemeToggle}
               className="hidden sm:flex"
               style={{
                 alignItems: 'center',
@@ -402,9 +409,7 @@ export default function Navbar() {
 
               {/* Mobile Theme Toggle */}
               <button
-                onClick={() => {
-                  setTheme(theme === 'dark' ? 'light' : 'dark');
-                }}
+                onClick={handleThemeToggle}
                 className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
                 style={{
                   background: 'var(--glass-icon-bg)',
