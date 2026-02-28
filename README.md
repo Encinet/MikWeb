@@ -165,7 +165,11 @@ X-API-Key: your-api-key (可选)
       "/buildings/cathedral-aerial.png"
     ],
     "buildDate": "2024-01-15",
-    "tags": ["religious", "large", "landmark"],
+    "tags": [
+      { "zh-CN": "宗教", "en": "religious" },
+      { "zh-CN": "大型", "en": "large" },
+      { "zh-CN": "地标", "en": "landmark" }
+    ],
     "source": null
   },
   {
@@ -205,7 +209,11 @@ X-API-Key: your-api-key (可选)
       "/buildings/eiffel-night.png"
     ],
     "buildDate": "2024-01-28",
-    "tags": ["landmark", "large", "historical"],
+    "tags": [
+      { "zh-CN": "地标", "en": "landmark" },
+      { "zh-CN": "大型", "en": "large" },
+      { "zh-CN": "历史", "en": "historical" }
+    ],
     "source": {
       "originalAuthor": "Gustave Eiffel",
       "originalLink": "https://www.planetminecraft.com/project/eiffel-tower",
@@ -236,7 +244,10 @@ X-API-Key: your-api-key (可选)
   - 也可以是多张图片的数组，详情弹窗将显示图片轮播
   - 卡片展示使用第一张图片作为封面
 - `buildDate` (string): 建造日期（ISO 8601 格式或 Unix 时间戳）
-- `tags` (array, 可选): 建筑标签
+- `tags` (array, 可选): 建筑标签数组，支持多语言
+  - 每个标签是一个对象，包含不同语言的翻译
+  - 格式：`[{ "zh-CN": "中世纪", "en": "medieval" }, { "zh-CN": "大型", "en": "large" }]`
+  - 前端会根据当前语言自动显示对应翻译，支持回退到 zh-CN 或第一个可用语言
 - `source` (object, 可选): 来源信息（仅非原创作品）
   - `originalAuthor` (string, 可选): 原作者
   - `originalLink` (string, 可选): 原作品链接
