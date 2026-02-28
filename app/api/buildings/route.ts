@@ -54,7 +54,6 @@ export async function GET(request: Request) {
         //     }
         //   ],
         //   buildType: 'original',
-        //   imageUrl: '/buildings/cathedral.png',
         //   buildDate: '2024-01-15',
         //   tags: ['religious', 'large', 'landmark'],
         //   source: null
@@ -77,7 +76,6 @@ export async function GET(request: Request) {
         //     }
         //   ],
         //   buildType: 'original',
-        //   imageUrl: '/buildings/villa.png',
         //   buildDate: '2024-02-03',
         //   tags: ['residential', 'modern', 'coastal'],
         //   source: null
@@ -110,7 +108,6 @@ export async function GET(request: Request) {
         //     }
         //   ],
         //   buildType: 'replica',
-        //   imageUrl: '/buildings/eiffel.png',
         //   buildDate: '2024-01-28',
         //   tags: ['landmark', 'large', 'historical'],
         //   source: {
@@ -140,7 +137,6 @@ export async function GET(request: Request) {
         //     }
         //   ],
         //   buildType: 'original',
-        //   imageUrl: '/buildings/mine.png',
         //   buildDate: '2024-02-10',
         //   tags: ['industrial', 'underground', 'functional'],
         //   source: null
@@ -163,7 +159,6 @@ export async function GET(request: Request) {
         //     }
         //   ],
         //   buildType: 'derivative',
-        //   imageUrl: '/buildings/sky-castle.png',
         //   buildDate: '2024-01-20',
         //   tags: ['fantasy', 'large', 'floating', 'anime'],
         //   source: {
@@ -193,7 +188,6 @@ export async function GET(request: Request) {
         //     }
         //   ],
         //   buildType: 'original',
-        //   imageUrl: '/buildings/chinese-garden.png',
         //   buildDate: '2024-02-15',
         //   tags: ['cultural', 'traditional', 'garden'],
         //   source: null

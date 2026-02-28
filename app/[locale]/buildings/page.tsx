@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Building2, MapPin, User, Bell, CheckCircle, Copy, Search, SlidersHorizontal } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Building2, MapPin, User, Bell, CheckCircle, Copy, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ScrollReveal from '@/components/ScrollReveal';
 import Masonry from 'react-masonry-css';
@@ -27,7 +29,7 @@ interface Building {
   };
   builders: Builder[];
   buildType: 'original' | 'derivative' | 'replica';
-  imageUrl: string;
+  images: string[];
   buildDate: string;
   tags?: string[];
   source?: {
@@ -48,8 +50,18 @@ export default function BuildingsPage() {
   const [buildingFilter, setBuildingFilter] = useState('all');
   const [displayedCount, setDisplayedCount] = useState(12);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
   const [sortBy, setSortBy] = useState('date-desc');
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [cardRect, setCardRect] = useState<DOMRect | null>(null);
   const ITEMS_PER_PAGE = 12;
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -159,6 +171,49 @@ export default function BuildingsPage() {
     1280: 3,
     1024: 2,
     640: 1
+  };
+
+  const getBuildingImages = (building: Building): string[] => {
+    return building.images || [];
+  };
+
+  const handleImageError = (imageUrl: string) => {
+    setImageErrors(prev => new Set(prev).add(imageUrl));
+  };
+
+  const isImageError = (imageUrl: string) => {
+    return imageErrors.has(imageUrl);
+  };
+
+  const openBuildingDetail = (building: Building, event: React.MouseEvent<HTMLDivElement>) => {
+    const card = event.currentTarget;
+    const rect = card.getBoundingClientRect();
+    setCardRect(rect);
+    setSelectedBuilding(building);
+    setCurrentImageIndex(0);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeBuildingDetail = () => {
+    setSelectedBuilding(null);
+    setCurrentImageIndex(0);
+    document.body.style.overflow = 'unset';
+    // 延迟清除卡片位置，让退出动画完成
+    setTimeout(() => setCardRect(null), 300);
+  };
+
+  const nextImage = () => {
+    if (selectedBuilding) {
+      const images = getBuildingImages(selectedBuilding);
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (selectedBuilding) {
+      const images = getBuildingImages(selectedBuilding);
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
   };
 
   return (
@@ -282,12 +337,29 @@ export default function BuildingsPage() {
             {displayedBuildings.map((building, i) => (
               <ScrollReveal key={generateBuildingId(building)} delay={i * 0.05} direction="up">
               <div
+                onClick={(e) => openBuildingDetail(building, e)}
                 className="backdrop-blur-lg bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-purple-400/30 transition-all duration-300 overflow-hidden group cursor-pointer hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 mb-6"
               >
                 <div className="relative h-56 bg-linear-to-br from-purple-900/20 to-blue-900/20 overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Building2 className="w-20 h-20" style={{ color: 'var(--text-very-dimmed)' }} />
-                  </div>
+                  {getBuildingImages(building).length > 0 && !isImageError(getBuildingImages(building)[0]) ? (
+                    <>
+                      <img
+                        src={getBuildingImages(building)[0]}
+                        alt={building.name[locale] || building.name['en'] || Object.values(building.name)[0]}
+                        className="w-full h-full object-cover"
+                        onError={() => handleImageError(getBuildingImages(building)[0])}
+                      />
+                      {getBuildingImages(building).length > 1 && (
+                        <div className="absolute bottom-3 right-3 px-2.5 py-1 backdrop-blur-md bg-black/50 rounded-full border border-white/20">
+                          <span className="text-xs text-white font-medium">+{getBuildingImages(building).length - 1}</span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Building2 className="w-20 h-20" style={{ color: 'var(--text-very-dimmed)' }} />
+                    </div>
+                  )}
                   <div className="absolute top-3 right-3 px-3 py-1.5 backdrop-blur-md bg-black/50 rounded-full border border-white/20 flex items-center gap-1.5">
                     {building.buildType === 'original' ? (
                       <>
@@ -421,6 +493,326 @@ export default function BuildingsPage() {
           </InfiniteScroll>
         )}
       </div>
+
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedBuilding && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 md:p-8"
+              style={{
+                zIndex: 9999,
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(32px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(32px) saturate(180%)'
+              }}
+              onClick={closeBuildingDetail}
+            >
+              <motion.div
+                initial={cardRect ? {
+                  opacity: 0,
+                  scale: Math.min(cardRect.width / 1400, cardRect.height / (window.innerHeight * 0.9)),
+                  x: cardRect.left + cardRect.width / 2 - window.innerWidth / 2,
+                  y: cardRect.top + cardRect.height / 2 - window.innerHeight / 2
+                } : { opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                exit={cardRect ? {
+                  opacity: 0,
+                  scale: Math.min(cardRect.width / 1400, cardRect.height / (window.innerHeight * 0.9)),
+                  x: cardRect.left + cardRect.width / 2 - window.innerWidth / 2,
+                  y: cardRect.top + cardRect.height / 2 - window.innerHeight / 2
+                } : { opacity: 0, scale: 0.95, y: 20 }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.32, 0.72, 0, 1]
+                }}
+                className="relative w-full max-w-7xl h-[90vh] flex flex-col md:flex-row gap-0 rounded-3xl overflow-hidden shadow-2xl"
+                style={{
+                  background: 'var(--glass-bg)',
+                  backdropFilter: 'blur(16px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                  border: '1px solid var(--glass-border)',
+                  boxShadow: '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+            {/* Close Button */}
+            <button
+              onClick={closeBuildingDetail}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full transition-all duration-200"
+              style={{
+                background: 'var(--glass-bg)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid var(--glass-border)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--glass-bg)';
+              }}
+            >
+              <X className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
+            </button>
+
+            {/* Left Side - Images */}
+            <div className="relative w-full md:w-3/5 h-64 md:h-full flex items-center justify-center" style={{
+              background: 'rgba(0, 0, 0, 0.2)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)'
+            }}>
+              {getBuildingImages(selectedBuilding).length > 0 && !isImageError(getBuildingImages(selectedBuilding)[currentImageIndex]) ? (
+                <>
+                  <img
+                    src={getBuildingImages(selectedBuilding)[currentImageIndex]}
+                    alt={selectedBuilding.name[locale] || selectedBuilding.name['en'] || Object.values(selectedBuilding.name)[0]}
+                    className="w-full h-full object-contain"
+                    onError={() => handleImageError(getBuildingImages(selectedBuilding)[currentImageIndex])}
+                  />
+                  
+                  {getBuildingImages(selectedBuilding).length > 1 && (
+                    <>
+                      {/* Previous Button */}
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full transition-all duration-200 z-10"
+                        style={{
+                          background: 'var(--glass-bg)',
+                          backdropFilter: 'blur(12px)',
+                          WebkitBackdropFilter: 'blur(12px)',
+                          border: '1px solid var(--glass-border)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--glass-bg)';
+                        }}
+                      >
+                        <ChevronLeft className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
+                      </button>
+                      
+                      {/* Next Button */}
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full transition-all duration-200 z-10"
+                        style={{
+                          background: 'var(--glass-bg)',
+                          backdropFilter: 'blur(12px)',
+                          WebkitBackdropFilter: 'blur(12px)',
+                          border: '1px solid var(--glass-border)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--glass-bg)';
+                        }}
+                      >
+                        <ChevronRight className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
+                      </button>
+
+                      {/* Image Indicators */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 p-2 rounded-full" style={{
+                        background: 'var(--glass-bg)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        border: '1px solid var(--glass-border)'
+                      }}>
+                        {getBuildingImages(selectedBuilding).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentImageIndex(idx)}
+                            className="rounded-full transition-all duration-200"
+                            style={{
+                              width: idx === currentImageIndex ? '32px' : '8px',
+                              height: '8px',
+                              background: idx === currentImageIndex
+                                ? 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)'
+                                : 'rgba(255, 255, 255, 0.3)'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (idx !== currentImageIndex) {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (idx !== currentImageIndex) {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <Building2 className="w-32 h-32" style={{ color: 'var(--text-very-dimmed)' }} />
+              )}
+            </div>
+
+            {/* Right Side - Building Info */}
+            <div className="w-full md:w-2/5 h-full overflow-y-auto p-6 sm:p-8" style={{
+              background: 'rgba(0, 0, 0, 0.1)'
+            }}>
+              <div className="space-y-6">
+                {/* Title */}
+                <div>
+                  <h2 className="text-3xl sm:text-4xl font-bold mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {selectedBuilding.name[locale] || selectedBuilding.name['en'] || Object.values(selectedBuilding.name)[0]}
+                  </h2>
+                  
+                  {/* Build Type Badge */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-white/5 rounded-full border border-white/10">
+                    {selectedBuilding.buildType === 'original' ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span className="text-sm text-green-400 font-medium">{t('labels.original')}</span>
+                      </>
+                    ) : selectedBuilding.buildType === 'derivative' ? (
+                      <>
+                        <Copy className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm text-blue-400 font-medium">{t('labels.derivative')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 text-amber-400" />
+                        <span className="text-sm text-amber-400 font-medium">{t('labels.replica')}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tags */}
+                {selectedBuilding.tags && selectedBuilding.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedBuilding.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1.5 text-sm font-medium rounded-full backdrop-blur-md bg-purple-500/20 text-purple-300 border border-purple-400/30"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Description */}
+                <p className="text-base leading-relaxed" style={{ color: 'var(--text-muted-light)' }}>
+                  {selectedBuilding.description[locale] || selectedBuilding.description['en'] || Object.values(selectedBuilding.description)[0]}
+                </p>
+
+                {/* Details */}
+                <div className="space-y-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border-light)' }}>
+                  {/* Coordinates */}
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('labels.coordinates')}</span>
+                      <div className="mt-1">
+                        <code style={{ background: 'var(--code-bg)' }} className="text-amber-400 font-mono px-3 py-1.5 rounded text-sm">
+                          {selectedBuilding.coordinates.x}, {selectedBuilding.coordinates.y}, {selectedBuilding.coordinates.z}
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Builders */}
+                  <div className="flex items-start gap-3">
+                    <User className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        {selectedBuilding.builders.length > 1 ? t('labels.builders') : t('labels.builder')}
+                      </span>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {(() => {
+                          const sortedBuilders = [...selectedBuilding.builders].sort((a, b) => b.weight - a.weight);
+                          const maxWeight = sortedBuilders[0]?.weight || 100;
+
+                          return sortedBuilders.map((builder, idx) => {
+                            const isMainContributor = builder.weight === maxWeight;
+                            const contributionLevel = builder.weight / maxWeight;
+
+                            return (
+                              <span
+                                key={idx}
+                                className="text-green-400 transition-all"
+                                style={{
+                                  fontWeight: isMainContributor ? 600 : 500,
+                                  fontSize: isMainContributor ? '1rem' : '0.875rem',
+                                  opacity: 0.5 + (contributionLevel * 0.5)
+                                }}
+                              >
+                                {builder.name}
+                                {idx < selectedBuilding.builders.length - 1 && ','}
+                              </span>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Build Date */}
+                  <div className="flex items-start gap-3">
+                    <Bell className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('labels.buildDate')}</span>
+                      <div className="mt-1">
+                        <span className="text-blue-400 text-base">{formatDate(selectedBuilding.buildDate)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Source Information */}
+                  {selectedBuilding.source && (
+                    <div className="pt-4 border-t space-y-4" style={{ borderColor: 'var(--glass-border-light)' }}>
+                      {selectedBuilding.source.originalAuthor && (
+                        <div className="flex items-start gap-3">
+                          <User className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('labels.originalAuthor')}</span>
+                            <p className="text-purple-400 font-medium mt-1">{selectedBuilding.source.originalAuthor}</p>
+                          </div>
+                        </div>
+                      )}
+                      {selectedBuilding.source.originalLink && (
+                        <div className="flex items-start gap-3">
+                          <MapPin className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('labels.source')}</span>
+                            <a
+                              href={selectedBuilding.source.originalLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-purple-400 hover:text-purple-300 underline block truncate mt-1"
+                            >
+                              {selectedBuilding.source.originalLink}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      {selectedBuilding.source.notes && (
+                        <div className="text-sm italic" style={{ color: 'var(--text-muted)' }}>
+                          {selectedBuilding.source.notes[locale] || selectedBuilding.source.notes['en'] || Object.values(selectedBuilding.source.notes)[0]}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <style jsx>{`
         @keyframes fadeIn {

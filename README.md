@@ -159,7 +159,11 @@ X-API-Key: your-api-key (可选)
       }
     ],
     "buildType": "original",
-    "imageUrl": "/buildings/cathedral.png",
+    "images": [
+      "/buildings/cathedral-front.png",
+      "/buildings/cathedral-interior.png",
+      "/buildings/cathedral-aerial.png"
+    ],
     "buildDate": "2024-01-15",
     "tags": ["religious", "large", "landmark"],
     "source": null
@@ -196,7 +200,10 @@ X-API-Key: your-api-key (可选)
       }
     ],
     "buildType": "replica",
-    "imageUrl": "/buildings/eiffel.png",
+    "images": [
+      "/buildings/eiffel-day.png",
+      "/buildings/eiffel-night.png"
+    ],
     "buildDate": "2024-01-28",
     "tags": ["landmark", "large", "historical"],
     "source": {
@@ -224,7 +231,10 @@ X-API-Key: your-api-key (可选)
   - `original`: 原创作品
   - `derivative`: 二创作品
   - `replica`: 搬运作品
-- `imageUrl` (string): 建筑图片 URL
+- `images` (array): 建筑图片数组，支持多张图片
+  - 可以是单张图片的数组（如 `["/buildings/image.png"]`）
+  - 也可以是多张图片的数组，详情弹窗将显示图片轮播
+  - 卡片展示使用第一张图片作为封面
 - `buildDate` (string): 建造日期（ISO 8601 格式或 Unix 时间戳）
 - `tags` (array, 可选): 建筑标签
 - `source` (object, 可选): 来源信息（仅非原创作品）
