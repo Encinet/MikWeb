@@ -6,6 +6,7 @@ import { Server, Users, Play, Map, BookOpen, Home, Building2, Globe, Sun, Moon, 
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useTheme } from 'next-themes';
+import MinecraftAvatar from './MinecraftAvatar';
 
 interface Player {
   name: string;
@@ -312,17 +313,14 @@ export default function Navbar() {
                           e.currentTarget.style.transform = 'translateX(0)';
                         }}
                       >
-                        <Image
-                          src={`https://crafatar.com/avatars/${player.uuid}?size=32&overlay`}
-                          alt={player.name}
-                          width={28}
-                          height={28}
+                        <MinecraftAvatar
+                          uuid={player.uuid}
+                          name={player.name}
+                          size={28}
                           style={{
                             borderRadius: '6px',
-                            imageRendering: 'pixelated',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                           }}
-                          unoptimized
                         />
                         <span style={{
                           color: 'var(--text-secondary)',

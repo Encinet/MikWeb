@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Shield, User, Calendar, Clock, AlertTriangle } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import MinecraftAvatar from '@/components/MinecraftAvatar';
 
 interface Ban {
   id: number;
@@ -95,17 +96,14 @@ export default function BansPage() {
               >
                 <div className="p-6">
                   <div className="flex items-start gap-4">
-                    <Image
-                      src={`https://crafatar.com/avatars/${ban.playerUuid}?size=64&overlay`}
-                      alt={ban.playerName}
-                      width={64}
-                      height={64}
+                    <MinecraftAvatar
+                      uuid={ban.playerUuid}
+                      name={ban.playerName}
+                      size={64}
                       className="w-16 h-16 rounded-lg"
                       style={{
-                        imageRendering: 'pixelated',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
                       }}
-                      unoptimized
                     />
 
                     <div className="flex-1 min-w-0">

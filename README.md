@@ -428,7 +428,10 @@ MikWeb/
 
 ### 玩家头像缓存
 
-项目使用 Next.js Image 组件自动缓存玩家头像。支持的头像服务：
+项目使用 `MinecraftAvatar` 组件自动缓存玩家头像，支持多服务 fallback：
 
-- Crafatar: `https://crafatar.com/avatars/{uuid}?size={size}&overlay`
-- MC Heads: `https://mc-heads.net/avatar/{uuid}/{size}`
+- 主服务: MineSkin `https://mineskin.eu/helm/{uuid}?size={size}`
+- Fallback 1: Minotar `https://minotar.net/avatar/{uuid}/{size}`
+- Fallback 2: MC Heads `https://mc-heads.net/avatar/{uuid}/{size}`
+
+当主服务失败时，组件会自动切换到备用服务，确保头像始终可用。
