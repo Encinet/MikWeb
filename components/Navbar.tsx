@@ -7,7 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useTheme } from 'next-themes';
 import MinecraftAvatar from './MinecraftAvatar';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Player {
   name: string;
@@ -370,72 +370,99 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
-            <div className="flex flex-col space-y-2">
-              {navItems.map((item) => {
-                const isActive = pathname === item.path;
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="lg:hidden overflow-hidden"
+            >
+              <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.2 }}
+                  className="flex flex-col space-y-2"
+                >
+                  {navItems.map((item, index) => {
+                    const isActive = pathname === item.path;
 
-                if (item.link) {
-                  return (
-                    <a
-                      key={item.id}
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
-                      style={{
-                        background: item.highlight ? '#FFAA00' : 'var(--glass-icon-bg)',
-                        color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
-                        fontWeight: item.highlight ? 600 : 500,
-                        border: `1px solid ${item.highlight ? 'transparent' : 'var(--glass-border)'}`
-                      }}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="text-sm">{item.label}</span>
-                    </a>
-                  );
-                }
+                    if (item.link) {
+                      return (
+                        <motion.a
+                          key={item.id}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 + index * 0.05, duration: 0.2 }}
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                          style={{
+                            background: item.highlight ? '#FFAA00' : 'var(--glass-icon-bg)',
+                            color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                            fontWeight: item.highlight ? 600 : 500,
+                            border: `1px solid ${item.highlight ? 'transparent' : 'var(--glass-border)'}`
+                          }}
+                        >
+                          <item.icon className="w-5 h-5" />
+                          <span className="text-sm">{item.label}</span>
+                        </motion.a>
+                      );
+                    }
 
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.path as any}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 + index * 0.05, duration: 0.2 }}
+                      >
+                        <Link
+                          href={item.path as any}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                          style={{
+                            background: isActive ? 'var(--glass-hover)' : 'var(--glass-icon-bg)',
+                            color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
+                            border: `1px solid ${isActive ? '#FFAA00' : 'var(--glass-border)'}`
+                          }}
+                        >
+                          <item.icon className="w-5 h-5" />
+                          <span className="text-sm">{item.label}</span>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+
+                  {/* Mobile Theme Toggle */}
+                  <motion.button
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + navItems.length * 0.05, duration: 0.2 }}
+                    onClick={handleThemeToggle}
+                    className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
                     style={{
-                      background: isActive ? 'var(--glass-hover)' : 'var(--glass-icon-bg)',
-                      color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
-                      border: `1px solid ${isActive ? '#FFAA00' : 'var(--glass-border)'}`
+                      background: 'var(--glass-icon-bg)',
+                      color: 'var(--text-nav)',
+                      border: '1px solid var(--glass-border)'
                     }}
                   >
-                    <item.icon className="w-5 h-5" />
-                    <span className="text-sm">{item.label}</span>
-                  </Link>
-                );
-              })}
-
-              {/* Mobile Theme Toggle */}
-              <button
-                onClick={handleThemeToggle}
-                className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
-                style={{
-                  background: 'var(--glass-icon-bg)',
-                  color: 'var(--text-nav)',
-                  border: '1px solid var(--glass-border)'
-                }}
-              >
-                {mounted ? (
-                  theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
-                ) : (
-                  <div className="w-5 h-5" />
-                )}
-                <span className="text-sm">{mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-              </button>
-            </div>
-          </div>
-        )}
+                    {mounted ? (
+                      theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
+                    ) : (
+                      <div className="w-5 h-5" />
+                    )}
+                    <span className="text-sm">{mounted && theme === 'dark' ? t('lightMode') : t('darkMode')}</span>
+                  </motion.button>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <style jsx>{`

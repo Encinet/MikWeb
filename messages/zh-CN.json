@@ -11,7 +11,9 @@
     "wiki": "游戏指南",
     "join": "申请加入",
     "subtitle": "创造休闲服务器",
-    "online": "在线"
+    "online": "在线",
+    "lightMode": "浅色模式",
+    "darkMode": "深色模式"
   },
   "home": {
     "hero": {

@@ -11,7 +11,9 @@
     "wiki": "Wiki",
     "join": "Join Us",
     "subtitle": "Creative Casual Server",
-    "online": "Online"
+    "online": "Online",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode"
   },
   "home": {
     "hero": {
