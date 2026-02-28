@@ -127,7 +127,6 @@ X-API-Key: your-api-key (可选)
 ```json
 [
   {
-    "id": 1,
     "name": {
       "zh-CN": "主城大教堂",
       "en": "Main Cathedral"
@@ -160,7 +159,6 @@ X-API-Key: your-api-key (可选)
     "source": null
   },
   {
-    "id": 2,
     "name": {
       "zh-CN": "艾菲尔铁塔复刻",
       "en": "Eiffel Tower Replica"
@@ -208,7 +206,6 @@ X-API-Key: your-api-key (可选)
 ```
 
 **字段说明**:
-- `id` (number): 建筑唯一标识
 - `name` (object): 多语言建筑名称
 - `description` (object): 多语言建筑描述
 - `coordinates` (object): 建筑坐标
@@ -228,6 +225,8 @@ X-API-Key: your-api-key (可选)
   - `originalAuthor` (string, 可选): 原作者
   - `originalLink` (string, 可选): 原作品链接
   - `notes` (object, 可选): 多语言备注
+
+**注意**: 建筑数据不包含id字段，前端通过坐标、日期和建造者信息的哈希算法生成唯一标识。
 
 **缓存策略**: 300 秒公共缓存，600 秒 stale-while-revalidate
 
@@ -250,26 +249,18 @@ X-API-Key: your-api-key (可选)
 ```json
 [
   {
-    "id": 1,
     "playerName": "Griefer123",
     "playerUuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
-    "reason": {
-      "zh-CN": "恶意破坏他人建筑",
-      "en": "Malicious destruction of others' buildings"
-    },
+    "reason": "恶意破坏他人建筑",
     "bannedBy": "Admin",
     "bannedAt": "2024-01-15T10:30:00Z",
     "expiresAt": null,
     "isPermanent": true
   },
   {
-    "id": 2,
     "playerName": "Spammer456",
     "playerUuid": "8667ba71-b85a-4004-af54-457a9734eed7",
-    "reason": {
-      "zh-CN": "频繁发送垃圾信息",
-      "en": "Frequent spam messages"
-    },
+    "reason": "频繁发送垃圾信息",
     "bannedBy": "Moderator",
     "bannedAt": "2024-02-10T15:45:00Z",
     "expiresAt": "2024-03-10T15:45:00Z",
@@ -279,10 +270,9 @@ X-API-Key: your-api-key (可选)
 ```
 
 **字段说明**:
-- `id` (number): 封禁记录唯一标识
 - `playerName` (string): 被封禁玩家名称
-- `playerUuid` (string): 被封禁玩家 UUID
-- `reason` (object): 多语言封禁原因
+- `playerUuid` (string): 被封禁玩家 UUID（作为唯一标识）
+- `reason` (string): 封禁原因
 - `bannedBy` (string): 执行封禁的管理员
 - `bannedAt` (string): 封禁时间（ISO 8601 格式）
 - `expiresAt` (string | null): 解封时间（null 表示永久封禁）
@@ -328,15 +318,6 @@ X-API-Key: your-api-key (可选)
    - `MINECRAFT_SERVER_URL`: Minecraft 服务器 API 地址
    - `MINECRAFT_API_KEY`: API 密钥（可选）
 4. 部署
-
-### 部署到其他平台
-
-项目是标准的 Next.js 应用，可以部署到任何支持 Node.js 的平台：
-
-- Netlify
-- Railway
-- Render
-- 自托管服务器
 
 ## 项目结构
 

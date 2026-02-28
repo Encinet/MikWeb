@@ -14,7 +14,6 @@ interface Builder {
 }
 
 interface Building {
-  id: number;
   name: {
     [locale: string]: string;
   };
@@ -91,6 +90,17 @@ export default function BuildingsPage() {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const generateBuildingId = (building: Building) => {
+    const str = `${building.coordinates.x}-${building.coordinates.y}-${building.coordinates.z}-${building.buildDate}-${building.builders.map(b => b.uuid).join('-')}`;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
   };
 
   const filteredBuildings = buildings
@@ -270,7 +280,7 @@ export default function BuildingsPage() {
             columnClassName="pl-6 bg-clip-padding"
           >
             {displayedBuildings.map((building, i) => (
-              <ScrollReveal key={building.id} delay={i * 0.05} direction="up">
+              <ScrollReveal key={generateBuildingId(building)} delay={i * 0.05} direction="up">
               <div
                 className="backdrop-blur-lg bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-purple-400/30 transition-all duration-300 overflow-hidden group cursor-pointer hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 mb-6"
               >

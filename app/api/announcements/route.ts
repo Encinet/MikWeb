@@ -32,13 +32,9 @@ export async function GET(request: Request) {
     return NextResponse.json(
       [
         {
-          timestamp: Math.floor(Date.now() / 1000) - 86400,
-          content: '欢迎来到 Mik Casual 服务器！请遵守服务器规则，友好游戏。',
-        },
-        {
-          timestamp: Math.floor(Date.now() / 1000) - 172800,
-          content: '服务器已更新至最新版本，修复了若干已知问题。',
-        },
+          timestamp: 1752588060,
+          content: '服务器迁移到1.21.7完毕。欢迎来到 Mik Casual 服务器！请遵守服务器规则，友好游戏。',
+        }
       ],
       {
         status: 200,

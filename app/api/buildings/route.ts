@@ -32,7 +32,6 @@ export async function GET(request: Request) {
     return NextResponse.json(
       [
         {
-          id: 1,
           name: {
             'zh-CN': '主城大教堂',
             'en': 'Main Cathedral'
@@ -61,7 +60,6 @@ export async function GET(request: Request) {
           source: null
         },
         {
-          id: 2,
           name: {
             'zh-CN': '海滨别墅',
             'en': 'Coastal Villa'
@@ -85,7 +83,6 @@ export async function GET(request: Request) {
           source: null
         },
         {
-          id: 3,
           name: {
             'zh-CN': '艾菲尔铁塔复刻',
             'en': 'Eiffel Tower Replica'
@@ -126,7 +123,6 @@ export async function GET(request: Request) {
           }
         },
         {
-          id: 4,
           name: {
             'zh-CN': '地下矿场',
             'en': 'Underground Mine'
@@ -150,7 +146,6 @@ export async function GET(request: Request) {
           source: null
         },
         {
-          id: 5,
           name: {
             'zh-CN': '天空之城改版',
             'en': 'Sky Castle Reimagined'
@@ -181,7 +176,6 @@ export async function GET(request: Request) {
           }
         },
         {
-          id: 6,
           name: {
             'zh-CN': '中式园林',
             'en': 'Chinese Garden'

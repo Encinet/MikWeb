@@ -31,45 +31,33 @@ export async function GET(request: Request) {
     // 返回模拟数据
     return NextResponse.json(
       [
-        {
-          id: 1,
-          playerName: 'Griefer123',
-          playerUuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5',
-          reason: {
-            'zh-CN': '恶意破坏他人建筑',
-            'en': 'Malicious destruction of others\' buildings'
-          },
-          bannedBy: 'Admin',
-          bannedAt: '2024-01-15T10:30:00Z',
-          expiresAt: null, // null means permanent
-          isPermanent: true
-        },
-        {
-          id: 2,
-          playerName: 'Spammer456',
-          playerUuid: '8667ba71-b85a-4004-af54-457a9734eed7',
-          reason: {
-            'zh-CN': '频繁发送垃圾信息',
-            'en': 'Frequent spam messages'
-          },
-          bannedBy: 'Moderator',
-          bannedAt: '2024-02-10T15:45:00Z',
-          expiresAt: '2024-03-10T15:45:00Z',
-          isPermanent: false
-        },
-        {
-          id: 3,
-          playerName: 'Cheater789',
-          playerUuid: 'f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2',
-          reason: {
-            'zh-CN': '使用作弊工具破坏游戏平衡',
-            'en': 'Using cheats to disrupt game balance'
-          },
-          bannedBy: 'Admin',
-          bannedAt: '2024-01-28T08:20:00Z',
-          expiresAt: null,
-          isPermanent: true
-        }
+        // {
+        //   playerName: 'Griefer123',
+        //   playerUuid: '069a79f4-44e9-4726-a5be-fca90e38aaf5',
+        //   reason: '恶意破坏他人建筑',
+        //   bannedBy: 'Admin',
+        //   bannedAt: '2024-01-15T10:30:00Z',
+        //   expiresAt: null, // null means permanent
+        //   isPermanent: true
+        // },
+        // {
+        //   playerName: 'Spammer456',
+        //   playerUuid: '8667ba71-b85a-4004-af54-457a9734eed7',
+        //   reason: '频繁发送垃圾信息',
+        //   bannedBy: 'Moderator',
+        //   bannedAt: '2024-02-10T15:45:00Z',
+        //   expiresAt: '2024-03-10T15:45:00Z',
+        //   isPermanent: false
+        // },
+        // {
+        //   playerName: 'Cheater789',
+        //   playerUuid: 'f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2',
+        //   reason: '使用作弊工具破坏游戏平衡',
+        //   bannedBy: 'Admin',
+        //   bannedAt: '2024-01-28T08:20:00Z',
+        //   expiresAt: null,
+        //   isPermanent: true
+        // }
       ],
       {
         status: 200,

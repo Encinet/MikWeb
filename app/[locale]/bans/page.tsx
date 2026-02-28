@@ -7,12 +7,9 @@ import { useTranslations, useLocale } from 'next-intl';
 import MinecraftAvatar from '@/components/MinecraftAvatar';
 
 interface Ban {
-  id: number;
   playerName: string;
   playerUuid: string;
-  reason: {
-    [locale: string]: string;
-  };
+  reason: string;
   bannedBy: string;
   bannedAt: string;
   expiresAt: string | null;
@@ -86,7 +83,7 @@ export default function BansPage() {
           <div className="space-y-4">
             {bans.map((ban, i) => (
               <div
-                key={ban.id}
+                key={ban.playerUuid}
                 className="backdrop-blur-lg bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-red-400/30 transition-all duration-300 overflow-hidden group"
                 style={{
                   animation: 'slideIn 0.5s ease-out',
@@ -131,7 +128,7 @@ export default function BansPage() {
                         <div>
                           <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('reason')}: </span>
                           <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
-                            {ban.reason[locale] || ban.reason['en'] || Object.values(ban.reason)[0]}
+                            {ban.reason}
                           </span>
                         </div>
                       </div>
