@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BookOpen, ChevronRight, Home, Wrench, Shield, Users, Zap } from 'lucide-react';
+import { BookOpen, ChevronRight, Home, Wrench, Shield, Users, Zap, Menu, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -29,13 +29,14 @@ interface WikiClientProps {
 
 export default function WikiClient({ title, description, navigation, sections, content }: WikiClientProps) {
   const [activeSection, setActiveSection] = useState('getting-started');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 sm:mb-12 animate-fadeIn">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-400/30 shadow-lg">
+            <div className="p-3 rounded-xl bg-linear-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-400/30 shadow-lg">
               <BookOpen className="w-8 h-8 text-blue-400" />
             </div>
             <h1 className="text-4xl sm:text-5xl font-black" style={{ color: 'var(--text-secondary)' }}>{title}</h1>
@@ -45,10 +46,21 @@ export default function WikiClient({ title, description, navigation, sections, c
           </p>
         </div>
 
+        {/* Mobile Sidebar Toggle Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full backdrop-blur-lg bg-blue-500/20 border border-blue-400/30 shadow-lg"
+          style={{
+            color: '#93c5fd'
+          }}
+        >
+          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 sticky top-24">
+          <div className={`lg:col-span-1 ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
+            <div className={`backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 ${sidebarOpen ? 'fixed inset-4 z-40 overflow-y-auto' : 'lg:sticky lg:top-24'}`}>
               <h3 className="font-semibold mb-4 px-2" style={{ color: 'var(--text-secondary)' }}>{navigation}</h3>
               <nav className="space-y-1">
                 {sections.map((section) => {
@@ -56,7 +68,10 @@ export default function WikiClient({ title, description, navigation, sections, c
                   return (
                     <button
                       key={section.id}
-                      onClick={() => setActiveSection(section.id)}
+                      onClick={() => {
+                        setActiveSection(section.id);
+                        setSidebarOpen(false);
+                      }}
                       style={{
                         color: activeSection === section.id ? '#93c5fd' : 'var(--text-muted-light)'
                       }}

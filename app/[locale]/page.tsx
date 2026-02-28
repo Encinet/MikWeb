@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Server, Users, Bell, Zap, Play, Award, MessageCircle } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import ScrollReveal from '@/components/ScrollReveal';
 
 export default function HomePage() {
   const t = useTranslations();
@@ -159,6 +160,7 @@ export default function HomePage() {
             { icon: Server, label: t('home.stats.version'), value: '26.1', iconColor: '#FFAA00' },
             { icon: Zap, label: t('home.stats.status'), value: t('home.stats.running'), iconColor: '#55FF55' }
           ].map((stat, i) => (
+            <ScrollReveal key={i} delay={i * 0.1} direction="up">
             <div
               key={i}
               style={{
@@ -169,10 +171,7 @@ export default function HomePage() {
                 boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
                 padding: 'clamp(1.25rem, 3vw, 1.5rem)',
                 transition: 'transform 0.25s ease',
-                cursor: 'pointer',
-                animation: 'fadeIn 0.4s ease-out',
-                animationDelay: `${i * 0.1}s`,
-                animationFillMode: 'both'
+                cursor: 'pointer'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-3px)';
@@ -209,10 +208,12 @@ export default function HomePage() {
                 fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)'
               }}>{stat.label}</div>
             </div>
+            </ScrollReveal>
           ))}
         </div>
 
         {/* Announcements */}
+        <ScrollReveal direction="up">
         <div style={{
           backdropFilter: 'blur(16px) saturate(150%)',
           background: 'var(--glass-bg)',
@@ -313,9 +314,11 @@ export default function HomePage() {
             </div>
           )}
         </div>
+        </ScrollReveal>
 
         {/* Features */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          <ScrollReveal direction="left" delay={0.1}>
           <div style={{
             backdropFilter: 'blur(16px) saturate(150%)',
             background: 'var(--glass-bg)',
@@ -362,7 +365,9 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          </ScrollReveal>
 
+          <ScrollReveal direction="right" delay={0.1}>
           <div style={{
             backdropFilter: 'blur(16px) saturate(150%)',
             background: 'var(--glass-bg)',
@@ -409,6 +414,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          </ScrollReveal>
         </div>
       </div>
 

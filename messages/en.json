@@ -46,11 +46,18 @@
   "buildings": {
     "title": "Building Gallery",
     "description": "Showcasing amazing building works by our players",
+    "search": "Search buildings, builders, tags...",
     "filters": {
       "all": "All Buildings",
       "original": "Original Works",
       "derivative": "Derivative Works",
       "replica": "Replicas"
+    },
+    "sort": {
+      "dateDesc": "Newest First",
+      "dateAsc": "Oldest First",
+      "nameAsc": "Name A-Z",
+      "nameDesc": "Name Z-A"
     },
     "labels": {
       "original": "Original",
@@ -64,7 +71,8 @@
       "source": "Source:"
     },
     "loading": "Loading...",
-    "empty": "No buildings yet"
+    "empty": "No buildings yet",
+    "noMore": "No more buildings to load"
   },
   "common": {
     "loading": "Loading...",

@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Building2, MapPin, User, Bell, CheckCircle, Copy } from 'lucide-react';
+import { Building2, MapPin, User, Bell, CheckCircle, Copy, Search, SlidersHorizontal } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+import ScrollReveal from '@/components/ScrollReveal';
+import Masonry from 'react-masonry-css';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 interface Builder {
   name: string;
@@ -44,6 +47,10 @@ export default function BuildingsPage() {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [buildingFilter, setBuildingFilter] = useState('all');
+  const [displayedCount, setDisplayedCount] = useState(12);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('date-desc');
+  const ITEMS_PER_PAGE = 12;
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -86,12 +93,63 @@ export default function BuildingsPage() {
     });
   };
 
-  const filteredBuildings = buildings.filter(building => {
-    if (buildingFilter === 'original') return building.buildType === 'original';
-    if (buildingFilter === 'derivative') return building.buildType === 'derivative';
-    if (buildingFilter === 'non-original') return building.buildType === 'replica';
-    return true;
-  });
+  const filteredBuildings = buildings
+    .filter(building => {
+      // Type filter
+      if (buildingFilter === 'original') return building.buildType === 'original';
+      if (buildingFilter === 'derivative') return building.buildType === 'derivative';
+      if (buildingFilter === 'non-original') return building.buildType === 'replica';
+      return true;
+    })
+    .filter(building => {
+      // Search filter
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      const name = (building.name[locale] || building.name['en'] || Object.values(building.name)[0] || '').toLowerCase();
+      const description = (building.description[locale] || building.description['en'] || Object.values(building.description)[0] || '').toLowerCase();
+      const builders = building.builders.map(b => b.name.toLowerCase()).join(' ');
+      const tags = (building.tags || []).map(tag => tag.toLowerCase()).join(' ');
+      return name.includes(query) || description.includes(query) || builders.includes(query) || tags.includes(query);
+    })
+    .sort((a, b) => {
+      // Sort
+      switch (sortBy) {
+        case 'date-desc':
+          return new Date(b.buildDate).getTime() - new Date(a.buildDate).getTime();
+        case 'date-asc':
+          return new Date(a.buildDate).getTime() - new Date(b.buildDate).getTime();
+        case 'name-asc':
+          const nameA = (a.name[locale] || a.name['en'] || Object.values(a.name)[0] || '').toLowerCase();
+          const nameB = (b.name[locale] || b.name['en'] || Object.values(b.name)[0] || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        case 'name-desc':
+          const nameA2 = (a.name[locale] || a.name['en'] || Object.values(a.name)[0] || '').toLowerCase();
+          const nameB2 = (b.name[locale] || b.name['en'] || Object.values(b.name)[0] || '').toLowerCase();
+          return nameB2.localeCompare(nameA2);
+        default:
+          return 0;
+      }
+    });
+
+  const displayedBuildings = filteredBuildings.slice(0, displayedCount);
+  const hasMore = displayedCount < filteredBuildings.length;
+
+  const loadMore = () => {
+    setDisplayedCount(prev => Math.min(prev + ITEMS_PER_PAGE, filteredBuildings.length));
+  };
+
+  const handleFilterChange = (filterId: string) => {
+    setBuildingFilter(filterId);
+    setDisplayedCount(ITEMS_PER_PAGE);
+  };
+
+  const breakpointColumns = {
+    default: 3,
+    1536: 3,
+    1280: 3,
+    1024: 2,
+    640: 1
+  };
 
   return (
     <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
@@ -108,7 +166,51 @@ export default function BuildingsPage() {
           </p>
         </div>
 
-        <div className="flex justify-center gap-3 mb-8 sm:mb-12">
+        {/* Search and Sort */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
+          {/* Search Box */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 z-10 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder={t('search') || 'Search buildings...'}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setDisplayedCount(ITEMS_PER_PAGE);
+              }}
+              className="w-full pl-12 pr-4 py-3 rounded-lg backdrop-blur-md bg-white/5 border border-white/10 focus:border-purple-400/50 focus:outline-none transition-all relative z-0"
+              style={{
+                color: 'var(--text-primary)',
+                fontSize: '0.875rem'
+              }}
+            />
+          </div>
+
+          {/* Sort Selector */}
+          <div className="relative sm:w-64">
+            <SlidersHorizontal className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 z-10 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                setDisplayedCount(ITEMS_PER_PAGE);
+              }}
+              className="w-full pl-12 pr-10 py-3 rounded-lg backdrop-blur-md bg-white/5 border border-white/10 focus:border-purple-400/50 focus:outline-none transition-all appearance-none cursor-pointer relative z-0"
+              style={{
+                color: 'var(--text-primary)',
+                fontSize: '0.875rem'
+              }}
+            >
+              <option value="date-desc">{t('sort.dateDesc') || 'Newest First'}</option>
+              <option value="date-asc">{t('sort.dateAsc') || 'Oldest First'}</option>
+              <option value="name-asc">{t('sort.nameAsc') || 'Name A-Z'}</option>
+              <option value="name-desc">{t('sort.nameDesc') || 'Name Z-A'}</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 px-2">
           {[
             { id: 'all', label: t('filters.all') },
             { id: 'original', label: t('filters.original') },
@@ -117,11 +219,11 @@ export default function BuildingsPage() {
           ].map((filter) => (
             <button
               key={filter.id}
-              onClick={() => setBuildingFilter(filter.id)}
+              onClick={() => handleFilterChange(filter.id)}
               style={{
                 color: buildingFilter === filter.id ? '#a78bfa' : 'var(--text-muted-light)'
               }}
-              className={`px-6 py-2.5 rounded-lg backdrop-blur-md transition-all duration-300 text-sm font-medium ${
+              className={`px-4 sm:px-6 py-2.5 rounded-lg backdrop-blur-md transition-all duration-300 text-xs sm:text-sm font-medium ${
                 buildingFilter === filter.id
                   ? 'bg-purple-500/30 border border-purple-400/50 shadow-lg scale-105'
                   : 'bg-white/5 hover:bg-white/10 border border-white/10'
@@ -143,16 +245,34 @@ export default function BuildingsPage() {
             <p className="text-lg" style={{ color: 'var(--text-muted)' }}>{t('empty')}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredBuildings.map((building, i) => (
+          <InfiniteScroll
+            dataLength={displayedBuildings.length}
+            next={loadMore}
+            hasMore={hasMore}
+            loader={
+              <div className="text-center py-8">
+                <div className="inline-block w-8 h-8 border-4 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }
+            endMessage={
+              <div className="text-center py-8">
+                <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+                  {t('noMore') || 'No more buildings to load'}
+                </p>
+              </div>
+            }
+            style={{ overflow: 'visible' }}
+            className="infinite-scroll-component"
+          >
+          <Masonry
+            breakpointCols={breakpointColumns}
+            className="flex -ml-6 w-auto"
+            columnClassName="pl-6 bg-clip-padding"
+          >
+            {displayedBuildings.map((building, i) => (
+              <ScrollReveal key={building.id} delay={i * 0.05} direction="up">
               <div
-                key={building.id}
-                className="backdrop-blur-lg bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-purple-400/30 transition-all duration-300 overflow-hidden group cursor-pointer hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20"
-                style={{
-                  animation: 'slideIn 0.5s ease-out',
-                  animationDelay: `${i * 0.05}s`,
-                  animationFillMode: 'both'
-                }}
+                className="backdrop-blur-lg bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-purple-400/30 transition-all duration-300 overflow-hidden group cursor-pointer hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 mb-6"
               >
                 <div className="relative h-56 bg-linear-to-br from-purple-900/20 to-blue-900/20 overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -285,8 +405,10 @@ export default function BuildingsPage() {
                   </div>
                 </div>
               </div>
+              </ScrollReveal>
             ))}
-          </div>
+          </Masonry>
+          </InfiniteScroll>
         )}
       </div>
 
@@ -315,6 +437,30 @@ export default function BuildingsPage() {
 
         .animate-fadeIn {
           animation: fadeIn 1s ease-out;
+        }
+
+        input::placeholder {
+          color: var(--text-muted);
+        }
+
+        select {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a78bfa' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 1rem center;
+        }
+
+        select option {
+          background: var(--bg-base);
+          color: var(--text-primary);
+          padding: 0.5rem;
+        }
+
+        :global(.infinite-scroll-component) {
+          overflow: visible !important;
+        }
+
+        :global(.infinite-scroll-component__outerdiv) {
+          overflow: visible !important;
         }
       `}</style>
     </div>

@@ -46,11 +46,18 @@
   "buildings": {
     "title": "建筑收录",
     "description": "展示服务器内玩家的精彩建筑作品",
+    "search": "搜索建筑名称、建造者、标签...",
     "filters": {
       "all": "全部建筑",
       "original": "原创作品",
       "derivative": "二创作品",
       "replica": "搬运作品"
+    },
+    "sort": {
+      "dateDesc": "最新优先",
+      "dateAsc": "最旧优先",
+      "nameAsc": "名称 A-Z",
+      "nameDesc": "名称 Z-A"
     },
     "labels": {
       "original": "原创",
@@ -64,7 +71,8 @@
       "source": "来源:"
     },
     "loading": "加载中...",
-    "empty": "暂无建筑收录"
+    "empty": "暂无建筑收录",
+    "noMore": "没有更多建筑了"
   },
   "common": {
     "loading": "加载中...",

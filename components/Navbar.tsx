@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Server, Users, Play, Map, BookOpen, Home, Building2, Globe, Sun, Moon, Shield } from 'lucide-react';
+import { Server, Users, Play, Map, BookOpen, Home, Building2, Globe, Sun, Moon, Shield, Menu, X } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useTheme } from 'next-themes';
@@ -23,6 +23,7 @@ export default function Navbar() {
   const [playerCount, setPlayerCount] = useState(0);
   const [showPlayerList, setShowPlayerList] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -182,11 +183,26 @@ export default function Navbar() {
             })}
           </div>
 
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              style={{
+                color: 'var(--text-nav)',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer'
+              }}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="hidden sm:flex"
               style={{
-                display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
                 padding: '8px 0',
@@ -336,6 +352,76 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
+            <div className="flex flex-col space-y-2">
+              {navItems.map((item) => {
+                const isActive = pathname === item.path;
+
+                if (item.link) {
+                  return (
+                    <a
+                      key={item.id}
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                      style={{
+                        background: item.highlight ? '#FFAA00' : 'var(--glass-icon-bg)',
+                        color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                        fontWeight: item.highlight ? 600 : 500,
+                        border: `1px solid ${item.highlight ? 'transparent' : 'var(--glass-border)'}`
+                      }}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span className="text-sm">{item.label}</span>
+                    </a>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.path as any}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                    style={{
+                      background: isActive ? 'var(--glass-hover)' : 'var(--glass-icon-bg)',
+                      color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
+                      border: `1px solid ${isActive ? '#FFAA00' : 'var(--glass-border)'}`
+                    }}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="text-sm">{item.label}</span>
+                  </Link>
+                );
+              })}
+
+              {/* Mobile Theme Toggle */}
+              <button
+                onClick={() => {
+                  setTheme(theme === 'dark' ? 'light' : 'dark');
+                }}
+                className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                style={{
+                  background: 'var(--glass-icon-bg)',
+                  color: 'var(--text-nav)',
+                  border: '1px solid var(--glass-border)'
+                }}
+              >
+                {mounted ? (
+                  theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
+                ) : (
+                  <div className="w-5 h-5" />
+                )}
+                <span className="text-sm">{mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <style jsx>{`
