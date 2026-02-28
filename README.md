@@ -20,6 +20,12 @@ MINECRAFT_SERVER_URL=http://your-minecraft-server:8080
 
 # API Key（可选）
 MINECRAFT_API_KEY=your-api-key-here
+
+# 建筑服务器 API 地址（可选，不设置则使用 MINECRAFT_SERVER_URL）
+BUILDINGS_SERVER_URL=http://your-buildings-server:8080
+
+# 建筑服务器 API Key（可选，不设置则使用 MINECRAFT_API_KEY）
+BUILDINGS_API_KEY=your-buildings-api-key-here
 ```
 
 ### 3. 运行开发服务器
