@@ -30,7 +30,8 @@
     "announcements": {
       "title": "服务器公告",
       "loading": "加载中...",
-      "empty": "暂无公告"
+      "empty": "暂无公告",
+      "clickToViewAll": "点击查看全部公告"
     },
     "features": {
       "vanilla": {

@@ -30,7 +30,8 @@
     "announcements": {
       "title": "Server Announcements",
       "loading": "Loading...",
-      "empty": "No announcements"
+      "empty": "No announcements",
+      "clickToViewAll": "Click to view all announcements"
     },
     "features": {
       "vanilla": {
