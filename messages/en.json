@@ -22,10 +22,10 @@
       "notice": "This server requires application and is only open to approved players"
     },
     "stats": {
-      "activePlayers": "Active Players",
-      "version": "Server Version",
-      "status": "Server Status",
-      "running": "Running"
+      "activePlayers": "Online Players",
+      "totalBuildings": "Buildings",
+      "uptime": "Uptime",
+      "days": "Days"
     },
     "announcements": {
       "title": "Server Announcements",

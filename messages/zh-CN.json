@@ -22,10 +22,10 @@
       "notice": "本服务器为申请制，仅向审核通过的玩家开放"
     },
     "stats": {
-      "activePlayers": "活跃玩家",
-      "version": "服务器版本",
-      "status": "服务器状态",
-      "running": "运行中"
+      "activePlayers": "在线玩家",
+      "totalBuildings": "建筑作品",
+      "uptime": "运行时长",
+      "days": "天"
     },
     "announcements": {
       "title": "服务器公告",

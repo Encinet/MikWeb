@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Server, Users, Bell, Zap, Play, Award, MessageCircle, X } from 'lucide-react';
+import { Server, Users, Bell, Zap, Play, Award, MessageCircle, X, Building2, Clock } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ScrollReveal from '@/components/ScrollReveal';
 
@@ -9,9 +9,14 @@ export default function HomePage() {
   const t = useTranslations();
   const locale = useLocale();
   const [playerCount, setPlayerCount] = useState(0);
+  const [buildingsCount, setBuildingsCount] = useState(0);
   const [announcements, setAnnouncements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+
+  // 服务器开始运行日期 (2025-07-15)
+  const SERVER_START_DATE = new Date('2025-07-15');
+  const uptime = Math.floor((Date.now() - SERVER_START_DATE.getTime()) / (1000 * 60 * 60 * 24));
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -27,6 +32,20 @@ export default function HomePage() {
     fetchPlayers();
     const interval = setInterval(fetchPlayers, 30000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      try {
+        const response = await fetch('/api/buildings');
+        const data = await response.json();
+        setBuildingsCount(data.length);
+      } catch (error) {
+        console.error('Failed to fetch buildings:', error);
+      }
+    };
+
+    fetchBuildings();
   }, []);
 
   useEffect(() => {
@@ -157,9 +176,9 @@ export default function HomePage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-20">
           {[
-            { icon: Users, label: t('home.stats.activePlayers'), value: `${playerCount}+`, iconColor: '#55FF55' },
-            { icon: Server, label: t('home.stats.version'), value: '26.1', iconColor: '#FFAA00' },
-            { icon: Zap, label: t('home.stats.status'), value: t('home.stats.running'), iconColor: '#55FF55' }
+            { icon: Users, label: t('home.stats.activePlayers'), value: `${playerCount}`, iconColor: '#55FF55' },
+            { icon: Building2, label: t('home.stats.totalBuildings'), value: `${buildingsCount}`, iconColor: '#FFAA00' },
+            { icon: Clock, label: t('home.stats.uptime'), value: `${uptime}`, suffix: t('home.stats.days'), iconColor: '#55AAFF' }
           ].map((stat, i) => (
             <ScrollReveal key={i} delay={i * 0.1} direction="up">
             <div
@@ -203,7 +222,10 @@ export default function HomePage() {
                 fontWeight: 600,
                 color: 'var(--text-secondary)',
                 marginBottom: '4px'
-              }}>{stat.value}</div>
+              }}>
+                {stat.value}
+                {stat.suffix && <span style={{ fontSize: 'clamp(0.875rem, 2vw, 1rem)', marginLeft: '4px', fontWeight: 500 }}>{stat.suffix}</span>}
+              </div>
               <div style={{
                 color: 'var(--text-muted)',
                 fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)'
