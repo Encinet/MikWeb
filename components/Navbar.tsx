@@ -67,19 +67,27 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={{
+    <div style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       zIndex: 50,
-      backdropFilter: 'blur(16px) saturate(150%)',
-      background: 'var(--glass-bg)',
-      borderBottom: '1px solid var(--glass-border)',
-      boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-      transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease'
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '1rem 0 0 0'
     }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+      <nav style={{
+        width: '100%',
+        maxWidth: 'min(95%, 1400px)',
+        backdropFilter: 'blur(16px) saturate(150%)',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: 'clamp(12px, 2vw, 24px)',
+        boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+        transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease'
+      }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Image
@@ -441,6 +449,7 @@ export default function Navbar() {
           }
         }
       `}</style>
-    </nav>
+      </nav>
+    </div>
   );
 }

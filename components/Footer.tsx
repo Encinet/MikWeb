@@ -4,14 +4,22 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer style={{
-      backdropFilter: 'blur(16px) saturate(150%)',
-      background: 'var(--glass-bg)',
-      borderTop: '1px solid var(--glass-border)',
-      padding: 'clamp(1.5rem, 4vw, 2rem) 0',
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '0 0 1rem 0',
       marginTop: 'clamp(3rem, 6vw, 5rem)'
     }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+      <footer style={{
+        width: '100%',
+        maxWidth: 'min(95%, 1400px)',
+        backdropFilter: 'blur(16px) saturate(150%)',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: 'clamp(12px, 2vw, 24px)',
+        padding: 'clamp(1.5rem, 4vw, 2rem) 0'
+      }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
         <p style={{
           color: 'var(--text-muted)',
           fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
@@ -65,5 +73,6 @@ export default function Footer() {
         </p>
       </div>
     </footer>
+    </div>
   );
 }
