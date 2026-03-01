@@ -14,6 +14,7 @@ export default function Footer() {
         width: '100%',
         maxWidth: 'min(95%, 1400px)',
         backdropFilter: 'blur(16px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(150%)',
         background: 'var(--glass-bg)',
         border: '1px solid var(--glass-border)',
         borderRadius: 'clamp(12px, 2vw, 24px)',

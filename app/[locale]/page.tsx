@@ -92,6 +92,7 @@ export default function HomePage() {
             marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
             padding: '8px 24px',
             backdropFilter: 'blur(16px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
             background: 'var(--glass-bg)',
             borderRadius: '12px',
             border: '1px solid var(--glass-border)',
@@ -168,6 +169,7 @@ export default function HomePage() {
 
             <div style={{
               backdropFilter: 'blur(16px) saturate(150%)',
+              WebkitBackdropFilter: 'blur(16px) saturate(150%)',
               background: 'var(--glass-bg)',
               padding: '8px 24px',
               borderRadius: '12px',
@@ -192,6 +194,7 @@ export default function HomePage() {
               key={i}
               style={{
                 backdropFilter: 'blur(16px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                 background: 'var(--glass-bg)',
                 border: '1px solid var(--glass-border)',
                 borderRadius: '18px',
@@ -212,6 +215,7 @@ export default function HomePage() {
                 height: 'clamp(2.5rem, 6vw, 3rem)',
                 borderRadius: '12px',
                 backdropFilter: 'blur(16px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                 background: 'var(--glass-icon-bg)',
                 display: 'flex',
                 alignItems: 'center',
@@ -248,6 +252,7 @@ export default function HomePage() {
           onClick={() => setShowAnnouncementModal(true)}
           style={{
             backdropFilter: 'blur(16px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
             background: 'var(--glass-bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: '18px',
@@ -271,6 +276,7 @@ export default function HomePage() {
               padding: '8px',
               borderRadius: '12px',
               backdropFilter: 'blur(16px) saturate(150%)',
+              WebkitBackdropFilter: 'blur(16px) saturate(150%)',
               background: 'var(--glass-icon-bg)',
               border: '1px solid var(--glass-border)',
               boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)'
@@ -312,6 +318,7 @@ export default function HomePage() {
                   key={i}
                   style={{
                     backdropFilter: 'blur(16px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                     background: 'var(--glass-icon-bg)',
                     border: '1px solid var(--glass-border)',
                     borderRadius: '12px',
@@ -366,6 +373,7 @@ export default function HomePage() {
           <ScrollReveal direction="left" delay={0.1}>
           <div style={{
             backdropFilter: 'blur(16px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
             background: 'var(--glass-bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: '18px',
@@ -385,6 +393,7 @@ export default function HomePage() {
                 padding: '12px',
                 borderRadius: '12px',
                 backdropFilter: 'blur(16px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                 background: 'var(--glass-icon-bg)',
                 border: '1px solid var(--glass-border)',
                 boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
@@ -415,6 +424,7 @@ export default function HomePage() {
           <ScrollReveal direction="right" delay={0.1}>
           <div style={{
             backdropFilter: 'blur(16px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
             background: 'var(--glass-bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: '18px',
@@ -434,6 +444,7 @@ export default function HomePage() {
                 padding: '12px',
                 borderRadius: '12px',
                 backdropFilter: 'blur(16px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                 background: 'var(--glass-icon-bg)',
                 border: '1px solid var(--glass-border)',
                 boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
@@ -526,6 +537,7 @@ export default function HomePage() {
                           padding: '10px',
                           borderRadius: '14px',
                           backdropFilter: 'blur(16px) saturate(150%)',
+                          WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                           background: 'var(--glass-icon-bg)',
                           border: '1px solid var(--glass-border)',
                           boxShadow: '0 4px 12px rgba(255, 170, 0, 0.15)'
@@ -608,6 +620,7 @@ export default function HomePage() {
                               whileHover={{ scale: 1.01 }}
                               style={{
                                 backdropFilter: 'blur(16px) saturate(150%)',
+                                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                                 background: 'var(--glass-icon-bg)',
                                 border: '1px solid var(--glass-border)',
                                 borderRadius: '16px',

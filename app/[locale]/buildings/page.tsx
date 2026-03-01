@@ -568,8 +568,14 @@ export default function BuildingsPage() {
                       )}
 
                       <p
-                        className="text-sm leading-relaxed mb-4 line-clamp-3"
-                        style={{ color: "var(--text-muted-light)" }}
+                        className="text-sm leading-relaxed mb-4 whitespace-pre-line"
+                        style={{
+                          color: "var(--text-muted-light)",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical" as any,
+                          overflow: "hidden"
+                        }}
                       >
                         {building.description[locale] ||
                           building.description["en"] ||
@@ -1031,7 +1037,7 @@ export default function BuildingsPage() {
 
                       {/* Description */}
                       <p
-                        className="text-base leading-relaxed"
+                        className="text-base leading-relaxed whitespace-pre-line"
                         style={{ color: "var(--text-muted-light)" }}
                       >
                         {selectedBuilding.description[locale] ||

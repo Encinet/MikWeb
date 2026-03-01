@@ -81,6 +81,7 @@ export default function Navbar() {
         width: '100%',
         maxWidth: 'min(95%, 1400px)',
         backdropFilter: 'blur(16px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(150%)',
         background: 'var(--glass-bg)',
         border: '1px solid var(--glass-border)',
         borderRadius: 'clamp(12px, 2vw, 24px)',
@@ -305,16 +306,17 @@ export default function Navbar() {
                   minWidth: '240px',
                   maxHeight: '400px',
                   overflowY: 'auto',
-                  backdropFilter: 'blur(16px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                  background: 'var(--glass-bg)',
+                  backdropFilter: 'blur(24px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                  background: 'rgba(255, 255, 255, 0.1)',
                   border: '1px solid var(--glass-border)',
                   borderRadius: '16px',
                   boxShadow: '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
                   padding: '16px',
                   zIndex: 100,
-                  animation: 'fadeInDown 0.2s ease-out'
-                }}>
+                  animation: 'fadeInDown 0.2s ease-out',
+                  isolation: 'isolate'
+                } as React.CSSProperties}>
                   <div style={{
                     fontSize: '0.75rem',
                     fontWeight: 600,
