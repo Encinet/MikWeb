@@ -8,6 +8,7 @@ import Background from "@/components/Background";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import StructuredData from "@/components/StructuredData";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -20,6 +21,25 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: messages.metadata.title,
     description: messages.metadata.description,
+    keywords: ["Minecraft", "Server", "Mik", "Community", "Builds", "Wiki", locale === 'zh-CN' ? '我的世界' : 'Minecraft'],
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        'zh-CN': '/zh-CN',
+        'en': '/en',
+      },
+    },
+    openGraph: {
+      title: messages.metadata.title,
+      description: messages.metadata.description,
+      locale: locale === 'zh-CN' ? 'zh_CN' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title: messages.metadata.title,
+      description: messages.metadata.description,
+    },
   };
 }
 
@@ -40,6 +60,9 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <StructuredData />
+      </head>
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
