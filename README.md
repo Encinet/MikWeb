@@ -107,7 +107,7 @@ X-API-Key: your-api-key (可选)
     "timestamp": 1705219200,
     "content": "欢迎新玩家加入！"
   }
-}
+]
 ```
 
 **字段说明**:
