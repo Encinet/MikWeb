@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -134,52 +134,64 @@ export default function BuildingsPage() {
     return Math.abs(hash).toString(36);
   };
 
-  const filteredBuildings = buildings
-    .filter((building) => {
-      // Type filter
-      if (buildingFilter === "original")
-        return building.buildType === "original";
-      if (buildingFilter === "derivative")
-        return building.buildType === "derivative";
-      if (buildingFilter === "non-original")
-        return building.buildType === "replica";
-      return true;
-    })
-    .filter((building) => {
-      // Search filter
-      if (!searchQuery.trim()) return true;
-      const query = searchQuery.toLowerCase();
-      const name = (
-        building.name[locale] ||
-        building.name["en"] ||
-        Object.values(building.name)[0] ||
-        ""
-      ).toLowerCase();
-      const description = (
-        building.description[locale] ||
-        building.description["en"] ||
-        Object.values(building.description)[0] ||
-        ""
-      ).toLowerCase();
-      const builders = building.builders
-        .map((b) => b.name.toLowerCase())
-        .join(" ");
-      const tags = (building.tags || [])
-        .map((tag) => {
-          const tagText =
-            tag[locale] || tag["zh-CN"] || Object.values(tag)[0] || "";
-          return tagText.toLowerCase();
-        })
-        .join(" ");
-      return (
-        name.includes(query) ||
-        description.includes(query) ||
-        builders.includes(query) ||
-        tags.includes(query)
-      );
-    })
-    .sort((a, b) => {
-      // Sort
+  const filteredBuildings = useMemo(() => {
+    const filtered = buildings
+      .filter((building) => {
+        // Type filter
+        if (buildingFilter === "original")
+          return building.buildType === "original";
+        if (buildingFilter === "derivative")
+          return building.buildType === "derivative";
+        if (buildingFilter === "non-original")
+          return building.buildType === "replica";
+        return true;
+      })
+      .filter((building) => {
+        // Search filter
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        const name = (
+          building.name[locale] ||
+          building.name["en"] ||
+          Object.values(building.name)[0] ||
+          ""
+        ).toLowerCase();
+        const description = (
+          building.description[locale] ||
+          building.description["en"] ||
+          Object.values(building.description)[0] ||
+          ""
+        ).toLowerCase();
+        const builders = building.builders
+          .map((b) => b.name.toLowerCase())
+          .join(" ");
+        const tags = (building.tags || [])
+          .map((tag) => {
+            const tagText =
+              tag[locale] || tag["zh-CN"] || Object.values(tag)[0] || "";
+            return tagText.toLowerCase();
+          })
+          .join(" ");
+        return (
+          name.includes(query) ||
+          description.includes(query) ||
+          builders.includes(query) ||
+          tags.includes(query)
+        );
+      });
+
+    // Sort
+    if (sortBy === "random") {
+      // Fisher-Yates shuffle for stable random sorting
+      const shuffled = [...filtered];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    return filtered.sort((a, b) => {
       switch (sortBy) {
         case "date-desc":
           return (
@@ -217,12 +229,11 @@ export default function BuildingsPage() {
             ""
           ).toLowerCase();
           return nameB2.localeCompare(nameA2);
-        case "random":
-          return Math.random() - 0.5;
         default:
           return 0;
       }
     });
+  }, [buildings, buildingFilter, searchQuery, sortBy, locale]);
 
   const displayedBuildings = filteredBuildings.slice(0, displayedCount);
   const hasMore = displayedCount < filteredBuildings.length;
