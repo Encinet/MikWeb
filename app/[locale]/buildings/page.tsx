@@ -297,7 +297,7 @@ export default function BuildingsPage() {
         <div className="text-center mb-8 sm:mb-12 animate-fadeIn">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-linear-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-400/30 shadow-lg">
-              <Building2 className="w-8 h-8 text-purple-400" />
+              <Building2 className="w-8 h-8" style={{ color: 'var(--purple-accent)' }} />
             </div>
             <h1
               className="text-4xl sm:text-5xl font-black"
@@ -330,10 +330,12 @@ export default function BuildingsPage() {
                 setSearchQuery(e.target.value);
                 setDisplayedCount(ITEMS_PER_PAGE);
               }}
-              className="w-full pl-12 pr-4 py-3 rounded-lg backdrop-blur-md bg-white/5 border border-white/10 focus:border-purple-400/50 focus:outline-none transition-all relative z-0"
+              className="w-full pl-12 pr-4 py-3 rounded-lg backdrop-blur-md focus:border-purple-400/50 focus:outline-none transition-all relative z-0"
               style={{
                 color: "var(--text-primary)",
                 fontSize: "0.875rem",
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
               }}
             />
           </div>
@@ -350,10 +352,12 @@ export default function BuildingsPage() {
                 setSortBy(e.target.value);
                 setDisplayedCount(ITEMS_PER_PAGE);
               }}
-              className="w-full pl-12 pr-10 py-3 rounded-lg backdrop-blur-md bg-white/5 border border-white/10 focus:border-purple-400/50 focus:outline-none transition-all appearance-none cursor-pointer relative z-0"
+              className="w-full pl-12 pr-10 py-3 rounded-lg backdrop-blur-md focus:border-purple-400/50 focus:outline-none transition-all appearance-none cursor-pointer relative z-0"
               style={{
                 color: "var(--text-primary)",
                 fontSize: "0.875rem",
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
               }}
             >
               <option value="date-desc">
@@ -382,17 +386,27 @@ export default function BuildingsPage() {
             <button
               key={filter.id}
               onClick={() => handleFilterChange(filter.id)}
+              className="px-4 sm:px-6 py-2.5 rounded-lg backdrop-blur-md transition-all duration-300 text-xs sm:text-sm font-medium"
               style={{
                 color:
                   buildingFilter === filter.id
-                    ? "#a78bfa"
+                    ? "var(--filter-active-text)"
                     : "var(--text-muted-light)",
+                background:
+                  buildingFilter === filter.id
+                    ? "var(--filter-active-bg)"
+                    : "var(--glass-bg)",
+                border:
+                  buildingFilter === filter.id
+                    ? "1px solid var(--filter-active-border)"
+                    : "1px solid var(--glass-border)",
+                boxShadow:
+                  buildingFilter === filter.id
+                    ? "0 10px 15px -3px var(--filter-active-shadow)"
+                    : "none",
+                transform:
+                  buildingFilter === filter.id ? "scale(1.05)" : "scale(1)",
               }}
-              className={`px-4 sm:px-6 py-2.5 rounded-lg backdrop-blur-md transition-all duration-300 text-xs sm:text-sm font-medium ${
-                buildingFilter === filter.id
-                  ? "bg-purple-500/30 border border-purple-400/50 shadow-lg scale-105"
-                  : "bg-white/5 hover:bg-white/10 border border-white/10"
-              }`}
             >
               {filter.label}
             </button>
@@ -401,7 +415,7 @@ export default function BuildingsPage() {
 
         {isLoading ? (
           <div className="text-center py-20">
-            <div className="inline-block w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+            <div className="inline-block w-12 h-12 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--purple-accent)', borderTopColor: 'transparent' }}></div>
             <p className="mt-6 text-lg" style={{ color: "var(--text-muted)" }}>
               {t("loading")}
             </p>
@@ -423,7 +437,7 @@ export default function BuildingsPage() {
             hasMore={hasMore}
             loader={
               <div className="text-center py-8">
-                <div className="inline-block w-8 h-8 border-4 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                <div className="inline-block w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--purple-accent)', borderTopColor: 'transparent' }}></div>
               </div>
             }
             endMessage={
@@ -449,7 +463,14 @@ export default function BuildingsPage() {
                 >
                   <div
                     onClick={(e) => openBuildingDetail(building, e)}
-                    className="backdrop-blur-lg bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-purple-400/30 transition-all duration-300 overflow-hidden group cursor-pointer hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 mb-6"
+                    className="rounded-2xl hover:border-purple-400/30 transition-all duration-300 overflow-hidden group cursor-pointer hover:scale-[1.02] mb-6"
+                    style={{
+                      backdropFilter: 'blur(16px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                      background: 'var(--glass-bg)',
+                      border: '1px solid var(--glass-border)',
+                      boxShadow: 'var(--card-shadow)',
+                    }}
                   >
                     <div className="relative h-56 bg-linear-to-br from-purple-900/20 to-blue-900/20 overflow-hidden">
                       {getBuildingImages(building).length > 0 &&
@@ -484,7 +505,13 @@ export default function BuildingsPage() {
                           />
                         </div>
                       )}
-                      <div className="absolute top-3 right-3 px-3 py-1.5 backdrop-blur-md bg-black/50 rounded-full border border-white/20 flex items-center gap-1.5">
+                      <div
+                        className="absolute top-3 right-3 px-3 py-1.5 backdrop-blur-md rounded-full flex items-center gap-1.5"
+                        style={{
+                          background: 'var(--badge-bg)',
+                          border: '1px solid var(--glass-border)'
+                        }}
+                      >
                         {building.buildType === "original" ? (
                           <>
                             <CheckCircle className="w-4 h-4 text-green-400" />
@@ -494,8 +521,8 @@ export default function BuildingsPage() {
                           </>
                         ) : building.buildType === "derivative" ? (
                           <>
-                            <Copy className="w-4 h-4 text-blue-400" />
-                            <span className="text-xs text-blue-400 font-medium">
+                            <Copy className="w-4 h-4" style={{ color: 'var(--blue-accent)' }} />
+                            <span className="text-xs font-medium" style={{ color: 'var(--blue-accent)' }}>
                               {t("labels.derivative")}
                             </span>
                           </>
@@ -525,7 +552,12 @@ export default function BuildingsPage() {
                           {building.tags.map((tag, idx) => (
                             <span
                               key={idx}
-                              className="px-2.5 py-1 text-xs font-medium rounded-full backdrop-blur-md bg-purple-500/20 text-purple-300 border border-purple-400/30"
+                              className="px-2.5 py-1 text-xs font-medium rounded-full backdrop-blur-md"
+                              style={{
+                                background: 'var(--tag-bg)',
+                                color: 'var(--tag-text)',
+                                border: '1px solid var(--tag-border)'
+                              }}
                             >
                               {tag[locale] ||
                                 tag["zh-CN"] ||
@@ -607,11 +639,11 @@ export default function BuildingsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 text-sm">
-                          <Bell className="w-4 h-4 text-blue-400 shrink-0" />
+                          <Bell className="w-4 h-4 shrink-0" style={{ color: 'var(--blue-accent)' }} />
                           <span style={{ color: "var(--text-muted)" }}>
                             {t("labels.buildDate")}
                           </span>
-                          <span className="text-blue-400">
+                          <span style={{ color: 'var(--blue-accent)' }}>
                             {formatDate(building.buildDate)}
                           </span>
                         </div>
@@ -625,12 +657,12 @@ export default function BuildingsPage() {
                                   borderColor: "var(--glass-border-light)",
                                 }}
                               >
-                                <User className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                                <User className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--purple-accent)' }} />
                                 <div className="flex-1 min-w-0">
                                   <span style={{ color: "var(--text-muted)" }}>
                                     {t("labels.originalAuthor")}
                                   </span>
-                                  <p className="text-purple-400 font-medium">
+                                  <p className="font-medium" style={{ color: 'var(--purple-accent)' }}>
                                     {building.source.originalAuthor}
                                   </p>
                                 </div>
@@ -638,7 +670,7 @@ export default function BuildingsPage() {
                             )}
                             {building.source.originalLink && (
                               <div className="flex items-start gap-2 text-sm">
-                                <MapPin className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                                <MapPin className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--purple-accent)' }} />
                                 <div className="flex-1 min-w-0">
                                   <span style={{ color: "var(--text-muted)" }}>
                                     {t("labels.source")}
@@ -647,7 +679,14 @@ export default function BuildingsPage() {
                                     href={building.source.originalLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-purple-400 hover:text-purple-300 underline block truncate"
+                                    className="underline block truncate"
+                                    style={{ color: 'var(--purple-accent)' }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.opacity = '0.8';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.opacity = '1';
+                                    }}
                                   >
                                     {building.source.originalLink}
                                   </a>
@@ -740,12 +779,12 @@ export default function BuildingsPage() {
                   }}
                   className="relative w-full max-w-7xl h-[90vh] flex flex-col md:flex-row gap-0 rounded-3xl overflow-hidden shadow-2xl"
                   style={{
-                    background: "var(--glass-bg)",
-                    backdropFilter: "blur(16px) saturate(150%)",
-                    WebkitBackdropFilter: "blur(16px) saturate(150%)",
-                    border: "1px solid var(--glass-border)",
+                    background: "var(--modal-bg)",
+                    backdropFilter: "blur(24px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(24px) saturate(180%)",
+                    border: "1px solid var(--modal-border)",
                     boxShadow:
-                      "0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)",
+                      "0 24px 64px var(--modal-shadow), 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 var(--modal-inset)",
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -935,7 +974,14 @@ export default function BuildingsPage() {
                         </h2>
 
                         {/* Build Type Badge */}
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-white/5 rounded-full border border-white/10">
+                        <div
+                          className="inline-flex items-center gap-2 px-3 py-1.5 backdrop-blur-md rounded-full"
+                          style={{
+                            background: 'var(--badge-modal-bg)',
+                            border: '1px solid var(--badge-modal-border)',
+                            color: 'var(--badge-modal-text)'
+                          }}
+                        >
                           {selectedBuilding.buildType === "original" ? (
                             <>
                               <CheckCircle className="w-4 h-4 text-green-400" />
@@ -945,8 +991,8 @@ export default function BuildingsPage() {
                             </>
                           ) : selectedBuilding.buildType === "derivative" ? (
                             <>
-                              <Copy className="w-4 h-4 text-blue-400" />
-                              <span className="text-sm text-blue-400 font-medium">
+                              <Copy className="w-4 h-4" style={{ color: 'var(--blue-accent)' }} />
+                              <span className="text-sm font-medium" style={{ color: 'var(--blue-accent)' }}>
                                 {t("labels.derivative")}
                               </span>
                             </>
@@ -968,7 +1014,12 @@ export default function BuildingsPage() {
                             {selectedBuilding.tags.map((tag, idx) => (
                               <span
                                 key={idx}
-                                className="px-3 py-1.5 text-sm font-medium rounded-full backdrop-blur-md bg-purple-500/20 text-purple-300 border border-purple-400/30"
+                                className="px-3 py-1.5 text-sm font-medium rounded-full backdrop-blur-md"
+                                style={{
+                                  background: 'var(--tag-bg)',
+                                  color: 'var(--tag-text)',
+                                  border: '1px solid var(--tag-border)'
+                                }}
                               >
                                 {tag[locale] ||
                                   tag["zh-CN"] ||
@@ -1070,7 +1121,7 @@ export default function BuildingsPage() {
 
                         {/* Build Date */}
                         <div className="flex items-start gap-3">
-                          <Bell className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+                          <Bell className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--blue-accent)' }} />
                           <div className="flex-1">
                             <span
                               className="text-sm"
@@ -1079,7 +1130,7 @@ export default function BuildingsPage() {
                               {t("labels.buildDate")}
                             </span>
                             <div className="mt-1">
-                              <span className="text-blue-400 text-base">
+                              <span className="text-base" style={{ color: 'var(--blue-accent)' }}>
                                 {formatDate(selectedBuilding.buildDate)}
                               </span>
                             </div>
@@ -1094,7 +1145,7 @@ export default function BuildingsPage() {
                           >
                             {selectedBuilding.source.originalAuthor && (
                               <div className="flex items-start gap-3">
-                                <User className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                                <User className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--purple-accent)' }} />
                                 <div className="flex-1">
                                   <span
                                     className="text-sm"
@@ -1102,7 +1153,7 @@ export default function BuildingsPage() {
                                   >
                                     {t("labels.originalAuthor")}
                                   </span>
-                                  <p className="text-purple-400 font-medium mt-1">
+                                  <p className="font-medium mt-1" style={{ color: 'var(--purple-accent)' }}>
                                     {selectedBuilding.source.originalAuthor}
                                   </p>
                                 </div>
@@ -1110,7 +1161,7 @@ export default function BuildingsPage() {
                             )}
                             {selectedBuilding.source.originalLink && (
                               <div className="flex items-start gap-3">
-                                <MapPin className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                                <MapPin className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--purple-accent)' }} />
                                 <div className="flex-1 min-w-0">
                                   <span
                                     className="text-sm"
@@ -1122,7 +1173,14 @@ export default function BuildingsPage() {
                                     href={selectedBuilding.source.originalLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-purple-400 hover:text-purple-300 underline block truncate mt-1"
+                                    className="underline block truncate mt-1"
+                                    style={{ color: 'var(--purple-accent)' }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.opacity = '0.8';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.opacity = '1';
+                                    }}
                                   >
                                     {selectedBuilding.source.originalLink}
                                   </a>

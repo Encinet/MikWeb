@@ -500,10 +500,10 @@ export default function HomePage() {
                     style={{
                       backdropFilter: 'blur(24px) saturate(180%)',
                       WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                      background: 'var(--glass-bg)',
-                      border: '1px solid var(--glass-border)',
+                      background: 'var(--modal-bg)',
+                      border: '1px solid var(--modal-border)',
                       borderRadius: '24px',
-                      boxShadow: '0 24px 64px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 var(--glass-inset)',
+                      boxShadow: '0 24px 64px var(--modal-shadow), 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 var(--modal-inset)',
                       maxWidth: '800px',
                       width: '100%',
                       maxHeight: '85vh',

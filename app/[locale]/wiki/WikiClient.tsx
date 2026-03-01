@@ -52,7 +52,7 @@ export default function WikiClient({ title, description, navigation, sections, c
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="lg:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full backdrop-blur-lg bg-blue-500/20 border border-blue-400/30 shadow-lg"
           style={{
-            color: '#93c5fd'
+            color: 'var(--blue-accent)'
           }}
         >
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -61,7 +61,16 @@ export default function WikiClient({ title, description, navigation, sections, c
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className={`lg:col-span-1 ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
-            <div className={`backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 ${sidebarOpen ? 'fixed inset-4 z-40 overflow-y-auto' : 'lg:sticky lg:top-24'}`}>
+            <div
+              className={`rounded-2xl p-4 ${sidebarOpen ? 'fixed inset-4 z-40 overflow-y-auto' : 'lg:sticky lg:top-24'}`}
+              style={{
+                backdropFilter: 'blur(16px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
+                boxShadow: 'var(--card-shadow)',
+              }}
+            >
               <h3 className="font-semibold mb-4 px-2" style={{ color: 'var(--text-secondary)' }}>{navigation}</h3>
               <nav className="space-y-1">
                 {sections.map((section) => {
@@ -75,9 +84,16 @@ export default function WikiClient({ title, description, navigation, sections, c
                         setSidebarOpen(false);
                       }}
                       style={{
-                        color: isActive ? '#93c5fd' : 'var(--text-muted-light)'
+                        color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)',
+                        background: 'transparent'
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-200 relative hover:bg-white/5"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--hover-bg)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-200 relative"
                     >
                       {isActive && (
                         <motion.div
@@ -110,7 +126,16 @@ export default function WikiClient({ title, description, navigation, sections, c
 
           {/* Content */}
           <div className="lg:col-span-3">
-            <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-6 sm:p-8">
+            <div
+              className="rounded-2xl p-6 sm:p-8"
+              style={{
+                backdropFilter: 'blur(16px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
+                boxShadow: 'var(--card-shadow)',
+              }}
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeSection}

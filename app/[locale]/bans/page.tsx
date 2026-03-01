@@ -84,8 +84,13 @@ export default function BansPage() {
             {bans.map((ban, i) => (
               <div
                 key={ban.playerUuid}
-                className="backdrop-blur-lg bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 hover:border-red-400/30 transition-all duration-300 overflow-hidden group"
+                className="rounded-2xl hover:border-red-400/30 transition-all duration-300 overflow-hidden group"
                 style={{
+                  backdropFilter: 'blur(16px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                  background: 'var(--glass-bg)',
+                  border: '1px solid var(--glass-border)',
+                  boxShadow: 'var(--card-shadow)',
                   animation: 'slideIn 0.5s ease-out',
                   animationDelay: `${i * 0.05}s`,
                   animationFillMode: 'both'
@@ -135,15 +140,15 @@ export default function BansPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-purple-400 shrink-0" />
+                          <User className="w-4 h-4 shrink-0" style={{ color: 'var(--purple-accent)' }} />
                           <span style={{ color: 'var(--text-muted)' }}>{t('bannedBy')}: </span>
-                          <span className="text-purple-400 font-medium">{ban.bannedBy}</span>
+                          <span className="font-medium" style={{ color: 'var(--purple-accent)' }}>{ban.bannedBy}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-blue-400 shrink-0" />
+                          <Calendar className="w-4 h-4 shrink-0" style={{ color: 'var(--blue-accent)' }} />
                           <span style={{ color: 'var(--text-muted)' }}>{t('bannedAt')}: </span>
-                          <span className="text-blue-400">{formatDate(ban.bannedAt)}</span>
+                          <span style={{ color: 'var(--blue-accent)' }}>{formatDate(ban.bannedAt)}</span>
                         </div>
 
                         {!ban.isPermanent && ban.expiresAt && (

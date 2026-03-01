@@ -202,12 +202,16 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="lg:hidden p-2 rounded-lg transition-colors"
               style={{
                 color: 'var(--text-nav)',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer'
+                background: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--hover-bg)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
               }}
               aria-label="Toggle menu"
             >
