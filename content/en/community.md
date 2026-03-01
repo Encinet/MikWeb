@@ -1,43 +1,42 @@
 # Community Guide
 
-## How to Integrate
+## Getting Involved
 
-1. **Be Active**
-   - Greet in chat
+1. **Be Social**
+   - Say hello in chat
    - Share your building progress
    - Join community events
 
 2. **Help Each Other**
-   - Help new players
-   - Share building experience and techniques
-   - Participate in public building projects
+   - Help out new players
+   - Share building tips and experience
+   - Participate in public construction projects
 
 3. **Showcase Your Work**
-   - Label the builder and original author (if any) in your buildings
-   - Invite other players to visit your works
-   - Participate in building competitions and events
+   - Credit yourself and the original creator (if applicable) somewhere in your build
+   - Invite other players to come visit your creations
 
 ## Community Events
 
-The server hosts various events:
+The server hosts various events from time to time:
 
-- **Building Competitions** - Showcase your creativity
-- **Minigames** - Parkour mode, Who is the killer, etc.
-- **Music Activities** - Listen to music and chat together using PlasmoVoice
+- **New Year Event** — Ring in the new year together in a unique way
+- **Mini-Games** — Parkour, Who's the Killer, and more
+- **Music Events** — Listen to music and chat together using PlasmoVoice
 
 ## Contact
 
-### Players in China
-- **QQ Group** - Join our QQ group to communicate with other players
+### Players in Mainland China
+- **QQ Group** — Join our QQ group to connect with other players
 
-### International Players
-- **Application Form** - Submit applications through the form and receive email notifications
+### Overseas Players
+- **Application Form** — Submit your application via the form and receive email notifications
 
 ## Copyright Notice
 
-Please note that architectural works you create on the server will be published under the **CC BY-NC-SA 4.0** license by default. This means:
+Please note that buildings you create on this server are by default published under the [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license. This means:
 
-- You retain copyright ownership of your works
-- Others may use your works for non-commercial purposes
-- Users must credit the original author and server name
+- You retain full copyright over your work
+- Others may use your work for non-commercial purposes
+- Any use must credit the original creator and the server name
 - Commercial use is prohibited

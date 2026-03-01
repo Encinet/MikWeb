@@ -1,49 +1,51 @@
 # Getting Started
 
-Welcome to Mik Server!
+Welcome to the Mik Server!
 
-This is a creative casual server that allows any mods (including hacks), as long as you don't destroy buildings or others' creations.
+This is a creative and casual server. All mods (including hacked clients) are permitted, as long as you don't grief or damage other players' builds.
 
 ## How to Join
 
-### Players in China
+### Players in Mainland China
 1. Join our QQ group
-2. Apply for whitelist from administrators in the group chat
-3. Wait for admin review and reply
+2. Ask an admin for a whitelist application in the group chat
+3. Wait for the admin to review and respond
 
-### International Players
+### Overseas Players
 1. Fill out the application form
-2. Wait for email notification (usually within 48 hours)
+2. Wait for an email notification (usually within 48 hours)
 3. Once approved, you'll receive the server address
 
 ## Recommended Mods
 
-For a better gaming experience, we recommend installing these mods:
+For the best experience, we recommend using the optimization modpack [Fabulously Optimized](https://modrinth.com/modpack/fabulously-optimized), along with the following mods:
 
 1. **PlasmoVoice** - Voice chat and music listening
-2. **Xaero Map Series** - Server specially adapted
+2. **Xaero's Map Suite** - Specially configured for this server
    - Xaero's World Map
    - Xaero's Minimap
    - XaeroPlus
-3. **ImageFrame Client** - Enhanced color for map paintings
-4. **Axiom** - Powerful building assistance mod
+3. **ImageFrame Client** - Enhanced color rendering for map art
+4. **Axiom** - A powerful building assistance mod
 
-## First Time on Server
+## First Time on the Server
 
-When you first join the server:
+When you first join:
 
 - You'll spawn in the main city area
-- Use `/spawn` to return to spawn anytime
-- Use `/sethome` to set your home
-- Use `/home` to return to your home
+- Use `/spawn` to return to the main city at any time
+- Use `/sethome` to set your home location
+- Use `/home` to teleport back home
 
-## Start Creating
+## Start Building
 
-Find a place you like and start your building creation:
+Use your minimap mod to explore the server, get a feel for the existing builds, and find a spot or neighborhood you like.
+
+Once you've found a place you love, start your creative journey:
 
 1. Choose a suitable building location
-2. Ensure your build harmonizes with the surroundings
-3. Use `/sethome [name]` to set your home location
-4. Begin your creative journey!
+2. Make sure your build blends well with the surrounding environment
+3. Use `/sethome [name]` to save your location
+4. Let your creativity run wild!
 
-> **Tip**: The server supports Axiom and WorldEdit, which can greatly improve building efficiency!
+> **Tip**: The server supports both Axiom and WorldEdit, which can greatly speed up your building workflow!
