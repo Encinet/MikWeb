@@ -70,6 +70,7 @@ export default function BuildingsPage() {
     null,
   );
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoading, setImageLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [cardRect, setCardRect] = useState<DOMRect | null>(null);
   const ITEMS_PER_PAGE = 12;
@@ -278,6 +279,7 @@ export default function BuildingsPage() {
   const nextImage = () => {
     if (selectedBuilding) {
       const images = getBuildingImages(selectedBuilding);
+      setImageLoading(true);
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }
   };
@@ -285,6 +287,7 @@ export default function BuildingsPage() {
   const prevImage = () => {
     if (selectedBuilding) {
       const images = getBuildingImages(selectedBuilding);
+      setImageLoading(true);
       setCurrentImageIndex(
         (prev) => (prev - 1 + images.length) % images.length,
       );
@@ -832,6 +835,41 @@ export default function BuildingsPage() {
                       getBuildingImages(selectedBuilding)[currentImageIndex],
                     ) ? (
                       <>
+                        {/* Loading Placeholder */}
+                        {imageLoading && (
+                          <div className="absolute inset-0 flex items-center justify-center z-5">
+                            <div className="flex flex-col items-center gap-4">
+                              <Building2
+                                className="w-24 h-24 animate-pulse"
+                                style={{ color: "var(--text-very-dimmed)" }}
+                              />
+                              <div className="flex gap-2">
+                                <div
+                                  className="w-2 h-2 rounded-full animate-bounce"
+                                  style={{
+                                    background: "var(--purple-accent)",
+                                    animationDelay: "0ms",
+                                  }}
+                                />
+                                <div
+                                  className="w-2 h-2 rounded-full animate-bounce"
+                                  style={{
+                                    background: "var(--purple-accent)",
+                                    animationDelay: "150ms",
+                                  }}
+                                />
+                                <div
+                                  className="w-2 h-2 rounded-full animate-bounce"
+                                  style={{
+                                    background: "var(--purple-accent)",
+                                    animationDelay: "300ms",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
                         <img
                           src={
                             getBuildingImages(selectedBuilding)[
@@ -844,7 +882,12 @@ export default function BuildingsPage() {
                             Object.values(selectedBuilding.name)[0]
                           }
                           className="w-full h-full object-contain"
+                          style={{
+                            opacity: imageLoading ? 0 : 1,
+                            transition: "opacity 0.3s ease-in-out",
+                          }}
                           loading="lazy"
+                          onLoad={() => setImageLoading(false)}
                           onError={() =>
                             handleImageError(
                               getBuildingImages(selectedBuilding)[
@@ -920,7 +963,10 @@ export default function BuildingsPage() {
                                 (_, idx) => (
                                   <button
                                     key={idx}
-                                    onClick={() => setCurrentImageIndex(idx)}
+                                    onClick={() => {
+                                      setImageLoading(true);
+                                      setCurrentImageIndex(idx);
+                                    }}
                                     className="rounded-full transition-all duration-200"
                                     style={{
                                       width:
