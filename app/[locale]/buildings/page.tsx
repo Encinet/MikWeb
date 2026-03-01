@@ -217,6 +217,8 @@ export default function BuildingsPage() {
             ""
           ).toLowerCase();
           return nameB2.localeCompare(nameA2);
+        case "random":
+          return Math.random() - 0.5;
         default:
           return 0;
       }
@@ -382,6 +384,9 @@ export default function BuildingsPage() {
               </option>
               <option value="name-desc">
                 {t("sort.nameDesc") || "Name Z-A"}
+              </option>
+              <option value="random">
+                {t("sort.random") || "Random"}
               </option>
             </select>
           </div>

@@ -60,7 +60,8 @@
       "dateDesc": "Newest First",
       "dateAsc": "Oldest First",
       "nameAsc": "Name A-Z",
-      "nameDesc": "Name Z-A"
+      "nameDesc": "Name Z-A",
+      "random": "Random"
     },
     "labels": {
       "original": "Original",
