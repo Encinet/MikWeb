@@ -66,6 +66,7 @@ export default function BuildingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const [sortBy, setSortBy] = useState("random");
+  const [randomSeed, setRandomSeed] = useState(0);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(
     null,
   );
@@ -77,6 +78,8 @@ export default function BuildingsPage() {
 
   useEffect(() => {
     setMounted(true);
+    // Initialize random seed on mount for random sorting
+    setRandomSeed(Math.random());
     return () => setMounted(false);
   }, []);
 
@@ -233,7 +236,7 @@ export default function BuildingsPage() {
           return 0;
       }
     });
-  }, [buildings, buildingFilter, searchQuery, sortBy, locale]);
+  }, [buildings, buildingFilter, searchQuery, sortBy, locale, randomSeed]);
 
   const displayedBuildings = filteredBuildings.slice(0, displayedCount);
   const hasMore = displayedCount < filteredBuildings.length;
