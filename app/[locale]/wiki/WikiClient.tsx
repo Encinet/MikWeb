@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { BookOpen, ChevronRight, Home, Wrench, Shield, Users, Zap, Menu, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -28,9 +29,26 @@ interface WikiClientProps {
   content: Record<string, string>;
 }
 
-export default function WikiClient({ title, description, navigation, sections, content }: WikiClientProps) {
-  const [activeSection, setActiveSection] = useState('getting-started');
+export default function WikiClient({ title, description, navigation, sections, content, initialSection }: WikiClientProps & { initialSection?: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeSection, setActiveSection] = useState(initialSection || 'getting-started');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section && content[section]) {
+      setActiveSection(section);
+    }
+  }, [searchParams, content]);
+
+  const handleSectionChange = (id: string) => {
+    setActiveSection(id);
+    setSidebarOpen(false);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('section', id);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
 
   return (
     <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
@@ -47,22 +65,61 @@ export default function WikiClient({ title, description, navigation, sections, c
           </p>
         </div>
 
-        {/* Mobile Sidebar Toggle Button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full backdrop-blur-lg bg-blue-500/20 border border-blue-400/30 shadow-lg"
-          style={{
-            color: 'var(--blue-accent)'
-          }}
-        >
-          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        {/* Mobile Navigation - Bottom Right Popup Card */}
+        <div className="lg:hidden fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+          <AnimatePresence>
+            {sidebarOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-2xl p-3 w-48"
+                style={{
+                  backdropFilter: 'blur(16px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                  background: 'var(--glass-bg)',
+                  border: '1px solid var(--glass-border)',
+                  boxShadow: 'var(--card-shadow)',
+                }}
+              >
+                <nav className="space-y-1">
+                  {sections.map((section) => {
+                    const Icon = iconMap[section.icon as keyof typeof iconMap];
+                    const isActive = activeSection === section.id;
+                    return (
+                      <button
+                        key={section.id}
+                        onClick={() => handleSectionChange(section.id)}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-200 relative"
+                        style={{
+                          color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)',
+                          background: isActive ? 'var(--hover-bg)' : 'transparent',
+                        }}
+                      >
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span className="text-sm font-medium">{section.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-3.5 rounded-full backdrop-blur-lg bg-blue-500/20 border border-blue-400/30 shadow-lg"
+            style={{ color: 'var(--blue-accent)' }}
+          >
+            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div className={`lg:col-span-1 ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block lg:col-span-1">
             <div
-              className={`rounded-2xl p-4 ${sidebarOpen ? 'fixed inset-4 z-40 overflow-y-auto' : 'lg:sticky lg:top-24'}`}
+              className="rounded-2xl p-4 lg:sticky lg:top-36"
               style={{
                 backdropFilter: 'blur(16px) saturate(150%)',
                 WebkitBackdropFilter: 'blur(16px) saturate(150%)',
@@ -79,10 +136,7 @@ export default function WikiClient({ title, description, navigation, sections, c
                   return (
                     <button
                       key={section.id}
-                      onClick={() => {
-                        setActiveSection(section.id);
-                        setSidebarOpen(false);
-                      }}
+                      onClick={() => handleSectionChange(section.id)}
                       style={{
                         color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)',
                         background: 'transparent'

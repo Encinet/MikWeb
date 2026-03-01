@@ -1,10 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 import fs from 'fs';
 import path from 'path';
+import { Suspense } from 'react';
 import WikiClient from './WikiClient';
 
-export default async function WikiPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function WikiPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ section?: string }> }) {
   const { locale } = await params;
+  const { section } = await searchParams;
   const t = await getTranslations('wiki');
 
   const sections = [
@@ -26,13 +28,19 @@ export default async function WikiPage({ params }: { params: Promise<{ locale: s
     }
   }
 
+  const validSections = sections.map(s => s.id);
+  const initialSection = section && validSections.includes(section) ? section : 'getting-started';
+
   return (
-    <WikiClient
-      title={t('title')}
-      description={t('description')}
-      navigation={t('navigation')}
-      sections={sections}
-      content={content}
-    />
+    <Suspense>
+      <WikiClient
+        title={t('title')}
+        description={t('description')}
+        navigation={t('navigation')}
+        sections={sections}
+        content={content}
+        initialSection={initialSection}
+      />
+    </Suspense>
   );
 }
