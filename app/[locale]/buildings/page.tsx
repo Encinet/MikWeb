@@ -279,18 +279,26 @@ export default function BuildingsPage() {
   const nextImage = () => {
     if (selectedBuilding) {
       const images = getBuildingImages(selectedBuilding);
-      setImageLoading(true);
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      const nextIndex = (currentImageIndex + 1) % images.length;
+      const img = new Image();
+      img.src = images[nextIndex];
+      if (!img.complete) {
+        setImageLoading(true);
+      }
+      setCurrentImageIndex(nextIndex);
     }
   };
 
   const prevImage = () => {
     if (selectedBuilding) {
       const images = getBuildingImages(selectedBuilding);
-      setImageLoading(true);
-      setCurrentImageIndex(
-        (prev) => (prev - 1 + images.length) % images.length,
-      );
+      const prevIndex = (currentImageIndex - 1 + images.length) % images.length;
+      const img = new Image();
+      img.src = images[prevIndex];
+      if (!img.complete) {
+        setImageLoading(true);
+      }
+      setCurrentImageIndex(prevIndex);
     }
   };
 
@@ -964,7 +972,12 @@ export default function BuildingsPage() {
                                   <button
                                     key={idx}
                                     onClick={() => {
-                                      setImageLoading(true);
+                                      const images = getBuildingImages(selectedBuilding);
+                                      const img = new Image();
+                                      img.src = images[idx];
+                                      if (!img.complete) {
+                                        setImageLoading(true);
+                                      }
                                       setCurrentImageIndex(idx);
                                     }}
                                     className="rounded-full transition-all duration-200"
