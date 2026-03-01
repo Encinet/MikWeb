@@ -65,7 +65,7 @@ export default function BuildingsPage() {
   const [displayedCount, setDisplayedCount] = useState(12);
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
-  const [sortBy, setSortBy] = useState("date-desc");
+  const [sortBy, setSortBy] = useState("random");
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(
     null,
   );
