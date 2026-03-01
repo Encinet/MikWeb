@@ -106,13 +106,24 @@ export default function WikiClient({ title, description, navigation, sections, c
               </motion.div>
             )}
           </AnimatePresence>
-          <button
+          <motion.button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-3.5 rounded-full backdrop-blur-lg bg-blue-500/20 border border-blue-400/30 shadow-lg"
             style={{ color: 'var(--blue-accent)' }}
+            whileTap={{ scale: 0.85 }}
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+            <motion.div
+              key={sidebarOpen ? 'close' : 'open'}
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </motion.div>
+          </motion.button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

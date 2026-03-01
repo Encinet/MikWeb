@@ -386,22 +386,14 @@ export default function Navbar() {
               className="lg:hidden overflow-hidden"
             >
               <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.2 }}
-                  className="flex flex-col space-y-2"
-                >
+                <div className="flex flex-col space-y-2">
                   {navItems.map((item, index) => {
                     const isActive = pathname === item.path;
-
+  
                     if (item.link) {
                       return (
-                        <motion.a
+                        <a
                           key={item.id}
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 + index * 0.05, duration: 0.2 }}
                           href={item.link}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -416,17 +408,12 @@ export default function Navbar() {
                         >
                           <item.icon className="w-5 h-5" />
                           <span className="text-sm">{item.label}</span>
-                        </motion.a>
+                        </a>
                       );
                     }
-
+  
                     return (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 + index * 0.05, duration: 0.2 }}
-                      >
+                      <div key={item.id}>
                         <Link
                           href={item.path as any}
                           onClick={() => setMobileMenuOpen(false)}
@@ -439,16 +426,13 @@ export default function Navbar() {
                         >
                           <item.icon className="w-5 h-5" />
                           <span className="text-sm">{item.label}</span>
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
+                      </Link>
+                    </div>
+                  );
+                })}
 
-                  {/* Mobile Theme Toggle */}
-                  <motion.button
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + navItems.length * 0.05, duration: 0.2 }}
+                {/* Mobile Theme Toggle */}
+                <button
                     onClick={handleThemeToggle}
                     className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
                     style={{
@@ -463,8 +447,8 @@ export default function Navbar() {
                       <div className="w-5 h-5" />
                     )}
                     <span className="text-sm">{mounted && theme === 'dark' ? t('lightMode') : t('darkMode')}</span>
-                  </motion.button>
-                </motion.div>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
