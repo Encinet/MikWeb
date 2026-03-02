@@ -57,10 +57,7 @@ The server supports the following vanilla commands — click to view full docume
 
 WorldEdit is built into the server — no client-side installation needed to use it.
 
-If you'd like to visually see your current selection in-game, you can optionally install one of the following selection visualizer mods on your client:
-
-- [WorldEdit CUI](https://modrinth.com/mod/worldedit-cui) (Fabric) — Official GUI overlay that displays selection boundaries as a wireframe in real time
-- [WorldEdit CUI Unofficial Forge Port](https://modrinth.com/mod/worldeditcui-forge) (Forge) — A Forge port of the above mod
+- [Commands List](https://intellectualsites.gitbook.io/fastasyncworldedit/features/main-commands-and-permissions)
 
 ## Decoration & Interaction
 

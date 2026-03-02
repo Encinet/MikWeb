@@ -57,10 +57,10 @@
 
 服务器已内置 WorldEdit，无需自行安装插件本体即可直接使用。
 
-若希望在游戏中直观地看到当前选区范围，可自行在客户端安装以下可选的选区显示模组：
+- [常用命令一览(中文)](https://www.mcmod.cn/post/3050.html)
+- [完整命令收录(中文)](https://www.mcmod.cn/post/3533.html)
+- [官方命令列表(英文)](https://intellectualsites.gitbook.io/fastasyncworldedit/features/main-commands-and-permissions)
 
-- [WorldEdit CUI](https://modrinth.com/mod/worldedit-cui)（Fabric）— 官方出品的图形化选区界面，以线框形式实时显示选区边界
-- [WorldEdit CUI Unofficial Forge Port](https://modrinth.com/mod/worldeditcui-forge)（Forge）— 上述模组的 Forge 移植版本
 
 ## 装饰与互动
 
