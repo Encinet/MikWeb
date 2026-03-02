@@ -188,10 +188,18 @@ export default function Navbar() {
                   <span className="relative z-10">{item.label}</span>
                   {isActive && (
                     <motion.div
-                      layoutId="navUnderline"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      exit={{ scaleX: 0 }}
                       className="absolute bottom-0 left-0 right-0 h-0.5"
-                      style={{ backgroundColor: '#FFAA00' }}
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      style={{
+                        backgroundColor: '#FFAA00',
+                        transformOrigin: 'left'
+                      }}
+                      transition={{
+                        duration: 0.3,
+                        ease: "easeInOut"
+                      }}
                     />
                   )}
                 </Link>
