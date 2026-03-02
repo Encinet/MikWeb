@@ -4,7 +4,23 @@ import { NextResponse } from 'next/server';
 const MINECRAFT_SERVER = process.env.MINECRAFT_SERVER_URL || 'http://localhost:8080';
 const API_KEY = process.env.MINECRAFT_API_KEY || '';
 
+// In-memory cache
+let cachedData: any = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 5000; // 5 seconds
+
 export async function GET(request: Request) {
+  // Return cached data if still valid
+  const now = Date.now();
+  if (cachedData && now - cacheTimestamp < CACHE_DURATION) {
+    return NextResponse.json(cachedData, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15',
+        'X-Cache': 'HIT',
+      },
+    });
+  }
+
   try {
     // 从请求头获取 API Key（如果需要）
     const authHeader = request.headers.get('X-API-Key');
@@ -24,9 +40,14 @@ export async function GET(request: Request) {
 
     const data = await response.json();
 
+    // Update cache
+    cachedData = data;
+    cacheTimestamp = Date.now();
+
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15',
+        'X-Cache': 'MISS',
       },
     });
   } catch (error) {
