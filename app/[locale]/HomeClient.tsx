@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, Bell, Building2, Clock, X } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ScrollReveal from '@/components/ScrollReveal';
 import dynamic from 'next/dynamic';
 import { createPortal } from 'react-dom';
+import { usePlayerData } from '@/contexts/PlayerContext';
+import { useBuildingsData } from '@/contexts/BuildingsContext';
 
 // 懒加载 framer-motion 仅用于公告模态框（减少初始 JS bundle）
 const MotionDiv = dynamic(() => import('framer-motion').then(m => ({ default: m.motion.div })), { ssr: false });
@@ -14,8 +16,8 @@ const AnimatePresence = dynamic(() => import('framer-motion').then(m => ({ defau
 export default function HomeClient() {
   const t = useTranslations();
   const locale = useLocale();
-  const [playerCount, setPlayerCount] = useState(0);
-  const [buildingsCount, setBuildingsCount] = useState(0);
+  const { playerCount } = usePlayerData();
+  const { buildingsCount, fetchBuildings } = useBuildingsData();
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -29,44 +31,8 @@ export default function HomeClient() {
   }, []);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const response = await fetch('/api/players');
-        const data = await response.json();
-        if (!response.ok || data.error) {
-          setPlayerCount(0);
-        } else {
-          setPlayerCount(data.count || 0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch player count:', error);
-        setPlayerCount(0);
-      }
-    };
-    fetchPlayers();
-    const interval = setInterval(fetchPlayers, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const fetchBuildings = async () => {
-      try {
-        const response = await fetch('/api/buildings');
-        const data = await response.json();
-        if (!response.ok || data.error) {
-          setBuildingsCount(0);
-        } else if (Array.isArray(data)) {
-          setBuildingsCount(data.length);
-        } else {
-          setBuildingsCount(0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch buildings:', error);
-        setBuildingsCount(0);
-      }
-    };
     fetchBuildings();
-  }, []);
+  }, [fetchBuildings]);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {

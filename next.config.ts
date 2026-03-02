@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
         hostname: 'mc-heads.net',
       },
     ],
+    minimumCacheTTL: 864000, // 10 days cache for player avatars
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],

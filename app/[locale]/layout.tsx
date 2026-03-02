@@ -9,6 +9,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import StructuredData from "@/components/StructuredData";
+import { PlayerProvider } from "@/contexts/PlayerContext";
+import { BuildingsProvider } from "@/contexts/BuildingsContext";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -66,12 +68,16 @@ export default async function LocaleLayout({
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
-            <Background />
-            <Navbar />
-            <main className="relative z-10" style={{ flex: '1 0 auto' }}>
-              {children}
-            </main>
-            <Footer />
+            <PlayerProvider>
+              <BuildingsProvider>
+                <Background />
+                <Navbar />
+                <main className="relative z-10" style={{ flex: '1 0 auto' }}>
+                  {children}
+                </main>
+                <Footer />
+              </BuildingsProvider>
+            </PlayerProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

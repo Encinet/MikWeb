@@ -2,17 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Server, Users, Play, Map, BookOpen, Home, Building2, Globe, Sun, Moon, Shield, Menu, X } from 'lucide-react';
+import { Users, Play, Map, BookOpen, Home, Building2, Globe, Sun, Moon, Shield, Menu, X } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { useTheme } from 'next-themes';
 import MinecraftAvatar from './MinecraftAvatar';
 import { motion, AnimatePresence } from 'framer-motion';
-
-interface Player {
-  name: string;
-  uuid: string;
-}
+import { usePlayerData } from '@/contexts/PlayerContext';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -20,13 +16,11 @@ export default function Navbar() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [playerCount, setPlayerCount] = useState(0);
+  const { players, playerCount, isOnline } = usePlayerData();
   const [showPlayerList, setShowPlayerList] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
 
   const handleThemeToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -34,34 +28,6 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const response = await fetch('/api/players');
-        const data = await response.json();
-        
-        if (!response.ok || data.error) {
-          setIsOnline(false);
-          setPlayers([]);
-          setPlayerCount(0);
-        } else {
-          setIsOnline(true);
-          setPlayers(data.players || []);
-          setPlayerCount(data.count || 0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch players:', error);
-        setIsOnline(false);
-        setPlayers([]);
-        setPlayerCount(0);
-      }
-    };
-
-    fetchPlayers();
-    const interval = setInterval(fetchPlayers, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const navItems = [

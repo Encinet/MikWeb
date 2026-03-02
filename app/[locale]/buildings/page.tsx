@@ -20,6 +20,7 @@ import { useTranslations, useLocale } from "next-intl";
 import ScrollReveal from "@/components/ScrollReveal";
 import Masonry from "react-masonry-css";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { useBuildingsData } from "@/contexts/BuildingsContext";
 
 interface Builder {
   name: string;
@@ -58,10 +59,7 @@ interface Building {
 export default function BuildingsPage() {
   const t = useTranslations("buildings");
   const locale = useLocale();
-  const [playerCount, setPlayerCount] = useState(0);
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { buildings, isLoading, error, fetchBuildings } = useBuildingsData();
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [displayedCount, setDisplayedCount] = useState(12);
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,48 +83,8 @@ export default function BuildingsPage() {
   }, []);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const response = await fetch("/api/players");
-        const data = await response.json();
-        setPlayerCount(data.count);
-      } catch (error) {
-        console.error("Failed to fetch player count:", error);
-      }
-    };
-
-    fetchPlayers();
-    const interval = setInterval(fetchPlayers, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const fetchBuildings = async () => {
-      try {
-        const response = await fetch("/api/buildings");
-        const data = await response.json();
-        
-        if (!response.ok || data.error) {
-          setError(data.message || 'Failed to load buildings');
-          setBuildings([]);
-        } else if (Array.isArray(data)) {
-          setBuildings(data);
-          setError(null);
-        } else {
-          setError('Invalid data format');
-          setBuildings([]);
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch buildings:", error);
-        setError('Network error occurred');
-        setBuildings([]);
-        setIsLoading(false);
-      }
-    };
-
     fetchBuildings();
-  }, []);
+  }, [fetchBuildings]);
 
   const formatDate = (timestamp: any) => {
     const date = new Date(
