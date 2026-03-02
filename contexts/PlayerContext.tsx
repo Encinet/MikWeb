@@ -59,7 +59,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       
       const response = await fetch('/api/players', {
         signal: controller.signal,
-        cache: 'default'
+        cache: 'no-store' // Disable cache to get fresh data
       });
       clearTimeout(timeoutId);
       
