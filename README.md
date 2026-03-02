@@ -81,7 +81,10 @@ X-API-Key: your-api-key (可选)
   - `name` (string): 玩家名称
   - `uuid` (string): 玩家 UUID
 
-**缓存策略**: 30 秒公共缓存，60 秒 stale-while-revalidate
+**缓存策略**:
+- HTTP 缓存：5 秒公共缓存，15 秒 stale-while-revalidate
+- 内存缓存：5 秒（在缓存有效期内不会请求 Minecraft 服务器）
+- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
 
 ---
 
@@ -114,7 +117,10 @@ X-API-Key: your-api-key (可选)
 - `timestamp` (number): Unix 时间戳（秒）或 ISO 8601 日期字符串
 - `content` (string): 公告内容
 
-**缓存策略**: 60 秒公共缓存，120 秒 stale-while-revalidate
+**缓存策略**:
+- HTTP 缓存：300 秒公共缓存，600 秒 stale-while-revalidate
+- 内存缓存：300 秒（在缓存有效期内不会请求 Minecraft 服务器）
+- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
 
 ---
 
@@ -255,7 +261,10 @@ X-API-Key: your-api-key (可选)
 
 **注意**: 建筑数据不包含id字段，前端通过坐标、日期和建造者信息的哈希算法生成唯一标识。
 
-**缓存策略**: 300 秒公共缓存，600 秒 stale-while-revalidate
+**缓存策略**:
+- HTTP 缓存：300 秒公共缓存，600 秒 stale-while-revalidate
+- 内存缓存：300 秒（在缓存有效期内不会请求 Minecraft 服务器）
+- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
 
 **许可证**: 所有建筑作品遵循 CC BY-NC-SA 4.0 许可证
 
@@ -305,13 +314,12 @@ X-API-Key: your-api-key (可选)
 - `expiresAt` (string | null): 解封时间（null 表示永久封禁）
 - `isPermanent` (boolean): 是否为永久封禁
 
-**缓存策略**: 300 秒公共缓存，600 秒 stale-while-revalidate
+**缓存策略**:
+- HTTP 缓存：60 秒公共缓存，120 秒 stale-while-revalidate
+- 内存缓存：60 秒（在缓存有效期内不会请求 Minecraft 服务器）
+- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
 
 ---
-
-## 降级策略
-
-如果无法连接到 Minecraft 服务器，所有 API 路由会自动返回模拟数据，确保网站正常显示。降级时会在控制台输出错误日志。
 
 ## 国际化
 
@@ -352,28 +360,62 @@ X-API-Key: your-api-key (可选)
 MikWeb/
 ├── app/                      # Next.js App Router
 │   ├── [locale]/            # 国际化路由
-│   │   ├── page.tsx         # 首页
+│   │   ├── page.tsx         # 首页（服务端组件）
+│   │   ├── HomeClient.tsx   # 首页客户端组件
+│   │   ├── layout.tsx       # 语言布局
 │   │   ├── buildings/       # 建筑收录页
+│   │   │   └── page.tsx
 │   │   ├── bans/            # 封禁列表页
-│   │   ├── wiki/            # 游戏指南页
-│   │   └── layout.tsx       # 布局组件
-│   ├── api/                 # API 路由
-│   │   ├── players/         # 玩家 API
-│   │   ├── announcements/   # 公告 API
-│   │   ├── buildings/       # 建筑 API
-│   │   └── bans/            # 封禁 API
-│   └── globals.css          # 全局样式
+│   │   │   └── page.tsx
+│   │   └── wiki/            # 游戏指南页
+│   │       ├── page.tsx
+│   │       └── WikiClient.tsx
+│   ├── api/                 # API 路由（带内存缓存）
+│   │   ├── players/         # 玩家 API（5秒缓存）
+│   │   │   └── route.ts
+│   │   ├── announcements/   # 公告 API（300秒缓存）
+│   │   │   └── route.ts
+│   │   ├── buildings/       # 建筑 API（300秒缓存）
+│   │   │   └── route.ts
+│   │   └── bans/            # 封禁 API（60秒缓存）
+│   │       └── route.ts
+│   ├── layout.tsx           # 根布局
+│   ├── globals.css          # 全局样式
+│   ├── manifest.ts          # PWA 清单
+│   ├── robots.ts            # robots.txt
+│   └── sitemap.ts           # 站点地图
 ├── components/              # React 组件
-│   ├── Navbar.tsx           # 导航栏
+│   ├── Navbar.tsx           # 导航栏（带玩家列表）
 │   ├── Footer.tsx           # 页脚
-│   ├── Background.tsx       # 背景组件
+│   ├── Background.tsx       # 动态背景
+│   ├── MinecraftAvatar.tsx  # 玩家头像组件
+│   ├── ScrollReveal.tsx     # 滚动动画
+│   ├── StructuredData.tsx   # SEO 结构化数据
 │   └── ThemeProvider.tsx    # 主题提供者
+├── contexts/                # React Context
+│   ├── PlayerContext.tsx    # 玩家数据全局状态
+│   └── BuildingsContext.tsx # 建筑数据全局状态
+├── content/                 # Wiki 内容（Markdown）
+│   ├── zh-CN/              # 中文内容
+│   │   ├── getting-started.md
+│   │   ├── commands.md
+│   │   ├── tips.md
+│   │   ├── rules.md
+│   │   └── community.md
+│   └── en/                 # 英文内容
+│       ├── getting-started.md
+│       ├── commands.md
+│       ├── tips.md
+│       ├── rules.md
+│       └── community.md
 ├── messages/                # 国际化翻译
 │   ├── zh-CN.json          # 中文
 │   └── en.json             # 英文
+├── i18n/                    # 国际化配置
+│   └── routing.ts          # 路由配置
 ├── public/                  # 静态资源
-├── i18n.ts                 # 国际化配置
-├── middleware.ts           # 中间件（语言检测）
+│   └── mik-standard-rounded.webp
+├── i18n.ts                 # 国际化主配置
 └── next.config.ts          # Next.js 配置
 ```
 
