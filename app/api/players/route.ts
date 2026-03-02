@@ -32,20 +32,13 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Failed to fetch player count:', error);
 
-    // 返回模拟数据作为降级方案
     return NextResponse.json(
       {
-        // count: 2,
-        // players: [
-        //   { name: 'Aeolic', uuid: '850ab457-2a91-45a5-916d-3cc24dc601c7' },
-        //   { name: 'Noctiro', uuid: '531983d3-f5e4-4f0b-b1d3-3756be96b611' }
-        // ]
-        count: 0,
-        players: [
-        ]
+        error: 'Failed to fetch player data',
+        message: error instanceof Error ? error.message : 'Unknown error'
       },
       {
-        status: 200,
+        status: 500,
         headers: {
           'Cache-Control': 'no-cache',
         },

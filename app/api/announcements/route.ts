@@ -28,16 +28,13 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Failed to fetch announcements:', error);
 
-    // 返回模拟数据
     return NextResponse.json(
-      [
-        {
-          timestamp: 1752588060,
-          content: '服务器迁移到1.21.7完毕。欢迎来到 Mik Casual 服务器！请遵守服务器规则，友好游戏。',
-        }
-      ],
       {
-        status: 200,
+        error: 'Failed to fetch announcements',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
+      {
+        status: 500,
         headers: {
           'Cache-Control': 'no-cache',
         },

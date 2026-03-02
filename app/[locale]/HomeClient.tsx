@@ -16,7 +16,7 @@ export default function HomeClient() {
   const locale = useLocale();
   const [playerCount, setPlayerCount] = useState(0);
   const [buildingsCount, setBuildingsCount] = useState(0);
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -33,9 +33,14 @@ export default function HomeClient() {
       try {
         const response = await fetch('/api/players');
         const data = await response.json();
-        setPlayerCount(data.count);
+        if (!response.ok || data.error) {
+          setPlayerCount(0);
+        } else {
+          setPlayerCount(data.count || 0);
+        }
       } catch (error) {
         console.error('Failed to fetch player count:', error);
+        setPlayerCount(0);
       }
     };
     fetchPlayers();
@@ -48,9 +53,16 @@ export default function HomeClient() {
       try {
         const response = await fetch('/api/buildings');
         const data = await response.json();
-        setBuildingsCount(data.length);
+        if (!response.ok || data.error) {
+          setBuildingsCount(0);
+        } else if (Array.isArray(data)) {
+          setBuildingsCount(data.length);
+        } else {
+          setBuildingsCount(0);
+        }
       } catch (error) {
         console.error('Failed to fetch buildings:', error);
+        setBuildingsCount(0);
       }
     };
     fetchBuildings();
@@ -61,10 +73,17 @@ export default function HomeClient() {
       try {
         const response = await fetch('/api/announcements');
         const data = await response.json();
-        setAnnouncements(data);
+        if (!response.ok || data.error) {
+          setAnnouncements([]);
+        } else if (Array.isArray(data)) {
+          setAnnouncements(data);
+        } else {
+          setAnnouncements([]);
+        }
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to fetch announcements:', error);
+        setAnnouncements([]);
         setIsLoading(false);
       }
     };

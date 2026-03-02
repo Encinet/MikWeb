@@ -61,6 +61,7 @@ export default function BuildingsPage() {
   const [playerCount, setPlayerCount] = useState(0);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [displayedCount, setDisplayedCount] = useState(12);
   const [searchQuery, setSearchQuery] = useState("");
@@ -104,10 +105,22 @@ export default function BuildingsPage() {
       try {
         const response = await fetch("/api/buildings");
         const data = await response.json();
-        setBuildings(data);
+        
+        if (!response.ok || data.error) {
+          setError(data.message || 'Failed to load buildings');
+          setBuildings([]);
+        } else if (Array.isArray(data)) {
+          setBuildings(data);
+          setError(null);
+        } else {
+          setError('Invalid data format');
+          setBuildings([]);
+        }
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch buildings:", error);
+        setError('Network error occurred');
+        setBuildings([]);
         setIsLoading(false);
       }
     };
@@ -449,6 +462,15 @@ export default function BuildingsPage() {
             <p className="mt-6 text-lg" style={{ color: "var(--text-muted)" }}>
               {t("loading")}
             </p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <Building2
+              className="w-16 h-16 mx-auto mb-4"
+              style={{ color: 'var(--purple-accent)' }}
+            />
+            <p className="text-lg font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>加载失败</p>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>{error}</p>
           </div>
         ) : filteredBuildings.length === 0 ? (
           <div className="text-center py-20">

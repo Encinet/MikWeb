@@ -21,16 +21,29 @@ export default function BansPage() {
   const locale = useLocale();
   const [bans, setBans] = useState<Ban[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBans = async () => {
       try {
         const response = await fetch('/api/bans');
         const data = await response.json();
-        setBans(data);
+        
+        if (!response.ok || data.error) {
+          setError(data.message || 'Failed to load ban list');
+          setBans([]);
+        } else if (Array.isArray(data)) {
+          setBans(data);
+          setError(null);
+        } else {
+          setError('Invalid data format');
+          setBans([]);
+        }
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to fetch bans:', error);
+        setError('Network error occurred');
+        setBans([]);
         setIsLoading(false);
       }
     };
@@ -73,6 +86,12 @@ export default function BansPage() {
           <div className="text-center py-20">
             <div className="inline-block w-12 h-12 border-4 border-red-400 border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-6 text-lg" style={{ color: 'var(--text-muted)' }}>{t('loading')}</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <Shield className="w-16 h-16 mx-auto mb-4 text-red-400" />
+            <p className="text-lg font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>加载失败</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{error}</p>
           </div>
         ) : bans.length === 0 ? (
           <div className="text-center py-20">

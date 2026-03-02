@@ -26,6 +26,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   const handleThemeToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -40,10 +41,21 @@ export default function Navbar() {
       try {
         const response = await fetch('/api/players');
         const data = await response.json();
-        setPlayers(data.players || []);
-        setPlayerCount(data.count || 0);
+        
+        if (!response.ok || data.error) {
+          setIsOnline(false);
+          setPlayers([]);
+          setPlayerCount(0);
+        } else {
+          setIsOnline(true);
+          setPlayers(data.players || []);
+          setPlayerCount(data.count || 0);
+        }
       } catch (error) {
         console.error('Failed to fetch players:', error);
+        setIsOnline(false);
+        setPlayers([]);
+        setPlayerCount(0);
       }
     };
 
@@ -291,18 +303,24 @@ export default function Navbar() {
                 <div style={{
                   width: '8px',
                   height: '8px',
-                  background: '#55FF55',
+                  background: isOnline ? '#55FF55' : '#FF5555',
                   borderRadius: '50%',
-                  boxShadow: '0 0 8px rgba(85,255,85,0.5)'
+                  boxShadow: isOnline ? '0 0 8px rgba(85,255,85,0.5)' : '0 0 8px rgba(255,85,85,0.5)'
                 }}></div>
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: 'var(--text-nav)' }} />
-                <span style={{
-                  color: 'var(--text-player-count)',
-                  fontWeight: 600,
-                  fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-                  fontVariantNumeric: 'tabular-nums'
-                }}>{playerCount}</span>
-                <span className="text-xs sm:text-sm hidden sm:inline" style={{ color: 'var(--text-muted)' }}>{t('online')}</span>
+                {isOnline ? (
+                  <>
+                    <span style={{
+                      color: 'var(--text-player-count)',
+                      fontWeight: 600,
+                      fontSize: 'clamp(1rem, 2vw, 1.125rem)',
+                      fontVariantNumeric: 'tabular-nums'
+                    }}>{playerCount}</span>
+                    <span className="text-xs sm:text-sm hidden sm:inline" style={{ color: 'var(--text-muted)' }}>{t('online')}</span>
+                  </>
+                ) : (
+                  <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>{t('offline')}</span>
+                )}
               </div>
 
               {/* Player List Dropdown */}
