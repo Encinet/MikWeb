@@ -1295,57 +1295,6 @@ export default function BuildingsPage() {
           document.body,
         )}
 
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 1s ease-out;
-        }
-
-        input::placeholder {
-          color: var(--text-muted);
-        }
-
-        select {
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a78bfa' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-          background-repeat: no-repeat;
-          background-position: right 1rem center;
-        }
-
-        select option {
-          background: var(--bg-base);
-          color: var(--text-primary);
-          padding: 0.5rem;
-        }
-
-        :global(.infinite-scroll-component) {
-          overflow: visible !important;
-        }
-
-        :global(.infinite-scroll-component__outerdiv) {
-          overflow: visible !important;
-        }
-      `}</style>
     </div>
   );
 }

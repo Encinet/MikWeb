@@ -1,91 +1,16 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import { Server, Users, Bell, Zap, Play, Award, MessageCircle, X, Building2, Clock } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
+import { Zap, Play, Award, MessageCircle } from 'lucide-react';
 import ScrollReveal from '@/components/ScrollReveal';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createPortal } from 'react-dom';
+import HomeClient from './HomeClient';
 
-export default function HomePage() {
-  const t = useTranslations();
-  const locale = useLocale();
-  const [playerCount, setPlayerCount] = useState(0);
-  const [buildingsCount, setBuildingsCount] = useState(0);
-  const [announcements, setAnnouncements] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // 服务器开始运行日期 (2025-07-15)
-  const SERVER_START_DATE = new Date('2025-07-15');
-  const uptime = Math.floor((Date.now() - SERVER_START_DATE.getTime()) / (1000 * 60 * 60 * 24));
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const response = await fetch('/api/players');
-        const data = await response.json();
-        setPlayerCount(data.count);
-      } catch (error) {
-        console.error('Failed to fetch player count:', error);
-      }
-    };
-
-    fetchPlayers();
-    const interval = setInterval(fetchPlayers, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const fetchBuildings = async () => {
-      try {
-        const response = await fetch('/api/buildings');
-        const data = await response.json();
-        setBuildingsCount(data.length);
-      } catch (error) {
-        console.error('Failed to fetch buildings:', error);
-      }
-    };
-
-    fetchBuildings();
-  }, []);
-
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        const response = await fetch('/api/announcements');
-        const data = await response.json();
-        setAnnouncements(data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch announcements:', error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchAnnouncements();
-  }, []);
-
-  const formatDate = (timestamp: any) => {
-    const date = new Date(typeof timestamp === 'number' ? timestamp * 1000 : timestamp);
-    return date.toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+export default async function HomePage() {
+  const t = await getTranslations();
 
   return (
     <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
-        {/* Hero Section */}
+
+        {/* ── Hero Section (SSR — 立即渲染，直接改善 LCP) ── */}
         <div className="text-center mb-12 sm:mb-20 animate-fadeIn">
           <div style={{
             display: 'inline-block',
@@ -131,37 +56,7 @@ export default function HomePage() {
               href="https://mikapply.noctiro.moe"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px 32px',
-                background: '#FFAA00',
-                color: 'var(--text-button)',
-                fontWeight: 600,
-                fontSize: 'clamp(0.9375rem, 2vw, 1.125rem)',
-                borderRadius: '12px',
-                border: 'none',
-                textDecoration: 'none',
-                transition: 'all 0.25s ease',
-                width: '100%',
-                maxWidth: '20rem'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#e09900';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(255,170,0,0.25)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#FFAA00';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-              onMouseDown={(e) => {
-                e.currentTarget.style.transform = 'scale(0.97)';
-              }}
-              onMouseUp={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
+              className="hero-join-btn"
             >
               <Play className="w-5 h-5" />
               <span>{t('home.hero.joinButton')}</span>
@@ -182,494 +77,83 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-20">
-          {[
-            { icon: Users, label: t('home.stats.activePlayers'), value: `${playerCount}`, iconColor: '#55FF55' },
-            { icon: Building2, label: t('home.stats.totalBuildings'), value: `${buildingsCount}`, iconColor: '#FFAA00' },
-            { icon: Clock, label: t('home.stats.uptime'), value: `${uptime}`, suffix: t('home.stats.days'), iconColor: '#55AAFF' }
-          ].map((stat, i) => (
-            <ScrollReveal key={i} delay={i * 0.1} direction="up">
-            <div
-              key={i}
-              style={{
-                backdropFilter: 'blur(16px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '18px',
-                boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                padding: 'clamp(1.25rem, 3vw, 1.5rem)',
-                transition: 'transform 0.25s ease',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <div style={{
-                width: 'clamp(2.5rem, 6vw, 3rem)',
-                height: 'clamp(2.5rem, 6vw, 3rem)',
-                borderRadius: '12px',
-                backdropFilter: 'blur(16px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                background: 'var(--glass-icon-bg)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 'clamp(0.75rem, 2vw, 1rem)'
-              }}>
-                <stat.icon style={{
-                  width: 'clamp(1.25rem, 3vw, 1.5rem)',
-                  height: 'clamp(1.25rem, 3vw, 1.5rem)',
-                  color: stat.iconColor
-                }} />
-              </div>
-              <div style={{
-                fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
-                fontWeight: 600,
-                color: 'var(--text-secondary)',
-                marginBottom: '4px'
-              }}>
-                {stat.value}
-                {stat.suffix && <span style={{ fontSize: 'clamp(0.875rem, 2vw, 1rem)', marginLeft: '4px', fontWeight: 500 }}>{stat.suffix}</span>}
-              </div>
-              <div style={{
-                color: 'var(--text-muted)',
-                fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)'
-              }}>{stat.label}</div>
-            </div>
-            </ScrollReveal>
-          ))}
-        </div>
+        {/* ── Dynamic Client Section: Stats + Announcements ── */}
+        <HomeClient />
 
-        {/* Announcements */}
-        <ScrollReveal direction="up">
-        <div
-          onClick={() => setShowAnnouncementModal(true)}
-          style={{
-            backdropFilter: 'blur(16px) saturate(150%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-            background: 'var(--glass-bg)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '18px',
-            boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-            padding: 'clamp(1.5rem, 4vw, 2rem)',
-            marginBottom: 'clamp(3rem, 6vw, 5rem)',
-            cursor: 'pointer',
-            transition: 'all 0.25s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-3px)';
-            e.currentTarget.style.boxShadow = '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)';
-          }}
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div style={{
-              padding: '8px',
-              borderRadius: '12px',
-              backdropFilter: 'blur(16px) saturate(150%)',
-              WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-              background: 'var(--glass-icon-bg)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)'
-            }}>
-              <Bell className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#FFAA00' }} />
-            </div>
-            <h3 style={{
-              fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
-              fontWeight: 600,
-              letterSpacing: '-0.02em',
-              color: 'var(--text-secondary)'
-            }}>{t('home.announcements.title')}</h3>
-          </div>
-
-          {isLoading ? (
-            <div className="text-center py-12">
-              <div style={{
-                display: 'inline-block',
-                width: '32px',
-                height: '32px',
-                border: '4px solid rgba(255, 170, 0, 0.3)',
-                borderTop: '4px solid #FFAA00',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }}></div>
-              <p style={{
-                color: 'var(--text-muted)',
-                marginTop: '1rem'
-              }}>{t('home.announcements.loading')}</p>
-            </div>
-          ) : announcements.length === 0 ? (
-            <div className="text-center py-12">
-              <p style={{ color: 'var(--text-muted)' }}>{t('home.announcements.empty')}</p>
-            </div>
-          ) : (
-            <div className="space-y-3 sm:space-y-4">
-              {announcements.slice(0, 3).map((announcement: any, i: number) => (
-                <div
-                  key={i}
-                  style={{
-                    backdropFilter: 'blur(16px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                    background: 'var(--glass-icon-bg)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '12px',
-                    padding: 'clamp(1rem, 3vw, 1.5rem)',
-                    animation: 'slideIn 0.5s ease-out',
-                    animationDelay: `${i * 0.1}s`,
-                    animationFillMode: 'both'
-                  }}
-                >
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div style={{
-                      width: '8px',
-                      height: '8px',
-                      marginTop: '8px',
-                      background: '#FFAA00',
-                      borderRadius: '50%',
-                      flexShrink: 0
-                    }}></div>
-                    <div className="flex-1 min-w-0">
-                      <div style={{
-                        fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
-                        color: 'var(--text-muted)',
-                        marginBottom: '8px'
-                      }}>{formatDate(announcement.timestamp)}</div>
-                      <div style={{
-                        color: 'var(--text-primary)',
-                        lineHeight: 1.75,
-                        whiteSpace: 'pre-line',
-                        fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                      }}>{announcement.content}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {announcements.length > 3 && (
-                <div style={{
-                  textAlign: 'center',
-                  color: 'var(--text-muted)',
-                  fontSize: 'clamp(0.875rem, 2vw, 1rem)',
-                  marginTop: '1rem'
-                }}>
-                  {t('home.announcements.clickToViewAll') || '点击查看全部公告'}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        </ScrollReveal>
-
-        {/* Features */}
+        {/* ── Features (SSR — 静态文字，无需 JS) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           <ScrollReveal direction="left" delay={0.1}>
-          <div style={{
-            backdropFilter: 'blur(16px) saturate(150%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-            background: 'var(--glass-bg)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '18px',
-            boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-            padding: 'clamp(1.5rem, 4vw, 2rem)',
-            transition: 'transform 0.25s ease',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-3px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}>
-            <div className="flex items-start gap-4 sm:gap-6">
-              <div style={{
-                padding: '12px',
-                borderRadius: '12px',
-                backdropFilter: 'blur(16px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                background: 'var(--glass-icon-bg)',
-                border: '1px solid var(--glass-border)',
-                boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                flexShrink: 0
-              }}>
-                <Award className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#FFAA00' }} />
-              </div>
-              <div className="flex-1">
-                <h4 style={{
-                  fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                  fontWeight: 600,
-                  letterSpacing: '-0.02em',
-                  color: 'var(--text-secondary)',
-                  marginBottom: 'clamp(0.75rem, 2vw, 1rem)'
-                }}>{t('home.features.vanilla.title')}</h4>
-                <p style={{
-                  color: 'var(--text-muted)',
-                  lineHeight: 1.75,
-                  fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+            <div className="glass-card hover-lift" style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}>
+              <div className="flex items-start gap-4 sm:gap-6">
+                <div style={{
+                  padding: '12px',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(16px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                  background: 'var(--glass-icon-bg)',
+                  border: '1px solid var(--glass-border)',
+                  boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                  flexShrink: 0
                 }}>
-                  {t('home.features.vanilla.description')}
-                </p>
+                  <Award className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#FFAA00' }} />
+                </div>
+                <div className="flex-1">
+                  <h4 style={{
+                    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                    fontWeight: 600,
+                    letterSpacing: '-0.02em',
+                    color: 'var(--text-secondary)',
+                    marginBottom: 'clamp(0.75rem, 2vw, 1rem)'
+                  }}>{t('home.features.vanilla.title')}</h4>
+                  <p style={{
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.75,
+                    fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                  }}>
+                    {t('home.features.vanilla.description')}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
           </ScrollReveal>
 
           <ScrollReveal direction="right" delay={0.1}>
-          <div style={{
-            backdropFilter: 'blur(16px) saturate(150%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-            background: 'var(--glass-bg)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '18px',
-            boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-            padding: 'clamp(1.5rem, 4vw, 2rem)',
-            transition: 'transform 0.25s ease',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-3px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}>
-            <div className="flex items-start gap-4 sm:gap-6">
-              <div style={{
-                padding: '12px',
-                borderRadius: '12px',
-                backdropFilter: 'blur(16px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                background: 'var(--glass-icon-bg)',
-                border: '1px solid var(--glass-border)',
-                boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                flexShrink: 0
-              }}>
-                <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#55FF55' }} />
-              </div>
-              <div className="flex-1">
-                <h4 style={{
-                  fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                  fontWeight: 600,
-                  letterSpacing: '-0.02em',
-                  color: 'var(--text-secondary)',
-                  marginBottom: 'clamp(0.75rem, 2vw, 1rem)'
-                }}>{t('home.features.community.title')}</h4>
-                <p style={{
-                  color: 'var(--text-muted)',
-                  lineHeight: 1.75,
-                  fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+            <div className="glass-card hover-lift" style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}>
+              <div className="flex items-start gap-4 sm:gap-6">
+                <div style={{
+                  padding: '12px',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(16px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                  background: 'var(--glass-icon-bg)',
+                  border: '1px solid var(--glass-border)',
+                  boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                  flexShrink: 0
                 }}>
-                  {t('home.features.community.description')}
-                </p>
+                  <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#55FF55' }} />
+                </div>
+                <div className="flex-1">
+                  <h4 style={{
+                    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                    fontWeight: 600,
+                    letterSpacing: '-0.02em',
+                    color: 'var(--text-secondary)',
+                    marginBottom: 'clamp(0.75rem, 2vw, 1rem)'
+                  }}>{t('home.features.community.title')}</h4>
+                  <p style={{
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.75,
+                    fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                  }}>
+                    {t('home.features.community.description')}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
           </ScrollReveal>
         </div>
 
-        {/* Announcement Modal */}
-        {mounted &&
-          createPortal(
-            <AnimatePresence>
-              {showAnnouncementModal && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.4)',
-                    backdropFilter: 'blur(32px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(32px) saturate(180%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 9999,
-                    padding: '1rem'
-                  }}
-                  onClick={() => setShowAnnouncementModal(false)}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    transition={{
-                      duration: 0.3,
-                      ease: [0.16, 1, 0.3, 1]
-                    }}
-                    style={{
-                      backdropFilter: 'blur(24px) saturate(180%)',
-                      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                      background: 'var(--modal-bg)',
-                      border: '1px solid var(--modal-border)',
-                      borderRadius: '24px',
-                      boxShadow: '0 24px 64px var(--modal-shadow), 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 var(--modal-inset)',
-                      maxWidth: '800px',
-                      width: '100%',
-                      maxHeight: '85vh',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* Modal Header */}
-                    <div style={{
-                      padding: 'clamp(1.5rem, 4vw, 2rem)',
-                      borderBottom: '1px solid var(--glass-border)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}>
-                      <div className="flex items-center gap-3">
-                        <div style={{
-                          padding: '10px',
-                          borderRadius: '14px',
-                          backdropFilter: 'blur(16px) saturate(150%)',
-                          WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                          background: 'var(--glass-icon-bg)',
-                          border: '1px solid var(--glass-border)',
-                          boxShadow: '0 4px 12px rgba(255, 170, 0, 0.15)'
-                        }}>
-                          <Bell className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#FFAA00' }} />
-                        </div>
-                        <h3 style={{
-                          fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                          fontWeight: 600,
-                          letterSpacing: '-0.02em',
-                          color: 'var(--text-secondary)'
-                        }}>{t('home.announcements.title')}</h3>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05, backgroundColor: 'var(--glass-icon-bg)' }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowAnnouncementModal(false)}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          background: 'transparent',
-                          color: 'var(--text-muted)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = 'var(--text-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--text-muted)';
-                        }}
-                      >
-                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
-                      </motion.button>
-                    </div>
-
-                    {/* Modal Content */}
-                    <div style={{
-                      padding: 'clamp(1.5rem, 4vw, 2rem)',
-                      overflowY: 'auto',
-                      flex: 1
-                    }}>
-                      {isLoading ? (
-                        <div className="text-center py-12">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                            style={{
-                              display: 'inline-block',
-                              width: '40px',
-                              height: '40px',
-                              border: '4px solid rgba(255, 170, 0, 0.2)',
-                              borderTop: '4px solid #FFAA00',
-                              borderRadius: '50%'
-                            }}
-                          />
-                          <p style={{
-                            color: 'var(--text-muted)',
-                            marginTop: '1rem',
-                            fontSize: '0.95rem'
-                          }}>{t('home.announcements.loading')}</p>
-                        </div>
-                      ) : announcements.length === 0 ? (
-                        <div className="text-center py-12">
-                          <Bell className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
-                          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>{t('home.announcements.empty')}</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {announcements.map((announcement: any, i: number) => (
-                            <motion.div
-                              key={i}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: i * 0.05, duration: 0.3 }}
-                              whileHover={{ scale: 1.01 }}
-                              style={{
-                                backdropFilter: 'blur(16px) saturate(150%)',
-                                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                                background: 'var(--glass-icon-bg)',
-                                border: '1px solid var(--glass-border)',
-                                borderRadius: '16px',
-                                padding: 'clamp(1rem, 3vw, 1.5rem)',
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              <div className="flex items-start gap-3 sm:gap-4">
-                                <motion.div
-                                  animate={{ scale: [1, 1.2, 1] }}
-                                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                                  style={{
-                                    width: '10px',
-                                    height: '10px',
-                                    marginTop: '8px',
-                                    background: '#FFAA00',
-                                    borderRadius: '50%',
-                                    flexShrink: 0,
-                                    boxShadow: '0 0 12px rgba(255, 170, 0, 0.6)'
-                                  }}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div style={{
-                                    fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
-                                    color: 'var(--text-muted)',
-                                    marginBottom: '8px',
-                                    fontWeight: 500
-                                  }}>{formatDate(announcement.timestamp)}</div>
-                                  <div style={{
-                                    color: 'var(--text-primary)',
-                                    lineHeight: 1.75,
-                                    whiteSpace: 'pre-line',
-                                    fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                                  }}>{announcement.content}</div>
-                                </div>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>,
-            document.body
-          )}
       </div>
-
     </div>
   );
 }
