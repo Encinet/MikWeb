@@ -35,7 +35,7 @@ export default function Navbar() {
     { id: 'buildings', icon: Building2, label: t('buildings'), path: '/buildings' },
     { id: 'bans', icon: Shield, label: t('bans'), path: '/bans' },
     { id: 'wiki', icon: BookOpen, label: t('wiki'), path: '/wiki' },
-    { id: 'map', icon: Map, label: t('map'), link: 'https://map.mik-casual.com' },
+    { id: 'map', icon: Map, label: t('map'), link: 'https://www.bilibili.com/video/BV1GJ411x7h7' },
     { id: 'apply', icon: Play, label: t('join'), link: 'https://mikapply.noctiro.moe', highlight: true }
   ];
 
