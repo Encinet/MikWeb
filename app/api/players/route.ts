@@ -29,6 +29,7 @@ export async function GET(request: Request) {
     const response = await fetch(`${MINECRAFT_SERVER}/api/players`, {
       headers: {
         'X-API-Key': authHeader || API_KEY,
+        'Accept-Encoding': 'gzip, deflate, br',
       },
       // 设置超时
       signal: AbortSignal.timeout(5000),

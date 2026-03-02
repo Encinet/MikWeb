@@ -27,6 +27,7 @@ export async function GET(request: Request) {
     const response = await fetch(`${MINECRAFT_SERVER}/api/bans`, {
       headers: {
         'X-API-Key': authHeader || API_KEY,
+        'Accept-Encoding': 'gzip, deflate, br',
       },
       signal: AbortSignal.timeout(5000),
     });
