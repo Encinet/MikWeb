@@ -261,7 +261,14 @@ export default function WikiClient({ title, description, navigation, sections, c
                       );
                     },
                     blockquote: ({ children }) => (
-                      <blockquote className="border-l-4 border-blue-400/50 pl-4 py-2 my-4 bg-blue-500/10 rounded-r">
+                      <blockquote
+                        style={{
+                          background: 'var(--glass-bg-light)',
+                          borderLeftColor: 'var(--blue-accent-border)',
+                          borderColor: 'var(--glass-border-light)'
+                        }}
+                        className="border-l-4 pl-4 py-1 my-4 rounded-lg border backdrop-blur-sm [&>p]:mb-0 [&>p:last-child]:mb-0"
+                      >
                         {children}
                       </blockquote>
                     ),
