@@ -18,15 +18,23 @@ This is a creative and casual server. All mods (including hacked clients) are pe
 
 ## Recommended Mods
 
-For the best experience, we recommend using the optimization modpack [Fabulously Optimized](https://modrinth.com/modpack/fabulously-optimized), along with the following mods:
+For a better gameplay experience, we recommend choosing one of the following optimization modpacks:
 
-1. **PlasmoVoice** - Voice chat and music listening
-2. **Xaero's Map Suite** - Specially configured for this server
-   - Xaero's World Map
-   - Xaero's Minimap
-   - XaeroPlus
-3. **ImageFrame Client** - Enhanced color rendering for map art
-4. **Axiom** - A powerful building assistance mod
+| | [Fabulously Optimized](https://modrinth.com/modpack/fabulously-optimized) | [Rapid Optimization](https://modrinth.com/modpack/rapid_optimization) |
+|---|---|---|
+| **Performance** | Solid performance | Higher performance |
+| **Features** | More built-in utilities | Lightweight and minimal |
+
+On top of your chosen modpack, install the following mods for the full experience:
+
+1. **[PlasmoVoice](https://modrinth.com/plugin/plasmo-voice)** - In-game voice chat and music listening
+2. **Xaero's Map Suite** - Configured specifically for our server
+   - [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map)
+   - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+   - [XaeroPlus](https://modrinth.com/mod/xaeroplus)
+3. **[ImageFrame Client](https://modrinth.com/mod/imageframeclient)** - Full-color enhancement for map art
+4. **[Axiom](https://modrinth.com/mod/axiom)** - Powerful building assistance
+5. **[Vivecraft](https://modrinth.com/mod/vivecraft)** - VR support
 
 ## First Time on the Server
 

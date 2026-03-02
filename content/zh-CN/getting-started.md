@@ -18,15 +18,23 @@
 
 ## 推荐模组
 
-为了获得更好的游戏体验，我们推荐你使用优化整合包 [Fabulously Optimized](https://modrinth.com/modpack/fabulously-optimized)，并安装以下模组：
+为了获得更好的游戏体验，我们推荐以下两款优化整合包，按需选择：
 
-1. **PlasmoVoice** - 语音聊天与听歌
+| | [Fabulously Optimized](https://modrinth.com/modpack/fabulously-optimized) | [Rapid Optimization](https://modrinth.com/modpack/rapid_optimization) |
+|---|---|---|
+| **性能** | 性能不错 | 性能更高 |
+| **功能** | 更多常用功能 | 精简纯净 |
+
+在此基础上，再安装以下模组以获得完整体验：
+
+1. **[PlasmoVoice](https://modrinth.com/plugin/plasmo-voice)** - 语音聊天与听歌
 2. **Xaero 地图系列** - 服务器已专门适配
-   - Xaero's World Map
-   - Xaero's Minimap
-   - XaeroPlus
-3. **ImageFrame Client** - 地图画彩色增强
-4. **Axiom** - 强大的建筑辅助模组
+   - [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map)
+   - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+   - [XaeroPlus](https://modrinth.com/mod/xaeroplus)
+3. **[ImageFrame Client](https://modrinth.com/mod/imageframeclient)** - 地图画彩色增强
+4. **[Axiom](https://modrinth.com/mod/axiom)** - 强大的建筑辅助模组
+5. **[Vivecraft](https://modrinth.com/mod/vivecraft)** - VR 支持
 
 ## 首次进入服务器
 
