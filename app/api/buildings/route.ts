@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-const MINECRAFT_SERVER = process.env.MINECRAFT_SERVER_URL || 'http://localhost:8080';
-const API_KEY = process.env.MINECRAFT_API_KEY || '';
+const BUILDINGS_SERVER = process.env.BUILDINGS_SERVER_URL || process.env.MINECRAFT_SERVER_URL || 'http://localhost:8080';
+const API_KEY = process.env.BUILDINGS_API_KEY || process.env.MINECRAFT_API_KEY || '';
 
 // In-memory cache
 let cachedData: any = null;
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get('X-API-Key');
 
-    const response = await fetch(`${MINECRAFT_SERVER}/api/buildings`, {
+    const response = await fetch(`${BUILDINGS_SERVER}/api/buildings`, {
       headers: {
         'X-API-Key': authHeader || API_KEY,
       },
