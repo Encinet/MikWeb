@@ -16,6 +16,15 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const messages = await getMessages({ locale }) as any;
@@ -24,12 +33,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: messages.metadata.title,
     description: messages.metadata.description,
     keywords: ["Minecraft", "Server", "Mik", "Community", "Builds", "Wiki", locale === 'zh-CN' ? '我的世界' : 'Minecraft'],
-    viewport: {
-      width: 'device-width',
-      initialScale: 1,
-      maximumScale: 5,
-      userScalable: true,
-    },
     alternates: {
       canonical: `/${locale}`,
       languages: {
