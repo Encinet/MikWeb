@@ -139,6 +139,10 @@ body {
   background: linear-gradient(160deg, var(--bg-gradient-from) 0%, var(--bg-gradient-to) 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
 }
 
 /* 动画关键帧 */
@@ -185,6 +189,15 @@ body {
 /* 平滑滚动 */
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+html, body {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* View Transitions API support */
@@ -211,6 +224,13 @@ html {
   to {
     -webkit-clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
     clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
+  }
+}
+
+/* 确保页面切换后重置所有 transform */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    view-transition-name: none;
   }
 }
 
