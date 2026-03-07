@@ -16,8 +16,8 @@ const AnimatePresence = dynamic(() => import('framer-motion').then(m => ({ defau
 export default function HomeClient() {
   const t = useTranslations();
   const locale = useLocale();
-  const { playerCount } = usePlayerData();
-  const { buildingsCount, fetchBuildings } = useBuildingsData();
+  const { playerCount, isLoading: isLoadingPlayers } = usePlayerData();
+  const { buildingsCount, fetchBuildings, lastUpdated } = useBuildingsData();
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -72,8 +72,8 @@ export default function HomeClient() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-20">
         {[
-          { icon: Users, label: t('home.stats.activePlayers'), value: `${playerCount}`, iconColor: '#55FF55' },
-          { icon: Building2, label: t('home.stats.totalBuildings'), value: `${buildingsCount}`, iconColor: '#FFAA00' },
+          { icon: Users, label: t('home.stats.activePlayers'), value: isLoadingPlayers ? '-' : `${playerCount}`, iconColor: '#55FF55' },
+          { icon: Building2, label: t('home.stats.totalBuildings'), value: lastUpdated === null ? '-' : `${buildingsCount}`, iconColor: '#FFAA00' },
           { icon: Clock, label: t('home.stats.uptime'), value: `${uptime}`, suffix: t('home.stats.days'), iconColor: '#55AAFF' }
         ].map((stat, i) => (
           <ScrollReveal key={i} delay={i * 0.1} direction="up">

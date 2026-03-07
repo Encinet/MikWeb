@@ -16,11 +16,10 @@ export default function Navbar() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
-  const { players, playerCount, isOnline } = usePlayerData();
+  const { players, playerCount, isOnline, isLoading: isLoadingPlayers } = usePlayerData();
   const [showPlayerList, setShowPlayerList] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
 
   const handleThemeToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -274,7 +273,17 @@ export default function Navbar() {
                   boxShadow: isOnline ? '0 0 8px rgba(85,255,85,0.5)' : '0 0 8px rgba(255,85,85,0.5)'
                 }}></div>
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: 'var(--text-nav)' }} />
-                {isOnline ? (
+                {isLoadingPlayers ? (
+                  <>
+                    <span style={{
+                      color: 'var(--text-player-count)',
+                      fontWeight: 600,
+                      fontSize: 'clamp(1rem, 2vw, 1.125rem)',
+                      fontVariantNumeric: 'tabular-nums'
+                    }}>-</span>
+                    <span className="text-xs sm:text-sm hidden sm:inline" style={{ color: 'var(--text-muted)' }}>{t('online')}</span>
+                  </>
+                ) : isOnline ? (
                   <>
                     <span style={{
                       color: 'var(--text-player-count)',
