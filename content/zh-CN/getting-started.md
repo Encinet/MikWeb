@@ -36,6 +36,11 @@
 4. **[Axiom](https://modrinth.com/mod/axiom)** - 强大的建筑辅助模组
 5. **[Vivecraft](https://modrinth.com/mod/vivecraft)** - VR 支持
 
+剩下是一些服务器无关的推荐mod:
+
+- **[Hey Wiki](https://modrinth.com/mod/hey-wiki)** - 便捷的Wiki查询工具
+- **[voxy](https://modrinth.com/mod/voxy)** - 性能极高的远距离区块渲染模组，获得更好的风景
+
 ## 首次进入服务器
 
 当你第一次进入服务器时：

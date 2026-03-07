@@ -36,6 +36,11 @@ On top of your chosen modpack, install the following mods for the full experienc
 4. **[Axiom](https://modrinth.com/mod/axiom)** - Powerful building assistance
 5. **[Vivecraft](https://modrinth.com/mod/vivecraft)** - VR support
 
+The following are some server-independent recommended mods:
+
+- **[Hey Wiki](https://modrinth.com/mod/hey-wiki)** - A convenient in-game Wiki lookup tool
+- **[voxy](https://modrinth.com/mod/voxy)** - A high-performance distant terrain rendering mod for better scenery
+
 ## First Time on the Server
 
 When you first join:
