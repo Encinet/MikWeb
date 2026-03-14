@@ -70,6 +70,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         setPlayers([]);
         setPlayerCount(0);
         retryCountRef.current++;
+      } else if (data.count === -1) {
+        setIsOnline(false);
+        setPlayers([]);
+        setPlayerCount(0);
+        lastUpdatedRef.current = Date.now();
+        retryCountRef.current = 0;
       } else {
         setIsOnline(true);
         setPlayers(data.players || []);
