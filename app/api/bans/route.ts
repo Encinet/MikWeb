@@ -50,10 +50,7 @@ export async function GET(request: Request) {
     console.error('Failed to fetch bans:', error);
 
     return NextResponse.json(
-      {
-        error: 'Failed to fetch ban list',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to fetch ban list' },
       {
         status: 500,
         headers: {

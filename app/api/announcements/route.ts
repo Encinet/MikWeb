@@ -50,10 +50,7 @@ export async function GET(request: Request) {
     console.error('Failed to fetch announcements:', error);
 
     return NextResponse.json(
-      {
-        error: 'Failed to fetch announcements',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to fetch announcements' },
       {
         status: 500,
         headers: {

@@ -50,10 +50,7 @@ export async function GET(request: Request) {
     console.error('Failed to fetch buildings:', error);
 
     return NextResponse.json(
-      {
-        error: 'Failed to fetch buildings',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to fetch buildings' },
       {
         status: 500,
         headers: {

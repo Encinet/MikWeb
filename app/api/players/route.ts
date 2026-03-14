@@ -52,10 +52,7 @@ export async function GET(request: Request) {
     console.error('Failed to fetch player count:', error);
 
     return NextResponse.json(
-      {
-        error: 'Failed to fetch player data',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to fetch player data' },
       {
         status: 500,
         headers: {
