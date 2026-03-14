@@ -7,10 +7,11 @@ interface ProxyRouteConfig {
   cacheDuration: number;       // ms
   cacheMaxAge: number;         // seconds (for Cache-Control)
   errorMessage: string;
+  staleOnError?: boolean;      // return stale cache on upstream failure, default true
 }
 
 export function createProxyHandler(config: ProxyRouteConfig) {
-  const { serverUrl, apiKey, path, cacheDuration, cacheMaxAge, errorMessage } = config;
+  const { serverUrl, apiKey, path, cacheDuration, cacheMaxAge, errorMessage, staleOnError = true } = config;
 
   let cachedData: unknown = null;
   let cacheTimestamp = 0;
@@ -56,6 +57,15 @@ export function createProxyHandler(config: ProxyRouteConfig) {
       });
     } catch (error) {
       console.error(`Failed to fetch ${path}:`, error);
+
+      if (staleOnError && cachedData) {
+        return NextResponse.json(cachedData, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'X-Cache': 'STALE',
+          },
+        });
+      }
 
       return NextResponse.json(
         { error: errorMessage },

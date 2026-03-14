@@ -7,4 +7,5 @@ export const GET = createProxyHandler({
   cacheDuration: 5000,
   cacheMaxAge: 5,
   errorMessage: 'Failed to fetch player data',
+  staleOnError: false,
 });
