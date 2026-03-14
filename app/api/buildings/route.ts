@@ -22,11 +22,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    const authHeader = request.headers.get('X-API-Key');
-
     const response = await fetch(`${BUILDINGS_SERVER}/api/buildings`, {
       headers: {
-        'X-API-Key': authHeader || API_KEY,
+        'X-API-Key': API_KEY,
         'Accept-Encoding': 'gzip, deflate, br',
       },
       signal: AbortSignal.timeout(5000),

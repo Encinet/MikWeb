@@ -22,13 +22,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 从请求头获取 API Key（如果需要）
-    const authHeader = request.headers.get('X-API-Key');
-
     // 代理请求到 Minecraft 服务器
     const response = await fetch(`${MINECRAFT_SERVER}/api/players`, {
       headers: {
-        'X-API-Key': authHeader || API_KEY,
+        'X-API-Key': API_KEY,
         'Accept-Encoding': 'gzip, deflate, br',
       },
       // 设置超时
