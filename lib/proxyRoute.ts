@@ -21,7 +21,7 @@ export function createProxyHandler(config: ProxyRouteConfig) {
   return async function GET(_request: Request): Promise<NextResponse> {
     const now = Date.now();
 
-    if (cachedData && now - cacheTimestamp < cacheDuration) {
+    if (cachedData !== null && now - cacheTimestamp < cacheDuration) {
       return NextResponse.json(cachedData, {
         headers: {
           'Cache-Control': `public, s-maxage=${cacheMaxAge}, stale-while-revalidate=${cacheMaxAge * 2}`,
@@ -62,6 +62,8 @@ export function createProxyHandler(config: ProxyRouteConfig) {
       if (onError) {
         try {
           const fallback = await onError();
+          cachedData = fallback;
+          cacheTimestamp = Date.now();
           return NextResponse.json(fallback, {
             headers: { 'Cache-Control': 'no-cache', 'X-Cache': 'FALLBACK' },
           });
@@ -70,7 +72,7 @@ export function createProxyHandler(config: ProxyRouteConfig) {
         }
       }
 
-      if (staleOnError && cachedData) {
+      if (staleOnError && cachedData !== null) {
         return NextResponse.json(cachedData, {
           headers: {
             'Cache-Control': 'no-cache',
