@@ -1,487 +1,143 @@
-# Mik Casual 服务器官网
+# MikWeb
 
-一个基于 Next.js 的 Mik Casual 服务器官网，支持国际化、主题切换和完整的服务器数据展示。
+Mik Casual 服务器官网，基于 Next.js App Router + next-intl，支持 zh-CN / en 双语。
 
-## 开始
-
-### 1. 安装依赖
+## 快速开始
 
 ```bash
 bun install
-```
-
-### 2. 配置环境变量
-
-创建 `.env.local` 文件：
-
-```env
-# Minecraft 服务器 API 地址
-MINECRAFT_SERVER_URL=http://your-minecraft-server:8080
-
-# API Key（可选）
-MINECRAFT_API_KEY=your-api-key-here
-
-# 建筑服务器 API 地址（可选，不设置则使用 MINECRAFT_SERVER_URL）
-BUILDINGS_SERVER_URL=http://your-buildings-server:8080
-
-# 建筑服务器 API Key（可选，不设置则使用 MINECRAFT_API_KEY）
-BUILDINGS_API_KEY=your-buildings-api-key-here
-```
-
-### 3. 运行开发服务器
-
-```bash
+cp .env.example .env  # 编辑环境变量
 bun dev
 ```
 
-访问 http://localhost:3000 查看网站。
+## 环境变量
 
-### 4. 构建生产版本
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `MINECRAFT_SERVER_URL` | ✓ | 主服务器 API base URL |
+| `MINECRAFT_API_KEY` | — | 主服务器 API Key，随请求头 `X-API-Key` 转发 |
+| `BUILDINGS_SERVER_URL` | — | 建筑服务器 API base URL，默认回退到 `MINECRAFT_SERVER_URL` |
+| `BUILDINGS_API_KEY` | — | 建筑服务器 API Key，默认回退到 `MINECRAFT_API_KEY` |
 
-```bash
-bun run build
-bun start
+## API 路由
+
+所有路由均为后端代理，带内存缓存层，响应头含 `X-Cache: HIT/MISS`。
+
+| 路由 | 上游 | 内存缓存 | HTTP Cache-Control |
+|------|------|----------|--------------------|
+| `GET /api/players` | 主服务器 | 5s | `public, s-maxage=5, stale-while-revalidate=15` |
+| `GET /api/announcements` | 主服务器 | 300s | `public, s-maxage=300, stale-while-revalidate=600` |
+| `GET /api/buildings` | 建筑服务器 | 300s | `public, s-maxage=300, stale-while-revalidate=600` |
+| `GET /api/bans` | 主服务器 | 60s | `public, s-maxage=60, stale-while-revalidate=120` |
+
+### 数据结构
+
+<details>
+<summary><code>GET /api/players</code></summary>
+
+```ts
+{ count: number; players: { name: string; uuid: string }[] }
 ```
+</details>
 
-## API 文档
+<details>
+<summary><code>GET /api/announcements</code></summary>
 
-本项目内置了 4 个 API 路由，用于代理 Minecraft 服务器的数据。所有 API 都支持通过 `X-API-Key` 请求头传递认证密钥。
-
-### 1. 获取在线玩家
-
-**端点**: `GET /api/players`
-
-**描述**: 获取当前在线玩家数量和玩家列表
-
-**请求头**:
+```ts
+{ timestamp: number | string; content: string }[]
+// timestamp: Unix 秒 或 ISO 8601
 ```
-X-API-Key: your-api-key (可选)
-```
+</details>
 
-**响应格式**:
-```json
+<details>
+<summary><code>GET /api/buildings</code></summary>
+
+```ts
 {
-  "count": 3,
-  "players": [
-    {
-      "name": "Steve",
-      "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5"
-    },
-    {
-      "name": "Alex",
-      "uuid": "8667ba71-b85a-4004-af54-457a9734eed7"
-    }
-  ]
-}
+  name: Record<string, string>;
+  description: Record<string, string>;
+  coordinates: { x: number; y: number; z: number };
+  builders: { name: string; uuid: string; weight: number }[];  // weight 越大贡献越多
+  buildType: "original" | "derivative" | "replica";
+  images: string[];        // 首张为封面
+  buildDate: string;       // ISO 8601 或 Unix 时间戳
+  tags?: Record<string, string>[];  // 多语言，回退顺序: 当前语言 → zh-CN → 首个
+  source?: {
+    originalAuthor?: string;
+    originalLink?: string;
+    notes?: Record<string, string>;
+  } | null;
+}[]
 ```
 
-**字段说明**:
-- `count` (number): 在线玩家数量
-- `players` (array): 玩家列表
-  - `name` (string): 玩家名称
-  - `uuid` (string): 玩家 UUID
+无 `id` 字段，前端通过坐标 + 日期 + builders 哈希生成唯一标识。所有建筑遵循 **CC BY-NC-SA 4.0**。
+</details>
 
-**缓存策略**:
-- HTTP 缓存：5 秒公共缓存，15 秒 stale-while-revalidate
-- 内存缓存：5 秒（在缓存有效期内不会请求 Minecraft 服务器）
-- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
+<details>
+<summary><code>GET /api/bans</code></summary>
 
----
-
-### 2. 获取服务器公告
-
-**端点**: `GET /api/announcements`
-
-**描述**: 获取服务器公告列表
-
-**请求头**:
+```ts
+{
+  playerName: string;
+  playerUuid: string;    // 唯一标识
+  reason: string;
+  bannedBy: string;
+  bannedAt: string;      // ISO 8601
+  expiresAt: string | null;
+  isPermanent: boolean;
+}[]
 ```
-X-API-Key: your-api-key (可选)
-```
-
-**响应格式**:
-```json
-[
-  {
-    "timestamp": 1705305600,
-    "content": "服务器将于明天进行维护"
-  },
-  {
-    "timestamp": 1705219200,
-    "content": "欢迎新玩家加入！"
-  }
-]
-```
-
-**字段说明**:
-- `timestamp` (number): Unix 时间戳（秒）或 ISO 8601 日期字符串
-- `content` (string): 公告内容
-
-**缓存策略**:
-- HTTP 缓存：300 秒公共缓存，600 秒 stale-while-revalidate
-- 内存缓存：300 秒（在缓存有效期内不会请求 Minecraft 服务器）
-- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
-
----
-
-### 3. 获取建筑收录
-
-**端点**: `GET /api/buildings`
-
-**描述**: 获取服务器建筑收录列表
-
-**请求头**:
-```
-X-API-Key: your-api-key (可选)
-```
-
-**响应格式**:
-```json
-[
-  {
-    "name": {
-      "zh-CN": "主城大教堂",
-      "en": "Main Cathedral"
-    },
-    "description": {
-      "zh-CN": "位于主城中心的宏伟建筑",
-      "en": "A magnificent building in the center"
-    },
-    "coordinates": {
-      "x": 100,
-      "y": 64,
-      "z": -200
-    },
-    "builders": [
-      {
-        "name": "Steve",
-        "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
-        "weight": 100
-      },
-      {
-        "name": "Alex",
-        "uuid": "8667ba71-b85a-4004-af54-457a9734eed7",
-        "weight": 50
-      }
-    ],
-    "buildType": "original",
-    "images": [
-      "/buildings/cathedral-front.png",
-      "/buildings/cathedral-interior.png",
-      "/buildings/cathedral-aerial.png"
-    ],
-    "buildDate": "2024-01-15",
-    "tags": [
-      { "zh-CN": "宗教", "en": "religious" },
-      { "zh-CN": "大型", "en": "large" },
-      { "zh-CN": "地标", "en": "landmark" }
-    ],
-    "source": null
-  },
-  {
-    "name": {
-      "zh-CN": "艾菲尔铁塔复刻",
-      "en": "Eiffel Tower Replica"
-    },
-    "description": {
-      "zh-CN": "1:1还原的艾菲尔铁塔",
-      "en": "A 1:1 replica of the Eiffel Tower"
-    },
-    "coordinates": {
-      "x": 800,
-      "y": 64,
-      "z": -600
-    },
-    "builders": [
-      {
-        "name": "Builder123",
-        "uuid": "f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2",
-        "weight": 80
-      },
-      {
-        "name": "Helper456",
-        "uuid": "b0c69a0b-4e9a-4726-a5be-fca90e38aaf5",
-        "weight": 80
-      },
-      {
-        "name": "Assistant789",
-        "uuid": "d1e79f4-44e9-4726-a5be-fca90e38aaf5",
-        "weight": 40
-      }
-    ],
-    "buildType": "replica",
-    "images": [
-      "/buildings/eiffel-day.png",
-      "/buildings/eiffel-night.png"
-    ],
-    "buildDate": "2024-01-28",
-    "tags": [
-      { "zh-CN": "地标", "en": "landmark" },
-      { "zh-CN": "大型", "en": "large" },
-      { "zh-CN": "历史", "en": "historical" }
-    ],
-    "source": {
-      "originalAuthor": "Gustave Eiffel",
-      "originalLink": "https://www.planetminecraft.com/project/eiffel-tower",
-      "notes": {
-        "zh-CN": "基于真实艾菲尔铁塔的1:1复刻",
-        "en": "Based on the real Eiffel Tower, 1:1 scale"
-      }
-    }
-  }
-]
-```
-
-**字段说明**:
-- `name` (object): 多语言建筑名称
-- `description` (object): 多语言建筑描述
-- `coordinates` (object): 建筑坐标
-  - `x`, `y`, `z` (number): 三维坐标
-- `builders` (array): 建造者列表（按贡献权重排序）
-  - `name` (string): 建造者名称
-  - `uuid` (string): 建造者 UUID
-  - `weight` (number): 贡献权重（数值越大表示贡献越大，相同权重视为贡献相等）
-- `buildType` (string): 建筑类型
-  - `original`: 原创作品
-  - `derivative`: 二创作品
-  - `replica`: 搬运作品
-- `images` (array): 建筑图片数组，支持多张图片
-  - 可以是单张图片的数组（如 `["/buildings/image.png"]`）
-  - 也可以是多张图片的数组，详情弹窗将显示图片轮播
-  - 卡片展示使用第一张图片作为封面
-- `buildDate` (string): 建造日期（ISO 8601 格式或 Unix 时间戳）
-- `tags` (array, 可选): 建筑标签数组，支持多语言
-  - 每个标签是一个对象，包含不同语言的翻译
-  - 格式：`[{ "zh-CN": "中世纪", "en": "medieval" }, { "zh-CN": "大型", "en": "large" }]`
-  - 前端会根据当前语言自动显示对应翻译，支持回退到 zh-CN 或第一个可用语言
-- `source` (object, 可选): 来源信息（仅非原创作品）
-  - `originalAuthor` (string, 可选): 原作者
-  - `originalLink` (string, 可选): 原作品链接
-  - `notes` (object, 可选): 多语言备注
-
-**注意**: 建筑数据不包含id字段，前端通过坐标、日期和建造者信息的哈希算法生成唯一标识。
-
-**缓存策略**:
-- HTTP 缓存：300 秒公共缓存，600 秒 stale-while-revalidate
-- 内存缓存：300 秒（在缓存有效期内不会请求 Minecraft 服务器）
-- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
-
-**许可证**: 所有建筑作品遵循 CC BY-NC-SA 4.0 许可证
-
----
-
-### 4. 获取封禁列表
-
-**端点**: `GET /api/bans`
-
-**描述**: 获取服务器封禁记录列表
-
-**请求头**:
-```
-X-API-Key: your-api-key (可选)
-```
-
-**响应格式**:
-```json
-[
-  {
-    "playerName": "Griefer123",
-    "playerUuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
-    "reason": "恶意破坏他人建筑",
-    "bannedBy": "Admin",
-    "bannedAt": "2024-01-15T10:30:00Z",
-    "expiresAt": null,
-    "isPermanent": true
-  },
-  {
-    "playerName": "Spammer456",
-    "playerUuid": "8667ba71-b85a-4004-af54-457a9734eed7",
-    "reason": "频繁发送垃圾信息",
-    "bannedBy": "Moderator",
-    "bannedAt": "2024-02-10T15:45:00Z",
-    "expiresAt": "2024-03-10T15:45:00Z",
-    "isPermanent": false
-  }
-]
-```
-
-**字段说明**:
-- `playerName` (string): 被封禁玩家名称
-- `playerUuid` (string): 被封禁玩家 UUID（作为唯一标识）
-- `reason` (string): 封禁原因
-- `bannedBy` (string): 执行封禁的管理员
-- `bannedAt` (string): 封禁时间（ISO 8601 格式）
-- `expiresAt` (string | null): 解封时间（null 表示永久封禁）
-- `isPermanent` (boolean): 是否为永久封禁
-
-**缓存策略**:
-- HTTP 缓存：60 秒公共缓存，120 秒 stale-while-revalidate
-- 内存缓存：60 秒（在缓存有效期内不会请求 Minecraft 服务器）
-- 响应头包含 `X-Cache: HIT` 或 `X-Cache: MISS` 标识缓存状态
-
----
-
-## 国际化
-
-项目支持中文（zh-CN）和英文（en）两种语言。翻译文件位于 `messages/` 目录：
-
-- `messages/zh-CN.json`: 中文翻译
-- `messages/en.json`: 英文翻译
-
-### 添加新语言
-
-1. 在 `messages/` 目录创建新的语言文件（如 `ja.json`）
-2. 在 `i18n/routing.ts` 中添加新语言到 `locales` 数组
-3. 复制现有翻译文件的结构并翻译内容
-
-## 主题系统
-
-项目支持深色和浅色两种主题，使用 CSS 变量实现：
-
-- 深色主题：默认主题，适合夜间浏览
-- 浅色主题：使用柔和的阴影替代边框
-
-主题切换按钮位于导航栏右上角。
-
-## 部署
-
-### 部署到 Vercel
-
-1. 推送代码到 GitHub
-2. 在 Vercel 导入项目
-3. 配置环境变量：
-   - `MINECRAFT_SERVER_URL`: Minecraft 服务器 API 地址
-   - `MINECRAFT_API_KEY`: API 密钥（可选）
-4. 部署
+</details>
 
 ## 项目结构
 
 ```
 MikWeb/
-├── app/                      # Next.js App Router
-│   ├── [locale]/            # 国际化路由
-│   │   ├── page.tsx         # 首页（服务端组件）
-│   │   ├── HomeClient.tsx   # 首页客户端组件
-│   │   ├── layout.tsx       # 语言布局
-│   │   ├── buildings/       # 建筑收录页
-│   │   │   └── page.tsx
-│   │   ├── bans/            # 封禁列表页
-│   │   │   └── page.tsx
-│   │   └── wiki/            # 游戏指南页
-│   │       ├── page.tsx
-│   │       └── WikiClient.tsx
-│   ├── api/                 # API 路由（带内存缓存）
-│   │   ├── players/         # 玩家 API（5秒缓存）
-│   │   │   └── route.ts
-│   │   ├── announcements/   # 公告 API（300秒缓存）
-│   │   │   └── route.ts
-│   │   ├── buildings/       # 建筑 API（300秒缓存）
-│   │   │   └── route.ts
-│   │   └── bans/            # 封禁 API（60秒缓存）
-│   │       └── route.ts
-│   ├── layout.tsx           # 根布局
-│   ├── globals.css          # 全局样式
-│   ├── manifest.ts          # PWA 清单
-│   ├── robots.ts            # robots.txt
-│   └── sitemap.ts           # 站点地图
-├── components/              # React 组件
-│   ├── Navbar.tsx           # 导航栏（带玩家列表）
-│   ├── Footer.tsx           # 页脚
-│   ├── Background.tsx       # 动态背景
-│   ├── MinecraftAvatar.tsx  # 玩家头像组件
-│   ├── ScrollReveal.tsx     # 滚动动画
-│   ├── StructuredData.tsx   # SEO 结构化数据
-│   └── ThemeProvider.tsx    # 主题提供者
-├── contexts/                # React Context
-│   ├── PlayerContext.tsx    # 玩家数据全局状态
-│   └── BuildingsContext.tsx # 建筑数据全局状态
-├── content/                 # Wiki 内容（Markdown）
-│   ├── zh-CN/              # 中文内容
-│   │   ├── getting-started.md
-│   │   ├── commands.md
-│   │   ├── tips.md
-│   │   ├── rules.md
-│   │   └── community.md
-│   └── en/                 # 英文内容
-│       ├── getting-started.md
-│       ├── commands.md
-│       ├── tips.md
-│       ├── rules.md
-│       └── community.md
-├── messages/                # 国际化翻译
-│   ├── zh-CN.json          # 中文
-│   └── en.json             # 英文
-├── i18n/                    # 国际化配置
-│   └── routing.ts          # 路由配置
-├── public/                  # 静态资源
-│   └── mik-standard-rounded.webp
-├── i18n.ts                 # 国际化主配置
-└── next.config.ts          # Next.js 配置
+├── app/
+│   ├── [locale]/
+│   │   ├── page.tsx / HomeClient.tsx
+│   │   ├── buildings/page.tsx
+│   │   ├── bans/page.tsx
+│   │   └── wiki/page.tsx / WikiClient.tsx
+│   ├── api/
+│   │   ├── players/route.ts
+│   │   ├── announcements/route.ts
+│   │   ├── buildings/route.ts
+│   │   └── bans/route.ts
+│   ├── globals.css
+│   ├── manifest.ts / robots.ts / sitemap.ts
+│   └── layout.tsx
+├── components/
+│   ├── Navbar.tsx          # 含在线玩家列表
+│   ├── Footer.tsx
+│   ├── Background.tsx      # 动态背景
+│   ├── MinecraftAvatar.tsx
+│   ├── ScrollReveal.tsx
+│   ├── StructuredData.tsx  # SEO JSON-LD
+│   └── ThemeProvider.tsx
+├── contexts/
+│   ├── PlayerContext.tsx
+│   └── BuildingsContext.tsx
+├── content/                # Wiki Markdown 源文件
+│   ├── zh-CN/{getting-started,commands,tips,rules,community}.md
+│   └── en/
+├── lib/
+│   └── proxyRoute.ts       # API 路由代理与缓存
+├── messages/               # next-intl 翻译
+│   ├── zh-CN.json
+│   └── en.json
+├── i18n/routing.ts         # locales 配置
+├── i18n.ts
+├── proxy.ts                # i18n 中间件
+└── next.config.ts
 ```
 
-## 技术栈
+## 国际化
 
-- **框架**: Next.js 15 (App Router)
-- **UI 库**: React 19
-- **语言**: TypeScript
-- **样式**: Tailwind CSS v4
-- **图标**: Lucide React
-- **国际化**: next-intl
-- **主题**: next-themes
-- **图片优化**: Next.js Image
-- **运行时**: Bun
+翻译文件位于 `messages/`，路由配置在 `i18n/routing.ts`。新增语言：在 `locales` 数组追加 locale，并在 `messages/` 和 `content/` 下创建对应目录。
 
-## 自定义配置
+## 构建 & 部署
 
-### 修改服务器信息
-
-编辑 `messages/zh-CN.json` 和 `messages/en.json` 修改文本内容。
-
-### 修改导航链接
-
-编辑 `components/Navbar.tsx` 中的 `navItems` 数组。
-
-### 添加新页面
-
-1. 在 `app/[locale]/` 目录创建新文件夹
-2. 添加 `page.tsx` 文件
-3. 在翻译文件中添加对应文本
-4. 在 Navbar 中添加导航链接
-
-### 自定义主题颜色
-
-编辑 `app/globals.css` 中的 CSS 变量：
-
-```css
-:root,
-[data-theme="dark"] {
-  --text-primary: #FFFFFF;
-  --text-secondary: #FFFFFF;
-  /* ... 更多变量 */
-}
-
-[data-theme="light"] {
-  --text-primary: #000000;
-  --text-secondary: #000000;
-  /* ... 更多变量 */
-}
+```bash
+bun run build && bun start
 ```
-
-## 开发指南
-
-### 添加新的 API 端点
-
-1. 在 `app/api/` 创建新文件夹
-2. 添加 `route.ts` 文件
-3. 实现 GET/POST 等方法
-4. 配置缓存策略和降级数据
-
-### 玩家头像缓存
-
-项目使用 `MinecraftAvatar` 组件自动缓存玩家头像，支持多服务 fallback：
-
-- 主服务: MineSkin `https://mineskin.eu/helm/{uuid}?size={size}`
-- Fallback 1: Minotar `https://minotar.net/avatar/{uuid}/{size}`
-- Fallback 2: MC Heads `https://mc-heads.net/avatar/{uuid}/{size}`
-
-当主服务失败时，组件会自动切换到备用服务，确保头像始终可用。
