@@ -35,6 +35,7 @@
 3. **[ImageFrame Client](https://modrinth.com/mod/imageframeclient)** - 地图画彩色增强
 4. **[Axiom](https://modrinth.com/mod/axiom)** - 强大的建筑辅助模组
 5. **[Vivecraft](https://modrinth.com/mod/vivecraft)** - VR 支持
+6. **[FeatherMorphClient](https://modrinth.com/mod/feathermorphclient)** - 为生物变身(Morph)功能提供额外的客户端控制支持，如变身选择界面和技能快捷菜单
 
 剩下是一些服务器无关的推荐mod:
 

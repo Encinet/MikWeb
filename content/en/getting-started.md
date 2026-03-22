@@ -35,6 +35,7 @@ On top of your chosen modpack, install the following mods for the full experienc
 3. **[ImageFrame Client](https://modrinth.com/mod/imageframeclient)** - Full-color enhancement for map art
 4. **[Axiom](https://modrinth.com/mod/axiom)** - Powerful building assistance
 5. **[Vivecraft](https://modrinth.com/mod/vivecraft)** - VR support
+6. **[FeatherMorphClient](https://modrinth.com/mod/feathermorphclient)** - Adds extra client-side controls for the Morph mod, such as a morph selection screen and a skill shortcut menu.
 
 The following are some server-independent recommended mods:
 

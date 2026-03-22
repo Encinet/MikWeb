@@ -6,25 +6,26 @@
 
 服务器支持以下原版指令，点击可查看详细文档：
 
-| 指令 | 说明 |
-|------|------|
-| [`/attribute`](https://zh.minecraft.wiki/w/命令/attribute) | 查询或修改实体的属性值 |
-| [`/clear`](https://zh.minecraft.wiki/w/命令/clear) | 清除玩家背包中的物品 |
-| [`/damage`](https://zh.minecraft.wiki/w/命令/damage) | 对实体造成指定类型与数值的伤害 |
-| [`/effect`](https://zh.minecraft.wiki/w/命令/effect) | 为实体添加或清除状态效果 |
-| [`/enchant`](https://zh.minecraft.wiki/w/命令/enchant) | 为玩家手持物品附魔 |
-| [`/fill`](https://zh.minecraft.wiki/w/命令/fill) | 用指定方块填充区域 |
-| [`/gamemode`](https://zh.minecraft.wiki/w/命令/gamemode) | 切换玩家游戏模式 |
-| [`/give`](https://zh.minecraft.wiki/w/命令/give) | 给予玩家指定物品 |
-| [`/item`](https://zh.minecraft.wiki/w/命令/item) | 修改容器或实体装备栏中的物品 |
-| [`/ride`](https://zh.minecraft.wiki/w/命令/ride) | 控制实体的骑乘关系 |
-| [`/save-all`](https://zh.minecraft.wiki/w/命令/save) | 立即保存服务器世界数据 |
-| [`/seed`](https://zh.minecraft.wiki/w/命令/seed) | 显示当前世界的种子 |
-| [`/setblock`](https://zh.minecraft.wiki/w/命令/setblock) | 在指定位置放置方块 |
-| [`/tp`](https://zh.minecraft.wiki/w/命令/tp) | 传送实体到指定位置或其他实体处 |
-| [`/tellraw`](https://zh.minecraft.wiki/w/命令/tellraw) | 向玩家发送格式化的 JSON 文本消息 |
-| [`/time`](https://zh.minecraft.wiki/w/命令/time) | 查询或修改世界时间 |
-| [`/weather`](https://zh.minecraft.wiki/w/命令/weather) | 切换世界天气 |
+| 指令 | 说明 | 需要正式成员 |
+|------|------|:----------:|
+| [`/attribute`](https://zh.minecraft.wiki/w/命令/attribute) | 查询或修改实体的属性值 | ✔ |
+| [`/clear`](https://zh.minecraft.wiki/w/命令/clear) | 清除玩家背包中的物品 | |
+| [`/damage`](https://zh.minecraft.wiki/w/命令/damage) | 对实体造成指定类型与数值的伤害 | ✔ |
+| [`/effect`](https://zh.minecraft.wiki/w/命令/effect) | 为实体添加或清除状态效果 | ✔ |
+| [`/enchant`](https://zh.minecraft.wiki/w/命令/enchant) | 为玩家手持物品附魔 | |
+| [`/fill`](https://zh.minecraft.wiki/w/命令/fill) | 用指定方块填充区域 | ✔ |
+| [`/gamemode`](https://zh.minecraft.wiki/w/命令/gamemode) | 切换玩家游戏模式 | |
+| [`/give`](https://zh.minecraft.wiki/w/命令/give) | 给予玩家指定物品 | |
+| [`/item`](https://zh.minecraft.wiki/w/命令/item) | 修改容器或实体装备栏中的物品 | ✔ |
+| [`/ride`](https://zh.minecraft.wiki/w/命令/ride) | 控制实体的骑乘关系 | ✔ |
+| [`/save-all`](https://zh.minecraft.wiki/w/命令/save) | 立即保存服务器世界数据 | ✔ |
+| [`/seed`](https://zh.minecraft.wiki/w/命令/seed) | 显示当前世界的种子 | |
+| [`/setblock`](https://zh.minecraft.wiki/w/命令/setblock) | 在指定位置放置方块 | ✔ |
+| [`/summon`](https://zh.minecraft.wiki/w/命令/summon) | 在指定位置生成实体 | ✔ |
+| [`/tp`](https://zh.minecraft.wiki/w/命令/tp) | 传送实体到指定位置或其他实体处 | |
+| [`/tellraw`](https://zh.minecraft.wiki/w/命令/tellraw) | 向玩家发送格式化的 JSON 文本消息 | |
+| [`/time`](https://zh.minecraft.wiki/w/命令/time) | 查询或修改世界时间 | |
+| [`/weather`](https://zh.minecraft.wiki/w/命令/weather) | 切换世界天气 | |
 
 ## 传送与位置
 

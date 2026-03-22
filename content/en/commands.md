@@ -4,27 +4,28 @@ Below is a list of commonly used commands on the server. Click on any vanilla co
 
 ## Vanilla Commands
 
-The server supports the following vanilla commands — click to view full documentation:
+The server supports the following vanilla commands. Click to view detailed documentation:
 
-| Command | Description |
-|---------|-------------|
-| [`/attribute`](https://minecraft.wiki/w/Commands/attribute) | Query or modify an entity's attribute values |
-| [`/clear`](https://minecraft.wiki/w/Commands/clear) | Clear items from a player's inventory |
-| [`/damage`](https://minecraft.wiki/w/Commands/damage) | Deal a specified type and amount of damage to an entity |
-| [`/effect`](https://minecraft.wiki/w/Commands/effect) | Apply or remove status effects from an entity |
-| [`/enchant`](https://minecraft.wiki/w/Commands/enchant) | Enchant the item a player is holding |
-| [`/fill`](https://minecraft.wiki/w/Commands/fill) | Fill a region with a specified block |
-| [`/gamemode`](https://minecraft.wiki/w/Commands/gamemode) | Switch a player's game mode |
-| [`/give`](https://minecraft.wiki/w/Commands/give) | Give a player a specified item |
-| [`/item`](https://minecraft.wiki/w/Commands/item) | Modify items in a container or entity's equipment slots |
-| [`/ride`](https://minecraft.wiki/w/Commands/ride) | Control riding relationships between entities |
-| [`/save-all`](https://minecraft.wiki/w/Commands/save) | Immediately save all world data to disk |
-| [`/seed`](https://minecraft.wiki/w/Commands/seed) | Display the current world seed |
-| [`/setblock`](https://minecraft.wiki/w/Commands/setblock) | Place a block at a specified location |
-| [`/tp`](https://minecraft.wiki/w/Commands/tp) | Teleport an entity to a location or another entity |
-| [`/tellraw`](https://minecraft.wiki/w/Commands/tellraw) | Send a formatted JSON text message to players |
-| [`/time`](https://minecraft.wiki/w/Commands/time) | Query or modify the world time |
-| [`/weather`](https://minecraft.wiki/w/Commands/weather) | Change the world's weather |
+| Command | Description | Requires Member |
+|---------|-------------|:-------------------:|
+| [`/attribute`](https://minecraft.wiki/w/Commands/attribute) | Query or modify an entity's attributes | ✔ |
+| [`/clear`](https://minecraft.wiki/w/Commands/clear) | Remove items from a player's inventory | |
+| [`/damage`](https://minecraft.wiki/w/Commands/damage) | Deal damage of a specified type and amount to an entity | ✔ |
+| [`/effect`](https://minecraft.wiki/w/Commands/effect) | Add or remove status effects from an entity | ✔ |
+| [`/enchant`](https://minecraft.wiki/w/Commands/enchant) | Enchant the item a player is holding | |
+| [`/fill`](https://minecraft.wiki/w/Commands/fill) | Fill a region with a specified block | ✔ |
+| [`/gamemode`](https://minecraft.wiki/w/Commands/gamemode) | Change a player's game mode | |
+| [`/give`](https://minecraft.wiki/w/Commands/give) | Give a player a specified item | |
+| [`/item`](https://minecraft.wiki/w/Commands/item) | Modify items in a container or entity's equipment slots | ✔ |
+| [`/ride`](https://minecraft.wiki/w/Commands/ride) | Control the riding relationship between entities | ✔ |
+| [`/save-all`](https://minecraft.wiki/w/Commands/save) | Immediately save the server world data | ✔ |
+| [`/seed`](https://minecraft.wiki/w/Commands/seed) | Display the current world seed | |
+| [`/setblock`](https://minecraft.wiki/w/Commands/setblock) | Place a block at a specified position | ✔ |
+| [`/summon`](https://minecraft.wiki/w/Commands/summon) | Spawn an entity at a specified position | ✔ |
+| [`/tp`](https://minecraft.wiki/w/Commands/tp) | Teleport an entity to a position or another entity | |
+| [`/tellraw`](https://minecraft.wiki/w/Commands/tellraw) | Send a formatted JSON text message to a player | |
+| [`/time`](https://minecraft.wiki/w/Commands/time) | Query or modify the world time | |
+| [`/weather`](https://minecraft.wiki/w/Commands/weather) | Change the world weather | |
 
 ## Teleportation & Navigation
 
