@@ -4,89 +4,64 @@ interface ProxyRouteConfig {
   serverUrl: string;
   apiKey: string;
   path: string;
-  cacheDuration: number;       // ms
   cacheMaxAge: number;         // seconds (for Cache-Control)
   errorMessage: string;
-  staleOnError?: boolean;      // return stale cache on upstream failure, default true
-  onError?: () => Promise<unknown>; // optional fallback fetch on upstream failure
+  onError?: () => Promise<unknown>; // 只有在完全没有缓存且后端挂了，或强制降级时触发
 }
 
 export function createProxyHandler(config: ProxyRouteConfig) {
-  const { serverUrl, apiKey, path, cacheDuration, cacheMaxAge, errorMessage, staleOnError = true, onError } = config;
+  const { serverUrl, apiKey, path, cacheMaxAge, errorMessage, onError } = config;
 
-  let cachedData: unknown = null;
-  let cacheTimestamp = 0;
-  let inflightPromise: Promise<unknown> | null = null;
-
-  return async function GET(_request: Request): Promise<NextResponse> {
-    const now = Date.now();
-
-    if (cachedData !== null && now - cacheTimestamp < cacheDuration) {
-      return NextResponse.json(cachedData, {
-        headers: {
-          'Cache-Control': `public, s-maxage=${cacheMaxAge}, stale-while-revalidate=${cacheMaxAge * 2}`,
-          'X-Cache': 'HIT',
-        },
-      });
-    }
-
-    if (!inflightPromise) {
-      inflightPromise = fetch(`${serverUrl}${path}`, {
-        headers: {
-          'X-API-Key': apiKey,
-          'Accept-Encoding': 'gzip, deflate, br',
-        },
-        signal: AbortSignal.timeout(5000),
-      }).then(async (response) => {
-        if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-        return response.json();
-      }).finally(() => {
-        inflightPromise = null;
-      });
-    }
+  return async function GET(): Promise<NextResponse> {
+    const targetUrl = `${serverUrl}${path}`;
 
     try {
-      const data = await inflightPromise;
-      cachedData = data;
-      cacheTimestamp = Date.now();
+      const response = await fetch(targetUrl, {
+        headers: {
+          'X-API-Key': apiKey,
+          'Accept': 'application/json',
+        },
+        next: {
+          revalidate: cacheMaxAge,
+          tags: [path]
+        },
+        signal: AbortSignal.timeout(5000), // 5秒超时
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upstream status: ${response.status}`);
+      }
+
+      const data = await response.json();
 
       return NextResponse.json(data, {
         headers: {
-          'Cache-Control': `public, s-maxage=${cacheMaxAge}, stale-while-revalidate=${cacheMaxAge * 2}`,
-          'X-Cache': 'MISS',
+          // s-maxage 让 CDN/Edge 缓存
+          // stale-while-revalidate 允许在后端挂了的情况下继续服务旧数据
+          'Cache-Control': `public, s-maxage=${cacheMaxAge}, stale-while-revalidate=${cacheMaxAge * 3}`,
+          'X-Proxy-Cache': 'HIT-OR-MISS',
         },
       });
-    } catch (error) {
-      console.error(`Failed to fetch ${path}:`, error);
 
+    } catch (error) {
+      console.error(`[Proxy Error] ${path}:`, error);
+
+      // fallback
       if (onError) {
         try {
           const fallback = await onError();
-          cachedData = fallback;
-          cacheTimestamp = Date.now();
           return NextResponse.json(fallback, {
-            headers: { 'Cache-Control': 'no-cache', 'X-Cache': 'FALLBACK' },
+            headers: { 'X-Cache': 'FALLBACK', 'Cache-Control': 'no-store' },
           });
         } catch (fallbackError) {
-          console.error(`Fallback for ${path} also failed:`, fallbackError);
+          console.error(`[Fallback Failed] ${path}:`, fallbackError);
         }
       }
 
-      if (staleOnError && cachedData !== null) {
-        return NextResponse.json(cachedData, {
-          headers: {
-            'Cache-Control': 'no-cache',
-            'X-Cache': 'STALE',
-          },
-        });
-      }
-
+      // final error response
       return NextResponse.json(
         { error: errorMessage },
-        {
-          status: 500,
-          headers: { 'Cache-Control': 'no-cache' },
-        }
+        { status: 502, headers: { 'Cache-Control': 'no-store' } }
       );
     }
   };
