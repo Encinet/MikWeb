@@ -309,7 +309,7 @@ export default function Navbar() {
                   overflowY: 'auto',
                   backdropFilter: 'blur(24px) saturate(180%)',
                   WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                  background: 'rgba(255, 255, 255, 0.1)',
+                  background: 'var(--glass-bg)',
                   border: '1px solid var(--glass-border)',
                   borderRadius: '16px',
                   boxShadow: '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
