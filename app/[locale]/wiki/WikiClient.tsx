@@ -420,7 +420,7 @@ export default function WikiClient({
               transition={{ ...spring.gentle, delay: 0.25 }}
             >
               <div
-                className="rounded-2xl p-6 sm:p-8 overflow-hidden"
+                className="rounded-2xl p-6 sm:p-8"
                 style={{
                   backdropFilter: 'blur(16px) saturate(150%)',
                   WebkitBackdropFilter: 'blur(16px) saturate(150%)',
@@ -447,7 +447,7 @@ export default function WikiClient({
                         ease: [0.4, 0, 1, 1] as [number, number, number, number],
                       },
                     }}
-                    className="prose prose-invert prose-blue max-w-none overflow-hidden"
+                    className="prose prose-invert prose-blue max-w-none"
                   >
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
