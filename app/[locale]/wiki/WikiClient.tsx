@@ -212,8 +212,8 @@ export default function WikiClient({
         </a>
       ),
       table: ({ children }: React.PropsWithChildren) => (
-        <motion.div {...bm} transition={{ ...spring.gentle, delay: d() }} className="overflow-x-auto my-4">
-          <table style={{ borderColor: 'var(--glass-border-light)' }} className="min-w-full border rounded-lg overflow-hidden">
+        <motion.div {...bm} transition={{ ...spring.gentle, delay: d() }} className="overflow-x-auto my-4 rounded-lg border" style={{ borderColor: 'var(--glass-border-light)' }}>
+          <table className="min-w-full">
             {children}
           </table>
         </motion.div>
@@ -420,7 +420,7 @@ export default function WikiClient({
               transition={{ ...spring.gentle, delay: 0.25 }}
             >
               <div
-                className="rounded-2xl p-6 sm:p-8"
+                className="rounded-2xl p-6 sm:p-8 overflow-hidden"
                 style={{
                   backdropFilter: 'blur(16px) saturate(150%)',
                   WebkitBackdropFilter: 'blur(16px) saturate(150%)',
@@ -447,7 +447,7 @@ export default function WikiClient({
                         ease: [0.4, 0, 1, 1] as [number, number, number, number],
                       },
                     }}
-                    className="prose prose-invert prose-blue max-w-none"
+                    className="prose prose-invert prose-blue max-w-none overflow-hidden"
                   >
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
