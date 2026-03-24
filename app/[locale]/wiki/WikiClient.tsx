@@ -253,7 +253,7 @@ export default function WikiClient({
                 <BookOpen className="w-8 h-8 text-blue-400" />
               </motion.div>
               <motion.h1
-                className="text-4xl sm:text-5xl font-black"
+                className="text-4xl sm:text-5xl font-bold"
                 style={{ color: 'var(--text-secondary)' }}
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}

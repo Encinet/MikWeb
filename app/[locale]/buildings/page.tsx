@@ -298,7 +298,7 @@ export default function BuildingsPage() {
               <Building2 className="w-8 h-8" style={{ color: 'var(--purple-accent)' }} />
             </div>
             <h1
-              className="text-4xl sm:text-5xl font-black"
+              className="text-4xl sm:text-5xl font-bold"
               style={{ color: "var(--text-secondary)" }}
             >
               {t("title")}

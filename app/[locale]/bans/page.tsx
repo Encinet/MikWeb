@@ -69,7 +69,7 @@ export default function BansPage() {
             <div className="p-3 rounded-xl bg-linear-to-br from-red-500/20 to-red-600/20 backdrop-blur-sm border border-red-400/30 shadow-lg">
               <Shield className="w-8 h-8 text-red-400" />
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black" style={{ color: 'var(--text-secondary)' }}>
+            <h1 className="text-4xl sm:text-5xl font-bold" style={{ color: 'var(--text-secondary)' }}>
               {t('title')}
             </h1>
           </div>
