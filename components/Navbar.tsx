@@ -16,7 +16,7 @@ export default function Navbar() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
-  const { players, playerCount, isOnline, isLoading: isLoadingPlayers } = usePlayerData();
+  const { players, playerCount, isOnline, isLoading: isLoadingPlayers, networkError } = usePlayerData();
   const [showPlayerList, setShowPlayerList] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -294,7 +294,7 @@ export default function Navbar() {
                     <span className="text-xs sm:text-sm hidden sm:inline" style={{ color: 'var(--text-muted)' }}>{t('online')}</span>
                   </>
                 ) : (
-                  <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>{t('offline')}</span>
+                  <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>{networkError ? t('networkError') : t('offline')}</span>
                 )}
               </div>
 

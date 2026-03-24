@@ -13,6 +13,7 @@
     "subtitle": "创造休闲服务器",
     "online": "在线",
     "offline": "离线",
+    "networkError": "网络错误",
     "lightMode": "浅色模式",
     "darkMode": "深色模式"
   },

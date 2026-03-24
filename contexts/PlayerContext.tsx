@@ -12,6 +12,7 @@ interface PlayerContextType {
   playerCount: number;
   isOnline: boolean;
   isLoading: boolean;
+  networkError: boolean;
 }
 
 const PlayerContext = createContext<PlayerContextType>({
@@ -19,6 +20,7 @@ const PlayerContext = createContext<PlayerContextType>({
   playerCount: 0,
   isOnline: true,
   isLoading: true,
+  networkError: false,
 });
 
 export const usePlayerData = () => useContext(PlayerContext);
@@ -28,6 +30,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [playerCount, setPlayerCount] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [networkError, setNetworkError] = useState(false);
   
   const retryCountRef = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -67,17 +70,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       
       if (!response.ok || data.error) {
         setIsOnline(false);
+        setNetworkError(false);
         setPlayers([]);
         setPlayerCount(0);
         retryCountRef.current++;
       } else if (data.count === -1) {
         setIsOnline(false);
+        setNetworkError(false);
         setPlayers([]);
         setPlayerCount(0);
         lastUpdatedRef.current = Date.now();
         retryCountRef.current = 0;
       } else {
         setIsOnline(true);
+        setNetworkError(false);
         setPlayers(data.players || []);
         setPlayerCount(data.count || 0);
         lastUpdatedRef.current = Date.now();
@@ -87,6 +93,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Failed to fetch players:', error);
       setIsOnline(false);
+      setNetworkError(true);
       setPlayers([]);
       setPlayerCount(0);
       setIsLoading(false);
@@ -141,7 +148,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [fetchPlayers, getNextInterval]);
   
   return (
-    <PlayerContext.Provider value={{ players, playerCount, isOnline, isLoading }}>
+    <PlayerContext.Provider value={{ players, playerCount, isOnline, isLoading, networkError }}>
       {children}
     </PlayerContext.Provider>
   );

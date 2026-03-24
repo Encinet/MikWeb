@@ -13,6 +13,7 @@
     "subtitle": "Creative Casual Server",
     "online": "Online",
     "offline": "Offline",
+    "networkError": "Network Error",
     "lightMode": "Light Mode",
     "darkMode": "Dark Mode"
   },
