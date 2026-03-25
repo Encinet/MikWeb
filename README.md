@@ -15,9 +15,14 @@ bun dev
 | 变量 | 必填 | 说明 |
 |------|------|------|
 | `MINECRAFT_SERVER_URL` | ✓ | 主服务器 API base URL |
-| `MINECRAFT_API_KEY` | — | 主服务器 API Key，随请求头 `X-API-Key` 转发 |
+| `TOTP_SECRET` | — | HMAC-Timestamp 密钥，用于签名时间戳，随请求头 `X-TOTP-Token` 转发 |
 | `BUILDINGS_SERVER_URL` | — | 建筑服务器 API base URL，默认回退到 `MINECRAFT_SERVER_URL` |
-| `BUILDINGS_API_KEY` | — | 建筑服务器 API Key，默认回退到 `MINECRAFT_API_KEY` |
+| `BUILDINGS_TOTP_SECRET` | — | 建筑服务器 HMAC-Timestamp 密钥，默认回退到 `TOTP_SECRET` |
+
+生成 HMAC-Timestamp 密钥（32字节hex）：
+```bash
+openssl rand -hex 32
+```
 
 ## API 路由
 

@@ -35,7 +35,7 @@ async function fetchFallbackPlayerCount(): Promise<{ players: []; count: number 
 
 export const GET = createProxyHandler({
   serverUrl: process.env.MINECRAFT_SERVER_URL || 'http://localhost:8080',
-  apiKey: process.env.MINECRAFT_API_KEY || '',
+  totpSecret: process.env.TOTP_SECRET || '',
   path: '/api/players',
   cacheMaxAge: 5,
   errorMessage: 'Failed to fetch player data',

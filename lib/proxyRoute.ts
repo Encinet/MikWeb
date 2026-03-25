@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
+import { createHmac } from 'crypto';
+
+function generateToken(secret: string): string {
+  const step = Math.floor(Date.now() / 1000 / 30).toString();
+  return createHmac('sha256', secret)
+    .update(step)
+    .digest('hex');
+}
 
 interface ProxyRouteConfig {
   serverUrl: string;
-  apiKey: string;
+  totpSecret: string;
   path: string;
   cacheMaxAge: number;         // seconds (for Cache-Control)
   errorMessage: string;
@@ -10,22 +18,24 @@ interface ProxyRouteConfig {
 }
 
 export function createProxyHandler(config: ProxyRouteConfig) {
-  const { serverUrl, apiKey, path, cacheMaxAge, errorMessage, onError } = config;
+  const { serverUrl, totpSecret, path, cacheMaxAge, errorMessage, onError } = config;
 
   return async function GET(): Promise<NextResponse> {
     const targetUrl = `${serverUrl}${path}`;
 
     try {
+      const token = generateToken(totpSecret);
+
       const response = await fetch(targetUrl, {
         headers: {
-          'X-API-Key': apiKey,
+          'X-TOTP-Token': token,
           'Accept': 'application/json',
         },
         next: {
           revalidate: cacheMaxAge,
           tags: [path]
         },
-        signal: AbortSignal.timeout(5000), // 5秒超时
+        signal: AbortSignal.timeout(5000),
       });
 
       if (!response.ok) {
@@ -36,8 +46,6 @@ export function createProxyHandler(config: ProxyRouteConfig) {
 
       return NextResponse.json(data, {
         headers: {
-          // s-maxage 让 CDN/Edge 缓存
-          // stale-while-revalidate 允许在后端挂了的情况下继续服务旧数据
           'Cache-Control': `public, s-maxage=${cacheMaxAge}, stale-while-revalidate=${cacheMaxAge * 3}`,
           'X-Proxy-Cache': 'HIT-OR-MISS',
         },
@@ -46,7 +54,6 @@ export function createProxyHandler(config: ProxyRouteConfig) {
     } catch (error) {
       console.error(`[Proxy Error] ${path}:`, error);
 
-      // fallback
       if (onError) {
         try {
           const fallback = await onError();
@@ -58,7 +65,6 @@ export function createProxyHandler(config: ProxyRouteConfig) {
         }
       }
 
-      // final error response
       return NextResponse.json(
         { error: errorMessage },
         { status: 502, headers: { 'Cache-Control': 'no-store' } }
