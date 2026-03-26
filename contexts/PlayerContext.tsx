@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef,useState } from 'react';
 
 interface Player {
   name: string;
@@ -23,9 +23,9 @@ const PlayerContext = createContext<PlayerContextType>({
   networkError: false,
 });
 
-export const usePlayerData = () => useContext(PlayerContext);
+export const usePlayerContext = () => useContext(PlayerContext);
 
-export function PlayerProvider({ children }: { children: React.ReactNode }) {
+export function PlayerContextProvider({ children }: { children: React.ReactNode }) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [playerCount, setPlayerCount] = useState(0);
   const [isOnline, setIsOnline] = useState(true);

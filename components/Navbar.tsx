@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { AnimatePresence,motion } from 'framer-motion';
+import { BookOpen, Building2, Globe, Home, Map, Menu, Moon, Play, Shield, Sun, Users, X } from 'lucide-react';
 import Image from 'next/image';
-import { Users, Play, Map, BookOpen, Home, Building2, Globe, Sun, Moon, Shield, Menu, X } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
-import { Link, useRouter, usePathname } from '@/i18n/routing';
+import { useLocale,useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
+import React, { useState, useSyncExternalStore } from 'react';
+
+import { usePlayerContext } from '@/contexts/PlayerContext';
+import { Link, usePathname,useRouter } from '@/i18n/routing';
+
 import MinecraftAvatar from './MinecraftAvatar';
-import { motion, AnimatePresence } from 'framer-motion';
-import { usePlayerData } from '@/contexts/PlayerContext';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -16,18 +18,19 @@ export default function Navbar() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
-  const { players, playerCount, isOnline, isLoading: isLoadingPlayers, networkError } = usePlayerData();
+  const { players, playerCount, isOnline, isLoading: isLoadingPlayers, networkError } = usePlayerContext();
   const [showPlayerList, setShowPlayerList] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleThemeToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
+  const handleThemeToggle = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const navItems = [
     { id: 'home', icon: Home, label: t('home'), path: '/' },
@@ -141,7 +144,7 @@ export default function Navbar() {
               return (
                 <Link
                   key={item.id}
-                  href={item.path as any}
+                  href={item.path as string}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -388,7 +391,7 @@ export default function Navbar() {
             >
               <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
                 <div className="flex flex-col space-y-2">
-                  {navItems.map((item, index) => {
+                  {navItems.map((item) => {
                     const isActive = pathname === item.path;
   
                     if (item.link) {
@@ -416,7 +419,7 @@ export default function Navbar() {
                     return (
                       <div key={item.id}>
                         <Link
-                          href={item.path as any}
+                          href={item.path as string}
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
                           style={{

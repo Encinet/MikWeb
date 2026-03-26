@@ -1,7 +1,9 @@
+import { Award, MessageCircle,Play, Zap } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import { Zap, Play, Award, MessageCircle } from 'lucide-react';
+
 import ScrollReveal from '@/components/ScrollReveal';
-import HomeClient from './HomeClient';
+
+import HomeSection from './HomeSection';
 
 export default async function HomePage() {
   const t = await getTranslations();
@@ -78,7 +80,7 @@ export default async function HomePage() {
         </div>
 
         {/* ── Dynamic Client Section: Stats + Announcements ── */}
-        <HomeClient />
+        <HomeSection />
 
         {/* ── Features (SSR — 静态文字，无需 JS) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">

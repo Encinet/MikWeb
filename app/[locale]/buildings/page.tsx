@@ -1,73 +1,38 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence,motion } from "framer-motion";
 import {
-  Building2,
-  MapPin,
-  User,
   Bell,
+  Building2,
   CheckCircle,
-  Copy,
-  Search,
-  SlidersHorizontal,
-  X,
   ChevronLeft,
   ChevronRight,
+  Copy,
+  MapPin,
+  Search,
+  SlidersHorizontal,
+  User,
+  X,
 } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
-import ScrollReveal from "@/components/ScrollReveal";
-import Masonry from "react-masonry-css";
+import { useLocale,useTranslations } from "next-intl";
+import React, { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useBuildingsData } from "@/contexts/BuildingsContext";
+import Masonry from "react-masonry-css";
 
-interface Builder {
-  name: string;
-  uuid: string;
-  weight: number;
-}
-
-interface Building {
-  name: {
-    [locale: string]: string;
-  };
-  description: {
-    [locale: string]: string;
-  };
-  coordinates: {
-    x: number;
-    y: number;
-    z: number;
-  };
-  builders: Builder[];
-  buildType: "original" | "derivative" | "replica";
-  images: string[];
-  buildDate: string;
-  tags?: {
-    [locale: string]: string;
-  }[];
-  source?: {
-    originalAuthor?: string;
-    originalLink?: string;
-    notes?: {
-      [locale: string]: string;
-    };
-  } | null;
-}
+import ScrollReveal from "@/components/ScrollReveal";
+import { type Building,useBuildingsContext } from "@/contexts/BuildingsContext";
 
 export default function BuildingsPage() {
   const t = useTranslations("buildings");
   const locale = useLocale();
-  const { buildings, isLoading, error, fetchBuildings } = useBuildingsData();
+  const { buildings, isLoading, error, fetchBuildings } = useBuildingsContext();
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [displayedCount, setDisplayedCount] = useState(12);
   const [searchQuery, setSearchQuery] = useState("");
-  const [mounted, setMounted] = useState(false);
   const [sortBy, setSortBy] = useState("random");
-  const [randomSeed, setRandomSeed] = useState(0);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(
-    null,
+    null
   );
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoading, setImageLoading] = useState(false);
@@ -75,18 +40,25 @@ export default function BuildingsPage() {
   const [cardRect, setCardRect] = useState<DOMRect | null>(null);
   const ITEMS_PER_PAGE = 12;
 
-  useEffect(() => {
-    setMounted(true);
-    // Initialize random seed on mount for random sorting
-    setRandomSeed(Math.random());
-    return () => setMounted(false);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     fetchBuildings();
   }, [fetchBuildings]);
 
-  const formatDate = (timestamp: any) => {
+  useEffect(() => {
+    if (selectedBuilding) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [selectedBuilding]);
+
+  const formatDate = (timestamp: number | string) => {
     const date = new Date(
       typeof timestamp === "number" ? timestamp * 1000 : timestamp,
     );
@@ -156,10 +128,15 @@ export default function BuildingsPage() {
 
     // Sort
     if (sortBy === "random") {
-      // Fisher-Yates shuffle for stable random sorting
+      const seededRandom = (seed: number) => {
+        const x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+      };
+      let seed = 12345;
       const shuffled = [...filtered];
       for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        const j = Math.floor((seededRandom(seed)) * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
       return shuffled;
@@ -207,7 +184,7 @@ export default function BuildingsPage() {
           return 0;
       }
     });
-  }, [buildings, buildingFilter, searchQuery, sortBy, locale, randomSeed]);
+  }, [buildings, buildingFilter, searchQuery, sortBy, locale]);
 
   const displayedBuildings = filteredBuildings.slice(0, displayedCount);
   const hasMore = displayedCount < filteredBuildings.length;
@@ -252,13 +229,11 @@ export default function BuildingsPage() {
     setCardRect(rect);
     setSelectedBuilding(building);
     setCurrentImageIndex(0);
-    document.body.style.overflow = "hidden";
   };
 
   const closeBuildingDetail = () => {
     setSelectedBuilding(null);
     setCurrentImageIndex(0);
-    document.body.style.overflow = "unset";
     // 延迟清除卡片位置，让退出动画完成
     setTimeout(() => setCardRect(null), 300);
   };
@@ -583,7 +558,7 @@ export default function BuildingsPage() {
                           color: "var(--text-muted-light)",
                           display: "-webkit-box",
                           WebkitLineClamp: 3,
-                          WebkitBoxOrient: "vertical" as any,
+                          WebkitBoxOrient: "vertical" as React.CSSProperties['WebkitBoxOrient'],
                           overflow: "hidden"
                         }}
                       >

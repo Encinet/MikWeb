@@ -1,16 +1,25 @@
+import "../globals.css";
+
 import type { Metadata } from "next";
+import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
-import "../globals.css";
+
 import Background from "@/components/Background";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import Navbar from "@/components/Navbar";
 import StructuredData from "@/components/StructuredData";
-import { PlayerProvider } from "@/contexts/PlayerContext";
-import { BuildingsProvider } from "@/contexts/BuildingsContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { BuildingsContextProvider } from "@/contexts/BuildingsContext";
+import { PlayerContextProvider } from "@/contexts/PlayerContext";
+import { routing } from '@/i18n/routing';
+
+interface Messages {
+  metadata: {
+    title: string;
+    description: string;
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -27,7 +36,7 @@ export function generateViewport() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const messages = await getMessages({ locale }) as any;
+  const messages = await getMessages({ locale }) as Messages;
 
   return {
     title: messages.metadata.title,
@@ -63,7 +72,7 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  if (!routing.locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
 
@@ -77,16 +86,16 @@ export default async function LocaleLayout({
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
-            <PlayerProvider>
-              <BuildingsProvider>
+            <PlayerContextProvider>
+              <BuildingsContextProvider>
                 <Background />
                 <Navbar />
                 <main className="relative z-10" style={{ flex: '1 0 auto' }}>
                   {children}
                 </main>
                 <Footer />
-              </BuildingsProvider>
-            </PlayerProvider>
+              </BuildingsContextProvider>
+            </PlayerContextProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

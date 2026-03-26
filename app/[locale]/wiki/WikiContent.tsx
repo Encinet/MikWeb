@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { BookOpen, ChevronRight, Home, Menu, Shield, Users, Wrench, X,Zap } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { BookOpen, ChevronRight, Home, Wrench, Shield, Users, Zap, Menu, X } from 'lucide-react';
+import React, { useEffect, useMemo,useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 
 const iconMap = { Home, Wrench, Shield, Users, Zap };
 
@@ -15,7 +15,7 @@ interface Section {
   label: string;
 }
 
-interface WikiClientProps {
+interface WikiContentProps {
   title: string;
   description: string;
   navigation: string;
@@ -81,14 +81,14 @@ function ActivePill({ layoutId }: { layoutId: string }) {
   );
 }
 
-export default function WikiClient({
+export default function WikiContent({
   title,
   description,
   navigation,
   sections,
   content,
   initialSection,
-}: WikiClientProps) {
+}: WikiContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState(initialSection || sections[0]?.id || '');
@@ -106,7 +106,6 @@ export default function WikiClient({
       setPrevSection(activeSection);
       setActiveSection(section);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const handleSectionChange = (id: string) => {
@@ -228,7 +227,6 @@ export default function WikiClient({
         <td style={{ color: 'var(--text-muted-lighter)', borderColor: 'var(--border-light)' }} className="px-4 py-2 border-b">{children}</td>
       ),
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection]);
 
   return (

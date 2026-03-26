@@ -1,8 +1,9 @@
-import { getTranslations } from 'next-intl/server';
 import fs from 'fs';
+import { getTranslations } from 'next-intl/server';
 import path from 'path';
 import { Suspense } from 'react';
-import WikiClient from './WikiClient';
+
+import WikiContent from './WikiContent';
 
 export default async function WikiPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ section?: string }> }) {
   const { locale } = await params;
@@ -23,7 +24,7 @@ export default async function WikiPage({ params, searchParams }: { params: Promi
     const filePath = path.join(process.cwd(), 'content', locale, `${section.id}.md`);
     try {
       content[section.id] = fs.readFileSync(filePath, 'utf-8');
-    } catch (error) {
+    } catch {
       content[section.id] = `# ${section.label}\n\nContent not available.`;
     }
   }
@@ -33,7 +34,7 @@ export default async function WikiPage({ params, searchParams }: { params: Promi
 
   return (
     <Suspense>
-      <WikiClient
+      <WikiContent
         title={t('title')}
         description={t('description')}
         navigation={t('navigation')}

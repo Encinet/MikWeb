@@ -1,14 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useCallback,useContext, useState } from 'react';
 
-interface Builder {
+export type BuildType = 'original' | 'derivative' | 'replica';
+
+export interface Builder {
   name: string;
   uuid: string;
   weight: number;
 }
 
-interface Building {
+export interface Building {
   name: {
     [locale: string]: string;
   };
@@ -21,7 +23,7 @@ interface Building {
     z: number;
   };
   builders: Builder[];
-  buildType: "original" | "derivative" | "replica";
+  buildType: BuildType;
   images: string[];
   buildDate: string;
   tags?: {
@@ -54,9 +56,9 @@ const BuildingsContext = createContext<BuildingsContextType>({
   lastUpdated: null,
 });
 
-export const useBuildingsData = () => useContext(BuildingsContext);
+export const useBuildingsContext = () => useContext(BuildingsContext);
 
-export function BuildingsProvider({ children }: { children: React.ReactNode }) {
+export function BuildingsContextProvider({ children }: { children: React.ReactNode }) {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

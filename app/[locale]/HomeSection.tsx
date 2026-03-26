@@ -1,33 +1,50 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Users, Bell, Building2, Clock, X } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
-import ScrollReveal from '@/components/ScrollReveal';
+import { Bell, Building2, Clock, Users, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useLocale,useTranslations } from 'next-intl';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import { usePlayerData } from '@/contexts/PlayerContext';
-import { useBuildingsData } from '@/contexts/BuildingsContext';
 
-// 懒加载 framer-motion 仅用于公告模态框（减少初始 JS bundle）
+import ScrollReveal from '@/components/ScrollReveal';
+import { useBuildingsContext } from '@/contexts/BuildingsContext';
+import { usePlayerContext } from '@/contexts/PlayerContext';
+
 const MotionDiv = dynamic(() => import('framer-motion').then(m => ({ default: m.motion.div })), { ssr: false });
 const AnimatePresence = dynamic(() => import('framer-motion').then(m => ({ default: m.AnimatePresence })), { ssr: false });
 
-export default function HomeClient() {
+interface Announcement {
+  content: string;
+  timestamp: number | string;
+}
+
+const SERVER_START_DATE = new Date('2025-07-15');
+
+export default function HomeSection() {
   const t = useTranslations();
   const locale = useLocale();
-  const { playerCount, isLoading: isLoadingPlayers } = usePlayerData();
-  const { buildingsCount, fetchBuildings, lastUpdated } = useBuildingsData();
-  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const { playerCount, isLoading: isLoadingPlayers, networkError: isNetworkError } = usePlayerContext();
+  const { buildingsCount, fetchBuildings, lastUpdated } = useBuildingsContext();
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [uptime, setUptime] = useState(0);
 
-  const SERVER_START_DATE = new Date('2025-07-15');
-  const uptime = Math.floor((Date.now() - SERVER_START_DATE.getTime()) / (1000 * 60 * 60 * 24));
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
-    setMounted(true);
+    const calculateUptime = () => {
+      const now = Date.now();
+      const up = Math.floor((now - SERVER_START_DATE.getTime()) / (1000 * 60 * 60 * 24));
+      setUptime(up);
+    };
+    calculateUptime();
+    const interval = setInterval(calculateUptime, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -42,7 +59,7 @@ export default function HomeClient() {
         if (!response.ok || data.error) {
           setAnnouncements([]);
         } else if (Array.isArray(data)) {
-          setAnnouncements(data);
+          setAnnouncements(data as Announcement[]);
         } else {
           setAnnouncements([]);
         }
@@ -56,7 +73,7 @@ export default function HomeClient() {
     fetchAnnouncements();
   }, []);
 
-  const formatDate = (timestamp: any) => {
+  const formatDate = (timestamp: number | string) => {
     const date = new Date(typeof timestamp === 'number' ? timestamp * 1000 : timestamp);
     return date.toLocaleDateString(locale, {
       year: 'numeric',
@@ -72,9 +89,9 @@ export default function HomeClient() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-20">
         {[
-          { icon: Users, label: t('home.stats.activePlayers'), value: isLoadingPlayers ? '-' : `${playerCount}`, iconColor: '#55FF55' },
+          { icon: Users, label: t('home.stats.activePlayers'), value: isLoadingPlayers || isNetworkError ? '-' : `${playerCount}`, iconColor: '#55FF55' },
           { icon: Building2, label: t('home.stats.totalBuildings'), value: lastUpdated === null ? '-' : `${buildingsCount}`, iconColor: '#FFAA00' },
-          { icon: Clock, label: t('home.stats.uptime'), value: `${uptime}`, suffix: t('home.stats.days'), iconColor: '#55AAFF' }
+          { icon: Clock, label: t('home.stats.uptime'), value: mounted && uptime > 0 ? `${uptime}` : '-', suffix: t('home.stats.days'), iconColor: '#55AAFF' }
         ].map((stat, i) => (
           <ScrollReveal key={i} delay={i * 0.1} direction="up">
             <div
@@ -189,7 +206,7 @@ export default function HomeClient() {
             </div>
           ) : (
             <div className="space-y-3 sm:space-y-4">
-              {announcements.slice(0, 3).map((announcement: any, i: number) => (
+              {announcements.slice(0, 3).map((announcement: Announcement, i: number) => (
                 <div
                   key={i}
                   style={{
@@ -358,7 +375,7 @@ export default function HomeClient() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {announcements.map((announcement: any, i: number) => (
+                      {announcements.map((announcement: Announcement, i: number) => (
                         <div
                           key={i}
                           style={{

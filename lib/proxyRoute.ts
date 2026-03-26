@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
+import { NextResponse } from 'next/server';
 
 function generateToken(secret: string): string {
   const step = Math.floor(Date.now() / 1000 / 30).toString();

@@ -33,10 +33,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const buildings = await response.json()
     
     for (const locale of locales) {
-      buildings.forEach((building: any) => {
+      buildings.forEach((building: { id?: string; name?: { en?: string }; buildDate?: string }) => {
+        const buildingId = building.id || building.name?.en || '';
+        const buildDate = building.buildDate ? new Date(building.buildDate) : new Date();
         urls.push({
-          url: `${baseUrl}/${locale}/buildings#${building.id || building.name.en}`,
-          lastModified: new Date(building.buildDate),
+          url: `${baseUrl}/${locale}/buildings#${buildingId}`,
+          lastModified: buildDate,
           changeFrequency: 'monthly',
           priority: 0.6,
         })
