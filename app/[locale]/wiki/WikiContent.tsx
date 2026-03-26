@@ -5,6 +5,7 @@ import { BookOpen, ChevronRight, Home, Menu, Shield, Users, Wrench, X,Zap } from
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo,useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 
 const iconMap = { Home, Wrench, Shield, Users, Zap };
@@ -106,7 +107,32 @@ export default function WikiContent({
       setPrevSection(activeSection);
       setActiveSection(section);
     }
-  }, [searchParams]);
+  }, [searchParams, content, activeSection]);
+
+  // Scroll to hash target after markdown renders
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const decodedHash = decodeURIComponent(hash);
+    
+    const tryScroll = () => {
+      // Find heading by text content (rehype-slug doesn't generate ids for Chinese text)
+      const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      for (const el of headings) {
+        if (el.textContent?.trim() === decodedHash || el.textContent?.trim() === hash) {
+          const top = el.getBoundingClientRect().top + window.scrollY - 160;
+          window.scrollTo({ top, behavior: 'smooth' });
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    if (!tryScroll()) {
+      const timer = setTimeout(tryScroll, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSectionChange = (id: string) => {
     if (id === activeSection) return;
@@ -118,9 +144,6 @@ export default function WikiContent({
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  // Per-block stagger
-  // useMemo resets the counter `i` each time activeSection changes,
-  // so blocks always start from delay=0 for the new section.
   const markdownComponents = useMemo(() => {
     let i = 0;
     const d = () => Math.min(i++ * 0.018, 0.25);
@@ -190,7 +213,7 @@ export default function WikiContent({
       pre: ({ children }: React.PropsWithChildren) => (
         <motion.pre
           {...bm} transition={{ ...spring.gentle, delay: d() }}
-          style={{ margin: 0 }} className="mb-4"
+          style={{ background: 'var(--code-block-bg)', borderColor: 'var(--glass-border-light)' }} className="mb-4 rounded-lg overflow-x-auto border p-4"
         >{children}</motion.pre>
       ),
       code: ({ children, className }: React.PropsWithChildren<{ className?: string }>) => {
@@ -200,7 +223,7 @@ export default function WikiContent({
             {children}
           </code>
         ) : (
-          <code style={{ background: 'var(--code-block-bg)', borderColor: 'var(--glass-border-light)' }} className="block text-green-300 p-4 rounded-lg overflow-x-auto text-sm font-mono border">
+          <code className="text-blue-300 text-sm font-mono block">
             {children}
           </code>
         );
@@ -227,7 +250,7 @@ export default function WikiContent({
         <td style={{ color: 'var(--text-muted-lighter)', borderColor: 'var(--border-light)' }} className="px-4 py-2 border-b">{children}</td>
       ),
     };
-  }, [activeSection]);
+  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <MotionConfig reducedMotion="user">
@@ -449,6 +472,7 @@ export default function WikiContent({
                   >
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSlug]}
                       components={markdownComponents as object}
                     >
                       {content[activeSection]}

@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import GithubSlugger from 'github-slugger';
 import { createMcpHandler } from 'mcp-handler';
 import path from 'path';
 import { z } from 'zod';
@@ -40,6 +41,18 @@ function fuzzyMatch(query: string, text: string): { matched: boolean; score: num
   }
 
   return { matched: false, score: 0 };
+}
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')   // [text](url) → text
+    .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')     // `code` → code
+    .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1')   // **bold** / *italic*
+    .replace(/_{1,2}([^_]+)_{1,2}/g, '$1')     // __bold__ / _italic_
+    .replace(/^>\s*/gm, '')                     // blockquotes
+    .replace(/^[-*+]\s+/gm, '')                // unordered list markers
+    .replace(/^\d+\.\s+/gm, '')               // ordered list markers
+    .trim();
 }
 
 // Wraps fetch with error handling; throws on non-ok or network failure
@@ -126,90 +139,106 @@ const handler = createMcpHandler(
       'search_wiki',
       {
         title: 'Search Wiki',
-        description: 'Search the Minecraft server wiki content by keyword. Supports fuzzy matching: exact substring, subsequence (e.g. "gmde" matches "gamemode"), and multi-token search (e.g. "home set" matches "/sethome").',
+        description:
+          'Search the Minecraft server wiki by keyword. Supports fuzzy matching: exact substring, ' +
+          'subsequence (e.g. "gmde" matches "gamemode"), and multi-token (e.g. "home set" matches "/sethome"). ' +
+          'Optionally restrict to a single section and control how many results are returned.',
         inputSchema: {
           query: z.string().describe('Search keyword or phrase'),
-          locale: z.enum(WIKI_LOCALES).optional().describe('Language locale (default: zh-CN)'),
+          locale: z
+            .enum(WIKI_LOCALES)
+            .optional()
+            .describe('Language locale (default: zh-CN)'),
+          limit: z
+            .number()
+            .int()
+            .positive()
+            .max(20)
+            .optional()
+            .describe('Maximum number of results (default: 5, max: 20)'),
         },
       },
-      async ({ query, locale }) => {
+      async ({ query, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
+        const maxResults = limit ?? 5;
         const contentDir = path.join(process.cwd(), 'content', loc);
+        const sectionsToSearch = WIKI_SECTIONS;
 
-        // Read all section files in parallel instead of serially
         const fileResults = await Promise.allSettled(
-          WIKI_SECTIONS.map((sectionId) =>
+          sectionsToSearch.map((sectionId) =>
             fs
               .readFile(path.join(contentDir, `${sectionId}.md`), 'utf-8')
               .then((raw) => ({ sectionId, raw }))
           )
         );
 
-        const results: { section: string; heading: string; excerpt: string; score: number }[] = [];
+        type Result = { path: string; url: string; content: string; score: number };
+        const results: Result[] = [];
 
-        for (const result of fileResults) {
-          if (result.status === 'rejected') continue;
-          const { sectionId, raw } = result.value;
+        for (const fileResult of fileResults) {
+          if (fileResult.status === 'rejected') continue;
+          const { sectionId, raw } = fileResult.value;
+          const slugger = new GithubSlugger();
 
-          const blocks = raw.split(/\n(?=## )/);
-          for (const block of blocks) {
-            const lines = block.split('\n');
-            const heading = lines[0].replace(/^#+\s*/, '').trim();
-            const body = lines.slice(1).join('\n');
+          // Line-by-line heading parser — handles all levels (##, ###, ####)
+          // and correctly captures content that precedes the first heading.
+          const blocks: { heading: string; body: string }[] = [];
+          let currentHeading: string = sectionId; // pre-heading content uses the file name
+          let currentBodyLines: string[] = [];
+
+          for (const line of raw.split('\n')) {
+            const m = line.match(/^(#{1,4})\s+(.+)/);
+            if (m) {
+              blocks.push({ heading: currentHeading, body: currentBodyLines.join('\n') });
+              currentHeading = m[2].trim();
+              currentBodyLines = [line];
+            } else {
+              currentBodyLines.push(line);
+            }
+          }
+          blocks.push({ heading: currentHeading, body: currentBodyLines.join('\n') });
+
+          for (const { heading, body } of blocks) {
+            const cleanBody = stripMarkdown(body);
 
             const headMatch = fuzzyMatch(query, heading);
-            const bodyMatch = fuzzyMatch(query, body);
+            const bodyMatch = fuzzyMatch(query, cleanBody);
             const score = Math.max(headMatch.score * 1.5, bodyMatch.score);
 
             if (!headMatch.matched && !bodyMatch.matched) continue;
 
-            // Find excerpt anchor position in body
-            const searchable = body.toLowerCase();
-            const q = query.toLowerCase();
-            let idx = searchable.indexOf(q);
-
-            if (idx === -1) {
-              // Fuzzy: find position of first matched query character
-              let qi = 0;
-              for (let ti = 0; ti < searchable.length && qi < q.length; ti++) {
-                if (searchable[ti] === q[qi]) {
-                  if (qi === 0) idx = ti; // anchor to first matched char
-                  qi++;
-                }
-              }
-            }
-
-            let excerpt: string;
-            if (idx >= 0) {
-              const start = Math.max(0, idx - 60);
-              const end = Math.min(body.length, idx + query.length + 120);
-              excerpt =
-                (start > 0 ? '...' : '') +
-                body.slice(start, end).trim() +
-                (end < body.length ? '...' : '');
-            } else {
-              excerpt = body.trim().slice(0, 300) + (body.trim().length > 300 ? '...' : '');
-            }
-
-            results.push({ section: sectionId, heading, excerpt, score });
+            const slug = heading === sectionId ? '' : slugger.slug(heading);
+            const hash = slug ? `#${slug}` : '';
+            results.push({
+              path: `${sectionId} › ${heading}`,
+              url: `${BASE_URL}/${loc}/wiki?section=${sectionId}${hash}`,
+              content: cleanBody,
+              score,
+            });
           }
         }
 
         if (results.length === 0) {
           return {
-            content: [{ type: 'text', text: `No wiki content found matching "${query}" (${loc}).` }],
+            content: [
+              { type: 'text', text: `No wiki content found matching "${query}" (${loc}).` },
+            ],
           };
         }
 
         results.sort((a, b) => b.score - a.score);
 
+        const MAX_CHARS = 2000;
         const text = results
-          .map((r) => `[${r.section}] ${r.heading}\n${r.excerpt}`)
+          .slice(0, maxResults)
+          .map((r) => {
+            const truncated = r.content.length > MAX_CHARS;
+            const body = truncated ? r.content.slice(0, MAX_CHARS) + '\n\n…(内容已截断，完整内容请访问网页)' : r.content;
+            return `[${r.path}]\n${r.url}\n\n${body}`;
+          })
           .join('\n\n---\n\n');
 
-        return {
-          content: [{ type: 'text', text }],
-        };
+        return { content: [{ type: 'text', text }] };
       }
     );
   },

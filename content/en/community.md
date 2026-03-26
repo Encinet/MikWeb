@@ -27,9 +27,11 @@ The server hosts various events from time to time:
 ## Contact
 
 ### Players in Mainland China
+
 - **QQ Group** — Join our QQ group to connect with other players
 
 ### Overseas Players
+
 - **Application Form** — Submit your application via the form and receive email notifications
 
 ## Copyright Notice
