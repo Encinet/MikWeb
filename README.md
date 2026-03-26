@@ -16,6 +16,8 @@ bun dev
 |------|------|------|
 | `MINECRAFT_SERVER_URL` | ✓ | 主服务器 API base URL |
 | `TOTP_SECRET` | — | HMAC-Timestamp 密钥，用于签名时间戳，随请求头 `X-TOTP-Token` 转发 |
+| `MINECRAFT_SERVER_ADDRESS` | — | Minecraft 服务器地址，供 `GET /api/players` 在主 API 不可用时回退查询 mcstatus / mcapi |
+| `MINECRAFT_SERVER_PORT` | — | Minecraft 服务器端口，默认 `25565`，仅用于 `GET /api/players` 的回退查询 |
 | `BUILDINGS_SERVER_URL` | — | 建筑服务器 API base URL，默认回退到 `MINECRAFT_SERVER_URL` |
 | `BUILDINGS_TOTP_SECRET` | — | 建筑服务器 HMAC-Timestamp 密钥，默认回退到 `TOTP_SECRET` |
 | `NEXT_PUBLIC_BASE_URL` | — | MCP 服务器调用的基础 URL，默认 `http://localhost:3000` |
