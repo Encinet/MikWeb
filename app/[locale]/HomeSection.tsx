@@ -15,7 +15,7 @@ const AnimatePresence = dynamic(() => import('framer-motion').then(m => ({ defau
 
 interface Announcement {
   content: string;
-  timestamp: number | string;
+  timestamp: string;
 }
 
 const SERVER_START_DATE = new Date('2025-07-15');
@@ -73,8 +73,8 @@ export default function HomeSection() {
     fetchAnnouncements();
   }, []);
 
-  const formatDate = (timestamp: number | string) => {
-    const date = new Date(typeof timestamp === 'number' ? timestamp * 1000 : timestamp);
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
     return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',

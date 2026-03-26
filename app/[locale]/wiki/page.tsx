@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import path from 'path';
 import { Suspense } from 'react';
 
+import { WIKI_SECTIONS } from '@/lib/wiki';
 import WikiContent from './WikiContent';
 
 export default async function WikiPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ section?: string }> }) {
@@ -10,13 +11,19 @@ export default async function WikiPage({ params, searchParams }: { params: Promi
   const { section } = await searchParams;
   const t = await getTranslations('wiki');
 
-  const sections = [
-    { id: 'getting-started', icon: 'Home', label: t('sections.gettingStarted') },
-    { id: 'rules', icon: 'Shield', label: t('sections.rules') },
-    { id: 'commands', icon: 'Wrench', label: t('sections.commands') },
-    { id: 'community', icon: 'Users', label: t('sections.community') },
-    { id: 'tips', icon: 'Zap', label: t('sections.tips') }
-  ];
+  const sectionMeta: Record<(typeof WIKI_SECTIONS)[number], { icon: string; labelKey: string }> = {
+    'getting-started': { icon: 'Home', labelKey: 'sections.gettingStarted' },
+    'rules': { icon: 'Shield', labelKey: 'sections.rules' },
+    'commands': { icon: 'Wrench', labelKey: 'sections.commands' },
+    'community': { icon: 'Users', labelKey: 'sections.community' },
+    'tips': { icon: 'Zap', labelKey: 'sections.tips' },
+  };
+
+  const sections = WIKI_SECTIONS.map((id) => ({
+    id,
+    icon: sectionMeta[id].icon,
+    label: t(sectionMeta[id].labelKey),
+  }));
 
   // Read all markdown files
   const content: Record<string, string> = {};
@@ -30,7 +37,7 @@ export default async function WikiPage({ params, searchParams }: { params: Promi
   }
 
   const validSections = sections.map(s => s.id);
-  const initialSection = section && validSections.includes(section) ? section : 'getting-started';
+  const initialSection = section && (validSections as string[]).includes(section) ? section : 'getting-started';
 
   return (
     <Suspense>

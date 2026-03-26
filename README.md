@@ -50,8 +50,8 @@ openssl rand -hex 32
 <summary><code>GET /api/announcements</code></summary>
 
 ```ts
-{ timestamp: number | string; content: string }[]
-// timestamp: Unix 秒 或 ISO 8601
+{ timestamp: string; content: string }[]
+// timestamp: ISO 8601
 ```
 </details>
 
@@ -103,8 +103,10 @@ openssl rand -hex 32
 | 工具 | 说明 |
 |------|------|
 | `get_players` | 获取当前在线玩家列表和数量 |
+| `get_announcements` | 获取公告列表，默认返回最近 5 条，可指定数量 |
 | `get_buildings` | 获取建筑列表（含坐标、所有者、描述） |
 | `get_bans` | 获取封禁列表（含玩家名、原因、期限） |
+| `search_wiki` | 搜索 Wiki 内容，支持关键词模糊查询，可指定语言 |
 
 ### 客户端配置
 
