@@ -22,7 +22,7 @@ export default function MinecraftAvatar({
   name,
   size,
   className = '',
-  style = {}
+  style = {},
 }: MinecraftAvatarProps) {
   const [serviceIndex, setServiceIndex] = useState(0);
 
@@ -43,7 +43,7 @@ export default function MinecraftAvatar({
       className={className}
       style={{
         imageRendering: 'pixelated',
-        ...style
+        ...style,
       }}
       onError={handleError}
     />

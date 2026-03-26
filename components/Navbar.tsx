@@ -1,14 +1,29 @@
 'use client';
 
-import { AnimatePresence,motion } from 'framer-motion';
-import { BookOpen, Building2, Globe, Home, Map, Menu, Moon, Play, Shield, Sun, Users, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  BookOpen,
+  Building2,
+  Globe,
+  Home,
+  MapIcon,
+  Menu,
+  Moon,
+  Play,
+  Shield,
+  Sun,
+  Users,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
-import { useLocale,useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import React, { useState, useSyncExternalStore } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 
 import { usePlayerContext } from '@/contexts/PlayerContext';
-import { Link, usePathname,useRouter } from '@/i18n/routing';
+import { useHasMounted } from '@/hooks/useHasMounted';
+import { Link, usePathname, useRouter } from '@/i18n/routing';
 
 import MinecraftAvatar from './MinecraftAvatar';
 
@@ -18,15 +33,16 @@ export default function Navbar() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
-  const { players, playerCount, isOnline, isLoading: isLoadingPlayers, networkError } = usePlayerContext();
-  const [showPlayerList, setShowPlayerList] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const {
+    players,
+    playerCount,
+    isOnline,
+    isLoading: isLoadingPlayers,
+    networkError,
+  } = usePlayerContext();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  const mounted = useHasMounted();
 
   const handleThemeToggle = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -37,8 +53,19 @@ export default function Navbar() {
     { id: 'buildings', icon: Building2, label: t('buildings'), path: '/buildings' },
     { id: 'bans', icon: Shield, label: t('bans'), path: '/bans' },
     { id: 'wiki', icon: BookOpen, label: t('wiki'), path: '/wiki' },
-    { id: 'map', icon: Map, label: t('map'), link: 'https://www.bilibili.com/video/BV1GJ411x7h7' },
-    { id: 'apply', icon: Play, label: t('join'), link: 'https://mikapply.noctiro.moe', highlight: true }
+    {
+      id: 'map',
+      icon: MapIcon,
+      label: t('map'),
+      link: 'https://www.bilibili.com/video/BV1GJ411x7h7',
+    },
+    {
+      id: 'apply',
+      icon: Play,
+      label: t('join'),
+      link: 'https://mikapply.noctiro.moe',
+      highlight: true,
+    },
   ];
 
   const switchLocale = () => {
@@ -47,418 +74,480 @@ export default function Navbar() {
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 50,
-      display: 'flex',
-      justifyContent: 'center',
-      padding: '1rem 0 0 0'
-    }}>
-      <nav style={{
-        width: '100%',
-        maxWidth: 'min(95%, 1400px)',
-        backdropFilter: 'blur(16px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-        background: 'var(--glass-bg)',
-        border: '1px solid var(--glass-border)',
-        borderRadius: 'clamp(12px, 2vw, 24px)',
-        boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-        transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease'
-      }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        display: 'flex',
+        justifyContent: 'center',
+        padding: '1rem 0 0 0',
+      }}
+    >
+      <nav
+        style={{
+          width: '100%',
+          maxWidth: 'min(95%, 1400px)',
+          backdropFilter: 'blur(16px) saturate(150%)',
+          'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: 'clamp(12px, 2vw, 24px)',
+          boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+          transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <Image
-              src="/mik-standard-rounded.webp"
-              alt="Mik Server Logo"
-              width={48}
-              height={48}
-              className="w-8 h-8 sm:w-12 sm:h-12"
-            />
-            <div>
-              <h1 style={{
-                fontSize: 'clamp(1.125rem, 2vw, 1.5rem)',
-                fontWeight: 600,
-                letterSpacing: '-0.02em'
-              }}>
-                <span style={{ color: '#FFAA00' }}>Mi</span>
-                <span style={{ color: 'var(--logo-k)' }}>k</span>
-                <span style={{ color: '#55FF55', marginLeft: 'clamp(0.25rem, 1vw, 0.5rem)' }}>Casual</span>
-              </h1>
-              <p className="text-xs hidden sm:block" style={{
-                color: 'var(--text-muted)',
-                marginTop: '-2px'
-              }}>{t('subtitle')}</p>
-            </div>
-          </Link>
+          <div className="flex items-center justify-between gap-4">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <Image
+                src="/mik-standard-rounded.webp"
+                alt="Mik Server Logo"
+                width={48}
+                height={48}
+                className="w-8 h-8 sm:w-12 sm:h-12"
+              />
+              <div>
+                <h1
+                  style={{
+                    fontSize: 'clamp(1.125rem, 2vw, 1.5rem)',
+                    fontWeight: 600,
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  <span style={{ color: '#FFAA00' }}>Mi</span>
+                  <span style={{ color: 'var(--logo-k)' }}>k</span>
+                  <span style={{ color: '#55FF55', marginLeft: 'clamp(0.25rem, 1vw, 0.5rem)' }}>
+                    Casual
+                  </span>
+                </h1>
+                <p
+                  className="text-xs hidden sm:block"
+                  style={{
+                    color: 'var(--text-muted)',
+                    marginTop: '-2px',
+                  }}
+                >
+                  {t('subtitle')}
+                </p>
+              </div>
+            </Link>
 
-          <div className="hidden lg:flex items-center gap-6 relative">
-            {navItems.map((item) => {
-              const isActive = pathname === item.path;
+            <div className="hidden lg:flex items-center gap-6 relative">
+              {navItems.map((item) => {
+                const isActive = pathname === item.path;
 
-              if (item.link) {
+                if (item.link) {
+                  return (
+                    <a
+                      key={item.id}
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: item.highlight ? '#FFAA00' : 'transparent',
+                        padding: item.highlight ? '8px 16px' : '8px 0',
+                        borderRadius: item.highlight ? '8px' : '0',
+                        color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                        fontSize: '14px',
+                        fontWeight: item.highlight ? 600 : 500,
+                        textDecoration: 'none',
+                        transition: 'all 0.2s ease',
+                        position: 'relative' as const,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (item.highlight) {
+                          e.currentTarget.style.background = '#e09900';
+                        } else {
+                          e.currentTarget.style.color = 'var(--text-nav-hover)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (item.highlight) {
+                          e.currentTarget.style.background = '#FFAA00';
+                        } else {
+                          e.currentTarget.style.color = 'var(--text-nav)';
+                        }
+                      }}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </a>
+                  );
+                }
+
                 return (
-                  <a
+                  <Link
                     key={item.id}
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={item.path as string}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      background: item.highlight ? '#FFAA00' : 'transparent',
-                      padding: item.highlight ? '8px 16px' : '8px 0',
-                      borderRadius: item.highlight ? '8px' : '0',
-                      color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                      padding: '8px 0',
+                      color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
                       fontSize: '14px',
-                      fontWeight: item.highlight ? 600 : 500,
+                      fontWeight: 500,
                       textDecoration: 'none',
-                      transition: 'all 0.2s ease',
-                      position: 'relative' as const
+                      transition: 'color 0.2s ease',
+                      position: 'relative' as const,
                     }}
                     onMouseEnter={(e) => {
-                      if (item.highlight) {
-                        e.currentTarget.style.background = '#e09900';
-                      } else {
-                        e.currentTarget.style.color = 'var(--text-nav-hover)';
-                      }
+                      e.currentTarget.style.color = 'var(--text-nav-hover)';
                     }}
                     onMouseLeave={(e) => {
-                      if (item.highlight) {
-                        e.currentTarget.style.background = '#FFAA00';
-                      } else {
-                        e.currentTarget.style.color = 'var(--text-nav)';
-                      }
+                      e.currentTarget.style.color = isActive
+                        ? 'var(--text-nav-active)'
+                        : 'var(--text-nav)';
                     }}
                   >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </a>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.id}
-                  href={item.path as string}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 0',
-                    color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                    transition: 'color 0.2s ease',
-                    position: 'relative' as const
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--text-nav-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = isActive ? 'var(--text-nav-active)' : 'var(--text-nav)';
-                  }}
-                >
-                  <item.icon className="w-4 h-4 relative z-10" />
-                  <span className="relative z-10">{item.label}</span>
-                  {isActive && (
-                    <motion.div
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: 1 }}
-                      exit={{ scaleX: 0 }}
-                      className="absolute bottom-0 left-0 right-0 h-0.5"
-                      style={{
-                        backgroundColor: '#FFAA00',
-                        transformOrigin: 'left'
-                      }}
-                      transition={{
-                        duration: 0.3,
-                        ease: "easeInOut"
-                      }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg transition-colors"
-              style={{
-                color: 'var(--text-nav)',
-                background: 'transparent'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--hover-bg)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
-            <button
-              onClick={handleThemeToggle}
-              className="hidden sm:flex"
-              style={{
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 0',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-nav)',
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--text-nav-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--text-nav)';
-              }}
-            >
-              {mounted ? (
-                theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
-              ) : (
-                <div className="w-4 h-4" />
-              )}
-            </button>
-
-            <button
-              onClick={switchLocale}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 0',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-nav)',
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--text-nav-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--text-nav)';
-              }}
-            >
-              <Globe className="w-4 h-4" />
-              <span className="hidden sm:inline">{locale === 'zh-CN' ? 'EN' : '中文'}</span>
-            </button>
-
-            <div
-              className="relative"
-              onMouseEnter={() => setShowPlayerList(true)}
-              onMouseLeave={() => setShowPlayerList(false)}
-            >
-              <div className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
-                <div style={{
-                  width: '8px',
-                  height: '8px',
-                  background: isOnline ? '#55FF55' : '#FF5555',
-                  borderRadius: '50%',
-                  boxShadow: isOnline ? '0 0 8px rgba(85,255,85,0.5)' : '0 0 8px rgba(255,85,85,0.5)'
-                }}></div>
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: 'var(--text-nav)' }} />
-                {isLoadingPlayers ? (
-                  <>
-                    <span style={{
-                      color: 'var(--text-player-count)',
-                      fontWeight: 600,
-                      fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-                      fontVariantNumeric: 'tabular-nums'
-                    }}>-</span>
-                    <span className="text-xs sm:text-sm hidden sm:inline" style={{ color: 'var(--text-muted)' }}>{t('online')}</span>
-                  </>
-                ) : isOnline ? (
-                  <>
-                    <span style={{
-                      color: 'var(--text-player-count)',
-                      fontWeight: 600,
-                      fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-                      fontVariantNumeric: 'tabular-nums'
-                    }}>{playerCount}</span>
-                    <span className="text-xs sm:text-sm hidden sm:inline" style={{ color: 'var(--text-muted)' }}>{t('online')}</span>
-                  </>
-                ) : (
-                  <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>{networkError ? t('networkError') : t('offline')}</span>
-                )}
-              </div>
-
-              {/* Player List Dropdown */}
-              {showPlayerList && players.length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  right: 0,
-                  minWidth: '240px',
-                  maxHeight: '400px',
-                  overflowY: 'auto',
-                  backdropFilter: 'blur(24px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                  background: 'var(--glass-bg)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '16px',
-                  boxShadow: '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                  padding: '16px',
-                  zIndex: 100,
-                  animation: 'fadeInDown 0.2s ease-out',
-                  isolation: 'isolate'
-                } as React.CSSProperties}>
-                  <div style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: 'var(--text-muted)',
-                    marginBottom: '8px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    {t('online')} ({players.length})
-                  </div>
-                  <div className="space-y-2">
-                    {players.map((player, idx) => (
-                      <div
-                        key={idx}
+                    <item.icon className="w-4 h-4 relative z-10" />
+                    <span className="relative z-10">{item.label}</span>
+                    {isActive && (
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        exit={{ scaleX: 0 }}
+                        className="absolute bottom-0 left-0 right-0 h-0.5"
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          padding: '8px 10px',
-                          borderRadius: '8px',
-                          background: 'var(--glass-icon-bg)',
-                          border: '1px solid var(--glass-border)',
-                          transition: 'all 0.2s ease',
-                          cursor: 'default'
+                          backgroundColor: '#FFAA00',
+                          transformOrigin: 'left',
                         }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--glass-hover)';
-                          e.currentTarget.style.transform = 'translateX(4px)';
+                        transition={{
+                          duration: 0.3,
+                          ease: 'easeInOut',
                         }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'var(--glass-icon-bg)';
-                          e.currentTarget.style.transform = 'translateX(0)';
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+              {/* Mobile Menu Button */}
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="lg:hidden p-2 rounded-lg transition-colors"
+                style={{
+                  color: 'var(--text-nav)',
+                  background: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--hover-bg)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleThemeToggle}
+                className="hidden sm:flex"
+                style={{
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 0',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-nav)',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text-nav-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-nav)';
+                }}
+              >
+                {mounted ? (
+                  theme === 'dark' ? (
+                    <Sun className="w-4 h-4" />
+                  ) : (
+                    <Moon className="w-4 h-4" />
+                  )
+                ) : (
+                  <div className="w-4 h-4" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={switchLocale}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 0',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-nav)',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text-nav-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-nav)';
+                }}
+              >
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">{locale === 'zh-CN' ? 'EN' : '中文'}</span>
+              </button>
+
+              <div className="relative group/player-list">
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 sm:gap-2 cursor-pointer"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <div
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      background: isOnline ? '#55FF55' : '#FF5555',
+                      borderRadius: '50%',
+                      boxShadow: isOnline
+                        ? '0 0 8px rgba(85,255,85,0.5)'
+                        : '0 0 8px rgba(255,85,85,0.5)',
+                    }}
+                  ></div>
+                  <Users
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                    style={{ color: 'var(--text-nav)' }}
+                  />
+                  {isLoadingPlayers ? (
+                    <>
+                      <span
+                        style={{
+                          color: 'var(--text-player-count)',
+                          fontWeight: 600,
+                          fontSize: 'clamp(1rem, 2vw, 1.125rem)',
+                          fontVariantNumeric: 'tabular-nums',
                         }}
                       >
-                        <MinecraftAvatar
-                          uuid={player.uuid}
-                          name={player.name}
-                          size={28}
+                        -
+                      </span>
+                      <span
+                        className="text-xs sm:text-sm hidden sm:inline"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        {t('online')}
+                      </span>
+                    </>
+                  ) : isOnline ? (
+                    <>
+                      <span
+                        style={{
+                          color: 'var(--text-player-count)',
+                          fontWeight: 600,
+                          fontSize: 'clamp(1rem, 2vw, 1.125rem)',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {playerCount}
+                      </span>
+                      <span
+                        className="text-xs sm:text-sm hidden sm:inline"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        {t('online')}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
+                      {networkError ? t('networkError') : t('offline')}
+                    </span>
+                  )}
+                </button>
+
+                {/* Player List Dropdown */}
+                {players.length > 0 && (
+                  <div
+                    className="hidden group-hover/player-list:block group-focus-within/player-list:block"
+                    style={
+                      {
+                        position: 'absolute',
+                        top: 'calc(100% + 8px)',
+                        right: 0,
+                        minWidth: '240px',
+                        maxHeight: '400px',
+                        overflowY: 'auto',
+                        backdropFilter: 'blur(24px) saturate(180%)',
+                        'WebkitBackdropFilter': 'blur(24px) saturate(180%)',
+                        background: 'var(--glass-bg)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '16px',
+                        boxShadow:
+                          '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                        padding: '16px',
+                        zIndex: 100,
+                        animation: 'fadeInDown 0.2s ease-out',
+                        isolation: 'isolate',
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: 'var(--text-muted)',
+                        marginBottom: '8px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      {t('online')} ({players.length})
+                    </div>
+                    <div className="space-y-2">
+                      {players.map((player) => (
+                        <div
+                          key={player.uuid}
+                          className="transition-all hover:translate-x-1"
                           style={{
-                            borderRadius: '6px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            background: 'var(--glass-icon-bg)',
+                            border: '1px solid var(--glass-border)',
+                            transition: 'all 0.2s ease',
+                            cursor: 'default',
+                            backgroundColor: 'var(--glass-icon-bg)',
                           }}
-                        />
-                        <span style={{
-                          color: 'var(--text-secondary)',
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          flex: 1
-                        }}>{player.name}</span>
-                      </div>
-                    ))}
+                        >
+                          <MinecraftAvatar
+                            uuid={player.uuid}
+                            name={player.name}
+                            size={28}
+                            style={{
+                              borderRadius: '6px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            }}
+                          />
+                          <span
+                            style={{
+                              color: 'var(--text-secondary)',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              flex: 1,
+                            }}
+                          >
+                            {player.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="lg:hidden overflow-hidden"
-            >
-              <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
-                <div className="flex flex-col space-y-2">
-                  {navItems.map((item) => {
-                    const isActive = pathname === item.path;
-  
-                    if (item.link) {
+          {/* Mobile Menu */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="lg:hidden overflow-hidden"
+              >
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
+                  <div className="flex flex-col space-y-2">
+                    {navItems.map((item) => {
+                      const isActive = pathname === item.path;
+
+                      if (item.link) {
+                        return (
+                          <a
+                            key={item.id}
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                            style={{
+                              background: item.highlight ? '#FFAA00' : 'var(--glass-icon-bg)',
+                              color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                              fontWeight: item.highlight ? 600 : 500,
+                              border: `1px solid ${item.highlight ? 'transparent' : 'var(--glass-border)'}`,
+                            }}
+                          >
+                            <item.icon className="w-5 h-5" />
+                            <span className="text-sm">{item.label}</span>
+                          </a>
+                        );
+                      }
+
                       return (
-                        <a
-                          key={item.id}
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
-                          style={{
-                            background: item.highlight ? '#FFAA00' : 'var(--glass-icon-bg)',
-                            color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
-                            fontWeight: item.highlight ? 600 : 500,
-                            border: `1px solid ${item.highlight ? 'transparent' : 'var(--glass-border)'}`
-                          }}
-                        >
-                          <item.icon className="w-5 h-5" />
-                          <span className="text-sm">{item.label}</span>
-                        </a>
+                        <div key={item.id}>
+                          <Link
+                            href={item.path as string}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                            style={{
+                              background: isActive ? 'var(--glass-hover)' : 'var(--glass-icon-bg)',
+                              color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
+                              border: `1px solid ${isActive ? '#FFAA00' : 'var(--glass-border)'}`,
+                            }}
+                          >
+                            <item.icon className="w-5 h-5" />
+                            <span className="text-sm">{item.label}</span>
+                          </Link>
+                        </div>
                       );
-                    }
-  
-                    return (
-                      <div key={item.id}>
-                        <Link
-                          href={item.path as string}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
-                          style={{
-                            background: isActive ? 'var(--glass-hover)' : 'var(--glass-icon-bg)',
-                            color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
-                            border: `1px solid ${isActive ? '#FFAA00' : 'var(--glass-border)'}`
-                          }}
-                        >
-                          <item.icon className="w-5 h-5" />
-                          <span className="text-sm">{item.label}</span>
-                      </Link>
-                    </div>
-                  );
-                })}
+                    })}
 
-                {/* Mobile Theme Toggle */}
-                <button
-                    onClick={handleThemeToggle}
-                    className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
-                    style={{
-                      background: 'var(--glass-icon-bg)',
-                      color: 'var(--text-nav)',
-                      border: '1px solid var(--glass-border)'
-                    }}
-                  >
-                    {mounted ? (
-                      theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
-                    ) : (
-                      <div className="w-5 h-5" />
-                    )}
-                    <span className="text-sm">{mounted && theme === 'dark' ? t('lightMode') : t('darkMode')}</span>
-                  </button>
+                    {/* Mobile Theme Toggle */}
+                    <button
+                      type="button"
+                      onClick={handleThemeToggle}
+                      className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+                      style={{
+                        background: 'var(--glass-icon-bg)',
+                        color: 'var(--text-nav)',
+                        border: '1px solid var(--glass-border)',
+                      }}
+                    >
+                      {mounted ? (
+                        theme === 'dark' ? (
+                          <Sun className="w-5 h-5" />
+                        ) : (
+                          <Moon className="w-5 h-5" />
+                        )
+                      ) : (
+                        <div className="w-5 h-5" />
+                      )}
+                      <span className="text-sm">
+                        {mounted && theme === 'dark' ? t('lightMode') : t('darkMode')}
+                      </span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </nav>
     </div>
   );

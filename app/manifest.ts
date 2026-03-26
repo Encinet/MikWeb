@@ -1,14 +1,16 @@
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next';
+
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/lib/site';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Mik Casual - 创造休闲 Minecraft 服务器',
-    short_name: 'Mik Casual',
-    description: 'Mik Casual 是由 Encinet 团队管理的创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作',
-    start_url: '/',
+    name: SITE_TITLE,
+    'short_name': SITE_NAME,
+    description: SITE_DESCRIPTION,
+    'start_url': '/',
     display: 'standalone',
-    background_color: '#0a0a0a',
-    theme_color: '#8b5cf6',
+    'background_color': '#0a0a0a',
+    'theme_color': '#8b5cf6',
     icons: [
       {
         src: '/mik-standard-rounded.webp',
@@ -16,5 +18,5 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/webp',
       },
     ],
-  }
+  };
 }

@@ -1,28 +1,37 @@
 'use client';
 
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { BookOpen, ChevronRight, Home, Menu, Shield, Users, Wrench, X,Zap } from 'lucide-react';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import { BookOpen, ChevronRight, Home, Menu, Shield, Users, Wrench, X, Zap } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo,useState } from 'react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 
-const iconMap = { Home, Wrench, Shield, Users, Zap };
+import type {
+  WikiSectionContentMap,
+  WikiSectionDefinition,
+  WikiSectionIcon,
+  WikiSectionId,
+} from '@/lib/types';
+import { isWikiSectionId } from '@/lib/wiki';
 
-interface Section {
-  id: string;
-  icon: string;
-  label: string;
-}
+const iconMap = new Map<WikiSectionIcon, React.ComponentType<{ className?: string }>>([
+  ['Home', Home],
+  ['Wrench', Wrench],
+  ['Shield', Shield],
+  ['Users', Users],
+  ['Zap', Zap],
+]);
 
 interface WikiContentProps {
   title: string;
   description: string;
   navigation: string;
-  sections: Section[];
-  content: Record<string, string>;
-  initialSection?: string;
+  sections: WikiSectionDefinition[];
+  content: WikiSectionContentMap;
+  initialSection?: WikiSectionId;
 }
 
 // Shared spring presets
@@ -31,7 +40,7 @@ const spring = {
   bouncy: { type: 'spring' as const, stiffness: 380, damping: 22, mass: 1 },
   gentle: { type: 'spring' as const, stiffness: 480, damping: 40, mass: 0.8 },
   wobbly: { type: 'spring' as const, stiffness: 280, damping: 18, mass: 0.9 },
-  fab:    { type: 'spring' as const, stiffness: 460, damping: 20, mass: 0.7 },
+  fab: { type: 'spring' as const, stiffness: 460, damping: 20, mass: 0.7 },
 };
 
 // Nav stagger
@@ -41,13 +50,13 @@ const navContainer = {
 };
 const navItem = {
   hidden: { opacity: 0, x: -14, filter: 'blur(4px)' },
-  show:   { opacity: 1, x: 0,   filter: 'blur(0px)', transition: spring.snappy },
+  show: { opacity: 1, x: 0, filter: 'blur(0px)', transition: spring.snappy },
 };
 
 // Mobile popup nav items
 const popupItem = {
   hidden: { opacity: 0, y: 10, scale: 0.92, filter: 'blur(4px)' },
-  show:   { opacity: 1, y: 0,  scale: 1,    filter: 'blur(0px)' },
+  show: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
 };
 
 // FAB icon swap
@@ -67,7 +76,7 @@ function FabIcon({ open }: { open: boolean }) {
   );
 }
 
-// Active nav pill (layoutId driven) 
+// Active nav pill (layoutId driven)
 function ActivePill({ layoutId }: { layoutId: string }) {
   return (
     <motion.span
@@ -92,32 +101,41 @@ export default function WikiContent({
 }: WikiContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeSection, setActiveSection] = useState(initialSection || sections[0]?.id || '');
-  const [prevSection, setPrevSection] = useState(activeSection);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const dir =
-    sections.findIndex(s => s.id === activeSection) >
-    sections.findIndex(s => s.id === prevSection)
-      ? 1 : -1;
-
-  useEffect(() => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const activeSection = useMemo(() => {
     const section = searchParams.get('section');
-    if (section && content[section]) {
-      setPrevSection(activeSection);
-      setActiveSection(section);
+
+    if (section && isWikiSectionId(section) && content[section]) {
+      return section;
     }
-  }, [searchParams, content, activeSection]);
+
+    return initialSection || sections[0]?.id || 'getting-started';
+  }, [searchParams, content, initialSection, sections]);
+  const sectionIndexMap = useMemo(() => {
+    return new Map(sections.map((section, index) => [section.id, index]));
+  }, [sections]);
+  const previousSectionRef = useRef(activeSection);
+  const currentSectionIndex = sectionIndexMap.get(activeSection) ?? 0;
+  const previousSectionIndex =
+    sectionIndexMap.get(previousSectionRef.current) ?? currentSectionIndex;
+  const sectionDirection =
+    currentSectionIndex === previousSectionIndex
+      ? 0
+      : currentSectionIndex > previousSectionIndex
+        ? 1
+        : -1;
 
   // Scroll to hash target after markdown renders
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (!hash) return;
     const decodedHash = decodeURIComponent(hash);
-    
+    const contentContainer = document.querySelector(`[data-section="${activeSection}"]`);
+
     const tryScroll = () => {
       // Find heading by text content (rehype-slug doesn't generate ids for Chinese text)
-      const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      const headings = contentContainer?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      if (!headings) return false;
       for (const el of headings) {
         if (el.textContent?.trim() === decodedHash || el.textContent?.trim() === hash) {
           const top = el.getBoundingClientRect().top + window.scrollY - 160;
@@ -127,136 +145,186 @@ export default function WikiContent({
       }
       return false;
     };
-    
+
     if (!tryScroll()) {
       const timer = setTimeout(tryScroll, 1000);
       return () => clearTimeout(timer);
     }
-  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeSection]);
 
-  const handleSectionChange = (id: string) => {
+  useEffect(() => {
+    previousSectionRef.current = activeSection;
+  }, [activeSection]);
+
+  const handleSectionChange = (id: WikiSectionId) => {
     if (id === activeSection) return;
-    setPrevSection(activeSection);
-    setActiveSection(id);
-    setSidebarOpen(false);
+    setIsSidebarOpen(false);
     const params = new URLSearchParams(searchParams.toString());
     params.set('section', id);
-    router.push(`?${params.toString()}`, { scroll: false });
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   const markdownComponents = useMemo(() => {
-    let i = 0;
-    const d = () => Math.min(i++ * 0.018, 0.25);
-
-    const bm = {
-      initial: { opacity: 0, y: 18, filter: 'blur(5px)' },
-      animate: { opacity: 1, y: 0,  filter: 'blur(0px)' },
+    const sectionAnimationKey = activeSection;
+    let animationIndex = 0;
+    const getDelay = () => {
+      animationIndex += 1;
+      return sectionAnimationKey ? Math.min(animationIndex * 0.024, 0.34) : 0;
+    };
+    const baseMotionProps = {
+      initial: { opacity: 0, y: 18, filter: 'blur(6px)' },
+      animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
     };
 
     return {
       h1: ({ children }: React.PropsWithChildren) => (
         <motion.h1
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
           style={{ color: 'var(--text-secondary)', borderColor: 'var(--glass-border-light)' }}
           className="text-3xl font-bold mb-6 pb-3 border-b"
-        >{children}</motion.h1>
+        >
+          {children}
+        </motion.h1>
       ),
       h2: ({ children }: React.PropsWithChildren) => (
         <motion.h2
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
           style={{ color: 'var(--text-secondary)' }}
           className="text-2xl font-semibold mt-8 mb-4"
-        >{children}</motion.h2>
+        >
+          {children}
+        </motion.h2>
       ),
       h3: ({ children }: React.PropsWithChildren) => (
         <motion.h3
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
           style={{ color: 'var(--text-primary)' }}
           className="text-xl font-semibold mt-6 mb-3"
-        >{children}</motion.h3>
+        >
+          {children}
+        </motion.h3>
       ),
       p: ({ children }: React.PropsWithChildren) => (
         <motion.p
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
           style={{ color: 'var(--text-muted-lighter)' }}
           className="leading-relaxed mb-4"
-        >{children}</motion.p>
+        >
+          {children}
+        </motion.p>
       ),
       ul: ({ children }: React.PropsWithChildren) => (
         <motion.ul
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
           style={{ color: 'var(--text-muted-lighter)' }}
           className="list-disc list-inside space-y-2 mb-4"
-        >{children}</motion.ul>
+        >
+          {children}
+        </motion.ul>
       ),
       ol: ({ children }: React.PropsWithChildren) => (
         <motion.ol
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
           style={{ color: 'var(--text-muted-lighter)' }}
           className="list-decimal list-inside space-y-2 mb-4"
-        >{children}</motion.ol>
+        >
+          {children}
+        </motion.ol>
       ),
       li: ({ children }: React.PropsWithChildren) => (
-        <li style={{ color: 'var(--text-muted-lighter)' }} className="ml-4">{children}</li>
+        <li style={{ color: 'var(--text-muted-lighter)' }} className="ml-4">
+          {children}
+        </li>
       ),
       blockquote: ({ children }: React.PropsWithChildren) => (
         <motion.blockquote
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
           style={{
             background: 'var(--glass-bg-light)',
             borderLeftColor: 'var(--blue-accent-border)',
             borderColor: 'var(--glass-border-light)',
           }}
           className="border-l-4 pl-4 py-1 my-4 rounded-lg border backdrop-blur-sm [&>p]:mb-0 [&>p:last-child]:mb-0"
-        >{children}</motion.blockquote>
+        >
+          {children}
+        </motion.blockquote>
       ),
       pre: ({ children }: React.PropsWithChildren) => (
         <motion.pre
-          {...bm} transition={{ ...spring.gentle, delay: d() }}
-          style={{ background: 'var(--code-block-bg)', borderColor: 'var(--glass-border-light)' }} className="mb-4 rounded-lg overflow-x-auto border p-4"
-        >{children}</motion.pre>
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
+          style={{ background: 'var(--code-block-bg)', borderColor: 'var(--glass-border-light)' }}
+          className="mb-4 rounded-lg overflow-x-auto border p-4"
+        >
+          {children}
+        </motion.pre>
       ),
       code: ({ children, className }: React.PropsWithChildren<{ className?: string }>) => {
         const isInline = !className;
         return isInline ? (
-          <code style={{ background: 'var(--code-bg)' }} className="text-blue-300 px-1.5 py-0.5 rounded text-sm font-mono">
+          <code
+            style={{ background: 'var(--code-bg)' }}
+            className="text-blue-300 px-1.5 py-0.5 rounded text-sm font-mono"
+          >
             {children}
           </code>
         ) : (
-          <code className="text-blue-300 text-sm font-mono block">
-            {children}
-          </code>
+          <code className="text-blue-300 text-sm font-mono block">{children}</code>
         );
       },
       a: ({ children, href }: React.PropsWithChildren<{ href?: string }>) => (
-        <a href={href} className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">
+        <a
+          href={href}
+          className="text-blue-400 hover:text-blue-300 underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {children}
         </a>
       ),
       table: ({ children }: React.PropsWithChildren) => (
-        <motion.div {...bm} transition={{ ...spring.gentle, delay: d() }} className="overflow-x-auto my-4 rounded-lg border" style={{ borderColor: 'var(--glass-border-light)' }}>
-          <table className="min-w-full">
-            {children}
-          </table>
+        <motion.div
+          {...baseMotionProps}
+          transition={{ ...spring.gentle, delay: getDelay() }}
+          className="overflow-x-auto my-4 rounded-lg border"
+          style={{ borderColor: 'var(--glass-border-light)' }}
+        >
+          <table className="min-w-full">{children}</table>
         </motion.div>
       ),
       thead: ({ children }: React.PropsWithChildren) => (
         <thead style={{ background: 'var(--glass-bg-light)' }}>{children}</thead>
       ),
       th: ({ children }: React.PropsWithChildren) => (
-        <th style={{ color: 'var(--text-secondary)', borderColor: 'var(--glass-border-light)' }} className="px-4 py-2 text-left font-semibold border-b">{children}</th>
+        <th
+          style={{ color: 'var(--text-secondary)', borderColor: 'var(--glass-border-light)' }}
+          className="px-4 py-2 text-left font-semibold border-b"
+        >
+          {children}
+        </th>
       ),
       td: ({ children }: React.PropsWithChildren) => (
-        <td style={{ color: 'var(--text-muted-lighter)', borderColor: 'var(--border-light)' }} className="px-4 py-2 border-b">{children}</td>
+        <td
+          style={{ color: 'var(--text-muted-lighter)', borderColor: 'var(--border-light)' }}
+          className="px-4 py-2 border-b"
+        >
+          {children}
+        </td>
       ),
     };
-  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeSection]);
 
   return (
     <MotionConfig reducedMotion="user">
       <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-
           {/* ── Header ── */}
           <motion.div
             className="text-center mb-8 sm:mb-12"
@@ -297,19 +365,24 @@ export default function WikiContent({
           {/* ── Mobile FAB + popup ── */}
           <div className="lg:hidden fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
             <AnimatePresence>
-              {sidebarOpen && (
+              {isSidebarOpen && (
                 <motion.div
                   key="mobile-nav"
                   initial={{ opacity: 0, scale: 0.88, y: 16 }}
                   animate={{ opacity: 1, scale: 1, y: 0, transition: spring.bouncy }}
                   exit={{
-                    opacity: 0, scale: 0.88, y: 12,
-                    transition: { duration: 0.18, ease: [0.4, 0, 1, 1] as [number,number,number,number] },
+                    opacity: 0,
+                    scale: 0.88,
+                    y: 12,
+                    transition: {
+                      duration: 0.18,
+                      ease: [0.4, 0, 1, 1] as [number, number, number, number],
+                    },
                   }}
                   className="rounded-2xl p-3 w-48"
                   style={{
                     backdropFilter: 'blur(16px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                    'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
                     background: 'var(--glass-bg)',
                     border: '1px solid var(--glass-border)',
                     boxShadow: 'var(--card-shadow)',
@@ -323,7 +396,7 @@ export default function WikiContent({
                     animate="show"
                   >
                     {sections.map((section) => {
-                      const Icon = iconMap[section.icon as keyof typeof iconMap];
+                      const Icon = iconMap.get(section.icon) ?? BookOpen;
                       const isActive = activeSection === section.id;
                       return (
                         <motion.button
@@ -332,7 +405,9 @@ export default function WikiContent({
                           transition={spring.snappy}
                           onClick={() => handleSectionChange(section.id)}
                           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg relative"
-                          style={{ color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)' }}
+                          style={{
+                            color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)',
+                          }}
                           whileHover={{ x: 3, transition: spring.snappy }}
                           whileTap={{ scale: 0.95, transition: spring.snappy }}
                         >
@@ -348,18 +423,17 @@ export default function WikiContent({
             </AnimatePresence>
 
             <motion.button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-3.5 rounded-full backdrop-blur-lg bg-blue-500/20 border border-blue-400/30 shadow-lg"
               style={{ color: 'var(--blue-accent)' }}
               whileHover={{ scale: 1.12, transition: spring.snappy }}
               whileTap={{ scale: 0.88, transition: spring.fab }}
             >
-              <FabIcon open={sidebarOpen} />
+              <FabIcon open={isSidebarOpen} />
             </motion.button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
             {/* ── Desktop Sidebar ── */}
             <motion.div
               className="hidden lg:block lg:col-span-1"
@@ -371,7 +445,7 @@ export default function WikiContent({
                 className="rounded-2xl p-4 lg:sticky lg:top-36"
                 style={{
                   backdropFilter: 'blur(16px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                  'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
                   background: 'var(--glass-bg)',
                   border: '1px solid var(--glass-border)',
                   boxShadow: 'var(--card-shadow)',
@@ -381,9 +455,14 @@ export default function WikiContent({
                   {navigation}
                 </h3>
 
-                <motion.nav className="space-y-1" variants={navContainer} initial="hidden" animate="show">
+                <motion.nav
+                  className="space-y-1"
+                  variants={navContainer}
+                  initial="hidden"
+                  animate="show"
+                >
                   {sections.map((section) => {
-                    const Icon = iconMap[section.icon as keyof typeof iconMap];
+                    const Icon = iconMap.get(section.icon) ?? BookOpen;
                     const isActive = activeSection === section.id;
                     return (
                       <motion.button
@@ -396,20 +475,41 @@ export default function WikiContent({
                           color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)',
                           background: 'transparent',
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--hover-bg)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                        }}
                         whileHover={{ x: isActive ? 0 : 4, transition: spring.snappy }}
                         whileTap={{ scale: 0.97, transition: spring.fab }}
                       >
                         {isActive && <ActivePill layoutId="desktop-pill" />}
 
-                        <motion.span
-                          className="relative z-10"
-                          animate={{ rotate: isActive ? [0, -12, 8, -4, 0] : 0 }}
-                          transition={isActive ? { duration: 0.45, ease: 'easeOut' } : {}}
-                        >
-                          <Icon className="w-4 h-4 shrink-0" />
-                        </motion.span>
+                        {isActive ? (
+                          <motion.span
+                            key={`${section.id}-${activeSection}`}
+                            className="relative z-10"
+                            initial={{ rotate: -18, scale: 0.82, x: -6, y: 1 }}
+                            animate={{
+                              rotate: [-18, 10, -6, 0],
+                              scale: [0.82, 1.18, 0.97, 1],
+                              x: [-6, 2, -1, 0],
+                              y: [1, -1, 0, 0],
+                            }}
+                            transition={{
+                              duration: 0.52,
+                              times: [0, 0.42, 0.76, 1],
+                              ease: [0.22, 1, 0.36, 1],
+                            }}
+                          >
+                            <Icon className="w-4 h-4 shrink-0" />
+                          </motion.span>
+                        ) : (
+                          <span className="relative z-10">
+                            <Icon className="w-4 h-4 shrink-0" />
+                          </span>
+                        )}
 
                         <span className="text-sm font-medium relative z-10">{section.label}</span>
 
@@ -420,7 +520,12 @@ export default function WikiContent({
                               className="ml-auto relative z-10"
                               initial={{ opacity: 0, x: -8, rotate: -30 }}
                               animate={{ opacity: 1, x: 0, rotate: 0, transition: spring.bouncy }}
-                              exit={{ opacity: 0, x: -6, rotate: -20, transition: { duration: 0.15 } }}
+                              exit={{
+                                opacity: 0,
+                                x: -6,
+                                rotate: -20,
+                                transition: { duration: 0.15 },
+                              }}
                             >
                               <ChevronRight className="w-4 h-4" />
                             </motion.span>
@@ -444,7 +549,7 @@ export default function WikiContent({
                 className="rounded-2xl p-6 sm:p-8"
                 style={{
                   backdropFilter: 'blur(16px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                  'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
                   background: 'var(--glass-bg)',
                   border: '1px solid var(--glass-border)',
                   boxShadow: 'var(--card-shadow)',
@@ -454,20 +559,28 @@ export default function WikiContent({
                   Exit  → whole block fades out fast (direction-aware slide).
                   Enter → each block (h1/h2/p/ul/…) springs in individually via markdownComponents.
                 */}
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeSection}
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 1 }}
+                    data-section={activeSection}
+                    initial={{
+                      opacity: 0,
+                      x: sectionDirection * 18,
+                      y: 10,
+                      filter: 'blur(4px)',
+                    }}
+                    animate={{ opacity: 1, x: 0, y: 0, filter: 'blur(0px)' }}
                     exit={{
                       opacity: 0,
-                      y: dir * -10,
+                      x: sectionDirection === 0 ? 0 : sectionDirection * -12,
+                      y: -10,
                       filter: 'blur(4px)',
                       transition: {
                         duration: 0.16,
                         ease: [0.4, 0, 1, 1] as [number, number, number, number],
                       },
                     }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                     className="prose prose-invert prose-blue max-w-none"
                   >
                     <ReactMarkdown
@@ -481,7 +594,6 @@ export default function WikiContent({
                 </AnimatePresence>
               </div>
             </motion.div>
-
           </div>
         </div>
       </div>

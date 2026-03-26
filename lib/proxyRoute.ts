@@ -1,26 +1,24 @@
-import { createHmac } from 'crypto';
+import { createHmac } from 'node:crypto';
 import { NextResponse } from 'next/server';
 
 function generateToken(secret: string): string {
   const step = Math.floor(Date.now() / 1000 / 30).toString();
-  return createHmac('sha256', secret)
-    .update(step)
-    .digest('hex');
+  return createHmac('sha256', secret).update(step).digest('hex');
 }
 
-interface ProxyRouteConfig {
+interface ProxyRouteConfig<TResponse> {
   serverUrl: string;
   totpSecret: string;
   path: string;
-  cacheMaxAge: number;         // seconds (for Cache-Control)
+  cacheMaxAge: number; // seconds (for Cache-Control)
   errorMessage: string;
-  onError?: () => Promise<unknown>; // 只有在完全没有缓存且后端挂了，或强制降级时触发
+  onError?: () => Promise<TResponse>; // 只有在完全没有缓存且后端挂了，或强制降级时触发
 }
 
-export function createProxyHandler(config: ProxyRouteConfig) {
+export function createProxyHandler<TResponse>(config: ProxyRouteConfig<TResponse>) {
   const { serverUrl, totpSecret, path, cacheMaxAge, errorMessage, onError } = config;
 
-  return async function GET(): Promise<NextResponse> {
+  return async function Get(): Promise<NextResponse> {
     const targetUrl = `${serverUrl}${path}`;
 
     try {
@@ -33,7 +31,7 @@ export function createProxyHandler(config: ProxyRouteConfig) {
         },
         next: {
           revalidate: cacheMaxAge,
-          tags: [path]
+          tags: [path],
         },
         signal: AbortSignal.timeout(5000),
       });
@@ -42,7 +40,7 @@ export function createProxyHandler(config: ProxyRouteConfig) {
         throw new Error(`Upstream status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as TResponse;
 
       return NextResponse.json(data, {
         headers: {
@@ -50,7 +48,6 @@ export function createProxyHandler(config: ProxyRouteConfig) {
           'X-Proxy-Cache': 'HIT-OR-MISS',
         },
       });
-
     } catch (error) {
       console.error(`[Proxy Error] ${path}:`, error);
 
@@ -67,7 +64,7 @@ export function createProxyHandler(config: ProxyRouteConfig) {
 
       return NextResponse.json(
         { error: errorMessage },
-        { status: 502, headers: { 'Cache-Control': 'no-store' } }
+        { status: 502, headers: { 'Cache-Control': 'no-store' } },
       );
     }
   };

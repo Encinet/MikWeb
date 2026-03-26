@@ -1,43 +1,57 @@
-import fs from 'fs';
+import fs from 'node:fs';
+import path from 'node:path';
 import { getTranslations } from 'next-intl/server';
-import path from 'path';
 import { Suspense } from 'react';
 
-import { WIKI_SECTIONS } from '@/lib/wiki';
+import type { WikiSectionContentMap, WikiSectionDefinition, WikiSectionId } from '@/lib/types';
+import {
+  isWikiSectionId,
+  WIKI_SECTION_ICONS,
+  WIKI_SECTION_TRANSLATION_KEYS,
+  WIKI_SECTIONS,
+} from '@/lib/wiki';
 import WikiContent from './WikiContent';
 
-export default async function WikiPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ section?: string }> }) {
+export default async function WikiPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ section?: string }>;
+}) {
   const { locale } = await params;
   const { section } = await searchParams;
   const t = await getTranslations('wiki');
 
-  const sectionMeta: Record<(typeof WIKI_SECTIONS)[number], { icon: string; labelKey: string }> = {
-    'getting-started': { icon: 'Home', labelKey: 'sections.gettingStarted' },
-    'rules': { icon: 'Shield', labelKey: 'sections.rules' },
-    'commands': { icon: 'Wrench', labelKey: 'sections.commands' },
-    'community': { icon: 'Users', labelKey: 'sections.community' },
-    'tips': { icon: 'Zap', labelKey: 'sections.tips' },
-  };
-
-  const sections = WIKI_SECTIONS.map((id) => ({
+  const sections: WikiSectionDefinition[] = WIKI_SECTIONS.map((id) => ({
     id,
-    icon: sectionMeta[id].icon,
-    label: t(sectionMeta[id].labelKey),
+    icon: WIKI_SECTION_ICONS[id],
+    label: t(WIKI_SECTION_TRANSLATION_KEYS[id]),
   }));
 
   // Read all markdown files
-  const content: Record<string, string> = {};
-  for (const section of sections) {
-    const filePath = path.join(process.cwd(), 'content', locale, `${section.id}.md`);
-    try {
-      content[section.id] = fs.readFileSync(filePath, 'utf-8');
-    } catch {
-      content[section.id] = `# ${section.label}\n\nContent not available.`;
-    }
-  }
+  const contentEntries = sections.map((wikiSection) => {
+    const filePath = path.join(process.cwd(), 'content', locale, `${wikiSection.id}.md`);
 
-  const validSections = sections.map(s => s.id);
-  const initialSection = section && (validSections as string[]).includes(section) ? section : 'getting-started';
+    try {
+      return [wikiSection.id, fs.readFileSync(filePath, 'utf-8')] as const satisfies readonly [
+        WikiSectionId,
+        string,
+      ];
+    } catch {
+      return [
+        wikiSection.id,
+        `# ${wikiSection.label}\n\nContent not available.`,
+      ] as const satisfies readonly [WikiSectionId, string];
+    }
+  });
+  const content = Object.fromEntries(contentEntries) as WikiSectionContentMap;
+
+  const validSections = sections.map((wikiSection) => wikiSection.id);
+  const initialSection =
+    section && isWikiSectionId(section) && validSections.includes(section)
+      ? section
+      : 'getting-started';
 
   return (
     <Suspense>

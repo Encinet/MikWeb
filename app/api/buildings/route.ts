@@ -1,7 +1,9 @@
 import { createProxyHandler } from '@/lib/proxyRoute';
+import type { BuildingsApiResponse } from '@/lib/types';
 
-export const GET = createProxyHandler({
-  serverUrl: process.env.BUILDINGS_SERVER_URL || process.env.MINECRAFT_SERVER_URL || 'http://localhost:8080',
+export const GET = createProxyHandler<BuildingsApiResponse>({
+  serverUrl:
+    process.env.BUILDINGS_SERVER_URL || process.env.MINECRAFT_SERVER_URL || 'http://localhost:8080',
   totpSecret: process.env.BUILDINGS_TOTP_SECRET || process.env.TOTP_SECRET || '',
   path: '/api/buildings',
   cacheMaxAge: 300,

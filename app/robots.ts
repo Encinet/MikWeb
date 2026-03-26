@@ -1,5 +1,7 @@
-import { MetadataRoute } from 'next'
- 
+import type { MetadataRoute } from 'next';
+
+import { SITE_URL } from '@/lib/site';
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -9,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/private/'],
       },
     ],
-    sitemap: 'https://mik.noctiro.moe/sitemap.xml',
-  }
+    sitemap: `${SITE_URL}/sitemap.xml`,
+  };
 }

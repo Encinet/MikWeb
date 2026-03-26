@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --brand-gold: #FFAA00;
-  --brand-white: #FFFFFF;
-  --brand-green: #55FF55;
+  --brand-gold: #ffaa00;
+  --brand-white: #ffffff;
+  --brand-green: #55ff55;
 
-  --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI",
-               "PingFang SC", "Hiragino Sans GB",
-               "Microsoft YaHei", sans-serif;
+  --font-base:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", sans-serif;
 }
 
 /* 深色主题 */
@@ -19,7 +19,7 @@
   --glass-bg: rgba(255, 255, 255, 0.07);
   --glass-bg-light: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-light: rgba(255, 255, 255, 0.10);
+  --glass-border-light: rgba(255, 255, 255, 0.1);
   --glass-shadow: rgba(0, 0, 0, 0.2);
   --glass-inset: rgba(255, 255, 255, 0.15);
   --glass-hover: rgba(255, 255, 255, 0.1);
@@ -52,21 +52,21 @@
   --green-accent: #4ade80;
   --amber-accent: #fbbf24;
   --text-primary: rgba(255, 255, 255, 0.92);
-  --text-secondary: #FFFFFF;
+  --text-secondary: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.48);
-  --text-muted-light: rgba(255, 255, 255, 0.60);
-  --text-muted-lighter: rgba(255, 255, 255, 0.70);
+  --text-muted-light: rgba(255, 255, 255, 0.6);
+  --text-muted-lighter: rgba(255, 255, 255, 0.7);
   --text-dimmed: rgba(255, 255, 255, 0.3);
-  --text-very-dimmed: rgba(255, 255, 255, 0.20);
+  --text-very-dimmed: rgba(255, 255, 255, 0.2);
   --text-nav: rgba(255, 255, 255, 0.7);
   --text-nav-hover: rgba(255, 255, 255, 1);
   --text-nav-active: rgba(255, 255, 255, 1);
-  --text-player-count: #FFFFFF;
+  --text-player-count: #ffffff;
   --text-button: #0e0e10;
   --border-nav-hover: rgba(255, 255, 255, 0.3);
   --border-light: rgba(255, 255, 255, 0.05);
   --scrollbar-track: rgba(0, 0, 0, 0.2);
-  --logo-k: #FFFFFF;
+  --logo-k: #ffffff;
 }
 
 /* 浅色主题 */
@@ -192,7 +192,8 @@ html {
   height: 100%;
 }
 
-html, body {
+html,
+body {
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -240,7 +241,10 @@ html, body {
   border: var(--card-border);
   border-radius: 18px;
   box-shadow: var(--card-shadow);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .animate-fadeIn {
@@ -248,8 +252,16 @@ html, body {
 }
 
 /* Footer / 通用链接 hover 变金色 */
+.footer-link {
+  color: var(--text-muted);
+}
+
+.footer-link-dimmed {
+  color: var(--text-dimmed);
+}
+
 .footer-link:hover {
-  color: #FFAA00 !important;
+  color: #ffaa00;
 }
 
 /* 下拉菜单淡入下移 */
@@ -271,14 +283,17 @@ html, body {
   justify-content: center;
   gap: 8px;
   padding: 12px 32px;
-  background: #FFAA00;
+  background: #ffaa00;
   color: var(--text-button);
   font-weight: 600;
   font-size: clamp(0.9375rem, 2vw, 1.125rem);
   border-radius: 12px;
   border: none;
   text-decoration: none;
-  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.1s ease;
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.1s ease;
   width: 100%;
   max-width: 20rem;
 }
@@ -303,8 +318,12 @@ html, body {
 
 /* 加载旋转动画 */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Buildings 页：搜索框占位符 */
@@ -324,11 +343,3 @@ select option {
   color: var(--text-primary);
   padding: 0.5rem;
 }
-
-/* InfiniteScroll 容器溢出修复 */
-.infinite-scroll-component,
-.infinite-scroll-component__outerdiv {
-  overflow: visible !important;
-}
-
-

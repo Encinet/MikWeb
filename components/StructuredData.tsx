@@ -1,59 +1,60 @@
+import { routing } from '@/i18n/routing';
+import {
+  ORGANIZATION_DESCRIPTION,
+  ORGANIZATION_LOGO_URL,
+  ORGANIZATION_NAME,
+  ORGANIZATION_SOCIAL_LINKS,
+  ORGANIZATION_URL,
+  SITE_DESCRIPTION,
+  SITE_LOGO_PATH,
+  SITE_NAME,
+  SITE_URL,
+} from '@/lib/site';
+
 export default function StructuredData() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Mik Casual',
-    description: 'Mik Casual 是由 Encinet 团队管理的创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作',
-    url: 'https://mik.noctiro.moe',
+    name: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://mik.noctiro.moe/buildings?search={search_term_string}'
+        urlTemplate: `${SITE_URL}/buildings?search={search_term_string}`,
       },
-      'query-input': 'required name=search_term_string'
+      'query-input': 'required name=search_term_string',
     },
-    inLanguage: ['zh-CN', 'en'],
+    inLanguage: routing.locales,
   };
 
   const organizationData = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Encinet',
+    name: ORGANIZATION_NAME,
     alternateName: 'Mik',
-    url: 'https://encinet.netlify.app/',
-    logo: 'https://avatars.githubusercontent.com/u/102745297?s=200&v=4',
-    description: 'Encinet 团队管理的 Mik 品牌 Minecraft 服务器社区',
-    sameAs: [
-      'https://github.com/Encinet',
-      'https://space.bilibili.com/650182011',
-      // Add more social media links here
-      // 'https://twitter.com/yourhandle',
-      // 'https://discord.gg/yourinvite',
-    ],
+    url: ORGANIZATION_URL,
+    logo: ORGANIZATION_LOGO_URL,
+    description: ORGANIZATION_DESCRIPTION,
+    sameAs: [...ORGANIZATION_SOCIAL_LINKS],
     subOrganization: {
       '@type': 'Organization',
-      name: 'Mik Casual',
-      url: 'https://mik.noctiro.moe',
-      logo: 'https://mik.noctiro.moe/mik-standard-rounded.webp',
-      description: 'Mik Casual 创造休闲 Minecraft 服务器',
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}${SITE_LOGO_PATH}`,
+      description: `${SITE_NAME} 创造休闲 Minecraft 服务器`,
       parentOrganization: {
         '@type': 'Organization',
-        name: 'Encinet',
+        name: ORGANIZATION_NAME,
       },
     },
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
-      />
+      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      <script type="application/ld+json">{JSON.stringify(organizationData)}</script>
     </>
   );
 }

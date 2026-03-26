@@ -1,4 +1,4 @@
-import { Award, MessageCircle,Play, Zap } from 'lucide-react';
+import { Award, MessageCircle, Play, Zap } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
 import ScrollReveal from '@/components/ScrollReveal';
@@ -11,45 +11,52 @@ export default async function HomePage() {
   return (
     <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
-
         {/* ── Hero Section (SSR — 立即渲染，直接改善 LCP) ── */}
         <div className="text-center mb-12 sm:mb-20 animate-fadeIn">
-          <div style={{
-            display: 'inline-block',
-            marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-            padding: '8px 24px',
-            backdropFilter: 'blur(16px) saturate(150%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-            background: 'var(--glass-bg)',
-            borderRadius: '12px',
-            border: '1px solid var(--glass-border)',
-            boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)'
-          }}>
+          <div
+            style={{
+              display: 'inline-block',
+              marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
+              padding: '8px 24px',
+              backdropFilter: 'blur(16px) saturate(150%)',
+              'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
+              background: 'var(--glass-bg)',
+              borderRadius: '12px',
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+            }}
+          >
             <div className="flex items-center gap-2" style={{ color: '#FFAA00' }}>
               <Zap className="w-4 h-4" />
-              <span className="text-xs sm:text-sm" style={{ fontWeight: 400 }}>{t('home.hero.badge')}</span>
+              <span className="text-xs sm:text-sm" style={{ fontWeight: 400 }}>
+                {t('home.hero.badge')}
+              </span>
             </div>
           </div>
 
-          <h2 style={{
-            fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
-            fontWeight: 600,
-            letterSpacing: '-0.02em',
-            marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-            color: 'var(--text-primary)',
-            padding: '0 1rem'
-          }}>
+          <h2
+            style={{
+              fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
+              fontWeight: 600,
+              letterSpacing: '-0.02em',
+              marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
+              color: 'var(--text-primary)',
+              padding: '0 1rem',
+            }}
+          >
             {t('home.hero.title')}
           </h2>
 
-          <p style={{
-            fontSize: 'clamp(0.9375rem, 2vw, 1.25rem)',
-            lineHeight: 1.75,
-            color: 'var(--text-muted)',
-            maxWidth: '42rem',
-            margin: '0 auto clamp(2rem, 5vw, 3rem)',
-            padding: '0 1rem'
-          }}>
+          <p
+            style={{
+              fontSize: 'clamp(0.9375rem, 2vw, 1.25rem)',
+              lineHeight: 1.75,
+              color: 'var(--text-muted)',
+              maxWidth: '42rem',
+              margin: '0 auto clamp(2rem, 5vw, 3rem)',
+              padding: '0 1rem',
+            }}
+          >
             {t('home.hero.description')}
           </p>
 
@@ -64,16 +71,18 @@ export default async function HomePage() {
               <span>{t('home.hero.joinButton')}</span>
             </a>
 
-            <div style={{
-              backdropFilter: 'blur(16px) saturate(150%)',
-              WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-              background: 'var(--glass-bg)',
-              padding: '8px 24px',
-              borderRadius: '12px',
-              border: '1px solid var(--glass-border)',
-              color: 'var(--text-muted)',
-              fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)'
-            }}>
+            <div
+              style={{
+                backdropFilter: 'blur(16px) saturate(150%)',
+                'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
+                background: 'var(--glass-bg)',
+                padding: '8px 24px',
+                borderRadius: '12px',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-muted)',
+                fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
+              }}
+            >
               {t('home.hero.notice')}
             </div>
           </div>
@@ -85,33 +94,44 @@ export default async function HomePage() {
         {/* ── Features (SSR — 静态文字，无需 JS) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           <ScrollReveal direction="left" delay={0.1}>
-            <div className="glass-card hover-lift" style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}>
+            <div
+              className="glass-card hover-lift"
+              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}
+            >
               <div className="flex items-start gap-4 sm:gap-6">
-                <div style={{
-                  padding: '12px',
-                  borderRadius: '12px',
-                  backdropFilter: 'blur(16px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                  background: 'var(--glass-icon-bg)',
-                  border: '1px solid var(--glass-border)',
-                  boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                  flexShrink: 0
-                }}>
+                <div
+                  style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    backdropFilter: 'blur(16px) saturate(150%)',
+                    'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
+                    background: 'var(--glass-icon-bg)',
+                    border: '1px solid var(--glass-border)',
+                    boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                    flexShrink: 0,
+                  }}
+                >
                   <Award className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#FFAA00' }} />
                 </div>
                 <div className="flex-1">
-                  <h4 style={{
-                    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                    fontWeight: 600,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--text-secondary)',
-                    marginBottom: 'clamp(0.75rem, 2vw, 1rem)'
-                  }}>{t('home.features.vanilla.title')}</h4>
-                  <p style={{
-                    color: 'var(--text-muted)',
-                    lineHeight: 1.75,
-                    fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                  }}>
+                  <h4
+                    style={{
+                      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                      fontWeight: 600,
+                      letterSpacing: '-0.02em',
+                      color: 'var(--text-secondary)',
+                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                    }}
+                  >
+                    {t('home.features.vanilla.title')}
+                  </h4>
+                  <p
+                    style={{
+                      color: 'var(--text-muted)',
+                      lineHeight: 1.75,
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+                    }}
+                  >
                     {t('home.features.vanilla.description')}
                   </p>
                 </div>
@@ -120,33 +140,44 @@ export default async function HomePage() {
           </ScrollReveal>
 
           <ScrollReveal direction="right" delay={0.1}>
-            <div className="glass-card hover-lift" style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}>
+            <div
+              className="glass-card hover-lift"
+              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}
+            >
               <div className="flex items-start gap-4 sm:gap-6">
-                <div style={{
-                  padding: '12px',
-                  borderRadius: '12px',
-                  backdropFilter: 'blur(16px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                  background: 'var(--glass-icon-bg)',
-                  border: '1px solid var(--glass-border)',
-                  boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                  flexShrink: 0
-                }}>
+                <div
+                  style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    backdropFilter: 'blur(16px) saturate(150%)',
+                    'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
+                    background: 'var(--glass-icon-bg)',
+                    border: '1px solid var(--glass-border)',
+                    boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                    flexShrink: 0,
+                  }}
+                >
                   <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#55FF55' }} />
                 </div>
                 <div className="flex-1">
-                  <h4 style={{
-                    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                    fontWeight: 600,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--text-secondary)',
-                    marginBottom: 'clamp(0.75rem, 2vw, 1rem)'
-                  }}>{t('home.features.community.title')}</h4>
-                  <p style={{
-                    color: 'var(--text-muted)',
-                    lineHeight: 1.75,
-                    fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                  }}>
+                  <h4
+                    style={{
+                      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                      fontWeight: 600,
+                      letterSpacing: '-0.02em',
+                      color: 'var(--text-secondary)',
+                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                    }}
+                  >
+                    {t('home.features.community.title')}
+                  </h4>
+                  <p
+                    style={{
+                      color: 'var(--text-muted)',
+                      lineHeight: 1.75,
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+                    }}
+                  >
                     {t('home.features.community.description')}
                   </p>
                 </div>
@@ -154,7 +185,6 @@ export default async function HomePage() {
             </div>
           </ScrollReveal>
         </div>
-
       </div>
     </div>
   );

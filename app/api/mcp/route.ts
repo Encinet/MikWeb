@@ -1,37 +1,20 @@
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import GithubSlugger from 'github-slugger';
 import { createMcpHandler } from 'mcp-handler';
-import path from 'path';
 import { z } from 'zod';
 
+import type {
+  FuzzyMatchResult,
+  MarkdownBlock,
+  PreparedQuery,
+  SearchableWikiBlock,
+  WikiLocale,
+  WikiSearchResult,
+} from '@/lib/types';
 import { WIKI_LOCALES, WIKI_SECTIONS } from '@/lib/wiki';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
-type MarkdownBlock = {
-  heading: string;
-  level: number;
-  slug: string;
-  directRaw: string;
-  subtreeRaw: string;
-};
-
-type PreparedQuery = {
-  raw: string;
-  lower: string;
-  tokens: string[];
-};
-
-type SearchableWikiBlock = {
-  path: string;
-  url: string;
-  content: string;
-  heading: string;
-  directText: string;
-  subtreeText: string;
-  searchableText: string;
-  level: number;
-};
 
 const wikiIndexCache = new Map<string, Promise<SearchableWikiBlock[]>>();
 
@@ -45,7 +28,7 @@ function prepareQuery(query: string): PreparedQuery {
   };
 }
 
-function fuzzyMatch(query: PreparedQuery, text: string): { matched: boolean; score: number } {
+function fuzzyMatch(query: PreparedQuery, text: string): FuzzyMatchResult {
   const q = query.lower;
   const t = text.toLowerCase();
 
@@ -132,12 +115,12 @@ function parseMarkdownBlocks(sectionId: string, raw: string): MarkdownBlock[] {
     })
     .filter(
       (
-        value
+        value,
       ): value is {
         index: number;
         level: number;
         heading: string;
-      } => value !== null
+      } => value !== null,
     );
 
   if (headingMatches.length === 0) {
@@ -169,21 +152,27 @@ function parseMarkdownBlocks(sectionId: string, raw: string): MarkdownBlock[] {
       heading: current.heading,
       level: current.level,
       slug: slugger.slug(current.heading),
-      directRaw: lines.slice(current.index + 1, nextHeadingLine).join('\n').trim(),
-      subtreeRaw: lines.slice(current.index + 1, nextSameOrHigherLine).join('\n').trim(),
+      directRaw: lines
+        .slice(current.index + 1, nextHeadingLine)
+        .join('\n')
+        .trim(),
+      subtreeRaw: lines
+        .slice(current.index + 1, nextSameOrHigherLine)
+        .join('\n')
+        .trim(),
     };
   });
 }
 
-async function buildWikiIndex(locale: (typeof WIKI_LOCALES)[number]): Promise<SearchableWikiBlock[]> {
+async function buildWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
   const contentDir = path.join(process.cwd(), 'content', locale);
   const fileResults = await Promise.all(
     WIKI_SECTIONS.map((sectionId) =>
       fs
         .readFile(path.join(contentDir, `${sectionId}.md`), 'utf-8')
         .then((raw) => ({ sectionId, raw }))
-        .catch(() => null)
-    )
+        .catch(() => null),
+    ),
   );
 
   const blocks: SearchableWikiBlock[] = [];
@@ -221,7 +210,7 @@ async function buildWikiIndex(locale: (typeof WIKI_LOCALES)[number]): Promise<Se
   return blocks;
 }
 
-function getWikiIndex(locale: (typeof WIKI_LOCALES)[number]): Promise<SearchableWikiBlock[]> {
+function getWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
   const cached = wikiIndexCache.get(locale);
   if (cached) return cached;
 
@@ -235,7 +224,7 @@ function getWikiIndex(locale: (typeof WIKI_LOCALES)[number]): Promise<Searchable
 }
 
 // Wraps fetch with error handling; throws on non-ok or network failure
-async function apiFetch(url: string): Promise<unknown> {
+async function apiFetch<TResponse>(url: string): Promise<TResponse> {
   let response: Response;
   try {
     response = await fetch(url);
@@ -245,7 +234,7 @@ async function apiFetch(url: string): Promise<unknown> {
   if (!response.ok) {
     throw new Error(`HTTP ${response.status} fetching ${url}`);
   }
-  return response.json();
+  return (await response.json()) as TResponse;
 }
 
 const handler = createMcpHandler(
@@ -254,7 +243,8 @@ const handler = createMcpHandler(
       'get_players',
       {
         title: 'Get Players',
-        description: 'Get the current online player count and list from the Minecraft server. Returns player names and current count.',
+        description:
+          'Get the current online player count and list from the Minecraft server. Returns player names and current count.',
         inputSchema: {},
       },
       async () => {
@@ -262,14 +252,15 @@ const handler = createMcpHandler(
         return {
           content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
         };
-      }
+      },
     );
 
     server.registerTool(
       'get_buildings',
       {
         title: 'Get Buildings',
-        description: 'Get the list of buildings from the Minecraft server. Returns building information including coordinates, owner, and description.',
+        description:
+          'Get the list of buildings from the Minecraft server. Returns building information including coordinates, owner, and description.',
         inputSchema: {},
       },
       async () => {
@@ -277,14 +268,15 @@ const handler = createMcpHandler(
         return {
           content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
         };
-      }
+      },
     );
 
     server.registerTool(
       'get_bans',
       {
         title: 'Get Bans',
-        description: 'Get the list of banned players from the Minecraft server. Returns banned player information including name, reason, and ban duration.',
+        description:
+          'Get the list of banned players from the Minecraft server. Returns banned player information including name, reason, and ban duration.',
         inputSchema: {},
       },
       async () => {
@@ -292,16 +284,22 @@ const handler = createMcpHandler(
         return {
           content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
         };
-      }
+      },
     );
 
     server.registerTool(
       'get_announcements',
       {
         title: 'Get Announcements',
-        description: 'Get recent announcements from the Minecraft server. Returns announcement content and timestamp (ISO 8601).',
+        description:
+          'Get recent announcements from the Minecraft server. Returns announcement content and timestamp (ISO 8601).',
         inputSchema: {
-          count: z.number().int().positive().optional().describe('Number of announcements to return (default: 5)'),
+          count: z
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe('Number of announcements to return (default: 5)'),
         },
       },
       async ({ count }) => {
@@ -311,7 +309,7 @@ const handler = createMcpHandler(
         return {
           content: [{ type: 'text', text: JSON.stringify(sliced, null, 2) }],
         };
-      }
+      },
     );
 
     server.registerTool(
@@ -324,10 +322,7 @@ const handler = createMcpHandler(
           'Returns the full content of the matched wiki section and lets the caller control how many results are returned.',
         inputSchema: {
           query: z.string().describe('Search keyword or phrase'),
-          locale: z
-            .enum(WIKI_LOCALES)
-            .optional()
-            .describe('Language locale (default: zh-CN)'),
+          locale: z.enum(WIKI_LOCALES).optional().describe('Language locale (default: zh-CN)'),
           limit: z
             .number()
             .int()
@@ -342,8 +337,7 @@ const handler = createMcpHandler(
         const maxResults = limit ?? 5;
         const preparedQuery = prepareQuery(query);
         const indexedBlocks = await getWikiIndex(loc);
-        type Result = { path: string; url: string; content: string; score: number };
-        const results: Result[] = [];
+        const results: WikiSearchResult[] = [];
 
         for (const block of indexedBlocks) {
           const headMatch = fuzzyMatch(preparedQuery, block.heading);
@@ -392,11 +386,11 @@ const handler = createMcpHandler(
           .join('\n\n---\n\n');
 
         return { content: [{ type: 'text', text }] };
-      }
+      },
     );
   },
   {},
-  { basePath: '/api', verboseLogs: true }
+  { basePath: '/api', verboseLogs: true },
 );
 
 export { handler as GET, handler as POST };

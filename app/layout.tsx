@@ -1,18 +1,29 @@
-import "./globals.css";
+import './globals.css';
 
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
+
+import {
+  ORGANIZATION_NAME,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_LOGO_PATH,
+  SITE_LONG_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from '@/lib/site';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://mik.noctiro.moe'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Mik Casual - 创造休闲 Minecraft 服务器",
-    template: "%s | Mik Casual"
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "Mik Casual 是由 Encinet 团队管理的创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作与社区交流",
-  keywords: ["Minecraft", "Server", "Mik", "Mik Casual", "Encinet", "创造服务器", "建筑", "Community", "Builds", "Creative"],
-  authors: [{ name: "Encinet Team" }],
-  creator: "Encinet",
-  publisher: "Mik",
+  description: SITE_LONG_DESCRIPTION,
+  keywords: [...SITE_KEYWORDS],
+  authors: [{ name: `${ORGANIZATION_NAME} Team` }],
+  creator: ORGANIZATION_NAME,
+  publisher: 'Mik',
   robots: {
     index: true,
     follow: true,
@@ -28,13 +39,13 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'zh_CN',
     alternateLocale: ['en_US'],
-    url: 'https://mik.noctiro.moe',
-    siteName: 'Mik Casual',
-    title: 'Mik Casual - 创造休闲 Minecraft 服务器',
-    description: 'Mik Casual 是由 Encinet 团队管理的创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作与社区交流',
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_LONG_DESCRIPTION,
     images: [
       {
-        url: '/mik-standard-rounded.webp',
+        url: SITE_LOGO_PATH,
         width: 512,
         height: 512,
         alt: 'Mik Logo',
@@ -43,14 +54,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Mik Casual - 创造休闲 Minecraft 服务器',
-    description: 'Mik Casual 是由 Encinet 团队管理的创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作',
-    images: ['/mik-standard-rounded.webp'],
-  },
-  verification: {
-    // google: 'your-google-verification-code',
-    // yandex: 'your-yandex-verification-code',
-    // bing: 'your-bing-verification-code',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [SITE_LOGO_PATH],
   },
 };
 
