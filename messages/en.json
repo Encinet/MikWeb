@@ -84,6 +84,11 @@
     "loading": "Loading...",
     "error": "Failed to load"
   },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you requested may have been moved, removed, or the link is incorrect.",
+    "returnHome": "Return Home"
+  },
   "wiki": {
     "title": "Game Guide",
     "description": "Learn about server rules, commands, and gameplay tips",

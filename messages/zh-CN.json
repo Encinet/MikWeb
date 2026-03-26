@@ -84,6 +84,11 @@
     "loading": "加载中...",
     "error": "加载失败"
   },
+  "notFound": {
+    "title": "页面不存在",
+    "description": "你访问的页面可能已被移动、删除，或者链接地址有误。",
+    "returnHome": "返回首页"
+  },
   "wiki": {
     "title": "游戏指南",
     "description": "了解服务器规则、指令和游戏技巧",

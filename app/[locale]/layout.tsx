@@ -1,5 +1,3 @@
-import '../globals.css';
-
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
@@ -91,26 +89,18 @@ export default async function LocaleLayout({
   const messages = await getMessages({ locale });
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        <StructuredData />
-      </head>
-      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <ThemeProvider>
-          <NextIntlClientProvider messages={messages}>
-            <PlayerContextProvider>
-              <BuildingsContextProvider>
-                <Background />
-                <Navbar />
-                <main className="relative z-10" style={{ flex: '1 0 auto' }}>
-                  {children}
-                </main>
-                <Footer />
-              </BuildingsContextProvider>
-            </PlayerContextProvider>
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ThemeProvider>
+      <NextIntlClientProvider messages={messages}>
+        <PlayerContextProvider>
+          <BuildingsContextProvider>
+            <StructuredData />
+            <Background />
+            <Navbar />
+            <main className="relative z-10 flex min-h-0 flex-1 flex-col">{children}</main>
+            <Footer />
+          </BuildingsContextProvider>
+        </PlayerContextProvider>
+      </NextIntlClientProvider>
+    </ThemeProvider>
   );
 }

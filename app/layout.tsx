@@ -1,6 +1,7 @@
 import './globals.css';
 
 import type { Metadata } from 'next';
+import { getLocale } from 'next-intl/server';
 
 import {
   ORGANIZATION_NAME,
@@ -60,10 +61,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  const locale = await getLocale();
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        {children}
+      </body>
+    </html>
+  );
 }
