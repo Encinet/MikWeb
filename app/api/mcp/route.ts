@@ -8,8 +8,45 @@ import { WIKI_LOCALES, WIKI_SECTIONS } from '@/lib/wiki';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-function fuzzyMatch(query: string, text: string): { matched: boolean; score: number } {
-  const q = query.toLowerCase();
+type MarkdownBlock = {
+  heading: string;
+  level: number;
+  slug: string;
+  directRaw: string;
+  subtreeRaw: string;
+};
+
+type PreparedQuery = {
+  raw: string;
+  lower: string;
+  tokens: string[];
+};
+
+type SearchableWikiBlock = {
+  path: string;
+  url: string;
+  content: string;
+  heading: string;
+  directText: string;
+  subtreeText: string;
+  searchableText: string;
+  level: number;
+};
+
+const wikiIndexCache = new Map<string, Promise<SearchableWikiBlock[]>>();
+
+function prepareQuery(query: string): PreparedQuery {
+  const lower = query.trim().toLowerCase();
+
+  return {
+    raw: query,
+    lower,
+    tokens: lower.split(/\s+/).filter(Boolean),
+  };
+}
+
+function fuzzyMatch(query: PreparedQuery, text: string): { matched: boolean; score: number } {
+  const q = query.lower;
   const t = text.toLowerCase();
 
   if (t.includes(q)) return { matched: true, score: 3 };
@@ -30,7 +67,7 @@ function fuzzyMatch(query: string, text: string): { matched: boolean; score: num
     return { matched: true, score: 2 + maxConsecutive / q.length };
   }
 
-  const tokens = q.split(/\s+/).filter(Boolean);
+  const { tokens } = query;
   if (tokens.length > 1) {
     const allFound = tokens.every((tok) => t.includes(tok));
     if (allFound) return { matched: true, score: 1 + tokens.length * 0.1 };
@@ -45,14 +82,156 @@ function fuzzyMatch(query: string, text: string): { matched: boolean; score: num
 
 function stripMarkdown(text: string): string {
   return text
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')   // [text](url) → text
-    .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')     // `code` → code
-    .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1')   // **bold** / *italic*
-    .replace(/_{1,2}([^_]+)_{1,2}/g, '$1')     // __bold__ / _italic_
-    .replace(/^>\s*/gm, '')                     // blockquotes
-    .replace(/^[-*+]\s+/gm, '')                // unordered list markers
-    .replace(/^\d+\.\s+/gm, '')               // ordered list markers
+    .replace(/\r\n?/g, '\n')
+    .replace(/```([^\n]*)\n([\s\S]*?)```/g, (_, __, code: string) => code.trim())
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
+
+      if (!trimmed) return '';
+      if (/^\|?[-:\s|]+\|?$/.test(trimmed)) return '';
+
+      if (trimmed.includes('|')) {
+        const cells = trimmed
+          .split('|')
+          .map((cell) => cell.trim())
+          .filter(Boolean);
+
+        if (cells.length > 0) return cells.join(' | ');
+      }
+
+      return trimmed
+        .replace(/^#{1,6}\s+/, '')
+        .replace(/^>\s?/, '')
+        .replace(/^[-*+]\s\[[ xX]\]\s+/, '')
+        .replace(/^[-*+]\s+/, '')
+        .replace(/^\d+\.\s+/, '')
+        .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')
+        .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
+        .replace(/_{1,3}([^_]+)_{1,3}/g, '$1');
+    })
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function parseMarkdownBlocks(sectionId: string, raw: string): MarkdownBlock[] {
+  const lines = raw.replace(/\r\n?/g, '\n').split('\n');
+  const headingMatches = lines
+    .map((line, index) => {
+      const match = line.match(/^(#{1,4})\s+(.+?)\s*#*\s*$/);
+      if (!match) return null;
+
+      return {
+        index,
+        level: match[1].length,
+        heading: match[2].trim(),
+      };
+    })
+    .filter(
+      (
+        value
+      ): value is {
+        index: number;
+        level: number;
+        heading: string;
+      } => value !== null
+    );
+
+  if (headingMatches.length === 0) {
+    return [
+      {
+        heading: sectionId,
+        level: 1,
+        slug: '',
+        directRaw: raw.trim(),
+        subtreeRaw: raw.trim(),
+      },
+    ];
+  }
+
+  const slugger = new GithubSlugger();
+
+  return headingMatches.map((current, index) => {
+    const nextHeadingLine = headingMatches[index + 1]?.index ?? lines.length;
+    let nextSameOrHigherLine = lines.length;
+
+    for (let i = index + 1; i < headingMatches.length; i++) {
+      if (headingMatches[i].level <= current.level) {
+        nextSameOrHigherLine = headingMatches[i].index;
+        break;
+      }
+    }
+
+    return {
+      heading: current.heading,
+      level: current.level,
+      slug: slugger.slug(current.heading),
+      directRaw: lines.slice(current.index + 1, nextHeadingLine).join('\n').trim(),
+      subtreeRaw: lines.slice(current.index + 1, nextSameOrHigherLine).join('\n').trim(),
+    };
+  });
+}
+
+async function buildWikiIndex(locale: (typeof WIKI_LOCALES)[number]): Promise<SearchableWikiBlock[]> {
+  const contentDir = path.join(process.cwd(), 'content', locale);
+  const fileResults = await Promise.all(
+    WIKI_SECTIONS.map((sectionId) =>
+      fs
+        .readFile(path.join(contentDir, `${sectionId}.md`), 'utf-8')
+        .then((raw) => ({ sectionId, raw }))
+        .catch(() => null)
+    )
+  );
+
+  const blocks: SearchableWikiBlock[] = [];
+
+  for (const fileResult of fileResults) {
+    if (!fileResult) continue;
+
+    const { sectionId, raw } = fileResult;
+    const parsedBlocks = parseMarkdownBlocks(sectionId, raw);
+    const pageTitle = parsedBlocks.find((block) => block.level === 1)?.heading ?? sectionId;
+
+    for (const block of parsedBlocks) {
+      const directText = stripMarkdown(block.directRaw);
+      const subtreeText = stripMarkdown(block.subtreeRaw);
+      const searchableText = subtreeText || directText;
+
+      if (!searchableText && !block.heading) continue;
+
+      const hash = block.slug ? `#${block.slug}` : '';
+      blocks.push({
+        path: block.heading === pageTitle ? pageTitle : `${pageTitle} › ${block.heading}`,
+        url: `${BASE_URL}/${locale}/wiki?section=${sectionId}${hash}`,
+        content: [`${'#'.repeat(block.level)} ${block.heading}`, block.subtreeRaw]
+          .filter(Boolean)
+          .join('\n\n'),
+        heading: block.heading,
+        directText,
+        subtreeText,
+        searchableText,
+        level: block.level,
+      });
+    }
+  }
+
+  return blocks;
+}
+
+function getWikiIndex(locale: (typeof WIKI_LOCALES)[number]): Promise<SearchableWikiBlock[]> {
+  const cached = wikiIndexCache.get(locale);
+  if (cached) return cached;
+
+  const pending = buildWikiIndex(locale).catch((error) => {
+    wikiIndexCache.delete(locale);
+    throw error;
+  });
+
+  wikiIndexCache.set(locale, pending);
+  return pending;
 }
 
 // Wraps fetch with error handling; throws on non-ok or network failure
@@ -142,7 +321,7 @@ const handler = createMcpHandler(
         description:
           'Search the Minecraft server wiki by keyword. Supports fuzzy matching: exact substring, ' +
           'subsequence (e.g. "gmde" matches "gamemode"), and multi-token (e.g. "home set" matches "/sethome"). ' +
-          'Optionally restrict to a single section and control how many results are returned.',
+          'Returns the full content of the matched wiki section and lets the caller control how many results are returned.',
         inputSchema: {
           query: z.string().describe('Search keyword or phrase'),
           locale: z
@@ -161,61 +340,32 @@ const handler = createMcpHandler(
       async ({ query, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
         const maxResults = limit ?? 5;
-        const contentDir = path.join(process.cwd(), 'content', loc);
-        const sectionsToSearch = WIKI_SECTIONS;
-
-        const fileResults = await Promise.allSettled(
-          sectionsToSearch.map((sectionId) =>
-            fs
-              .readFile(path.join(contentDir, `${sectionId}.md`), 'utf-8')
-              .then((raw) => ({ sectionId, raw }))
-          )
-        );
-
+        const preparedQuery = prepareQuery(query);
+        const indexedBlocks = await getWikiIndex(loc);
         type Result = { path: string; url: string; content: string; score: number };
         const results: Result[] = [];
 
-        for (const fileResult of fileResults) {
-          if (fileResult.status === 'rejected') continue;
-          const { sectionId, raw } = fileResult.value;
-          const slugger = new GithubSlugger();
+        for (const block of indexedBlocks) {
+          const headMatch = fuzzyMatch(preparedQuery, block.heading);
+          const directMatch = fuzzyMatch(preparedQuery, block.directText);
+          const bodyMatch = fuzzyMatch(preparedQuery, block.searchableText);
+          const hasDirectContent = block.directText.length > 0;
+          const isContainerHeading = !hasDirectContent && block.subtreeText.length > 0;
 
-          // Line-by-line heading parser — handles all levels (##, ###, ####)
-          // and correctly captures content that precedes the first heading.
-          const blocks: { heading: string; body: string }[] = [];
-          let currentHeading: string = sectionId; // pre-heading content uses the file name
-          let currentBodyLines: string[] = [];
+          if (!headMatch.matched && !directMatch.matched && !bodyMatch.matched) continue;
 
-          for (const line of raw.split('\n')) {
-            const m = line.match(/^(#{1,4})\s+(.+)/);
-            if (m) {
-              blocks.push({ heading: currentHeading, body: currentBodyLines.join('\n') });
-              currentHeading = m[2].trim();
-              currentBodyLines = [line];
-            } else {
-              currentBodyLines.push(line);
-            }
-          }
-          blocks.push({ heading: currentHeading, body: currentBodyLines.join('\n') });
+          const score =
+            Math.max(headMatch.score * 1.8, directMatch.score * 1.2, bodyMatch.score) +
+            block.level * 0.1 +
+            (hasDirectContent ? 0.15 : 0) -
+            (isContainerHeading ? 0.2 : 0);
 
-          for (const { heading, body } of blocks) {
-            const cleanBody = stripMarkdown(body);
-
-            const headMatch = fuzzyMatch(query, heading);
-            const bodyMatch = fuzzyMatch(query, cleanBody);
-            const score = Math.max(headMatch.score * 1.5, bodyMatch.score);
-
-            if (!headMatch.matched && !bodyMatch.matched) continue;
-
-            const slug = heading === sectionId ? '' : slugger.slug(heading);
-            const hash = slug ? `#${slug}` : '';
-            results.push({
-              path: `${sectionId} › ${heading}`,
-              url: `${BASE_URL}/${loc}/wiki?section=${sectionId}${hash}`,
-              content: cleanBody,
-              score,
-            });
-          }
+          results.push({
+            path: block.path,
+            url: block.url,
+            content: block.content,
+            score,
+          });
         }
 
         if (results.length === 0) {
@@ -228,14 +378,17 @@ const handler = createMcpHandler(
 
         results.sort((a, b) => b.score - a.score);
 
-        const MAX_CHARS = 2000;
-        const text = results
+        const seen = new Set<string>();
+        const uniqueResults = results.filter((result) => {
+          const key = `${result.path}\n${result.url}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        const text = uniqueResults
           .slice(0, maxResults)
-          .map((r) => {
-            const truncated = r.content.length > MAX_CHARS;
-            const body = truncated ? r.content.slice(0, MAX_CHARS) + '\n\n…(内容已截断，完整内容请访问网页)' : r.content;
-            return `[${r.path}]\n${r.url}\n\n${body}`;
-          })
+          .map((result) => `[${result.path}]\n${result.url}\n\n${result.content}`)
           .join('\n\n---\n\n');
 
         return { content: [{ type: 'text', text }] };
