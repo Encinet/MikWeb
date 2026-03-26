@@ -18,6 +18,7 @@ bun dev
 | `TOTP_SECRET` | — | HMAC-Timestamp 密钥，用于签名时间戳，随请求头 `X-TOTP-Token` 转发 |
 | `BUILDINGS_SERVER_URL` | — | 建筑服务器 API base URL，默认回退到 `MINECRAFT_SERVER_URL` |
 | `BUILDINGS_TOTP_SECRET` | — | 建筑服务器 HMAC-Timestamp 密钥，默认回退到 `TOTP_SECRET` |
+| `NEXT_PUBLIC_BASE_URL` | — | MCP 服务器调用的基础 URL，默认 `http://localhost:3000` |
 
 生成 HMAC-Timestamp 密钥（32字节hex）：
 ```bash
@@ -94,6 +95,31 @@ openssl rand -hex 32
 ```
 </details>
 
+
+## MCP 服务器
+
+提供三个工具供外部 AI Agent 调用：
+
+| 工具 | 说明 |
+|------|------|
+| `get_players` | 获取当前在线玩家列表和数量 |
+| `get_buildings` | 获取建筑列表（含坐标、所有者、描述） |
+| `get_bans` | 获取封禁列表（含玩家名、原因、期限） |
+
+### 客户端配置
+
+**Claude Desktop / Cursor** (.mcp.json):
+
+```json
+{
+  "mcpServers": {
+    "mikweb": {
+      "url": "http://localhost:3000/api/mcp"
+    }
+  }
+}
+```
+
 ## 项目结构
 
 ```
@@ -108,7 +134,8 @@ MikWeb/
 │   │   ├── players/route.ts
 │   │   ├── announcements/route.ts
 │   │   ├── buildings/route.ts
-│   │   └── bans/route.ts
+│   │   ├── bans/route.ts
+│   │   └── mcp/route.ts       # MCP 服务器（Stdio）
 │   ├── globals.css
 │   ├── manifest.ts / robots.ts / sitemap.ts
 │   └── layout.tsx
