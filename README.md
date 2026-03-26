@@ -1,6 +1,6 @@
 # MikWeb
 
-Mik Casual 服务器官网，基于 Next.js App Router + next-intl，支持 zh-CN / en 双语。
+Mik Casual 服务器官网，基于 Next.js App Router + `next-intl`，支持 `zh-CN` / `en` 双语，包含官网页面、Wiki、建筑展示、封禁列表、公告代理接口以及 MCP 服务端点。
 
 ## 快速开始
 
@@ -9,6 +9,18 @@ bun install
 cp .env.example .env  # 编辑环境变量
 bun dev
 ```
+
+## 常用脚本
+
+| 脚本 | 说明 |
+|------|------|
+| `bun dev` | 启动开发服务器 |
+| `bun run build` | 生产构建 |
+| `bun start` | 启动生产服务 |
+| `bun run format` | 使用 Biome 格式化项目 |
+| `bun run lint` | 运行 Biome 检查 |
+| `bun run typecheck` | 运行 TypeScript 类型检查 |
+| `bun run check` | 执行 `lint` + `typecheck` |
 
 ## 环境变量
 
@@ -29,14 +41,15 @@ openssl rand -hex 32
 
 ## API 路由
 
-所有路由均为后端代理，带内存缓存层，响应头含 `X-Cache: HIT/MISS`。
+除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `lib/proxyRoute.ts` 代理上游服务，并设置 `Cache-Control`。常规成功响应会带 `X-Proxy-Cache: HIT-OR-MISS`；`/api/players` 在主接口失败且配置了回退地址时，会返回 `X-Cache: FALLBACK`。
 
-| 路由 | 上游 | 内存缓存 | HTTP Cache-Control |
-|------|------|----------|--------------------|
-| `GET /api/players` | 主服务器 | 5s | `public, s-maxage=5, stale-while-revalidate=15` |
-| `GET /api/announcements` | 主服务器 | 300s | `public, s-maxage=300, stale-while-revalidate=600` |
-| `GET /api/buildings` | 建筑服务器 | 300s | `public, s-maxage=300, stale-while-revalidate=600` |
-| `GET /api/bans` | 主服务器 | 60s | `public, s-maxage=60, stale-while-revalidate=120` |
+| 路由 | 上游 | `cacheMaxAge` | 备注 |
+|------|------|---------------|------|
+| `GET /api/players` | 主服务器 | `5s` | 主接口失败时可回退查询 `mcstatus.io` / `mcapi.us` |
+| `GET /api/announcements` | 主服务器 | `300s` | 公告列表 |
+| `GET /api/buildings` | 建筑服务器 | `300s` | 默认回退到主服务器地址 |
+| `GET /api/bans` | 主服务器 | `60s` | 封禁列表 |
+| `GET /api/mcp` | 本站 API | — | MCP 工具入口，同时导出 `GET` / `POST` |
 
 ### 数据结构
 
@@ -77,8 +90,7 @@ openssl rand -hex 32
   } | null;
 }[]
 ```
-
-无 `id` 字段，前端通过坐标 + 日期 + builders 哈希生成唯一标识。所有建筑遵循 **CC BY-NC-SA 4.0**。
+前端通过坐标、建造日期和 builder UUID 组合生成稳定 ID。
 </details>
 
 <details>
@@ -97,22 +109,19 @@ openssl rand -hex 32
 ```
 </details>
 
-
 ## MCP 服务器
 
-提供三个工具供外部 AI Agent 调用：
+`app/api/mcp/route.ts` 暴露以下工具：
 
 | 工具 | 说明 |
 |------|------|
-| `get_players` | 获取当前在线玩家列表和数量 |
-| `get_announcements` | 获取公告列表，默认返回最近 5 条，可指定数量 |
-| `get_buildings` | 获取建筑列表（含坐标、所有者、描述） |
-| `get_bans` | 获取封禁列表（含玩家名、原因、期限） |
-| `search_wiki` | 搜索 Wiki 内容，支持关键词模糊查询，可指定语言 |
+| `get_players` | 获取当前在线人数和玩家列表 |
+| `get_announcements` | 获取公告列表，支持 `count` 参数 |
+| `get_buildings` | 获取建筑列表 |
+| `get_bans` | 获取封禁列表 |
+| `search_wiki` | 基于 Markdown 索引做模糊搜索，支持 `query`、`locale`、`limit` |
 
 ### 客户端配置
-
-**Claude Desktop / Cursor** (.mcp.json):
 
 ```json
 {
@@ -127,27 +136,31 @@ openssl rand -hex 32
 
 ## 项目结构
 
-```
+```text
 MikWeb/
 ├── app/
 │   ├── [locale]/
-│   │   ├── page.tsx / HomeClient.tsx
+│   │   ├── page.tsx / HomeSection.tsx
 │   │   ├── buildings/page.tsx
 │   │   ├── bans/page.tsx
-│   │   └── wiki/page.tsx / WikiClient.tsx
+│   │   ├── wiki/page.tsx / WikiContent.tsx
+│   │   ├── [...rest]/page.tsx      # Wiki 兜底路由
+│   │   ├── layout.tsx
+│   │   ├── not-found.tsx
+│   │   └── ...
 │   ├── api/
 │   │   ├── players/route.ts
 │   │   ├── announcements/route.ts
 │   │   ├── buildings/route.ts
 │   │   ├── bans/route.ts
-│   │   └── mcp/route.ts       # MCP 服务器（Stdio）
+│   │   └── mcp/route.ts       # MCP 服务端点
 │   ├── globals.css
 │   ├── manifest.ts / robots.ts / sitemap.ts
 │   └── layout.tsx
 ├── components/
-│   ├── Navbar.tsx          # 含在线玩家列表
+│   ├── Navbar.tsx          # 导航与在线玩家显示
 │   ├── Footer.tsx
-│   ├── Background.tsx      # 动态背景
+│   ├── Background.tsx      # 背景视觉
 │   ├── MinecraftAvatar.tsx
 │   ├── ScrollReveal.tsx
 │   ├── StructuredData.tsx  # SEO JSON-LD
@@ -159,22 +172,36 @@ MikWeb/
 │   ├── zh-CN/{getting-started,commands,tips,rules,community}.md
 │   └── en/
 ├── lib/
-│   └── proxyRoute.ts       # API 路由代理与缓存
-├── messages/               # next-intl 翻译
+│   ├── proxyRoute.ts       # API 代理与缓存头
+│   ├── clientApi.ts        # 前端请求封装
+│   ├── buildings.ts        # 建筑筛选/排序
+│   ├── wiki.ts             # Wiki section / locale 定义
+│   ├── types.ts
+│   └── site.ts
+├── messages/               # next-intl 文案
 │   ├── zh-CN.json
 │   └── en.json
 ├── i18n/routing.ts         # locales 配置
+├── hooks/useHasMounted.ts
 ├── i18n.ts
 ├── proxy.ts                # i18n 中间件
-└── next.config.ts
+├── public/mik-standard-rounded.webp
+├── next.config.ts
+├── package.json
+└── tsconfig.json
 ```
 
 ## 国际化
 
-翻译文件位于 `messages/`，路由配置在 `i18n/routing.ts`。新增语言：在 `locales` 数组追加 locale，并在 `messages/` 和 `content/` 下创建对应目录。
+翻译文案位于 `messages/`，Wiki 文档位于 `content/<locale>/`，路由配置在 `i18n/routing.ts`。新增语言时，需要同时补齐：
 
-## 构建 & 部署
+1. `i18n/routing.ts` 中的 locale 配置
+2. `messages/<locale>.json`
+3. `content/<locale>/` 下对应 Markdown 文件
+
+## 构建与部署
 
 ```bash
-bun run build && bun start
+bun run build
+bun start
 ```
