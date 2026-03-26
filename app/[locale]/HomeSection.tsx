@@ -379,7 +379,7 @@ export default function HomeSection() {
                     marginTop: '1rem',
                   }}
                 >
-                  {t('home.announcements.clickToViewAll') || '点击查看全部公告'}
+                  {t('home.announcements.clickToViewAll')}
                 </div>
               )}
             </div>

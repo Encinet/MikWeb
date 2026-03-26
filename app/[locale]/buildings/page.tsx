@@ -979,11 +979,11 @@ export default function BuildingsPage() {
   ];
 
   const sortOptions: { id: BuildingSortKey; label: string }[] = [
-    { id: 'date-desc', label: t('sort.dateDesc') || 'Newest First' },
-    { id: 'date-asc', label: t('sort.dateAsc') || 'Oldest First' },
-    { id: 'name-asc', label: t('sort.nameAsc') || 'Name A-Z' },
-    { id: 'name-desc', label: t('sort.nameDesc') || 'Name Z-A' },
-    { id: 'random', label: t('sort.random') || 'Random' },
+    { id: 'date-desc', label: t('sort.dateDesc') },
+    { id: 'date-asc', label: t('sort.dateAsc') },
+    { id: 'name-asc', label: t('sort.nameAsc') },
+    { id: 'name-desc', label: t('sort.nameDesc') },
+    { id: 'random', label: t('sort.random') },
   ];
 
   const getTagKey = (building: Building, tag: LocalizedText) => {
@@ -1076,7 +1076,7 @@ export default function BuildingsPage() {
           onFilterChange={handleFilterChange}
           onSearchQueryChange={handleSearchQueryChange}
           onSortChange={handleSortChange}
-          searchPlaceholder={t('search') || 'Search buildings...'}
+          searchPlaceholder={t('search')}
           searchQuery={searchQuery}
           sortBy={sortBy}
           sortOptions={sortOptions}
@@ -1108,7 +1108,7 @@ export default function BuildingsPage() {
             endMessage={
               <div className="text-center py-8">
                 <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-                  {t('noMore') || 'No more buildings to load'}
+                  {t('noMore')}
                 </p>
               </div>
             }
