@@ -1,8 +1,9 @@
-import { createMcpHandler } from 'mcp-handler';
-import { z } from 'zod';
 import fs from 'fs/promises';
+import { createMcpHandler } from 'mcp-handler';
 import path from 'path';
-import { WIKI_SECTIONS, WIKI_LOCALES } from '@/lib/wiki';
+import { z } from 'zod';
+
+import { WIKI_LOCALES, WIKI_SECTIONS } from '@/lib/wiki';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
