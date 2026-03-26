@@ -114,7 +114,8 @@ openssl rand -hex 32
 {
   "mcpServers": {
     "mikweb": {
-      "url": "http://localhost:3000/api/mcp"
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mik.noctiro.moe/api/mcp"]
     }
   }
 }
