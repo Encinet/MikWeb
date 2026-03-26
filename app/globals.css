@@ -251,6 +251,41 @@ body {
   animation: fadeIn 0.4s ease-out;
 }
 
+.player-list-dropdown-surface {
+  position: relative;
+  border-radius: 16px;
+  isolation: isolate;
+  box-shadow:
+    0 8px 32px var(--glass-shadow),
+    inset 0 1px 0 var(--glass-inset);
+  overflow: hidden;
+}
+
+.player-list-dropdown-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  background:
+    linear-gradient(180deg, var(--glass-bg) 0%, var(--glass-bg) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--glass-border);
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 var(--glass-inset),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.player-list-dropdown-scroll {
+  position: relative;
+  z-index: 1;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 16px;
+}
+
 /* Footer / 通用链接 hover 变金色 */
 .footer-link {
   color: var(--text-muted);

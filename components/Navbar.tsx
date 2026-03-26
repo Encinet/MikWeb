@@ -19,7 +19,8 @@ import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import type React from 'react';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { usePlayerContext } from '@/contexts/PlayerContext';
 import { useHasMounted } from '@/hooks/useHasMounted';
@@ -41,6 +42,11 @@ export default function Navbar() {
     networkError,
   } = usePlayerContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isPlayerDropdownOpen, setIsPlayerDropdownOpen] = useState(false);
+  const [isPlayerDropdownVisible, setIsPlayerDropdownVisible] = useState(false);
+  const [playerDropdownRect, setPlayerDropdownRect] = useState<DOMRect | null>(null);
+  const playerDropdownAnchorRef = useRef<HTMLDivElement | null>(null);
+  const playerDropdownAnimationFrameRef = useRef<number | null>(null);
 
   const mounted = useHasMounted();
 
@@ -72,6 +78,55 @@ export default function Navbar() {
     const newLocale = locale === 'zh-CN' ? 'en' : 'zh-CN';
     router.replace(pathname, { locale: newLocale });
   };
+
+  const updatePlayerDropdownRect = useCallback(() => {
+    if (playerDropdownAnchorRef.current) {
+      setPlayerDropdownRect(playerDropdownAnchorRef.current.getBoundingClientRect());
+    }
+  }, []);
+
+  const openPlayerDropdown = () => {
+    updatePlayerDropdownRect();
+    setIsPlayerDropdownOpen(true);
+  };
+
+  const closePlayerDropdown = () => {
+    setIsPlayerDropdownVisible(false);
+    setIsPlayerDropdownOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isPlayerDropdownOpen) {
+      if (playerDropdownAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(playerDropdownAnimationFrameRef.current);
+        playerDropdownAnimationFrameRef.current = null;
+      }
+      return;
+    }
+
+    const syncDropdownPosition = () => {
+      updatePlayerDropdownRect();
+    };
+
+    syncDropdownPosition();
+    setIsPlayerDropdownVisible(false);
+    playerDropdownAnimationFrameRef.current = requestAnimationFrame(() => {
+      playerDropdownAnimationFrameRef.current = requestAnimationFrame(() => {
+        setIsPlayerDropdownVisible(true);
+      });
+    });
+    window.addEventListener('resize', syncDropdownPosition);
+    window.addEventListener('scroll', syncDropdownPosition, true);
+
+    return () => {
+      if (playerDropdownAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(playerDropdownAnimationFrameRef.current);
+        playerDropdownAnimationFrameRef.current = null;
+      }
+      window.removeEventListener('resize', syncDropdownPosition);
+      window.removeEventListener('scroll', syncDropdownPosition, true);
+    };
+  }, [isPlayerDropdownOpen, updatePlayerDropdownRect]);
 
   return (
     <div
@@ -311,12 +366,16 @@ export default function Navbar() {
                 <span className="hidden sm:inline">{locale === 'zh-CN' ? 'EN' : '中文'}</span>
               </button>
 
-              <div className="relative group/player-list">
+              <div ref={playerDropdownAnchorRef} className="relative">
                 <button
                   type="button"
                   className="flex items-center gap-1.5 sm:gap-2 cursor-pointer"
                   aria-haspopup="true"
-                  aria-expanded="false"
+                  aria-expanded={isPlayerDropdownOpen}
+                  onMouseEnter={openPlayerDropdown}
+                  onMouseLeave={closePlayerDropdown}
+                  onFocus={openPlayerDropdown}
+                  onBlur={closePlayerDropdown}
                 >
                   <div
                     style={{
@@ -377,87 +436,6 @@ export default function Navbar() {
                     </span>
                   )}
                 </button>
-
-                {/* Player List Dropdown */}
-                {players.length > 0 && (
-                  <div
-                    className="hidden group-hover/player-list:block group-focus-within/player-list:block"
-                    style={
-                      {
-                        position: 'absolute',
-                        top: 'calc(100% + 8px)',
-                        right: 0,
-                        minWidth: '240px',
-                        maxHeight: '400px',
-                        overflowY: 'auto',
-                        backdropFilter: 'blur(24px) saturate(180%)',
-                        'WebkitBackdropFilter': 'blur(24px) saturate(180%)',
-                        background: 'var(--glass-bg)',
-                        border: '1px solid var(--glass-border)',
-                        borderRadius: '16px',
-                        boxShadow:
-                          '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
-                        padding: '16px',
-                        zIndex: 100,
-                        animation: 'fadeInDown 0.2s ease-out',
-                        isolation: 'isolate',
-                      } as React.CSSProperties
-                    }
-                  >
-                    <div
-                      style={{
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        color: 'var(--text-muted)',
-                        marginBottom: '8px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                      }}
-                    >
-                      {t('online')} ({players.length})
-                    </div>
-                    <div className="space-y-2">
-                      {players.map((player) => (
-                        <div
-                          key={player.uuid}
-                          className="transition-all hover:translate-x-1"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '8px 10px',
-                            borderRadius: '8px',
-                            background: 'var(--glass-icon-bg)',
-                            border: '1px solid var(--glass-border)',
-                            transition: 'all 0.2s ease',
-                            cursor: 'default',
-                            backgroundColor: 'var(--glass-icon-bg)',
-                          }}
-                        >
-                          <MinecraftAvatar
-                            uuid={player.uuid}
-                            name={player.name}
-                            size={28}
-                            style={{
-                              borderRadius: '6px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                            }}
-                          />
-                          <span
-                            style={{
-                              color: 'var(--text-secondary)',
-                              fontSize: '0.875rem',
-                              fontWeight: 500,
-                              flex: 1,
-                            }}
-                          >
-                            {player.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -549,6 +527,90 @@ export default function Navbar() {
           </AnimatePresence>
         </div>
       </nav>
+
+      {mounted &&
+        isPlayerDropdownOpen &&
+        players.length > 0 &&
+        playerDropdownRect &&
+        createPortal(
+          <div
+            className="player-list-dropdown"
+            role="tooltip"
+            onMouseEnter={openPlayerDropdown}
+            onMouseLeave={closePlayerDropdown}
+            style={
+              {
+                position: 'fixed',
+                top: playerDropdownRect.bottom + 8,
+                left: Math.max(16, playerDropdownRect.right - 240),
+                minWidth: '240px',
+                zIndex: 100,
+                opacity: isPlayerDropdownVisible ? 1 : 0,
+                transform: isPlayerDropdownVisible ? 'translateY(0)' : 'translateY(-6px)',
+                pointerEvents: isPlayerDropdownVisible ? 'auto' : 'none',
+                transition: 'opacity 0.18s ease-out, transform 0.18s ease-out',
+              } as React.CSSProperties
+            }
+          >
+            <div className="player-list-dropdown-surface">
+              <div className="player-list-dropdown-scroll">
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: 'var(--text-muted)',
+                    marginBottom: '8px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {t('online')} ({players.length})
+                </div>
+                <div className="space-y-2">
+                  {players.map((player) => (
+                    <div
+                      key={player.uuid}
+                      className="transition-all hover:translate-x-1"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        background: 'var(--glass-icon-bg)',
+                        border: '1px solid var(--glass-border)',
+                        transition: 'all 0.2s ease',
+                        cursor: 'default',
+                        backgroundColor: 'var(--glass-icon-bg)',
+                      }}
+                    >
+                      <MinecraftAvatar
+                        uuid={player.uuid}
+                        name={player.name}
+                        size={28}
+                        style={{
+                          borderRadius: '6px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      />
+                      <span
+                        style={{
+                          color: 'var(--text-secondary)',
+                          fontSize: '0.875rem',
+                          fontWeight: 500,
+                          flex: 1,
+                        }}
+                      >
+                        {player.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
