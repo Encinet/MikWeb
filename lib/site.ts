@@ -18,6 +18,19 @@ export const SITE_KEYWORDS = [
   'Creative',
 ] as const;
 
+export const SITE_SOCIAL_PREVIEW_COPY = {
+  'zh-CN': {
+    brand: 'Mik 米客服务器',
+    headline: '创造休闲 Minecraft 服务器',
+    summary: '允许任意 Mod，专注于建筑创作与社区交流',
+  },
+  en: {
+    brand: 'Mik Casual',
+    headline: 'Creative Casual Minecraft Server',
+    summary: 'Mods allowed, built for builders, centered on community',
+  },
+} as const;
+
 export const ORGANIZATION_NAME = 'Encinet';
 export const ORGANIZATION_URL = 'https://encinet.netlify.app/';
 export const SOURCE_CODE_URL = 'https://github.com/Encinet/MikWeb';

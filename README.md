@@ -141,12 +141,13 @@ MikWeb/
 ├── app/
 │   ├── [locale]/
 │   │   ├── page.tsx / HomeSection.tsx
-│   │   ├── buildings/page.tsx
-│   │   ├── bans/page.tsx
+│   │   ├── buildings/layout.tsx / page.tsx
+│   │   ├── bans/layout.tsx / page.tsx
 │   │   ├── wiki/page.tsx / WikiContent.tsx
 │   │   ├── [...rest]/page.tsx      # Wiki 兜底路由
 │   │   ├── layout.tsx
 │   │   ├── not-found.tsx
+│   │   ├── opengraph-image.tsx
 │   │   └── ...
 │   ├── api/
 │   │   ├── players/route.ts
@@ -154,6 +155,7 @@ MikWeb/
 │   │   ├── buildings/route.ts
 │   │   ├── bans/route.ts
 │   │   └── mcp/route.ts       # MCP 服务端点
+│   ├── opengraph-image.tsx
 │   ├── globals.css
 │   ├── manifest.ts / robots.ts / sitemap.ts
 │   └── layout.tsx
@@ -176,6 +178,9 @@ MikWeb/
 │   ├── clientApi.ts        # 前端请求封装
 │   ├── buildings.ts        # 建筑筛选/排序
 │   ├── wiki.ts             # Wiki section / locale 定义
+│   ├── metadata.ts         # 页面 metadata 生成
+│   ├── routeLocale.ts      # locale 参数校验（非法直接 404）
+│   ├── socialImage.tsx     # Open Graph 分享图生成
 │   ├── types.ts
 │   └── site.ts
 ├── messages/               # next-intl 文案

@@ -8,7 +8,6 @@ import {
   ORGANIZATION_NAME,
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
-  SITE_LOGO_PATH,
   SITE_LONG_DESCRIPTION,
   SITE_NAME,
   SITE_TITLE,
@@ -47,18 +46,18 @@ export const metadata: Metadata = {
     description: SITE_LONG_DESCRIPTION,
     images: [
       {
-        url: SITE_LOGO_PATH,
-        width: 512,
-        height: 512,
-        alt: 'Mik Logo',
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: SITE_TITLE,
       },
     ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: [SITE_LOGO_PATH],
+    images: ['/opengraph-image'],
   },
 };
 

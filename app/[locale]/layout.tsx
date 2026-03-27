@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
@@ -10,9 +9,11 @@ import StructuredData from '@/components/StructuredData';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { BuildingsContextProvider } from '@/contexts/BuildingsContext';
 import { PlayerContextProvider } from '@/contexts/PlayerContext';
-import { isRoutingLocale, routing } from '@/i18n/routing';
+import { routing } from '@/i18n/routing';
+import { buildPageMetadata } from '@/lib/metadata';
+import { requireRouteLocale } from '@/lib/routeLocale';
 
-interface Messages {
+interface LayoutMessages {
   metadata: {
     title: string;
     description: string;
@@ -37,12 +38,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
-  const messages = (await getMessages({ locale })) as Messages;
+  const { locale: rawLocale } = await params;
+  const locale = requireRouteLocale(rawLocale);
+  const messages = (await getMessages({ locale })) as LayoutMessages;
 
   return {
-    title: messages.metadata.title,
-    description: messages.metadata.description,
+    ...buildPageMetadata({
+      locale,
+      title: messages.metadata.title,
+      description: messages.metadata.description,
+    }),
     keywords: [
       'Minecraft',
       'Server',
@@ -52,24 +57,6 @@ export async function generateMetadata({
       'Wiki',
       locale === 'zh-CN' ? '我的世界' : 'Minecraft',
     ],
-    alternates: {
-      canonical: `/${locale}`,
-      languages: {
-        'zh-CN': '/zh-CN',
-        en: '/en',
-      },
-    },
-    openGraph: {
-      title: messages.metadata.title,
-      description: messages.metadata.description,
-      locale: locale === 'zh-CN' ? 'zh_CN' : 'en_US',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary',
-      title: messages.metadata.title,
-      description: messages.metadata.description,
-    },
   };
 }
 
@@ -80,11 +67,8 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-
-  if (!isRoutingLocale(locale)) {
-    notFound();
-  }
+  const { locale: rawLocale } = await params;
+  const locale = requireRouteLocale(rawLocale);
 
   const messages = await getMessages({ locale });
 

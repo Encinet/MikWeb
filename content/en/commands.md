@@ -81,7 +81,7 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 |------|------|
 | `/rmitems [radius]` | Remove dropped items around you. The default radius is 50 blocks. You can also set your own radius, for example `/rmitems 20` |
 
-> Players with yellow-name status cannot use `/rmitems`.
+> Players with yellow-name status (Default status for new players) cannot use `/rmitems`.
 
 ## Music & Fun
 

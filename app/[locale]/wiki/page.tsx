@@ -1,8 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 
+import { buildPageMetadata } from '@/lib/metadata';
+import { requireRouteLocale } from '@/lib/routeLocale';
 import type { WikiSectionContentMap, WikiSectionDefinition, WikiSectionId } from '@/lib/types';
 import {
   isWikiSectionId,
@@ -12,6 +15,23 @@ import {
 } from '@/lib/wiki';
 import WikiContent from './WikiContent';
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = requireRouteLocale(rawLocale);
+  const t = await getTranslations({ locale, namespace: 'wiki' });
+
+  return buildPageMetadata({
+    locale,
+    title: t('title'),
+    description: t('description'),
+    pathname: '/wiki',
+  });
+}
+
 export default async function WikiPage({
   params,
   searchParams,
@@ -19,9 +39,10 @@ export default async function WikiPage({
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ section?: string }>;
 }) {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
+  const locale = requireRouteLocale(rawLocale);
   const { section } = await searchParams;
-  const t = await getTranslations('wiki');
+  const t = await getTranslations({ locale, namespace: 'wiki' });
 
   const sections: WikiSectionDefinition[] = WIKI_SECTIONS.map((id) => ({
     id,
