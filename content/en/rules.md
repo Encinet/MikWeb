@@ -16,7 +16,7 @@ There is no fixed probation length. Promotion to full member status (**White Nam
   - No access to server status commands `/mspt` and `/tps`
   - No formatted text in chat
   - No access to `/rmitems`
-  - No access to vanilla commands `/attribute`, `/damage`, `/effect`, `/fill`, `/item`, `/ride`, `/save-all`, `/setblock`
+  - No access to vanilla commands `/attribute`, `/damage`, `/effect`, `/fill`, `/item`, `/ride`, `/save-all`, `/setblock`, `/summon`
 - **White Name / Member**: Full member status. These restrictions are removed after automatic promotion.
 
 ## Building Standards

@@ -16,7 +16,7 @@
   - 无法使用服务器状态查询命令 `/mspt`、`/tps`
   - 无法在聊天中使用格式化文本
   - 无法使用清除周围掉落物命令 `/rmitems`
-  - 无法使用原版命令 `/attribute`、`/damage`、`/effect`、`/fill`、`/item`、`/ride`、`/save-all`、`/setblock`
+  - 无法使用原版命令 `/attribute`、`/damage`、`/effect`、`/fill`、`/item`、`/ride`、`/save-all`、`/setblock`、`/summon`
 - **白名 Member**：考察通过后的正式成员身份，由系统根据活跃度自动晋升，解除上述限制
 
 ## 建筑与创作规范
