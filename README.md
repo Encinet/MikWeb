@@ -119,7 +119,7 @@ openssl rand -hex 32
 | `get_announcements` | 获取公告列表，支持 `count` 参数 |
 | `get_buildings` | 获取建筑列表 |
 | `get_bans` | 获取封禁列表 |
-| `search_wiki` | 基于 Markdown 索引做模糊搜索，支持 `queries`、`locale`、`limit`，适合一次传入 3-5 个近义描述/别名/命令写法提升命中率 |
+| `search_wiki` | 基于 Markdown 索引做模糊搜索，支持 `searchPhrases`、`locale`、`limit`，适合一次传入 3-5 个“同一问题的不同说法”来提升命中率 |
 
 ### 客户端配置
 

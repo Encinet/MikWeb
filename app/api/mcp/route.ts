@@ -62,11 +62,11 @@ function fuzzyMatch(query: PreparedQuery, text: string): FuzzyMatchScore {
   return 0;
 }
 
-function normalizeWikiQueries(queries: string[]): PreparedQuery[] {
+function normalizeWikiSearchPhrases(searchPhrases: string[]): PreparedQuery[] {
   const uniqueQueries = new Set<string>();
 
-  for (const query of queries) {
-    const trimmed = query.trim();
+  for (const phrase of searchPhrases) {
+    const trimmed = phrase.trim();
     if (!trimmed) continue;
     uniqueQueries.add(trimmed);
   }
@@ -329,16 +329,17 @@ const handler = createMcpHandler(
         title: 'Search Wiki',
         description:
           'Search the Minecraft server wiki by keyword, alias, or command-style wording. This is keyword/fuzzy search, not vector search. ' +
-          'Before calling this tool, the caller should usually rewrite the user intent into 3-5 close phrasings and send them together in queries. ' +
+          'Before calling this tool, the caller should usually rewrite the user intent into 3-5 interchangeable phrasings of the same question and send them together in searchPhrases. ' +
+          'Do not send loosely related keywords or topic expansion. Good: "规则", "规范", "制度". Bad: "建筑 建造 模组 功能", "世界编辑 工具 网页". ' +
           'Supports exact substring, subsequence (e.g. "gmode" matches "/gamemode"), and multi-token matching ' +
           '(e.g. "规则 规范 制度" helps match the server rules page). Returns the full content of matched wiki sections and lets the caller control how many results are returned.',
         inputSchema: {
-          queries: z
+          searchPhrases: z
             .array(z.string())
             .min(1)
             .max(5)
             .describe(
-              'Search with 1-5 close phrasings of the same intent. Put the strongest wording first. Prefer 3-5 phrasings when the concept may be described in multiple ways, such as "规则", "规范", "制度"; "入服", "加入服务器", "白名单"; or "家", "home", "/sethome".',
+              'Search with 1-5 interchangeable phrasings of the same question. Put the strongest wording first. Prefer 3-5 phrasings when the concept may be described in multiple ways, such as "规则", "规范", "制度"; "入服", "加入服务器", "白名单"; or "家", "home", "/sethome". Do not send loosely related keywords or topic expansion.',
             ),
           locale: z.enum(WIKI_LOCALES).optional().describe('Language locale (default: zh-CN)'),
           limit: z
@@ -350,10 +351,10 @@ const handler = createMcpHandler(
             .describe('Maximum number of results (default: 5, max: 20)'),
         },
       },
-      async ({ queries, locale, limit }) => {
+      async ({ searchPhrases, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
         const maxResults = limit ?? 5;
-        const preparedQueries = normalizeWikiQueries(queries);
+        const preparedQueries = normalizeWikiSearchPhrases(searchPhrases);
         const indexedBlocks = await getWikiIndex(loc);
         const results: WikiSearchResult[] = [];
 
@@ -392,7 +393,7 @@ const handler = createMcpHandler(
             content: [
               {
                 type: 'text',
-                text: `No wiki content found matching ${JSON.stringify(queries)} (${loc}).`,
+                text: `No wiki content found matching ${JSON.stringify(searchPhrases)} (${loc}).`,
               },
             ],
           };
