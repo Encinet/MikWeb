@@ -69,8 +69,10 @@ function BuildingTypeBadge({ buildType, t, compact = false }: BuildingTypeBadgeP
   if (buildType === 'original') {
     return (
       <>
-        <CheckCircle className={`${iconClassName} text-green-400`} />
-        <span className={`${textClassName} text-green-400`}>{t('labels.original')}</span>
+        <CheckCircle className={iconClassName} style={{ color: 'var(--green-accent-strong)' }} />
+        <span className={textClassName} style={{ color: 'var(--green-accent-strong)' }}>
+          {t('labels.original')}
+        </span>
       </>
     );
   }
@@ -88,8 +90,10 @@ function BuildingTypeBadge({ buildType, t, compact = false }: BuildingTypeBadgeP
 
   return (
     <>
-      <Copy className={`${iconClassName} text-amber-400`} />
-      <span className={`${textClassName} text-amber-400`}>{t('labels.replica')}</span>
+      <Copy className={iconClassName} style={{ color: 'var(--amber-accent-strong)' }} />
+      <span className={textClassName} style={{ color: 'var(--amber-accent-strong)' }}>
+        {t('labels.replica')}
+      </span>
     </>
   );
 }
@@ -145,8 +149,9 @@ function BuilderNames({ builders, compact = false }: BuilderNamesProps) {
     return (
       <span
         key={builder.uuid}
-        className="text-green-400 transition-all"
+        className="transition-all"
         style={{
+          color: 'var(--green-accent-strong)',
           fontWeight: isMainContributor ? 600 : 500,
           fontSize: compact
             ? isMainContributor
@@ -293,18 +298,18 @@ function BuildingCardFacts({ building, formatDate, locale, t }: BuildingCardFact
   return (
     <div className="space-y-2.5">
       <div className="flex items-center gap-2 text-sm">
-        <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
+        <MapPin className="w-4 h-4 shrink-0" style={{ color: 'var(--amber-accent-strong)' }} />
         <span style={{ color: 'var(--text-muted)' }}>{t('labels.coordinates')}</span>
         <code
-          style={{ background: 'var(--code-bg)' }}
-          className="text-amber-400 font-mono px-2 py-1 rounded text-xs"
+          style={{ background: 'var(--code-bg)', color: 'var(--amber-accent-strong)' }}
+          className="font-mono px-2 py-1 rounded text-xs"
         >
           {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}
         </code>
       </div>
 
       <div className="flex items-start gap-2 text-sm">
-        <User className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
+        <User className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--green-accent-strong)' }} />
         <div className="flex-1">
           <span style={{ color: 'var(--text-muted)' }}>
             {building.builders.length > 1 ? t('labels.builders') : t('labels.builder')}
@@ -337,15 +342,15 @@ function BuildingDetailFacts({ building, formatDate, locale, t }: BuildingDetail
   return (
     <div className="space-y-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border-light)' }}>
       <div className="flex items-start gap-3">
-        <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <MapPin className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--amber-accent-strong)' }} />
         <div className="flex-1">
           <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
             {t('labels.coordinates')}
           </span>
           <div className="mt-1">
             <code
-              style={{ background: 'var(--code-bg)' }}
-              className="text-amber-400 font-mono px-3 py-1.5 rounded text-sm"
+              style={{ background: 'var(--code-bg)', color: 'var(--amber-accent-strong)' }}
+              className="font-mono px-3 py-1.5 rounded text-sm"
             >
               {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}
             </code>
@@ -354,7 +359,7 @@ function BuildingDetailFacts({ building, formatDate, locale, t }: BuildingDetail
       </div>
 
       <div className="flex items-start gap-3">
-        <User className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+        <User className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--green-accent-strong)' }} />
         <div className="flex-1">
           <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
             {building.builders.length > 1 ? t('labels.builders') : t('labels.builder')}
@@ -1196,7 +1201,7 @@ export default function BuildingsPage() {
                     'WebkitBackdropFilter': 'blur(24px) saturate(180%)',
                     border: '1px solid var(--modal-border)',
                     boxShadow:
-                      '0 24px 64px var(--modal-shadow), 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 var(--modal-inset)',
+                      '0 24px 64px var(--modal-shadow), 0 8px 32px var(--modal-shadow-secondary), inset 0 1px 0 var(--modal-inset)',
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >

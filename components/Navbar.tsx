@@ -174,7 +174,12 @@ export default function Navbar() {
                 >
                   <span style={{ color: '#FFAA00' }}>Mi</span>
                   <span style={{ color: 'var(--logo-k)' }}>k</span>
-                  <span style={{ color: '#55FF55', marginLeft: 'clamp(0.25rem, 1vw, 0.5rem)' }}>
+                  <span
+                    style={{
+                      color: 'var(--brand-casual)',
+                      marginLeft: 'clamp(0.25rem, 1vw, 0.5rem)',
+                    }}
+                  >
                     Casual
                   </span>
                 </h1>
@@ -381,11 +386,11 @@ export default function Navbar() {
                     style={{
                       width: '8px',
                       height: '8px',
-                      background: isOnline ? '#55FF55' : '#FF5555',
+                      background: isOnline ? 'var(--status-online)' : 'var(--status-offline)',
                       borderRadius: '50%',
                       boxShadow: isOnline
-                        ? '0 0 8px rgba(85,255,85,0.5)'
-                        : '0 0 8px rgba(255,85,85,0.5)',
+                        ? '0 0 8px var(--status-online-glow)'
+                        : '0 0 8px var(--status-offline-glow)',
                     }}
                   ></div>
                   <Users

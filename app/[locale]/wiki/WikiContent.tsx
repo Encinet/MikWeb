@@ -270,19 +270,32 @@ export default function WikiContent({
         const isInline = !className;
         return isInline ? (
           <code
-            style={{ background: 'var(--code-bg)' }}
-            className="text-blue-300 px-1.5 py-0.5 rounded text-sm font-mono"
+            style={{ background: 'var(--code-bg)', color: 'var(--blue-accent-strong)' }}
+            className="px-1.5 py-0.5 rounded text-sm font-mono"
           >
             {children}
           </code>
         ) : (
-          <code className="text-blue-300 text-sm font-mono block">{children}</code>
+          <code style={{ color: 'var(--blue-accent-strong)' }} className="text-sm font-mono block">
+            {children}
+          </code>
         );
       },
       a: ({ children, href }: React.PropsWithChildren<{ href?: string }>) => (
         <a
           href={href}
-          className="text-blue-400 hover:text-blue-300 underline"
+          className="underline"
+          style={{
+            color: 'var(--blue-accent-strong)',
+            textUnderlineOffset: '3px',
+            textDecorationThickness: '1.5px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--blue-accent)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--blue-accent-strong)';
+          }}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -334,12 +347,17 @@ export default function WikiContent({
           >
             <div className="inline-flex items-center gap-3 mb-4">
               <motion.div
-                className="p-3 rounded-xl bg-linear-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-400/30 shadow-lg"
+                className="p-3 rounded-xl backdrop-blur-sm shadow-lg"
+                style={{
+                  background:
+                    'linear-gradient(135deg, var(--blue-accent-bg) 0%, rgba(255, 255, 255, 0) 100%)',
+                  border: '1px solid var(--blue-accent-border)',
+                }}
                 initial={{ scale: 0.5, rotate: -20, opacity: 0 }}
                 animate={{ scale: 1, rotate: 0, opacity: 1 }}
                 transition={{ ...spring.bouncy, delay: 0.1 }}
               >
-                <BookOpen className="w-8 h-8 text-blue-400" />
+                <BookOpen className="w-8 h-8" style={{ color: 'var(--blue-accent)' }} />
               </motion.div>
               <motion.h1
                 className="text-4xl sm:text-5xl font-bold"
@@ -424,8 +442,12 @@ export default function WikiContent({
 
             <motion.button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-3.5 rounded-full backdrop-blur-lg bg-blue-500/20 border border-blue-400/30 shadow-lg"
-              style={{ color: 'var(--blue-accent)' }}
+              className="p-3.5 rounded-full backdrop-blur-lg shadow-lg"
+              style={{
+                color: 'var(--blue-accent)',
+                background: 'var(--blue-accent-bg)',
+                border: '1px solid var(--blue-accent-border)',
+              }}
               whileHover={{ scale: 1.12, transition: spring.snappy }}
               whileTap={{ scale: 0.88, transition: spring.fab }}
             >
