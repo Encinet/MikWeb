@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@otplib/core": "^13.4.0",
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.575.0",
     "mcp-handler": "^1.1.0",

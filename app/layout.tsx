@@ -1,5 +1,6 @@
 import './globals.css';
 
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 
@@ -72,6 +73,7 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
