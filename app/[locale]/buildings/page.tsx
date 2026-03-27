@@ -152,7 +152,7 @@ function BuilderNames({ builders, compact = false }: BuilderNamesProps) {
     return (
       <span
         key={builder.uuid}
-        className="transition-all"
+        className="transition-colors duration-200"
         style={{
           color: 'var(--theme-accent-green-strong)',
           fontWeight: isMainContributor ? 600 : 500,
@@ -459,7 +459,7 @@ function BuildingDetailGallery({
 }: BuildingDetailGalleryProps) {
   return (
     <div
-      className="relative w-full md:w-3/5 h-64 md:h-full flex items-center justify-center overflow-hidden"
+      className="relative w-full lg:w-3/5 h-60 sm:h-72 lg:h-full flex items-center justify-center overflow-hidden"
       style={{
         background: 'rgba(0, 0, 0, 0.2)',
         backdropFilter: 'blur(8px)',
@@ -647,7 +647,7 @@ function BuildingDetailInfo({
 }: BuildingDetailInfoProps) {
   return (
     <div
-      className="w-full md:w-2/5 h-full overflow-y-auto p-6 sm:p-8"
+      className="w-full lg:w-2/5 h-full overflow-y-auto p-5 sm:p-6 lg:p-8"
       style={{
         background: 'rgba(0, 0, 0, 0.1)',
       }}
@@ -655,7 +655,7 @@ function BuildingDetailInfo({
       <div className="space-y-6">
         <div>
           <h2
-            className="text-3xl sm:text-4xl font-bold mb-2"
+            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2"
             style={{ color: 'var(--theme-text-heading)' }}
           >
             {getBuildingName(building, locale)}
@@ -842,7 +842,7 @@ interface BuildingCardProps {
   isImageError: (imageUrl: string) => boolean;
   locale: string;
   onImageError: (imageUrl: string) => void;
-  onOpen: (building: Building, event: React.MouseEvent<HTMLButtonElement>) => void;
+  onOpen: (building: Building) => void;
   t: BuildingsTranslator;
 }
 
@@ -864,7 +864,7 @@ function BuildingCard({
     <ScrollReveal key={getBuildingId(building)} delay={delay} direction="up">
       <button
         type="button"
-        onClick={(event) => onOpen(building, event)}
+        onClick={() => onOpen(building)}
         className="w-full rounded-2xl hover:border-purple-400/30 transition-all duration-300 overflow-hidden group cursor-pointer hover:scale-[1.02] mb-6 text-left"
         style={{
           backdropFilter: 'blur(16px) saturate(150%)',
@@ -956,7 +956,6 @@ export default function BuildingsPage() {
   const [imageTransitionDirection, setImageTransitionDirection] = useState<-1 | 1>(1);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-  const [cardRect, setCardRect] = useState<DOMRect | null>(null);
 
   const mounted = useHasMounted();
   const selectedBuildingImages = useMemo(() => {
@@ -1061,10 +1060,7 @@ export default function BuildingsPage() {
     setCurrentImageIndex(imageIndex);
   };
 
-  const openBuildingDetail = (building: Building, event: React.MouseEvent<HTMLButtonElement>) => {
-    const card = event.currentTarget;
-    const rect = card.getBoundingClientRect();
-    setCardRect(rect);
+  const openBuildingDetail = (building: Building) => {
     setSelectedBuilding(building);
     setImageTransitionDirection(1);
     setCurrentImageIndex(0);
@@ -1074,8 +1070,6 @@ export default function BuildingsPage() {
     setSelectedBuilding(null);
     setImageTransitionDirection(1);
     setCurrentImageIndex(0);
-    // 延迟清除卡片位置，让退出动画完成
-    setTimeout(() => setCardRect(null), 300);
   };
 
   const nextImage = () => {
@@ -1207,38 +1201,11 @@ export default function BuildingsPage() {
                 onClick={closeBuildingDetail}
               >
                 <motion.div
-                  initial={
-                    cardRect
-                      ? {
-                          opacity: 0,
-                          scale: Math.min(
-                            cardRect.width / 1400,
-                            cardRect.height / (window.innerHeight * 0.9),
-                          ),
-                          x: cardRect.left + cardRect.width / 2 - window.innerWidth / 2,
-                          y: cardRect.top + cardRect.height / 2 - window.innerHeight / 2,
-                        }
-                      : { opacity: 0, scale: 0.95, y: 20 }
-                  }
-                  animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-                  exit={
-                    cardRect
-                      ? {
-                          opacity: 0,
-                          scale: Math.min(
-                            cardRect.width / 1400,
-                            cardRect.height / (window.innerHeight * 0.9),
-                          ),
-                          x: cardRect.left + cardRect.width / 2 - window.innerWidth / 2,
-                          y: cardRect.top + cardRect.height / 2 - window.innerHeight / 2,
-                        }
-                      : { opacity: 0, scale: 0.95, y: 20 }
-                  }
-                  transition={{
-                    duration: 0.4,
-                    ease: [0.32, 0.72, 0, 1],
-                  }}
-                  className="relative w-full max-w-7xl h-[90vh] flex flex-col md:flex-row gap-0 rounded-3xl overflow-hidden shadow-2xl"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative w-full max-w-7xl h-[90vh] flex flex-col lg:flex-row gap-0 rounded-3xl overflow-hidden shadow-2xl"
                   style={{
                     background: 'var(--theme-surface-modal)',
                     backdropFilter: 'blur(24px) saturate(180%)',

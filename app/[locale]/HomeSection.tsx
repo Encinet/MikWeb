@@ -237,7 +237,7 @@ export default function HomeSection() {
         {stats.map((stat, index) => (
           <ScrollReveal key={stat.id} delay={index * 0.1} direction="up">
             <div
-              className="transition-transform hover:-translate-y-1"
+              className="transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1"
               style={{
                 backdropFilter: 'blur(16px) saturate(150%)',
                 'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
@@ -247,7 +247,6 @@ export default function HomeSection() {
                 boxShadow:
                   '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
                 padding: 'clamp(1.25rem, 3vw, 1.5rem)',
-                transition: 'transform 0.25s ease',
               }}
             >
               <div

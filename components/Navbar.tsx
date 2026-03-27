@@ -196,7 +196,7 @@ export default function Navbar() {
               </div>
             </Link>
 
-            <div className="hidden lg:flex items-center gap-6 relative">
+            <div className="hidden xl:flex items-center gap-4 xl:gap-6 relative whitespace-nowrap">
               {navItems.map((item) => {
                 const isActive = pathname === item.path;
 
@@ -220,6 +220,7 @@ export default function Navbar() {
                         textDecoration: 'none',
                         transition: 'all 0.2s ease',
                         position: 'relative' as const,
+                        whiteSpace: 'nowrap',
                       }}
                       onMouseEnter={(e) => {
                         if (item.highlight) {
@@ -237,7 +238,7 @@ export default function Navbar() {
                       }}
                     >
                       <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
+                      <span className="whitespace-nowrap">{item.label}</span>
                     </a>
                   );
                 }
@@ -257,6 +258,7 @@ export default function Navbar() {
                       textDecoration: 'none',
                       transition: 'color 0.2s ease',
                       position: 'relative' as const,
+                      whiteSpace: 'nowrap',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = 'var(--theme-text-nav-hover)';
@@ -268,7 +270,7 @@ export default function Navbar() {
                     }}
                   >
                     <item.icon className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">{item.label}</span>
+                    <span className="relative z-10 whitespace-nowrap">{item.label}</span>
                     {isActive && (
                       <motion.div
                         initial={{ scaleX: 0 }}
@@ -295,7 +297,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg transition-colors"
+                className="xl:hidden p-2 rounded-lg transition-colors"
                 style={{
                   color: 'var(--theme-text-nav)',
                   background: 'transparent',
@@ -459,7 +461,7 @@ export default function Navbar() {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="lg:hidden overflow-hidden"
+                className="xl:hidden overflow-hidden"
               >
                 <div
                   className="mt-4 pt-4 border-t"
@@ -486,7 +488,7 @@ export default function Navbar() {
                             }}
                           >
                             <item.icon className="w-5 h-5" />
-                            <span className="text-sm">{item.label}</span>
+                            <span className="text-sm whitespace-nowrap">{item.label}</span>
                           </a>
                         );
                       }
@@ -508,7 +510,7 @@ export default function Navbar() {
                             }}
                           >
                             <item.icon className="w-5 h-5" />
-                            <span className="text-sm">{item.label}</span>
+                            <span className="text-sm whitespace-nowrap">{item.label}</span>
                           </Link>
                         </div>
                       );
