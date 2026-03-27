@@ -28,15 +28,16 @@ export default function NotFoundView({
         style={{
           backdropFilter: 'blur(20px) saturate(160%)',
           WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-          background: 'var(--glass-bg)',
-          border: '1px solid var(--glass-border)',
-          boxShadow: '0 24px 64px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+          background: 'var(--theme-surface-glass)',
+          border: '1px solid var(--theme-border-glass)',
+          boxShadow:
+            '0 24px 64px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
         }}
       >
         <div
           className="mb-6 text-[4.75rem] font-black leading-none sm:text-[6.5rem] lg:text-[7.5rem]"
           style={{
-            color: 'var(--text-secondary)',
+            color: 'var(--theme-text-heading)',
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.045em',
             textShadow: '0 12px 40px rgba(0, 0, 0, 0.18)',
@@ -47,14 +48,14 @@ export default function NotFoundView({
 
         <h1
           className="mx-auto mb-4 max-w-lg text-3xl font-bold leading-tight sm:text-4xl"
-          style={{ color: 'var(--text-secondary)' }}
+          style={{ color: 'var(--theme-text-heading)' }}
         >
           {title}
         </h1>
 
         <p
           className="mx-auto max-w-2xl text-base leading-8 sm:text-lg"
-          style={{ color: 'var(--text-muted-light)' }}
+          style={{ color: 'var(--theme-text-muted-soft)' }}
         >
           {description}
         </p>
@@ -65,7 +66,7 @@ export default function NotFoundView({
             className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-transform hover:scale-[1.02]"
             style={{
               background: 'var(--brand-gold)',
-              color: 'var(--text-button)',
+              color: 'var(--theme-text-button)',
               boxShadow: '0 12px 28px rgba(255, 170, 0, 0.22)',
             }}
           >

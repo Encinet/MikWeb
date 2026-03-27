@@ -45,8 +45,8 @@ function AnnouncementCard({
       style={{
         backdropFilter: 'blur(16px) saturate(150%)',
         'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-        background: 'var(--glass-icon-bg)',
-        border: '1px solid var(--glass-border)',
+        background: 'var(--theme-surface-icon)',
+        border: '1px solid var(--theme-border-glass)',
         borderRadius: isModal ? '16px' : '12px',
         padding: 'clamp(1rem, 3vw, 1.5rem)',
         transition: isModal ? 'all 0.2s ease' : undefined,
@@ -71,7 +71,7 @@ function AnnouncementCard({
           <div
             style={{
               fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
-              color: 'var(--text-muted)',
+              color: 'var(--theme-text-muted)',
               marginBottom: '8px',
               fontWeight: isModal ? 500 : undefined,
             }}
@@ -80,7 +80,7 @@ function AnnouncementCard({
           </div>
           <div
             style={{
-              color: 'var(--text-primary)',
+              color: 'var(--theme-text-primary)',
               lineHeight: 1.75,
               whiteSpace: 'pre-line',
               fontSize: 'clamp(0.875rem, 2vw, 1rem)',
@@ -110,7 +110,7 @@ function AnnouncementLoading({ label, modal }: { label: string; modal?: boolean 
       />
       <p
         style={{
-          color: 'var(--text-muted)',
+          color: 'var(--theme-text-muted)',
           marginTop: '1rem',
           fontSize: modal ? '0.95rem' : undefined,
         }}
@@ -127,10 +127,12 @@ function AnnouncementEmpty({ label, modal }: { label: string; modal?: boolean })
       {modal && (
         <Bell
           className="w-12 h-12 mx-auto mb-4"
-          style={{ color: 'var(--text-muted)', opacity: 0.5 }}
+          style={{ color: 'var(--theme-text-muted)', opacity: 0.5 }}
         />
       )}
-      <p style={{ color: 'var(--text-muted)', fontSize: modal ? '0.95rem' : undefined }}>{label}</p>
+      <p style={{ color: 'var(--theme-text-muted)', fontSize: modal ? '0.95rem' : undefined }}>
+        {label}
+      </p>
     </div>
   );
 }
@@ -209,7 +211,7 @@ export default function HomeSection() {
       icon: Users,
       label: t('home.stats.activePlayers'),
       value: isLoadingPlayers || isNetworkError ? '-' : `${playerCount}`,
-      iconColor: 'var(--green-accent-strong)',
+      iconColor: 'var(--theme-accent-green-strong)',
     },
     {
       id: 'total-buildings',
@@ -239,10 +241,11 @@ export default function HomeSection() {
               style={{
                 backdropFilter: 'blur(16px) saturate(150%)',
                 'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
+                background: 'var(--theme-surface-glass)',
+                border: '1px solid var(--theme-border-glass)',
                 borderRadius: '18px',
-                boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                boxShadow:
+                  '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
                 padding: 'clamp(1.25rem, 3vw, 1.5rem)',
                 transition: 'transform 0.25s ease',
               }}
@@ -254,7 +257,7 @@ export default function HomeSection() {
                   borderRadius: '12px',
                   backdropFilter: 'blur(16px) saturate(150%)',
                   'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                  background: 'var(--glass-icon-bg)',
+                  background: 'var(--theme-surface-icon)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -273,7 +276,7 @@ export default function HomeSection() {
                 style={{
                   fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
                   fontWeight: 600,
-                  color: 'var(--text-secondary)',
+                  color: 'var(--theme-text-heading)',
                   marginBottom: '4px',
                 }}
               >
@@ -291,7 +294,10 @@ export default function HomeSection() {
                 )}
               </div>
               <div
-                style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}
+                style={{
+                  color: 'var(--theme-text-muted)',
+                  fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
+                }}
               >
                 {stat.label}
               </div>
@@ -309,10 +315,11 @@ export default function HomeSection() {
           style={{
             backdropFilter: 'blur(16px) saturate(150%)',
             'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-            background: 'var(--glass-bg)',
-            border: '1px solid var(--glass-border)',
+            background: 'var(--theme-surface-glass)',
+            border: '1px solid var(--theme-border-glass)',
             borderRadius: '18px',
-            boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+            boxShadow:
+              '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
             padding: 'clamp(1.5rem, 4vw, 2rem)',
             marginBottom: 'clamp(3rem, 6vw, 5rem)',
             cursor: 'pointer',
@@ -321,12 +328,12 @@ export default function HomeSection() {
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-3px)';
             e.currentTarget.style.boxShadow =
-              '0 8px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)';
+              '0 8px 32px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow =
-              '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)';
+              '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)';
           }}
         >
           <div className="flex items-center gap-3 mb-6">
@@ -336,9 +343,10 @@ export default function HomeSection() {
                 borderRadius: '12px',
                 backdropFilter: 'blur(16px) saturate(150%)',
                 'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                background: 'var(--glass-icon-bg)',
-                border: '1px solid var(--glass-border)',
-                boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                background: 'var(--theme-surface-icon)',
+                border: '1px solid var(--theme-border-glass)',
+                boxShadow:
+                  '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
               }}
             >
               <Bell className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#FFAA00' }} />
@@ -348,7 +356,7 @@ export default function HomeSection() {
                 fontSize: 'clamp(1.5rem, 4vw, 1.875rem)',
                 fontWeight: 600,
                 letterSpacing: '-0.02em',
-                color: 'var(--text-secondary)',
+                color: 'var(--theme-text-heading)',
               }}
             >
               {t('home.announcements.title')}
@@ -374,7 +382,7 @@ export default function HomeSection() {
                 <div
                   style={{
                     textAlign: 'center',
-                    color: 'var(--text-muted)',
+                    color: 'var(--theme-text-muted)',
                     fontSize: 'clamp(0.875rem, 2vw, 1rem)',
                     marginTop: '1rem',
                   }}
@@ -422,11 +430,11 @@ export default function HomeSection() {
                   style={{
                     backdropFilter: 'blur(24px) saturate(180%)',
                     'WebkitBackdropFilter': 'blur(24px) saturate(180%)',
-                    background: 'var(--modal-bg)',
-                    border: '1px solid var(--modal-border)',
+                    background: 'var(--theme-surface-modal)',
+                    border: '1px solid var(--theme-border-modal)',
                     borderRadius: '24px',
                     boxShadow:
-                      '0 24px 64px var(--modal-shadow), 0 8px 32px var(--modal-shadow-secondary), inset 0 1px 0 var(--modal-inset)',
+                      '0 24px 64px var(--theme-shadow-modal), 0 8px 32px var(--theme-shadow-modal-soft), inset 0 1px 0 var(--theme-shadow-modal-inset)',
                     maxWidth: '800px',
                     width: '100%',
                     maxHeight: '85vh',
@@ -440,7 +448,7 @@ export default function HomeSection() {
                   <div
                     style={{
                       padding: 'clamp(1.5rem, 4vw, 2rem)',
-                      borderBottom: '1px solid var(--glass-border)',
+                      borderBottom: '1px solid var(--theme-border-glass)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -453,8 +461,8 @@ export default function HomeSection() {
                           borderRadius: '14px',
                           backdropFilter: 'blur(16px) saturate(150%)',
                           'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                          background: 'var(--glass-icon-bg)',
-                          border: '1px solid var(--glass-border)',
+                          background: 'var(--theme-surface-icon)',
+                          border: '1px solid var(--theme-border-glass)',
                           boxShadow: '0 4px 12px rgba(255, 170, 0, 0.15)',
                         }}
                       >
@@ -465,7 +473,7 @@ export default function HomeSection() {
                           fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
                           fontWeight: 600,
                           letterSpacing: '-0.02em',
-                          color: 'var(--text-secondary)',
+                          color: 'var(--theme-text-heading)',
                         }}
                       >
                         {t('home.announcements.title')}
@@ -479,7 +487,7 @@ export default function HomeSection() {
                         borderRadius: '12px',
                         border: 'none',
                         background: 'transparent',
-                        color: 'var(--text-muted)',
+                        color: 'var(--theme-text-muted)',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         display: 'flex',
@@ -487,11 +495,11 @@ export default function HomeSection() {
                         justifyContent: 'center',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.color = 'var(--text-primary)';
-                        e.currentTarget.style.background = 'var(--glass-icon-bg)';
+                        e.currentTarget.style.color = 'var(--theme-text-primary)';
+                        e.currentTarget.style.background = 'var(--theme-surface-icon)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.color = 'var(--text-muted)';
+                        e.currentTarget.style.color = 'var(--theme-text-muted)';
                         e.currentTarget.style.background = 'transparent';
                       }}
                     >

@@ -68,14 +68,14 @@ export default function BansPage() {
             </div>
             <h1
               className="text-4xl sm:text-5xl font-bold"
-              style={{ color: 'var(--text-secondary)' }}
+              style={{ color: 'var(--theme-text-heading)' }}
             >
               {t('title')}
             </h1>
           </div>
           <p
             className="text-base sm:text-lg max-w-2xl mx-auto"
-            style={{ color: 'var(--text-muted-light)' }}
+            style={{ color: 'var(--theme-text-muted-soft)' }}
           >
             {t('description')}
           </p>
@@ -85,17 +85,20 @@ export default function BansPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-block w-12 h-12 border-4 border-red-400 border-t-transparent rounded-full animate-spin" />
-            <p className="mt-6 text-lg" style={{ color: 'var(--text-muted)' }}>
+            <p className="mt-6 text-lg" style={{ color: 'var(--theme-text-muted)' }}>
               {t('loading')}
             </p>
           </div>
         ) : error ? (
           <div className="text-center py-20">
             <Shield className="w-16 h-16 mx-auto mb-4 text-red-400" />
-            <p className="text-lg font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
+            <p
+              className="text-lg font-semibold mb-2"
+              style={{ color: 'var(--theme-text-heading)' }}
+            >
               {commonT('error')}
             </p>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
               {error}
             </p>
           </div>
@@ -103,9 +106,9 @@ export default function BansPage() {
           <div className="text-center py-20">
             <Shield
               className="w-16 h-16 mx-auto mb-4"
-              style={{ color: 'var(--text-very-dimmed)' }}
+              style={{ color: 'var(--theme-text-faint)' }}
             />
-            <p className="text-lg" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-lg" style={{ color: 'var(--theme-text-muted)' }}>
               {t('empty')}
             </p>
           </div>
@@ -119,9 +122,9 @@ export default function BansPage() {
                 style={{
                   backdropFilter: 'blur(16px) saturate(150%)',
                   'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                  background: 'var(--glass-bg)',
-                  border: '1px solid var(--glass-border)',
-                  boxShadow: 'var(--card-shadow)',
+                  background: 'var(--theme-surface-glass)',
+                  border: '1px solid var(--theme-border-glass)',
+                  boxShadow: 'var(--theme-shadow-card)',
                   animation: 'slideIn 0.5s ease-out both',
                   animationDelay: `${i * 0.05}s`,
                 }}
@@ -139,13 +142,13 @@ export default function BansPage() {
                     <div className="min-w-0">
                       <h3
                         className="text-lg font-bold leading-tight"
-                        style={{ color: 'var(--text-secondary)' }}
+                        style={{ color: 'var(--theme-text-heading)' }}
                       >
                         {ban.playerName}
                       </h3>
                       <p
                         className="text-xs font-mono mt-0.5 select-all"
-                        style={{ color: 'var(--text-muted)', wordBreak: 'break-all' }}
+                        style={{ color: 'var(--theme-text-muted)', wordBreak: 'break-all' }}
                       >
                         {ban.playerUuid}
                       </p>
@@ -155,15 +158,15 @@ export default function BansPage() {
                   {/* ── Divider ── */}
                   <div
                     className="mb-3"
-                    style={{ height: '1px', background: 'var(--glass-border)' }}
+                    style={{ height: '1px', background: 'var(--theme-border-glass)' }}
                   />
 
                   {/* ── Reason ── */}
                   <div className="flex items-start gap-2 mb-4">
                     <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                     <div className="text-sm">
-                      <span style={{ color: 'var(--text-muted)' }}>{t('reason')}: </span>
-                      <span style={{ color: 'var(--text-primary)' }}>{ban.reason}</span>
+                      <span style={{ color: 'var(--theme-text-muted)' }}>{t('reason')}: </span>
+                      <span style={{ color: 'var(--theme-text-primary)' }}>{ban.reason}</span>
                     </div>
                   </div>
 
@@ -172,10 +175,10 @@ export default function BansPage() {
                     <div className="flex items-center gap-2 text-sm">
                       <User
                         className="w-4 h-4 shrink-0"
-                        style={{ color: 'var(--purple-accent)' }}
+                        style={{ color: 'var(--theme-accent-purple)' }}
                       />
-                      <span style={{ color: 'var(--text-muted)' }}>{t('bannedBy')}: </span>
-                      <span className="font-medium" style={{ color: 'var(--purple-accent)' }}>
+                      <span style={{ color: 'var(--theme-text-muted)' }}>{t('bannedBy')}: </span>
+                      <span className="font-medium" style={{ color: 'var(--theme-accent-purple)' }}>
                         {ban.bannedBy}
                       </span>
                     </div>
@@ -183,10 +186,10 @@ export default function BansPage() {
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar
                         className="w-4 h-4 shrink-0"
-                        style={{ color: 'var(--blue-accent)' }}
+                        style={{ color: 'var(--theme-accent-blue)' }}
                       />
-                      <span style={{ color: 'var(--text-muted)' }}>{t('bannedAt')}: </span>
-                      <span style={{ color: 'var(--blue-accent)' }}>
+                      <span style={{ color: 'var(--theme-text-muted)' }}>{t('bannedAt')}: </span>
+                      <span style={{ color: 'var(--theme-accent-blue)' }}>
                         {formatDate(ban.bannedAt)}
                       </span>
                     </div>
@@ -194,7 +197,7 @@ export default function BansPage() {
                     {!ban.isPermanent && ban.expiresAt && (
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                        <span style={{ color: 'var(--text-muted)' }}>{t('expiresAt')}: </span>
+                        <span style={{ color: 'var(--theme-text-muted)' }}>{t('expiresAt')}: </span>
                         <span className="text-amber-400">{formatDate(ban.expiresAt)}</span>
                       </div>
                     )}

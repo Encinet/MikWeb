@@ -20,10 +20,11 @@ export default async function HomePage() {
               padding: '8px 24px',
               backdropFilter: 'blur(16px) saturate(150%)',
               'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-              background: 'var(--glass-bg)',
+              background: 'var(--theme-surface-glass)',
               borderRadius: '12px',
-              border: '1px solid var(--glass-border)',
-              boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+              border: '1px solid var(--theme-border-glass)',
+              boxShadow:
+                '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
             }}
           >
             <div className="flex items-center gap-2" style={{ color: '#FFAA00' }}>
@@ -40,7 +41,7 @@ export default async function HomePage() {
               fontWeight: 600,
               letterSpacing: '-0.02em',
               marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-              color: 'var(--text-primary)',
+              color: 'var(--theme-text-primary)',
               padding: '0 1rem',
             }}
           >
@@ -51,7 +52,7 @@ export default async function HomePage() {
             style={{
               fontSize: 'clamp(0.9375rem, 2vw, 1.25rem)',
               lineHeight: 1.75,
-              color: 'var(--text-muted)',
+              color: 'var(--theme-text-muted)',
               maxWidth: '42rem',
               margin: '0 auto clamp(2rem, 5vw, 3rem)',
               padding: '0 1rem',
@@ -75,11 +76,11 @@ export default async function HomePage() {
               style={{
                 backdropFilter: 'blur(16px) saturate(150%)',
                 'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                background: 'var(--glass-bg)',
+                background: 'var(--theme-surface-glass)',
                 padding: '8px 24px',
                 borderRadius: '12px',
-                border: '1px solid var(--glass-border)',
-                color: 'var(--text-muted)',
+                border: '1px solid var(--theme-border-glass)',
+                color: 'var(--theme-text-muted)',
                 fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
               }}
             >
@@ -105,9 +106,10 @@ export default async function HomePage() {
                     borderRadius: '12px',
                     backdropFilter: 'blur(16px) saturate(150%)',
                     'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                    background: 'var(--glass-icon-bg)',
-                    border: '1px solid var(--glass-border)',
-                    boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                    background: 'var(--theme-surface-icon)',
+                    border: '1px solid var(--theme-border-glass)',
+                    boxShadow:
+                      '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
                     flexShrink: 0,
                   }}
                 >
@@ -119,7 +121,7 @@ export default async function HomePage() {
                       fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
                       fontWeight: 600,
                       letterSpacing: '-0.02em',
-                      color: 'var(--text-secondary)',
+                      color: 'var(--theme-text-heading)',
                       marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
                     }}
                   >
@@ -127,7 +129,7 @@ export default async function HomePage() {
                   </h4>
                   <p
                     style={{
-                      color: 'var(--text-muted)',
+                      color: 'var(--theme-text-muted)',
                       lineHeight: 1.75,
                       fontSize: 'clamp(0.875rem, 2vw, 1rem)',
                     }}
@@ -151,9 +153,10 @@ export default async function HomePage() {
                     borderRadius: '12px',
                     backdropFilter: 'blur(16px) saturate(150%)',
                     'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                    background: 'var(--glass-icon-bg)',
-                    border: '1px solid var(--glass-border)',
-                    boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+                    background: 'var(--theme-surface-icon)',
+                    border: '1px solid var(--theme-border-glass)',
+                    boxShadow:
+                      '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
                     flexShrink: 0,
                   }}
                 >
@@ -165,7 +168,7 @@ export default async function HomePage() {
                       fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
                       fontWeight: 600,
                       letterSpacing: '-0.02em',
-                      color: 'var(--text-secondary)',
+                      color: 'var(--theme-text-heading)',
                       marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
                     }}
                   >
@@ -173,7 +176,7 @@ export default async function HomePage() {
                   </h4>
                   <p
                     style={{
-                      color: 'var(--text-muted)',
+                      color: 'var(--theme-text-muted)',
                       lineHeight: 1.75,
                       fontSize: 'clamp(0.875rem, 2vw, 1rem)',
                     }}

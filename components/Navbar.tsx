@@ -147,10 +147,11 @@ export default function Navbar() {
           maxWidth: 'min(95%, 1400px)',
           backdropFilter: 'blur(16px) saturate(150%)',
           'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-          background: 'var(--glass-bg)',
-          border: '1px solid var(--glass-border)',
+          background: 'var(--theme-surface-glass)',
+          border: '1px solid var(--theme-border-glass)',
           borderRadius: 'clamp(12px, 2vw, 24px)',
-          boxShadow: '0 4px 24px var(--glass-shadow), inset 0 1px 0 var(--glass-inset)',
+          boxShadow:
+            '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
           transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
         }}
       >
@@ -173,10 +174,10 @@ export default function Navbar() {
                   }}
                 >
                   <span style={{ color: '#FFAA00' }}>Mi</span>
-                  <span style={{ color: 'var(--logo-k)' }}>k</span>
+                  <span style={{ color: 'var(--theme-text-logo-k)' }}>k</span>
                   <span
                     style={{
-                      color: 'var(--brand-casual)',
+                      color: 'var(--theme-accent-brand-casual)',
                       marginLeft: 'clamp(0.25rem, 1vw, 0.5rem)',
                     }}
                   >
@@ -186,7 +187,7 @@ export default function Navbar() {
                 <p
                   className="text-xs hidden sm:block"
                   style={{
-                    color: 'var(--text-muted)',
+                    color: 'var(--theme-text-muted)',
                     marginTop: '-2px',
                   }}
                 >
@@ -213,7 +214,7 @@ export default function Navbar() {
                         background: item.highlight ? '#FFAA00' : 'transparent',
                         padding: item.highlight ? '8px 16px' : '8px 0',
                         borderRadius: item.highlight ? '8px' : '0',
-                        color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                        color: item.highlight ? '#0e0e10' : 'var(--theme-text-nav)',
                         fontSize: '14px',
                         fontWeight: item.highlight ? 600 : 500,
                         textDecoration: 'none',
@@ -224,14 +225,14 @@ export default function Navbar() {
                         if (item.highlight) {
                           e.currentTarget.style.background = '#e09900';
                         } else {
-                          e.currentTarget.style.color = 'var(--text-nav-hover)';
+                          e.currentTarget.style.color = 'var(--theme-text-nav-hover)';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (item.highlight) {
                           e.currentTarget.style.background = '#FFAA00';
                         } else {
-                          e.currentTarget.style.color = 'var(--text-nav)';
+                          e.currentTarget.style.color = 'var(--theme-text-nav)';
                         }
                       }}
                     >
@@ -250,7 +251,7 @@ export default function Navbar() {
                       alignItems: 'center',
                       gap: '8px',
                       padding: '8px 0',
-                      color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
+                      color: isActive ? 'var(--theme-text-nav-active)' : 'var(--theme-text-nav)',
                       fontSize: '14px',
                       fontWeight: 500,
                       textDecoration: 'none',
@@ -258,12 +259,12 @@ export default function Navbar() {
                       position: 'relative' as const,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'var(--text-nav-hover)';
+                      e.currentTarget.style.color = 'var(--theme-text-nav-hover)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.color = isActive
-                        ? 'var(--text-nav-active)'
-                        : 'var(--text-nav)';
+                        ? 'var(--theme-text-nav-active)'
+                        : 'var(--theme-text-nav)';
                     }}
                   >
                     <item.icon className="w-4 h-4 relative z-10" />
@@ -296,11 +297,11 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="lg:hidden p-2 rounded-lg transition-colors"
                 style={{
-                  color: 'var(--text-nav)',
+                  color: 'var(--theme-text-nav)',
                   background: 'transparent',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--hover-bg)';
+                  e.currentTarget.style.background = 'var(--theme-surface-hover)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
@@ -320,17 +321,17 @@ export default function Navbar() {
                   padding: '8px 0',
                   background: 'transparent',
                   border: 'none',
-                  color: 'var(--text-nav)',
+                  color: 'var(--theme-text-nav)',
                   fontSize: '14px',
                   fontWeight: 500,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--text-nav-hover)';
+                  e.currentTarget.style.color = 'var(--theme-text-nav-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--text-nav)';
+                  e.currentTarget.style.color = 'var(--theme-text-nav)';
                 }}
               >
                 {mounted ? (
@@ -354,17 +355,17 @@ export default function Navbar() {
                   padding: '8px 0',
                   background: 'transparent',
                   border: 'none',
-                  color: 'var(--text-nav)',
+                  color: 'var(--theme-text-nav)',
                   fontSize: '14px',
                   fontWeight: 500,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--text-nav-hover)';
+                  e.currentTarget.style.color = 'var(--theme-text-nav-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--text-nav)';
+                  e.currentTarget.style.color = 'var(--theme-text-nav)';
                 }}
               >
                 <Globe className="w-4 h-4" />
@@ -386,22 +387,24 @@ export default function Navbar() {
                     style={{
                       width: '8px',
                       height: '8px',
-                      background: isOnline ? 'var(--status-online)' : 'var(--status-offline)',
+                      background: isOnline
+                        ? 'var(--theme-status-online)'
+                        : 'var(--theme-status-offline)',
                       borderRadius: '50%',
                       boxShadow: isOnline
-                        ? '0 0 8px var(--status-online-glow)'
-                        : '0 0 8px var(--status-offline-glow)',
+                        ? '0 0 8px var(--theme-status-online-glow)'
+                        : '0 0 8px var(--theme-status-offline-glow)',
                     }}
                   ></div>
                   <Users
                     className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                    style={{ color: 'var(--text-nav)' }}
+                    style={{ color: 'var(--theme-text-nav)' }}
                   />
                   {isLoadingPlayers ? (
                     <>
                       <span
                         style={{
-                          color: 'var(--text-player-count)',
+                          color: 'var(--theme-text-player-count)',
                           fontWeight: 600,
                           fontSize: 'clamp(1rem, 2vw, 1.125rem)',
                           fontVariantNumeric: 'tabular-nums',
@@ -411,7 +414,7 @@ export default function Navbar() {
                       </span>
                       <span
                         className="text-xs sm:text-sm hidden sm:inline"
-                        style={{ color: 'var(--text-muted)' }}
+                        style={{ color: 'var(--theme-text-muted)' }}
                       >
                         {t('online')}
                       </span>
@@ -420,7 +423,7 @@ export default function Navbar() {
                     <>
                       <span
                         style={{
-                          color: 'var(--text-player-count)',
+                          color: 'var(--theme-text-player-count)',
                           fontWeight: 600,
                           fontSize: 'clamp(1rem, 2vw, 1.125rem)',
                           fontVariantNumeric: 'tabular-nums',
@@ -430,13 +433,16 @@ export default function Navbar() {
                       </span>
                       <span
                         className="text-xs sm:text-sm hidden sm:inline"
-                        style={{ color: 'var(--text-muted)' }}
+                        style={{ color: 'var(--theme-text-muted)' }}
                       >
                         {t('online')}
                       </span>
                     </>
                   ) : (
-                    <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
+                    <span
+                      className="text-xs sm:text-sm"
+                      style={{ color: 'var(--theme-text-muted)' }}
+                    >
                       {networkError ? t('networkError') : t('offline')}
                     </span>
                   )}
@@ -455,7 +461,10 @@ export default function Navbar() {
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 className="lg:hidden overflow-hidden"
               >
-                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--glass-border)' }}>
+                <div
+                  className="mt-4 pt-4 border-t"
+                  style={{ borderColor: 'var(--theme-border-glass)' }}
+                >
                   <div className="flex flex-col space-y-2">
                     {navItems.map((item) => {
                       const isActive = pathname === item.path;
@@ -470,10 +479,10 @@ export default function Navbar() {
                             onClick={() => setIsMobileMenuOpen(false)}
                             className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
                             style={{
-                              background: item.highlight ? '#FFAA00' : 'var(--glass-icon-bg)',
-                              color: item.highlight ? '#0e0e10' : 'var(--text-nav)',
+                              background: item.highlight ? '#FFAA00' : 'var(--theme-surface-icon)',
+                              color: item.highlight ? '#0e0e10' : 'var(--theme-text-nav)',
                               fontWeight: item.highlight ? 600 : 500,
-                              border: `1px solid ${item.highlight ? 'transparent' : 'var(--glass-border)'}`,
+                              border: `1px solid ${item.highlight ? 'transparent' : 'var(--theme-border-glass)'}`,
                             }}
                           >
                             <item.icon className="w-5 h-5" />
@@ -489,9 +498,13 @@ export default function Navbar() {
                             onClick={() => setIsMobileMenuOpen(false)}
                             className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
                             style={{
-                              background: isActive ? 'var(--glass-hover)' : 'var(--glass-icon-bg)',
-                              color: isActive ? 'var(--text-nav-active)' : 'var(--text-nav)',
-                              border: `1px solid ${isActive ? '#FFAA00' : 'var(--glass-border)'}`,
+                              background: isActive
+                                ? 'var(--theme-surface-hover)'
+                                : 'var(--theme-surface-icon)',
+                              color: isActive
+                                ? 'var(--theme-text-nav-active)'
+                                : 'var(--theme-text-nav)',
+                              border: `1px solid ${isActive ? '#FFAA00' : 'var(--theme-border-glass)'}`,
                             }}
                           >
                             <item.icon className="w-5 h-5" />
@@ -507,9 +520,9 @@ export default function Navbar() {
                       onClick={handleThemeToggle}
                       className="sm:hidden flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
                       style={{
-                        background: 'var(--glass-icon-bg)',
-                        color: 'var(--text-nav)',
-                        border: '1px solid var(--glass-border)',
+                        background: 'var(--theme-surface-icon)',
+                        color: 'var(--theme-text-nav)',
+                        border: '1px solid var(--theme-border-glass)',
                       }}
                     >
                       {mounted ? (
@@ -563,7 +576,7 @@ export default function Navbar() {
                   style={{
                     fontSize: '0.75rem',
                     fontWeight: 600,
-                    color: 'var(--text-muted)',
+                    color: 'var(--theme-text-muted)',
                     marginBottom: '8px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
@@ -582,11 +595,11 @@ export default function Navbar() {
                         gap: '10px',
                         padding: '8px 10px',
                         borderRadius: '8px',
-                        background: 'var(--glass-icon-bg)',
-                        border: '1px solid var(--glass-border)',
+                        background: 'var(--theme-surface-icon)',
+                        border: '1px solid var(--theme-border-glass)',
                         transition: 'all 0.2s ease',
                         cursor: 'default',
-                        backgroundColor: 'var(--glass-icon-bg)',
+                        backgroundColor: 'var(--theme-surface-icon)',
                       }}
                     >
                       <MinecraftAvatar
@@ -600,7 +613,7 @@ export default function Navbar() {
                       />
                       <span
                         style={{
-                          color: 'var(--text-secondary)',
+                          color: 'var(--theme-text-heading)',
                           fontSize: '0.875rem',
                           fontWeight: 500,
                           flex: 1,

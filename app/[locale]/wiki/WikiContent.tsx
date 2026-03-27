@@ -83,8 +83,8 @@ function ActivePill({ layoutId }: { layoutId: string }) {
       layoutId={layoutId}
       className="absolute inset-0 rounded-lg"
       style={{
-        background: 'var(--hover-bg)',
-        border: '1px solid var(--blue-accent-border, rgba(96,165,250,.25))',
+        background: 'var(--theme-surface-hover)',
+        border: '1px solid var(--theme-border-blue-accent, rgba(96,165,250,.25))',
       }}
       transition={spring.wobbly}
     />
@@ -181,7 +181,10 @@ export default function WikiContent({
         <motion.h1
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
-          style={{ color: 'var(--text-secondary)', borderColor: 'var(--glass-border-light)' }}
+          style={{
+            color: 'var(--theme-text-heading)',
+            borderColor: 'var(--theme-border-glass-light)',
+          }}
           className="text-3xl font-bold mb-6 pb-3 border-b"
         >
           {children}
@@ -191,7 +194,7 @@ export default function WikiContent({
         <motion.h2
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
-          style={{ color: 'var(--text-secondary)' }}
+          style={{ color: 'var(--theme-text-heading)' }}
           className="text-2xl font-semibold mt-8 mb-4"
         >
           {children}
@@ -201,7 +204,7 @@ export default function WikiContent({
         <motion.h3
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: 'var(--theme-text-primary)' }}
           className="text-xl font-semibold mt-6 mb-3"
         >
           {children}
@@ -211,7 +214,7 @@ export default function WikiContent({
         <motion.p
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
-          style={{ color: 'var(--text-muted-lighter)' }}
+          style={{ color: 'var(--theme-text-muted-strong)' }}
           className="leading-relaxed mb-4"
         >
           {children}
@@ -221,7 +224,7 @@ export default function WikiContent({
         <motion.ul
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
-          style={{ color: 'var(--text-muted-lighter)' }}
+          style={{ color: 'var(--theme-text-muted-strong)' }}
           className="list-disc list-inside space-y-2 mb-4"
         >
           {children}
@@ -231,14 +234,14 @@ export default function WikiContent({
         <motion.ol
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
-          style={{ color: 'var(--text-muted-lighter)' }}
+          style={{ color: 'var(--theme-text-muted-strong)' }}
           className="list-decimal list-inside space-y-2 mb-4"
         >
           {children}
         </motion.ol>
       ),
       li: ({ children }: React.PropsWithChildren) => (
-        <li style={{ color: 'var(--text-muted-lighter)' }} className="ml-4">
+        <li style={{ color: 'var(--theme-text-muted-strong)' }} className="ml-4">
           {children}
         </li>
       ),
@@ -247,9 +250,9 @@ export default function WikiContent({
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
           style={{
-            background: 'var(--glass-bg-light)',
-            borderLeftColor: 'var(--blue-accent-border)',
-            borderColor: 'var(--glass-border-light)',
+            background: 'var(--theme-surface-glass-light)',
+            borderLeftColor: 'var(--theme-border-blue-accent)',
+            borderColor: 'var(--theme-border-glass-light)',
           }}
           className="border-l-4 pl-4 py-1 my-4 rounded-lg border backdrop-blur-sm [&>p]:mb-0 [&>p:last-child]:mb-0"
         >
@@ -260,7 +263,10 @@ export default function WikiContent({
         <motion.pre
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
-          style={{ background: 'var(--code-block-bg)', borderColor: 'var(--glass-border-light)' }}
+          style={{
+            background: 'var(--theme-surface-code-block)',
+            borderColor: 'var(--theme-border-glass-light)',
+          }}
           className="mb-4 rounded-lg overflow-x-auto border p-4"
         >
           {children}
@@ -270,13 +276,19 @@ export default function WikiContent({
         const isInline = !className;
         return isInline ? (
           <code
-            style={{ background: 'var(--code-bg)', color: 'var(--blue-accent-strong)' }}
+            style={{
+              background: 'var(--theme-surface-code)',
+              color: 'var(--theme-accent-blue-strong)',
+            }}
             className="px-1.5 py-0.5 rounded text-sm font-mono"
           >
             {children}
           </code>
         ) : (
-          <code style={{ color: 'var(--blue-accent-strong)' }} className="text-sm font-mono block">
+          <code
+            style={{ color: 'var(--theme-accent-blue-strong)' }}
+            className="text-sm font-mono block"
+          >
             {children}
           </code>
         );
@@ -286,15 +298,15 @@ export default function WikiContent({
           href={href}
           className="underline"
           style={{
-            color: 'var(--blue-accent-strong)',
+            color: 'var(--theme-accent-blue-strong)',
             textUnderlineOffset: '3px',
             textDecorationThickness: '1.5px',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--blue-accent)';
+            e.currentTarget.style.color = 'var(--theme-accent-blue)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'var(--blue-accent-strong)';
+            e.currentTarget.style.color = 'var(--theme-accent-blue-strong)';
           }}
           target="_blank"
           rel="noopener noreferrer"
@@ -307,17 +319,20 @@ export default function WikiContent({
           {...baseMotionProps}
           transition={{ ...spring.gentle, delay: getDelay() }}
           className="overflow-x-auto my-4 rounded-lg border"
-          style={{ borderColor: 'var(--glass-border-light)' }}
+          style={{ borderColor: 'var(--theme-border-glass-light)' }}
         >
           <table className="min-w-full">{children}</table>
         </motion.div>
       ),
       thead: ({ children }: React.PropsWithChildren) => (
-        <thead style={{ background: 'var(--glass-bg-light)' }}>{children}</thead>
+        <thead style={{ background: 'var(--theme-surface-glass-light)' }}>{children}</thead>
       ),
       th: ({ children }: React.PropsWithChildren) => (
         <th
-          style={{ color: 'var(--text-secondary)', borderColor: 'var(--glass-border-light)' }}
+          style={{
+            color: 'var(--theme-text-heading)',
+            borderColor: 'var(--theme-border-glass-light)',
+          }}
           className="px-4 py-2 text-left font-semibold border-b"
         >
           {children}
@@ -325,7 +340,10 @@ export default function WikiContent({
       ),
       td: ({ children }: React.PropsWithChildren) => (
         <td
-          style={{ color: 'var(--text-muted-lighter)', borderColor: 'var(--border-light)' }}
+          style={{
+            color: 'var(--theme-text-muted-strong)',
+            borderColor: 'var(--theme-border-light)',
+          }}
           className="px-4 py-2 border-b"
         >
           {children}
@@ -350,18 +368,18 @@ export default function WikiContent({
                 className="p-3 rounded-xl backdrop-blur-sm shadow-lg"
                 style={{
                   background:
-                    'linear-gradient(135deg, var(--blue-accent-bg) 0%, rgba(255, 255, 255, 0) 100%)',
-                  border: '1px solid var(--blue-accent-border)',
+                    'linear-gradient(135deg, var(--theme-surface-blue-accent) 0%, rgba(255, 255, 255, 0) 100%)',
+                  border: '1px solid var(--theme-border-blue-accent)',
                 }}
                 initial={{ scale: 0.5, rotate: -20, opacity: 0 }}
                 animate={{ scale: 1, rotate: 0, opacity: 1 }}
                 transition={{ ...spring.bouncy, delay: 0.1 }}
               >
-                <BookOpen className="w-8 h-8" style={{ color: 'var(--blue-accent)' }} />
+                <BookOpen className="w-8 h-8" style={{ color: 'var(--theme-accent-blue)' }} />
               </motion.div>
               <motion.h1
                 className="text-4xl sm:text-5xl font-bold"
-                style={{ color: 'var(--text-secondary)' }}
+                style={{ color: 'var(--theme-text-heading)' }}
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ ...spring.snappy, delay: 0.15 }}
@@ -371,7 +389,7 @@ export default function WikiContent({
             </div>
             <motion.p
               className="text-base sm:text-lg max-w-2xl mx-auto"
-              style={{ color: 'var(--text-muted-light)' }}
+              style={{ color: 'var(--theme-text-muted-soft)' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring.gentle, delay: 0.22 }}
@@ -401,9 +419,9 @@ export default function WikiContent({
                   style={{
                     backdropFilter: 'blur(16px) saturate(150%)',
                     'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                    background: 'var(--glass-bg)',
-                    border: '1px solid var(--glass-border)',
-                    boxShadow: 'var(--card-shadow)',
+                    background: 'var(--theme-surface-glass)',
+                    border: '1px solid var(--theme-border-glass)',
+                    boxShadow: 'var(--theme-shadow-card)',
                     transformOrigin: 'bottom right',
                   }}
                 >
@@ -424,7 +442,9 @@ export default function WikiContent({
                           onClick={() => handleSectionChange(section.id)}
                           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg relative"
                           style={{
-                            color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)',
+                            color: isActive
+                              ? 'var(--theme-accent-blue)'
+                              : 'var(--theme-text-muted-soft)',
                           }}
                           whileHover={{ x: 3, transition: spring.snappy }}
                           whileTap={{ scale: 0.95, transition: spring.snappy }}
@@ -444,9 +464,9 @@ export default function WikiContent({
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-3.5 rounded-full backdrop-blur-lg shadow-lg"
               style={{
-                color: 'var(--blue-accent)',
-                background: 'var(--blue-accent-bg)',
-                border: '1px solid var(--blue-accent-border)',
+                color: 'var(--theme-accent-blue)',
+                background: 'var(--theme-surface-blue-accent)',
+                border: '1px solid var(--theme-border-blue-accent)',
               }}
               whileHover={{ scale: 1.12, transition: spring.snappy }}
               whileTap={{ scale: 0.88, transition: spring.fab }}
@@ -468,12 +488,15 @@ export default function WikiContent({
                 style={{
                   backdropFilter: 'blur(16px) saturate(150%)',
                   'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                  background: 'var(--glass-bg)',
-                  border: '1px solid var(--glass-border)',
-                  boxShadow: 'var(--card-shadow)',
+                  background: 'var(--theme-surface-glass)',
+                  border: '1px solid var(--theme-border-glass)',
+                  boxShadow: 'var(--theme-shadow-card)',
                 }}
               >
-                <h3 className="font-semibold mb-4 px-2" style={{ color: 'var(--text-secondary)' }}>
+                <h3
+                  className="font-semibold mb-4 px-2"
+                  style={{ color: 'var(--theme-text-heading)' }}
+                >
                   {navigation}
                 </h3>
 
@@ -494,11 +517,13 @@ export default function WikiContent({
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg relative"
                         // ── original nav colors, no hover color change ──
                         style={{
-                          color: isActive ? 'var(--blue-accent)' : 'var(--text-muted-light)',
+                          color: isActive
+                            ? 'var(--theme-accent-blue)'
+                            : 'var(--theme-text-muted-soft)',
                           background: 'transparent',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--hover-bg)';
+                          e.currentTarget.style.background = 'var(--theme-surface-hover)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = 'transparent';
@@ -572,9 +597,9 @@ export default function WikiContent({
                 style={{
                   backdropFilter: 'blur(16px) saturate(150%)',
                   'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                  background: 'var(--glass-bg)',
-                  border: '1px solid var(--glass-border)',
-                  boxShadow: 'var(--card-shadow)',
+                  background: 'var(--theme-surface-glass)',
+                  border: '1px solid var(--theme-border-glass)',
+                  boxShadow: 'var(--theme-shadow-card)',
                 }}
               >
                 {/*

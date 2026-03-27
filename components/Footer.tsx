@@ -25,8 +25,8 @@ export default async function Footer() {
           maxWidth: 'min(95%, 1400px)',
           backdropFilter: 'blur(16px) saturate(150%)',
           'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-          background: 'var(--glass-bg)',
-          border: '1px solid var(--glass-border)',
+          background: 'var(--theme-surface-glass)',
+          border: '1px solid var(--theme-border-glass)',
           borderRadius: 'clamp(12px, 2vw, 24px)',
           padding: 'clamp(1.5rem, 4vw, 2rem) 0',
         }}
@@ -34,7 +34,7 @@ export default async function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <p
             style={{
-              color: 'var(--text-muted)',
+              color: 'var(--theme-text-muted)',
               fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
               marginBottom: '8px',
             }}
@@ -67,7 +67,7 @@ export default async function Footer() {
             </a>
             .
           </p>
-          <p style={{ color: 'var(--text-dimmed)', fontSize: '0.75rem' }}>
+          <p style={{ color: 'var(--theme-text-dim)', fontSize: '0.75rem' }}>
             {t('minecraftTrademark', { organizationName: ORGANIZATION_NAME })}{' '}
             <a
               href="https://www.minecraft.net/en-us/eula"
