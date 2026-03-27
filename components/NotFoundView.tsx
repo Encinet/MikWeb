@@ -16,14 +16,6 @@ export default function NotFoundView({
   return (
     <section className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-10 sm:px-6 sm:py-12">
       <div
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background:
-            'radial-gradient(circle at 18% 14%, rgba(255, 170, 0, 0.16), transparent 32%), radial-gradient(circle at 84% 10%, rgba(85, 255, 85, 0.12), transparent 24%), radial-gradient(circle at 50% 88%, rgba(124, 58, 237, 0.16), transparent 38%)',
-        }}
-      />
-
-      <div
         className="relative z-10 w-full max-w-xl rounded-[32px] px-6 py-10 text-center sm:px-8 sm:py-12"
         style={{
           backdropFilter: 'blur(20px) saturate(160%)',
