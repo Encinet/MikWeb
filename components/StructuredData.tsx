@@ -43,7 +43,7 @@ export default function StructuredData() {
       name: SITE_NAME,
       url: SITE_URL,
       logo: `${SITE_URL}${SITE_LOGO_PATH}`,
-      description: `${SITE_NAME} 创造休闲 Minecraft 服务器`,
+      description: SITE_DESCRIPTION,
       parentOrganization: {
         '@type': 'Organization',
         name: ORGANIZATION_NAME,
