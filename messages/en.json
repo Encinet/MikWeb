@@ -113,5 +113,11 @@
     "bannedBy": "Banned By",
     "bannedAt": "Banned At",
     "expiresAt": "Expires At"
+  },
+  "footer": {
+    "licensedUnder": "Licensed under Apache 2.0. Source code:",
+    "sourceCode": "GitHub",
+    "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
+    "eula": "Mojang's EULA"
   }
 }

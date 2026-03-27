@@ -20,6 +20,7 @@ export const SITE_KEYWORDS = [
 
 export const ORGANIZATION_NAME = 'Encinet';
 export const ORGANIZATION_URL = 'https://encinet.netlify.app/';
+export const SOURCE_CODE_URL = 'https://github.com/Encinet/MikWeb';
 export const ORGANIZATION_DESCRIPTION = 'Encinet 团队管理的 Mik 品牌 Minecraft 服务器社区';
 export const ORGANIZATION_LOGO_URL = 'https://avatars.githubusercontent.com/u/102745297?s=200&v=4';
 export const ORGANIZATION_SOCIAL_LINKS = [

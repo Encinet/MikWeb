@@ -113,5 +113,11 @@
     "bannedBy": "执行者",
     "bannedAt": "封禁时间",
     "expiresAt": "解封时间"
+  },
+  "footer": {
+    "licensedUnder": "基于 Apache 2.0 协议开源，源码：",
+    "sourceCode": "GitHub",
+    "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",
+    "eula": "Mojang 的 EULA"
   }
 }

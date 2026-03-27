@@ -1,7 +1,14 @@
-import { ORGANIZATION_NAME, ORGANIZATION_URL } from '@/lib/site';
+import { getLocale, getTranslations } from 'next-intl/server';
 
-export default function Footer() {
+import { ORGANIZATION_NAME, ORGANIZATION_URL, SOURCE_CODE_URL } from '@/lib/site';
+
+export default async function Footer() {
   const currentYear = new Date().getFullYear();
+  const locale = await getLocale();
+  const t = await getTranslations({
+    locale,
+    namespace: 'footer',
+  });
 
   return (
     <div
@@ -45,11 +52,23 @@ export default function Footer() {
             >
               {ORGANIZATION_NAME}
             </a>
-            . All rights reserved.
+            . {t('licensedUnder')}{' '}
+            <a
+              href={SOURCE_CODE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link footer-link-muted"
+              style={{
+                textDecoration: 'underline',
+                transition: 'color 0.2s ease',
+              }}
+            >
+              {t('sourceCode')}
+            </a>
+            .
           </p>
           <p style={{ color: 'var(--text-dimmed)', fontSize: '0.75rem' }}>
-            Minecraft is a trademark of Mojang AB. {ORGANIZATION_NAME} is not affiliated with Mojang
-            AB. By using our services, you agree to{' '}
+            {t('minecraftTrademark', { organizationName: ORGANIZATION_NAME })}{' '}
             <a
               href="https://www.minecraft.net/en-us/eula"
               target="_blank"
@@ -60,7 +79,7 @@ export default function Footer() {
                 transition: 'color 0.2s ease',
               }}
             >
-              Mojang&apos;s EULA
+              {t('eula')}
             </a>
             .
           </p>
