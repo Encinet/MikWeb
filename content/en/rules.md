@@ -1,69 +1,69 @@
 # Server Rules
 
-## About This Server
+## What Kind of Server This Is
 
-This is a casual creative server focused on architectural building and community interaction. We welcome the use of client-side mods, but all in-game conduct must respect others' creations and maintain an orderly community.
+Mik is a casual creative server focused on building and community. Client-side mods are allowed, but everything you do in-game must respect other players, their work, and the server as a whole.
 
-## Player Ranks & Probation System
+## Player Status & Probation
 
-New players join as **yellow-name** status and enter a probationary period, during which admins will observe their behavior.
+New players join with **Yellow Name** status and begin in a probation period. During that time, admins keep an eye on player behavior.
 
-There is no fixed duration for probation — the system automatically promotes active players to full membership (**white-name / Member**) based on an activity score. The exact formula is not disclosed. Violations or misconduct during probation may result in the period being extended by an admin.
+There is no fixed probation length. Promotion to full member status (**White Name / Member**) is handled automatically based on player activity, and the exact formula is not public. If a player breaks rules or behaves inappropriately during probation, admins may extend it.
 
-- **Yellow-name**: Default rank for new players. Subject to the following restrictions:
-  - Cannot use the decorative skull command `/hdb`
-  - Axiom features are restricted
-  - Cannot use server status commands `/mspt` or `/tps`
-  - Cannot use formatted text in chat
-  - Cannot use the item-clearing command `/rmitems`
-  - Cannot use vanilla commands `/attribute`, `/damage`, `/effect`, `/fill`, `/item`, `/ride`, `/save-all`, `/setblock`
-- **White-name / Member**: Full membership granted automatically by the system upon meeting activity thresholds. All above restrictions are lifted.
+- **Yellow Name**: Default status for new players. The following restrictions apply:
+  - No access to the decorative head command `/hdb`
+  - Limited access to Axiom
+  - No access to server status commands `/mspt` and `/tps`
+  - No formatted text in chat
+  - No access to `/rmitems`
+  - No access to vanilla commands `/attribute`, `/damage`, `/effect`, `/fill`, `/item`, `/ride`, `/save-all`, `/setblock`
+- **White Name / Member**: Full member status. These restrictions are removed after automatic promotion.
 
-## Building & Creative Standards
+## Building Standards
 
-1. **Do not damage others' builds**, and do not alter terrain beyond what your own building requires. Examples of violations: digging random holes in the wild; cutting away half a hillside without smoothing it out.
-2. **Builds must fit their surroundings** — avoid jarring transitions or poorly chosen locations. Examples of violations: placing a massive concrete structure in the middle of a dense forest with no transition; building in a style that directly clashes with neighboring builds in a dense area. Admins have final say on whether a build fits its context.
-3. **Light redstone is permitted.** Large-scale or server-lagging redstone contraptions are not. Minimize high-frequency computation. Hoppers generate continuous performance overhead — avoid them where possible, and stacking large numbers of hoppers is prohibited. When in doubt, ask an admin first.
-4. **Builds must include a label in a reasonable location** identifying the builder's ID and the original creator (if the build references or recreates someone else's work).
+1. **Do not damage other players' builds**, and do not reshape terrain unless your own build actually requires it. Random holes in the wilderness or unfinished terrain scars are not acceptable.
+2. **Builds should fit their surroundings.** Avoid awkward placement, harsh transitions, or structures that clash badly with nearby builds. Admins have final say on whether a build suits its location.
+3. **Light redstone is fine.** Large contraptions or anything likely to cause lag is not. Try to avoid unnecessary high-frequency logic. Hoppers are especially expensive, so use them sparingly and never in large stacks unless an admin has approved it.
+4. **Every build should identify the builder, and the original creator if the build is based on someone else's work.**
 
-## Mod & Client Modification Policy
+## Mods & Utility Clients
 
-Players are free to use client-side mods, including tools commonly referred to as "cheats" or "hacks." However, the following actions are **strictly prohibited**, regardless of how they are carried out:
+Client mods are allowed, including utility features that many servers would classify as hacks. That said, the following behavior is **strictly forbidden**, regardless of how you do it:
 
-1. **Attacking, forcibly moving, or involuntarily teleporting other players**, disrupting their gameplay
-2. **Destroying, moving, overwriting, or altering another player's build or the terrain it relies on**, including natural terrain incorporated into their design
-3. **Bypassing server permission restrictions**, such as executing unauthorized commands or forcibly changing another player's game mode
-4. **Any action that degrades server performance**, including mass-spawning entities or items, triggering large-scale or sustained chunk loading, or repeatedly executing high-impact operations in rapid succession
+1. **Attacking other players, forcing movement, or teleporting them without consent**
+2. **Destroying, moving, covering, or altering another player's build or the terrain it depends on**
+3. **Circumventing server permissions**, including using commands you should not have or forcing changes to another player's game mode
+4. **Hurting server performance**, including mass entity spawning, large item dumps, aggressive chunk loading, or repeatedly running heavy operations
 
-> In short: mods are fine as long as they don't affect others or harm the server. If you're unsure whether a specific use is allowed, ask an admin before doing it.
+> Short version: use whatever mods you want, as long as they do not affect other players or harm the server. If you are unsure, ask an admin first.
 
 ## Community Conduct
 
-1. **Be respectful.** Insults, harassment, or targeted attacks against other players in public channels are not allowed.
-2. **No personal attacks or deliberate provocation**, including hostile remarks about another player's build style, aesthetic choices, or personal identity.
-3. **Do not spam any public space** with repetitive or meaningless content — this includes chat, signs, books, and other in-game text fields.
-4. **No advertising, referral links, or commercial promotion** unrelated to the server.
-5. **Do not spread misinformation or malicious rumors**, especially regarding server administration or other players.
+1. **Be respectful.** Public harassment, insults, or hostile behavior toward other players are not allowed.
+2. **No personal attacks or malicious provocation**, including hostile comments about someone's builds, taste, or identity.
+3. **Do not spam public spaces** with repetitive or meaningless content, whether in chat, signs, books, or other text-based tools.
+4. **Do not post unrelated advertising, promotional content, or traffic-farming messages.**
+5. **Do not spread false information or malicious rumors**, especially about staff or other players.
 
 ## Copyright & Licensing
 
-1. Builds created on this server remain the intellectual property of their creators.
-2. By joining the server and creating content, you agree to publish your work under the **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (Attribution – NonCommercial – ShareAlike)** license by default.
-3. Others may copy or adapt your work for non-commercial purposes, provided they credit the original creator and the Mik server by name.
-4. Builds may not be used in paid servers, premium content, map sales, or any other commercial context.
-5. Derivative or adapted works must also be published under CC BY-NC-SA 4.0.
-6. Packaging and redistributing the server world file, or bulk-exporting large portions of the server's builds, is prohibited without explicit permission. This clause is an additional restriction beyond the CC license and takes precedence over it.
-7. The server retains the right to display, promote, and feature builds for community purposes.
+1. Builds created on the server remain the intellectual property of their creators.
+2. By building on the server, you agree that your work is published under **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)** by default.
+3. Other people may copy or adapt your work for non-commercial purposes, as long as they credit both the original creator and the Mik server.
+4. Commercial use is not allowed, including paid servers, premium content, and map sales.
+5. Derivative works must remain under the same CC BY-NC-SA 4.0 license.
+6. Redistributing the server world save, or bulk-exporting large amounts of server content, is not allowed without permission. This is an additional restriction beyond the CC license and takes priority.
+7. The server reserves the right to display, promote, and feature builds for community and publicity purposes.
 
-## Featured Builds (Official Website)
+## Featuring Builds on the Website
 
-The server website periodically showcases standout builds from the community. The following rules apply to all featured content:
+The official website may occasionally showcase high-quality builds from the server. The following rules apply:
 
-1. **Builds must be reasonably complete and comply with the building standards above.** Unfinished or non-compliant builds are not eligible.
-2. **The build must belong to the submitting creator.** Collaborative works must credit all major contributors.
-3. **Explicit consent from the original creator is required before featuring.** Creators may decline to be featured or request removal of already-featured work; admins must process removal requests within a reasonable timeframe. If a build has multiple creators with differing opinions, admins will mediate.
-4. **All featured content must display the builder's ID and creation date.** Collaborative works must name all major contributors.
-5. **Builds containing infringing content may not be featured**, including unauthorized reproductions of copyrighted IP, characters, or structures.
-6. **Featured content is subject to CC BY-NC-SA 4.0.** Displaying and promoting builds on the website constitutes non-commercial use permitted under the license.
+1. **The build must be reasonably complete and comply with the rules above.** Incomplete or non-compliant builds will not be featured.
+2. **The build must belong to the creator submitting it.** If multiple people worked on it, all major contributors must be credited.
+3. **The original creator must give clear permission before a build is featured.** Creators may also request removal later, and admins should handle those requests within a reasonable timeframe. If multiple creators disagree, admins will coordinate the final outcome.
+4. **Featured builds must include the builder's ID and the creation date.** Collaborative works must list all major contributors.
+5. **Builds that contain infringing content cannot be featured**, including unauthorized recreations of copyrighted characters, structures, or other protected material.
+6. **Featured works are still governed by CC BY-NC-SA 4.0.** Showing them on the website counts as non-commercial use within that license.
 
-> Admins hold final interpretive authority over these rules and may exercise judgment based on the specifics of any given situation.
+> Admins retain final interpretation of these rules and may make case-by-case decisions when necessary.

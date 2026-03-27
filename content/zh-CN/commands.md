@@ -49,6 +49,7 @@
 - [服务器 Axiom 使用教程](https://hi-ysumc.feishu.cn/wiki/QDJBwtCBEi5eLakfWCvcRtErnvb) — 本服专属使用指南
 
 > **快捷键提示：**
+>
 > - 在创造模式下按住 `左 Alt` 打开 Builder 菜单
 > - 按 `右 Shift` 进入 Editor 模式（地形编辑、笔刷工具等）
 
@@ -56,12 +57,11 @@
 
 **WorldEdit** 是经典的建筑辅助插件，适合快速复制、粘贴、旋转建筑结构，以及大范围地形调整。配合 Axiom 使用效果更佳。
 
-服务器已内置 WorldEdit，无需自行安装插件本体即可直接使用。
+服务器已内置 WorldEdit 插件，玩家无需在客户端安装相关 Mod，加入服务器后即可直接使用。
 
 - [常用命令一览(中文)](https://www.mcmod.cn/post/3050.html)
 - [完整命令收录(中文)](https://www.mcmod.cn/post/3533.html)
 - [官方命令列表(英文)](https://intellectualsites.gitbook.io/fastasyncworldedit/features/main-commands-and-permissions)
-
 
 ## 装饰与互动
 

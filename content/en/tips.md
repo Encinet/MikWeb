@@ -2,45 +2,59 @@
 
 ## Elevator System
 
-The server supports vertical elevators built with iron blocks. Stack iron blocks directly above each other, then stand on one to activate it:
+The server supports simple vertical elevators made with iron blocks. Place the blocks directly above one another on the same X/Z coordinates, then stand on one to use it:
 
-- **Jump** — Teleport up to the next iron block above
-- **Sneak** — Teleport down to the next iron block below
-
-Make sure each iron block in the stack shares the same X/Z coordinates.
+- **Jump** - Move up to the next iron block
+- **Sneak** - Move down to the next iron block
 
 ## Armor Stand Editor
 
-Use `/asedit give` to obtain the editor tool, then right-click any armor stand to open its edit menu. You can adjust the rotation of each body part, toggle invisibility, lock interactions, and more — perfect for creating static display pieces or scene characters.
+Use `/asedit give` to get the editor tool, then right-click any armor stand to open the edit menu. You can rotate individual body parts, make the stand invisible, lock interaction, and fine-tune other details. It is especially useful for display pieces and scene decoration.
 
 ## Building Tips
 
-### Use Axiom's No-Clip to Inspect Interiors
+### Use Axiom No-Clip to Check Interiors
 
-Axiom has a built-in No-Clip feature that lets you fly through blocks freely without switching game modes. Hold `Left Alt` to open the Builder menu, where you'll find a No-Clip toggle. Once enabled, you can phase into buildings from any angle to inspect the structure, making it easy to catch mistakes or fine-tune details.
+Axiom includes a built-in No-Clip mode, so you can move through blocks without changing your game mode. Hold `Left Alt` to open the Builder menu and turn it on. It is a convenient way to inspect the inside of a build, find mistakes, and adjust small details.
 
-### Create Glowing Text with Signs and Glow Ink Sacs
+### Make Signs Glow with Glow Ink Sacs
 
-After writing text on a sign, hold a Glow Ink Sac and right-click the sign to give the text a glowing outline effect. Great for making labels, nameplates, or decorative signage.
+After writing text on a sign, right-click it with a Glow Ink Sac to give the text a glowing outline. This works well for labels, storefront signs, and decorative text.
 
-You can also mix in various characters to enrich the typography — for example, wrapping text with `>` and `<` as directional arrows, using `|` as a divider, or using characters like `【】`, `『』`, `─`, `◆` as borders or accents. The result looks far more polished than plain text.
+You can also improve the layout by mixing in symbols. Characters like `>` `<` `|` `【】` `『』` `-` and `◆` can make signs feel much more polished than plain text alone.
 
-### Hide Light Sources
+### Hide Your Lighting
 
-Blocks like Sea Lanterns, Glowstone, and Glow Lichen can be covered by slabs, carpets, or other blocks without losing their glow. This lets you light up interiors without exposing any visible light sources.
+Light sources such as Sea Lanterns, Glow Lichen, and other glowing blocks can be hidden under slabs, carpets, or similar blocks without losing their light output. This is an easy way to light interiors cleanly.
 
-### Use Invisible Item Frames for Wall Details
+### Add Wall Detail with Invisible Item Frames
 
-Set an item frame to invisible and place an item inside to stick it flat against a wall without showing the frame border. Commonly used for wall-mounted paintings, gauges, or decorative wall pieces.
+Invisible item frames let you place objects on walls without showing the frame itself. They are great for paintings, dashboards, signs, and other decorative details.
 
-### Mix in Slabs to Break Up Repetition
+### Break Up Repetition with Slabs
 
-Large areas of a single block type can look monotonous. Adding slabs or steps in a matching color to floors or rooftops introduces subtle depth and texture without disrupting the overall palette.
+Large surfaces made from a single block can look flat and repetitive. Mixing in slabs or stairs of a similar color adds depth without changing the overall look too much.
 
 ## Useful Websites
 
 ### Minecraft Wiki
 
-The go-to reference for blocks, items, commands, mobs, and all other in-game content. Use the official Wiki — [do not use the Fandom version](https://minecraft.wiki/w/Minecraft_Wiki:About_the_Fandom_site).
+The best general reference for blocks, items, commands, mobs, and just about everything else in Minecraft. Use the official wiki, and [avoid the old Fandom version](https://minecraft.wiki/w/Minecraft_Wiki:About_the_Fandom_site).
 
+- [Minecraft Wiki (Chinese)](https://zh.minecraft.wiki)
 - [Minecraft Wiki (English)](https://minecraft.wiki)
+
+### Bug Tracking
+
+- [Mojira](https://mojira.dev/) - A cleaner frontend for Mojang's official Minecraft bug tracker
+
+### Downloads
+
+- [Modrinth](https://modrinth.com/) - The recommended place to get mods, shaders, resource packs, data packs, and modpacks
+- [CurseForge](https://www.curseforge.com/minecraft) - A large and older distribution platform. Use it when something is not available on Modrinth
+
+### Tools & Utilities
+
+- [Bloxelizer Converter](https://bloxelizer.com/converter) - Convert between formats such as `.litematic`, `.schem`, `.nbt`, and `.mcstructure`, with online preview support
+- [NameMC](https://namemc.com/) - Look up skins, username history, and UUIDs
+- [Chunker](https://chunker.app/) - Convert world saves between Java Edition and Bedrock Edition

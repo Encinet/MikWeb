@@ -1,65 +1,65 @@
 # Getting Started
 
-Welcome to the Mik Server!
+Welcome to the Mik server.
 
-This is a creative and casual server. All mods (including hacked clients) are permitted, as long as you don't grief or damage other players' builds.
+Mik is a laid-back creative server built around building, exploring, and sharing ideas with other players. You're free to use any client mods you like, including utility clients, as long as you do not damage builds or interfere with someone else's work.
 
-## How to Join
+## Joining the Server
 
-### Players in Mainland China
-1. Join our QQ group
-2. Ask an admin for a whitelist application in the group chat
-3. Wait for the admin to review and respond
+### If You Are in Mainland China
+1. Join our QQ group.
+2. Ask an admin about whitelist access in the group chat.
+3. Wait for the admin team to review your request.
 
-### Overseas Players
-1. Fill out the application form
-2. Wait for an email notification (usually within 48 hours)
-3. Once approved, you'll receive the server address
+### If You Are Outside Mainland China
+1. Fill out the application form.
+2. Wait for the email response, usually within 48 hours.
+3. If your application is approved, you will receive the server address.
 
 ## Recommended Mods
 
-For a better gameplay experience, we recommend choosing one of the following optimization modpacks:
+To make the game run better, we suggest starting with one of these optimization modpacks:
 
 | | [Fabulously Optimized](https://modrinth.com/modpack/fabulously-optimized) | [Rapid Optimization](https://modrinth.com/modpack/rapid_optimization) |
 |---|---|---|
-| **Performance** | Solid performance | Higher performance |
-| **Features** | More built-in utilities | Lightweight and minimal |
+| **Performance** | Strong all-around performance | Even higher performance |
+| **Features** | More built-in quality-of-life tools | Cleaner and more lightweight |
 
-On top of your chosen modpack, install the following mods for the full experience:
+For the full server experience, we also recommend adding the following mods:
 
-1. **[PlasmoVoice](https://modrinth.com/plugin/plasmo-voice)** - In-game voice chat and music listening
-2. **Xaero's Map Suite** - Configured specifically for our server
+1. **[PlasmoVoice](https://modrinth.com/plugin/plasmo-voice)** - Voice chat and in-game music playback
+2. **Xaero's Map Suite** - Fully compatible with this server
    - [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map)
    - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
    - [XaeroPlus](https://modrinth.com/mod/xaeroplus)
-3. **[ImageFrame Client](https://modrinth.com/mod/imageframeclient)** - Full-color enhancement for map art
-4. **[Axiom](https://modrinth.com/mod/axiom)** - Powerful building assistance
+3. **[ImageFrame Client](https://modrinth.com/mod/imageframeclient)** - Improves the look of map art with full-color rendering
+4. **[Axiom](https://modrinth.com/mod/axiom)** - A powerful toolkit for large-scale building and editing
 5. **[Vivecraft](https://modrinth.com/mod/vivecraft)** - VR support
-6. **[FeatherMorphClient](https://modrinth.com/mod/feathermorphclient)** - Adds extra client-side controls for the Morph mod, such as a morph selection screen and a skill shortcut menu.
+6. **[FeatherMorphClient](https://modrinth.com/mod/feathermorphclient)** - Adds extra client-side controls for the Morph system, including a morph picker and skill shortcuts
 
-The following are some server-independent recommended mods:
+These are also worth installing, even though they are not specific to this server:
 
-- **[Hey Wiki](https://modrinth.com/mod/hey-wiki)** - A convenient in-game Wiki lookup tool
-- **[voxy](https://modrinth.com/mod/voxy)** - A high-performance distant terrain rendering mod for better scenery
+- **[Hey Wiki](https://modrinth.com/mod/hey-wiki)** - A convenient in-game wiki lookup tool
+- **[voxy](https://modrinth.com/mod/voxy)** - Extremely fast long-distance chunk rendering for better scenery
 
-## First Time on the Server
+## Your First Login
 
-When you first join:
+When you enter the server for the first time:
 
-- You'll spawn in the main city area
-- Use `/spawn` to return to the main city at any time
-- Use `/sethome` to set your home location
-- Use `/home` to teleport back home
+- You will spawn in the main city
+- Use `/spawn` to return there whenever you want
+- Use `/sethome` to set a home point
+- Use `/home` to go back to it
 
-## Start Building
+## Start Creating
 
-Use your minimap mod to explore the server, get a feel for the existing builds, and find a spot or neighborhood you like.
+Use your minimap to explore the server, get a feel for the existing builds, and find an area you genuinely like.
 
-Once you've found a place you love, start your creative journey:
+Once you have found a good spot:
 
-1. Choose a suitable building location
-2. Make sure your build blends well with the surrounding environment
-3. Use `/sethome [name]` to save your location
-4. Let your creativity run wild!
+1. Pick a suitable location.
+2. Make sure your build fits the surrounding area.
+3. Use `/sethome [name]` to save the location.
+4. Start your creative journey.
 
-> **Tip**: The server supports both Axiom and WorldEdit, which can greatly speed up your building workflow!
+> **Tip**: The server supports both Axiom and WorldEdit, which can save a lot of time when building.
