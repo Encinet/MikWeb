@@ -5,7 +5,7 @@ import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 
 import type {
-  FuzzyMatchResult,
+  FuzzyMatchScore,
   MarkdownBlock,
   PreparedQuery,
   SearchableWikiBlock,
@@ -22,17 +22,16 @@ function prepareQuery(query: string): PreparedQuery {
   const lower = query.trim().toLowerCase();
 
   return {
-    raw: query,
     lower,
     tokens: lower.split(/\s+/).filter(Boolean),
   };
 }
 
-function fuzzyMatch(query: PreparedQuery, text: string): FuzzyMatchResult {
+function fuzzyMatch(query: PreparedQuery, text: string): FuzzyMatchScore {
   const q = query.lower;
   const t = text.toLowerCase();
 
-  if (t.includes(q)) return { matched: true, score: 3 };
+  if (t.includes(q)) return 3;
 
   let qi = 0;
   let consecutive = 0;
@@ -47,20 +46,32 @@ function fuzzyMatch(query: PreparedQuery, text: string): FuzzyMatchResult {
     }
   }
   if (qi === q.length) {
-    return { matched: true, score: 2 + maxConsecutive / q.length };
+    return 2 + maxConsecutive / q.length;
   }
 
   const { tokens } = query;
   if (tokens.length > 1) {
     const allFound = tokens.every((tok) => t.includes(tok));
-    if (allFound) return { matched: true, score: 1 + tokens.length * 0.1 };
+    if (allFound) return 1 + tokens.length * 0.1;
   }
 
   if (tokens.some((tok) => tok.length >= 2 && t.includes(tok))) {
-    return { matched: true, score: 0.5 };
+    return 0.5;
   }
 
-  return { matched: false, score: 0 };
+  return 0;
+}
+
+function normalizeWikiQueries(queries: string[]): PreparedQuery[] {
+  const uniqueQueries = new Set<string>();
+
+  for (const query of queries) {
+    const trimmed = query.trim();
+    if (!trimmed) continue;
+    uniqueQueries.add(trimmed);
+  }
+
+  return Array.from(uniqueQueries).map((item) => prepareQuery(item));
 }
 
 function stripMarkdown(text: string): string {
@@ -317,11 +328,18 @@ const handler = createMcpHandler(
       {
         title: 'Search Wiki',
         description:
-          'Search the Minecraft server wiki by keyword. Supports fuzzy matching: exact substring, ' +
-          'subsequence (e.g. "gmde" matches "gamemode"), and multi-token (e.g. "home set" matches "/sethome"). ' +
-          'Returns the full content of the matched wiki section and lets the caller control how many results are returned.',
+          'Search the Minecraft server wiki by keyword, alias, or command-style wording. This is keyword/fuzzy search, not vector search. ' +
+          'Before calling this tool, the caller should usually rewrite the user intent into 3-5 close phrasings and send them together in queries. ' +
+          'Supports exact substring, subsequence (e.g. "gmode" matches "/gamemode"), and multi-token matching ' +
+          '(e.g. "规则 规范 制度" helps match the server rules page). Returns the full content of matched wiki sections and lets the caller control how many results are returned.',
         inputSchema: {
-          query: z.string().describe('Search keyword or phrase'),
+          queries: z
+            .array(z.string())
+            .min(1)
+            .max(5)
+            .describe(
+              'Search with 1-5 close phrasings of the same intent. Put the strongest wording first. Prefer 3-5 phrasings when the concept may be described in multiple ways, such as "规则", "规范", "制度"; "入服", "加入服务器", "白名单"; or "家", "home", "/sethome".',
+            ),
           locale: z.enum(WIKI_LOCALES).optional().describe('Language locale (default: zh-CN)'),
           limit: z
             .number()
@@ -332,24 +350,31 @@ const handler = createMcpHandler(
             .describe('Maximum number of results (default: 5, max: 20)'),
         },
       },
-      async ({ query, locale, limit }) => {
+      async ({ queries, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
         const maxResults = limit ?? 5;
-        const preparedQuery = prepareQuery(query);
+        const preparedQueries = normalizeWikiQueries(queries);
         const indexedBlocks = await getWikiIndex(loc);
         const results: WikiSearchResult[] = [];
 
         for (const block of indexedBlocks) {
-          const headMatch = fuzzyMatch(preparedQuery, block.heading);
-          const directMatch = fuzzyMatch(preparedQuery, block.directText);
-          const bodyMatch = fuzzyMatch(preparedQuery, block.searchableText);
+          let headScore = 0;
+          let directScore = 0;
+          let bodyScore = 0;
+
+          for (const preparedQuery of preparedQueries) {
+            headScore = Math.max(headScore, fuzzyMatch(preparedQuery, block.heading));
+            directScore = Math.max(directScore, fuzzyMatch(preparedQuery, block.directText));
+            bodyScore = Math.max(bodyScore, fuzzyMatch(preparedQuery, block.searchableText));
+          }
+
           const hasDirectContent = block.directText.length > 0;
           const isContainerHeading = !hasDirectContent && block.subtreeText.length > 0;
 
-          if (!headMatch.matched && !directMatch.matched && !bodyMatch.matched) continue;
+          if (headScore <= 0 && directScore <= 0 && bodyScore <= 0) continue;
 
           const score =
-            Math.max(headMatch.score * 1.8, directMatch.score * 1.2, bodyMatch.score) +
+            Math.max(headScore * 1.8, directScore * 1.2, bodyScore) +
             block.level * 0.1 +
             (hasDirectContent ? 0.15 : 0) -
             (isContainerHeading ? 0.2 : 0);
@@ -365,7 +390,10 @@ const handler = createMcpHandler(
         if (results.length === 0) {
           return {
             content: [
-              { type: 'text', text: `No wiki content found matching "${query}" (${loc}).` },
+              {
+                type: 'text',
+                text: `No wiki content found matching ${JSON.stringify(queries)} (${loc}).`,
+              },
             ],
           };
         }

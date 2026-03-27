@@ -26,15 +26,11 @@ export interface MarkdownBlock {
 }
 
 export interface PreparedQuery {
-  raw: string;
   lower: string;
   tokens: string[];
 }
 
-export interface FuzzyMatchResult {
-  matched: boolean;
-  score: number;
-}
+export type FuzzyMatchScore = number;
 
 export interface SearchableWikiBlock {
   path: string;
