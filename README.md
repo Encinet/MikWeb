@@ -143,7 +143,7 @@ MikWeb/
 │   │   ├── page.tsx / HomeSection.tsx
 │   │   ├── buildings/layout.tsx / page.tsx
 │   │   ├── bans/layout.tsx / page.tsx
-│   │   ├── wiki/page.tsx / WikiContent.tsx
+│   │   ├── wiki/layout.tsx / page.tsx / WikiContent.tsx
 │   │   ├── [...rest]/page.tsx      # Wiki 兜底路由
 │   │   ├── layout.tsx
 │   │   ├── not-found.tsx
