@@ -5,8 +5,14 @@ import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 
 import type {
+  AnnouncementsApiResponse,
+  BansApiResponse,
+  BuildingsApiResponse,
+  BuildType,
   FuzzyMatchScore,
+  LocalizedText,
   MarkdownBlock,
+  PlayerStatusPayload,
   PreparedQuery,
   SearchableWikiBlock,
   WikiLocale,
@@ -254,14 +260,40 @@ const handler = createMcpHandler(
       'get_players',
       {
         title: 'Get Players',
-        description:
-          'Get the current online player count and list from the Minecraft server. Returns player names and current count.',
+        description: 'Get online players from the Minecraft server.',
         inputSchema: {},
       },
       async () => {
-        const data = await apiFetch(new URL('/api/players', BASE_URL).href);
+        const data: PlayerStatusPayload = await apiFetch(new URL('/api/players', BASE_URL).href);
+
+        if (data.count === -1) {
+          return {
+            content: [{ type: 'text', text: 'The Minecraft server is currently offline.' }],
+          };
+        }
+
+        if (data.count === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'The Minecraft server is online but no players are currently connected.',
+              },
+            ],
+          };
+        }
+
+        const playerList = data.players
+          .map((p, i) => `${i + 1}. ${p.name} (UUID: ${p.uuid})`)
+          .join('\n');
+
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [
+            {
+              type: 'text',
+              text: `There are currently ${data.count} player(s) online:\n\n${playerList}`,
+            },
+          ],
         };
       },
     );
@@ -270,14 +302,63 @@ const handler = createMcpHandler(
       'get_buildings',
       {
         title: 'Get Buildings',
-        description:
-          'Get the list of buildings from the Minecraft server. Returns building information including coordinates, owner, and description.',
-        inputSchema: {},
+        description: 'Get the list of buildings from the Minecraft server.',
+        inputSchema: {
+          locale: z
+            .string()
+            .default('zh-CN')
+            .describe('Locale for localized fields (e.g. zh-CN, en).'),
+        },
       },
-      async () => {
-        const data = await apiFetch(new URL('/api/buildings', BASE_URL).href);
+      async ({ locale }) => {
+        const data: BuildingsApiResponse = await apiFetch(new URL('/api/buildings', BASE_URL).href);
+
+        if (data.length === 0) {
+          return {
+            content: [{ type: 'text', text: 'No buildings found.' }],
+          };
+        }
+
+        const resolve = (localized: LocalizedText): string =>
+          localized[locale] ?? localized['zh-CN'] ?? Object.values(localized)[0] ?? '';
+
+        const lines = data.map((b, i) => {
+          const name = resolve(b.name);
+          const description = resolve(b.description);
+          const { x, y, z } = b.coordinates;
+          const builders = b.builders
+            .sort((a, b) => b.weight - a.weight)
+            .map((b) => b.name)
+            .join(', ');
+          const tags = b.tags?.map(resolve).filter(Boolean).join(', ');
+          const typeLabel: Record<BuildType, string> = {
+            original: 'Original',
+            derivative: 'Derivative',
+            replica: 'Replica',
+          };
+
+          const parts = [
+            `${i + 1}. ${name}`,
+            `   Type: ${typeLabel[b.buildType]}`,
+            `   Coordinates: (${x}, ${y}, ${z})`,
+            `   Builders: ${builders || 'Unknown'}`,
+            `   Built: ${b.buildDate}`,
+            `   Description: ${description || 'N/A'}`,
+            tags ? `   Tags: ${tags}` : null,
+            b.source?.originalAuthor ? `   Original Author: ${b.source.originalAuthor}` : null,
+            b.source?.originalLink ? `   Source: ${b.source.originalLink}` : null,
+          ];
+
+          return parts.filter(Boolean).join('\n');
+        });
+
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [
+            {
+              type: 'text',
+              text: `${data.length} building(s) found:\n\n${lines.join('\n\n')}`,
+            },
+          ],
         };
       },
     );
@@ -286,14 +367,33 @@ const handler = createMcpHandler(
       'get_bans',
       {
         title: 'Get Bans',
-        description:
-          'Get the list of banned players from the Minecraft server. Returns banned player information including name, reason, and ban duration.',
+        description: 'Get the list of banned players from the Minecraft server.',
         inputSchema: {},
       },
       async () => {
-        const data = await apiFetch(new URL('/api/bans', BASE_URL).href);
+        const data: BansApiResponse = await apiFetch(new URL('/api/bans', BASE_URL).href);
+
+        if (data.length === 0) {
+          return {
+            content: [{ type: 'text', text: 'No banned players.' }],
+          };
+        }
+
+        const now = Date.now();
+        const lines = data.map((ban, i) => {
+          const expiry = ban.isPermanent
+            ? 'Permanent'
+            : ban.expiresAt
+              ? new Date(ban.expiresAt) > new Date(now)
+                ? `Until ${ban.expiresAt}`
+                : 'Expired'
+              : 'Permanent';
+
+          return `${i + 1}. ${ban.playerName} — ${ban.reason} (by ${ban.bannedBy}, ${expiry})`;
+        });
+
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: `${data.length} ban(s):\n\n${lines.join('\n')}` }],
         };
       },
     );
@@ -302,23 +402,33 @@ const handler = createMcpHandler(
       'get_announcements',
       {
         title: 'Get Announcements',
-        description:
-          'Get recent announcements from the Minecraft server. Returns announcement content and timestamp (ISO 8601).',
+        description: 'Get recent announcements from the Minecraft server.',
         inputSchema: {
           count: z
             .number()
             .int()
             .positive()
-            .optional()
-            .describe('Number of announcements to return (default: 5)'),
+            .default(5)
+            .describe('Number of announcements to return.'),
         },
       },
       async ({ count }) => {
-        const data = await apiFetch(new URL('/api/announcements', BASE_URL).href);
-        const n = count ?? 5;
-        const sliced = Array.isArray(data) ? data.slice(0, n) : data;
+        const data: AnnouncementsApiResponse = await apiFetch(
+          new URL('/api/announcements', BASE_URL).href,
+        );
+
+        if (data.length === 0) {
+          return {
+            content: [{ type: 'text', text: 'No announcements.' }],
+          };
+        }
+
+        const lines = data.slice(0, count).map((a) => `[${a.timestamp}] ${a.content}`);
+
         return {
-          content: [{ type: 'text', text: JSON.stringify(sliced, null, 2) }],
+          content: [
+            { type: 'text', text: `${lines.length} announcement(s):\n\n${lines.join('\n')}` },
+          ],
         };
       },
     );
