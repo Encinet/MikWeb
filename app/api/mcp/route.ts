@@ -8,7 +8,6 @@ import type {
   AnnouncementsApiResponse,
   BansApiResponse,
   BuildingsApiResponse,
-  BuildType,
   FuzzyMatchScore,
   LocalizedText,
   MarkdownBlock,
@@ -267,25 +266,14 @@ const handler = createMcpHandler(
         const data: PlayerStatusPayload = await apiFetch(new URL('/api/players', BASE_URL).href);
 
         if (data.count === -1) {
-          return {
-            content: [{ type: 'text', text: 'The Minecraft server is currently offline.' }],
-          };
+          return { content: [{ type: 'text', text: 'Server offline.' }] };
         }
 
         if (data.count === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'The Minecraft server is online but no players are currently connected.',
-              },
-            ],
-          };
+          return { content: [{ type: 'text', text: 'Server online, no players.' }] };
         }
 
-        const playerList = data.players
-          .map((p, i) => `${i + 1}. ${p.name} (UUID: ${p.uuid})`)
-          .join('\n');
+        const playerList = data.players.map((p) => `${p.name} (UUID: ${p.uuid})`).join('\n');
 
         return {
           content: [
@@ -302,7 +290,8 @@ const handler = createMcpHandler(
       'get_buildings',
       {
         title: 'Get Buildings',
-        description: 'Get the list of buildings from the Minecraft server.',
+        description:
+          'Get the list of buildings from the Minecraft server. builders format: "name(contribution%)" sorted by contribution desc. pos format: x y z (Minecraft coordinates).',
         inputSchema: {
           locale: z
             .string()
@@ -324,40 +313,49 @@ const handler = createMcpHandler(
 
         const lines = data.map((b, i) => {
           const name = resolve(b.name);
-          const description = resolve(b.description);
+          const desc = resolve(b.description);
+          const notes = b.source?.notes ? resolve(b.source.notes) : null;
+          const tags = b.tags?.map(resolve).filter(Boolean).join(',');
           const { x, y, z } = b.coordinates;
-          const builders = b.builders
-            .sort((a, b) => b.weight - a.weight)
-            .map((b) => b.name)
-            .join(', ');
-          const tags = b.tags?.map(resolve).filter(Boolean).join(', ');
-          const typeLabel: Record<BuildType, string> = {
-            original: 'Original',
-            derivative: 'Derivative',
-            replica: 'Replica',
-          };
 
-          const parts = [
-            `${i + 1}. ${name}`,
-            `   Type: ${typeLabel[b.buildType]}`,
-            `   Coordinates: (${x}, ${y}, ${z})`,
-            `   Builders: ${builders || 'Unknown'}`,
-            `   Built: ${b.buildDate}`,
-            `   Description: ${description || 'N/A'}`,
-            tags ? `   Tags: ${tags}` : null,
-            b.source?.originalAuthor ? `   Original Author: ${b.source.originalAuthor}` : null,
-            b.source?.originalLink ? `   Source: ${b.source.originalLink}` : null,
-          ];
+          const sortedBuilders = b.builders.sort((a, b) => b.weight - a.weight);
+          const showWeight =
+            sortedBuilders.length > 1 &&
+            sortedBuilders.some((b) => b.weight !== sortedBuilders[0].weight);
+          const total = sortedBuilders.reduce((s, b) => s + b.weight, 0);
+          const builders = sortedBuilders
+            .map((b) =>
+              showWeight ? `${b.name}(${Math.round((b.weight / total) * 100)}%)` : b.name,
+            )
+            .join(',');
 
-          return parts.filter(Boolean).join('\n');
+          const fields = [
+            `type:${b.buildType}`,
+            `x:${x} y:${y} z:${z}`,
+            `date:${b.buildDate}`,
+            builders && `builders:${builders}`,
+            tags && `tags:${tags}`,
+            b.source?.originalAuthor && `author:${b.source.originalAuthor}`,
+            b.source?.originalLink && `source:${b.source.originalLink}`,
+            desc && !desc.includes('\n') && `desc:${desc}`,
+            notes && !notes.includes('\n') && `notes:${notes}`,
+          ]
+            .filter(Boolean)
+            .join(' | ');
+
+          const blocks = [
+            desc?.includes('\n') ? `desc:\n\`\`\`\n${desc}\n\`\`\`` : null,
+            notes?.includes('\n') ? `notes:\n\`\`\`\n${notes}\n\`\`\`` : null,
+          ]
+            .filter(Boolean)
+            .join('\n');
+
+          return `[${i + 1}] ${name}\n${fields}${blocks ? `\n${blocks}` : ''}`;
         });
 
         return {
           content: [
-            {
-              type: 'text',
-              text: `${data.length} building(s) found:\n\n${lines.join('\n\n')}`,
-            },
+            { type: 'text', text: `${data.length} building(s) found:\n\n${lines.join('\n\n')}` },
           ],
         };
       },
@@ -380,16 +378,15 @@ const handler = createMcpHandler(
         }
 
         const now = Date.now();
-        const lines = data.map((ban, i) => {
-          const expiry = ban.isPermanent
-            ? 'Permanent'
-            : ban.expiresAt
-              ? new Date(ban.expiresAt) > new Date(now)
-                ? `Until ${ban.expiresAt}`
-                : 'Expired'
-              : 'Permanent';
+        const lines = data.map((ban) => {
+          const expiry =
+            ban.isPermanent || !ban.expiresAt
+              ? 'permanent'
+              : new Date(ban.expiresAt) > new Date(now)
+                ? `expires:${ban.expiresAt}`
+                : 'expired';
 
-          return `${i + 1}. ${ban.playerName} — ${ban.reason} (by ${ban.bannedBy}, ${expiry})`;
+          return `${ban.playerName} | uuid:${ban.playerUuid} | by:${ban.bannedBy} | ${expiry} | reason:${ban.reason}`;
         });
 
         return {
