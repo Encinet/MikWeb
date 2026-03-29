@@ -63,7 +63,7 @@ export default function Navbar() {
       id: 'map',
       icon: MapIcon,
       label: t('map'),
-      link: 'https://www.bilibili.com/video/BV1GJ411x7h7',
+      link: 'http://203.135.99.76:34567',
     },
     {
       id: 'apply',
