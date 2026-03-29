@@ -11,6 +11,10 @@ The server supports simple vertical elevators made with iron blocks. Place the b
 
 Use `/asedit give` to get the editor tool, then right-click any armor stand to open the edit menu. You can rotate individual body parts, make the stand invisible, lock interaction, and fine-tune other details. It is especially useful for display pieces and scene decoration.
 
+## Common Commands
+
+- Get a player head: `/give @s minecraft:player_head[minecraft:profile={name:"PlayerID"}]`
+
 ## Building Tips
 
 ### Use Axiom No-Clip to Check Interiors

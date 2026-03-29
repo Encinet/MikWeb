@@ -13,6 +13,10 @@
 
 使用 `/asedit give` 获取编辑器后，右键点击任意盔甲架即可打开编辑界面，支持逐部位调整旋转角度、切换隐身、锁定互动等选项，适合制作静态展示摆件或场景人物。
 
+## 常用命令
+
+- 获取玩家头 `/give @s minecraft:player_head[minecraft:profile={name:"玩家ID"}]`
+
 ## 建筑小技巧
 
 ### 利用 Axiom 穿墙查看建筑内部
