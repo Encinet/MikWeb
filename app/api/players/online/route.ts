@@ -3,6 +3,8 @@ import type { PlayerOnlinePayload } from '@/lib/types';
 
 const SERVER_HOST = process.env.MINECRAFT_SERVER_ADDRESS || '';
 const SERVER_PORT = process.env.MINECRAFT_SERVER_PORT || '25565';
+const ONLINE_PLAYERS_RUNTIME_CACHE_MAX_AGE = 5;
+const ONLINE_PLAYERS_RUNTIME_CACHE_STALE_WHILE_REVALIDATE = 15;
 
 async function fetchFallbackPlayerCount(): Promise<PlayerOnlinePayload> {
   if (!SERVER_HOST) throw new Error('MINECRAFT_SERVER_ADDRESS not configured');
@@ -43,6 +45,8 @@ export const GET = createProxyHandler<PlayerOnlinePayload>({
   totpSecret: process.env.TOTP_SECRET || '',
   path: '/api/players/online',
   cacheMaxAge: null,
+  runtimeCacheMaxAge: ONLINE_PLAYERS_RUNTIME_CACHE_MAX_AGE,
+  runtimeCacheStaleWhileRevalidate: ONLINE_PLAYERS_RUNTIME_CACHE_STALE_WHILE_REVALIDATE,
   errorMessage: 'Failed to fetch player data',
   onError: SERVER_HOST ? fetchFallbackPlayerCount : undefined,
 });

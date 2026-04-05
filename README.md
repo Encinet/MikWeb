@@ -41,11 +41,11 @@ openssl rand -hex 32
 
 ## API 路由
 
-除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `lib/proxyRoute.ts` 代理上游服务，并设置 `Cache-Control`。常规成功响应会带 `X-Proxy-Cache: HIT-OR-MISS`；`/api/players/online` 在主接口失败且配置了回退地址时，会返回 `X-Cache: FALLBACK`。
+除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `lib/proxyRoute.ts` 代理上游服务，并设置 `Cache-Control`。常规成功响应会带 `X-Proxy-Cache`（`MISS` / `HIT` / `STALE` / `COALESCED`）与 `X-Proxy-Source`（`UPSTREAM` / `FALLBACK`）；`/api/players/online` 在主接口失败且配置了回退地址时，会额外返回 `X-Cache: FALLBACK`。
 
 | 路由 | 上游 | `cacheMaxAge` | 备注 |
 |------|------|---------------|------|
-| `GET /api/players/online` | 主服务器 | `no-store` | 在线玩家与人数，主接口失败时可回退查询 `mcstatus.io` / `mcapi.us` |
+| `GET /api/players/online` | 主服务器 | `no-store` | 在线玩家与人数；服务端额外做 `5s` 内存缓存和 `15s` 陈旧回源刷新，主接口失败时可回退查询 `mcstatus.io` / `mcapi.us` |
 | `GET /api/players/history` | 主服务器 | `to < now` 时 `300s`，否则 `no-store` | 转发 `from` / `to` / `interval` 查询参数，其中 `interval` 为秒级整数 |
 | `GET /api/players/:uuid/history` | 主服务器 | `no-store` | 转发玩家会话历史查询 |
 | `GET /api/announcements` | 主服务器 | `300s` | 公告列表 |
