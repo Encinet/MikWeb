@@ -21,6 +21,7 @@ import { useTheme } from 'next-themes';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { usePlayerContext } from '@/hooks/usePlayerContext';
 import { Link, usePathname, useRouter } from '@/i18n/routing';
@@ -85,6 +86,7 @@ export default function Navbar() {
   }, []);
 
   const openPlayerDropdown = () => {
+    setIsPlayerDropdownVisible(false);
     updatePlayerDropdownRect();
     setIsPlayerDropdownOpen(true);
   };
@@ -108,7 +110,6 @@ export default function Navbar() {
     };
 
     syncDropdownPosition();
-    setIsPlayerDropdownVisible(false);
     playerDropdownAnimationFrameRef.current = requestAnimationFrame(() => {
       playerDropdownAnimationFrameRef.current = requestAnimationFrame(() => {
         setIsPlayerDropdownVisible(true);

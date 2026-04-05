@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 
@@ -11,6 +12,7 @@ import {
   WIKI_SECTION_TRANSLATION_KEYS,
   WIKI_SECTIONS,
 } from '@/lib/wiki';
+
 import WikiContent from './WikiContent';
 
 export default async function WikiPage({

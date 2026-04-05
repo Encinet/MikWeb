@@ -4,7 +4,7 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { BookOpen, ChevronRight, Home, Menu, Shield, Users, Wrench, X, Zap } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
@@ -33,6 +33,15 @@ interface WikiContentProps {
   content: WikiSectionContentMap;
   initialSection?: WikiSectionId;
 }
+
+const markdownDelays = {
+  h1: 0.04,
+  h2: 0.08,
+  h3: 0.12,
+  p: 0.16,
+  list: 0.2,
+  block: 0.24,
+};
 
 // Shared spring presets
 const spring = {
@@ -114,16 +123,7 @@ export default function WikiContent({
   const sectionIndexMap = useMemo(() => {
     return new Map(sections.map((section, index) => [section.id, index]));
   }, [sections]);
-  const previousSectionRef = useRef(activeSection);
-  const currentSectionIndex = sectionIndexMap.get(activeSection) ?? 0;
-  const previousSectionIndex =
-    sectionIndexMap.get(previousSectionRef.current) ?? currentSectionIndex;
-  const sectionDirection =
-    currentSectionIndex === previousSectionIndex
-      ? 0
-      : currentSectionIndex > previousSectionIndex
-        ? 1
-        : -1;
+  const [sectionDirection, setSectionDirection] = useState(0);
 
   // Scroll to hash target after markdown renders
   useEffect(() => {
@@ -152,12 +152,18 @@ export default function WikiContent({
     }
   }, [activeSection]);
 
-  useEffect(() => {
-    previousSectionRef.current = activeSection;
-  }, [activeSection]);
-
   const handleSectionChange = (id: WikiSectionId) => {
     if (id === activeSection) return;
+    const currentSectionIndex = sectionIndexMap.get(activeSection) ?? 0;
+    const nextSectionIndex = sectionIndexMap.get(id) ?? currentSectionIndex;
+
+    setSectionDirection(
+      nextSectionIndex === currentSectionIndex
+        ? 0
+        : nextSectionIndex > currentSectionIndex
+          ? 1
+          : -1,
+    );
     setIsSidebarOpen(false);
     const params = new URLSearchParams(searchParams.toString());
     params.set('section', id);
@@ -165,12 +171,6 @@ export default function WikiContent({
   };
 
   const markdownComponents = useMemo(() => {
-    const sectionAnimationKey = activeSection;
-    let animationIndex = 0;
-    const getDelay = () => {
-      animationIndex += 1;
-      return sectionAnimationKey ? Math.min(animationIndex * 0.024, 0.34) : 0;
-    };
     const baseMotionProps = {
       initial: { opacity: 0, y: 18, filter: 'blur(6px)' },
       animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
@@ -180,7 +180,7 @@ export default function WikiContent({
       h1: ({ children }: React.PropsWithChildren) => (
         <motion.h1
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.h1 }}
           style={{
             color: 'var(--theme-text-heading)',
             borderColor: 'var(--theme-border-glass-light)',
@@ -193,7 +193,7 @@ export default function WikiContent({
       h2: ({ children }: React.PropsWithChildren) => (
         <motion.h2
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.h2 }}
           style={{ color: 'var(--theme-text-heading)' }}
           className="text-2xl font-semibold mt-8 mb-4"
         >
@@ -203,7 +203,7 @@ export default function WikiContent({
       h3: ({ children }: React.PropsWithChildren) => (
         <motion.h3
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.h3 }}
           style={{ color: 'var(--theme-text-primary)' }}
           className="text-xl font-semibold mt-6 mb-3"
         >
@@ -213,7 +213,7 @@ export default function WikiContent({
       p: ({ children }: React.PropsWithChildren) => (
         <motion.p
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.p }}
           style={{ color: 'var(--theme-text-muted-strong)' }}
           className="leading-relaxed mb-4"
         >
@@ -223,7 +223,7 @@ export default function WikiContent({
       ul: ({ children }: React.PropsWithChildren) => (
         <motion.ul
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.list }}
           style={{ color: 'var(--theme-text-muted-strong)' }}
           className="list-disc list-inside space-y-2 mb-4"
         >
@@ -233,7 +233,7 @@ export default function WikiContent({
       ol: ({ children }: React.PropsWithChildren) => (
         <motion.ol
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.list }}
           style={{ color: 'var(--theme-text-muted-strong)' }}
           className="list-decimal list-inside space-y-2 mb-4"
         >
@@ -248,7 +248,7 @@ export default function WikiContent({
       blockquote: ({ children }: React.PropsWithChildren) => (
         <motion.blockquote
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.block }}
           style={{
             background: 'var(--theme-surface-glass-light)',
             borderLeftColor: 'var(--theme-border-blue-accent)',
@@ -262,7 +262,7 @@ export default function WikiContent({
       pre: ({ children }: React.PropsWithChildren) => (
         <motion.pre
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.block }}
           style={{
             background: 'var(--theme-surface-code-block)',
             borderColor: 'var(--theme-border-glass-light)',
@@ -317,7 +317,7 @@ export default function WikiContent({
       table: ({ children }: React.PropsWithChildren) => (
         <motion.div
           {...baseMotionProps}
-          transition={{ ...spring.gentle, delay: getDelay() }}
+          transition={{ ...spring.gentle, delay: markdownDelays.block }}
           className="overflow-x-auto my-4 rounded-lg border"
           style={{ borderColor: 'var(--theme-border-glass-light)' }}
         >
@@ -350,7 +350,7 @@ export default function WikiContent({
         </td>
       ),
     };
-  }, [activeSection]);
+  }, []);
 
   return (
     <MotionConfig reducedMotion="user">
