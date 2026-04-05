@@ -37,6 +37,89 @@
       "empty": "No announcements",
       "clickToViewAll": "Click to view all announcements"
     },
+    "playerHistory": {
+      "title": "Player History",
+      "description": "Explore how server population changes over time. Switch sampling precision and inspect the players online at any recorded point.",
+      "loading": "Loading player history...",
+      "empty": "No player history is available for this time range.",
+      "error": "Failed to load player history.",
+      "rangeLabel": "Time Range",
+      "precisionLabel": "Precision",
+      "precisionOverview": "Overview",
+      "precisionDetail": "Detail",
+      "precisionHint": "Drag the slider to adjust sampling density. Move left for broader trends and right for finer short-term changes.",
+      "precisionEstimate": "~{count} points",
+      "liveNow": "Live Online",
+      "autoRefresh": "Auto refresh every minute",
+      "refreshing": "Refreshing",
+      "ranges": {
+        "24h": "Last 24 Hours",
+        "3d": "Last 3 Days",
+        "7d": "Last 7 Days",
+        "30d": "Last 30 Days"
+      },
+      "intervals": {
+        "m2": "2 Minutes",
+        "m3": "3 Minutes",
+        "m4": "4 Minutes",
+        "m5": "5 Minutes",
+        "m6": "6 Minutes",
+        "m8": "8 Minutes",
+        "m10": "10 Minutes",
+        "m12": "12 Minutes",
+        "m15": "15 Minutes",
+        "m20": "20 Minutes",
+        "m30": "30 Minutes",
+        "h1": "1 Hour",
+        "h2": "2 Hours",
+        "h3": "3 Hours",
+        "h4": "4 Hours",
+        "h6": "6 Hours",
+        "h12": "12 Hours",
+        "d1": "1 Day"
+      },
+      "summary": {
+        "peakOnline": "Peak Online",
+        "averageOnline": "Average Online",
+        "uniquePlayers": "Unique Players",
+        "samples": "Samples",
+        "perSample": "Based on current sampling precision",
+        "inWindow": "Seen within this time window",
+        "noData": "No data"
+      },
+      "actions": {
+        "peak": "Jump to Peak",
+        "latest": "Latest Point",
+        "lock": "Lock Current",
+        "prev": "Previous",
+        "next": "Next",
+        "unlock": "Unlock"
+      },
+      "chart": {
+        "interactionHint": "Hover to explore, click to lock, then compare different moments freely.",
+        "keyboardHint": "Arrow keys to step · End latest · Home peak · Esc unlock"
+      },
+      "selectedPoint": {
+        "title": "Selected Point",
+        "timestampLabel": "Time",
+        "onlineLabel": "Online",
+        "playerCountLabel": "Players",
+        "changeLabel": "Change from previous",
+        "changeRateLabel": "Change Rate",
+        "samplePositionLabel": "Sample Position",
+        "precisionLabel": "Precision",
+        "pointStatusLabel": "Point Status",
+        "modeLabel": "Mode",
+        "live": "Hover Follow",
+        "locked": "Locked Compare",
+        "peak": "Peak Point",
+        "latest": "Latest Point",
+        "normal": "Regular Point",
+        "playersLabel": "Players Online",
+        "noPlayers": "No players were online at this point."
+      },
+      "staleWarning": "The latest refresh failed. Showing the most recent successful snapshot."
+    },
     "features": {
       "vanilla": {
         "title": "Creative Casual Experience",

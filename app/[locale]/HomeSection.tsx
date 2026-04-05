@@ -6,11 +6,13 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import PlayerHistoryPanel from '@/components/PlayerHistoryPanel';
 import ScrollReveal from '@/components/ScrollReveal';
-import { useBuildingsContext } from '@/contexts/BuildingsContext';
-import { usePlayerContext } from '@/contexts/PlayerContext';
+import { useBuildingsContext } from '@/hooks/useBuildingsContext';
 import { useHasMounted } from '@/hooks/useHasMounted';
+import { usePlayerContext } from '@/hooks/usePlayerContext';
 import { fetchValidatedJson } from '@/lib/clientApi';
+import { homeGlassCardStyle } from '@/lib/homeCardStyles';
 import type { AnnouncementItem } from '@/lib/types';
 import { isAnnouncementItemArray } from '@/lib/types';
 
@@ -239,13 +241,7 @@ export default function HomeSection() {
             <div
               className="transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1"
               style={{
-                backdropFilter: 'blur(16px) saturate(150%)',
-                'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                background: 'var(--theme-surface-glass)',
-                border: '1px solid var(--theme-border-glass)',
-                borderRadius: '18px',
-                boxShadow:
-                  '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
+                ...homeGlassCardStyle,
                 padding: 'clamp(1.25rem, 3vw, 1.5rem)',
               }}
             >
@@ -305,6 +301,8 @@ export default function HomeSection() {
         ))}
       </div>
 
+      <PlayerHistoryPanel />
+
       {/* Announcements */}
       <ScrollReveal direction="up">
         <button
@@ -312,13 +310,7 @@ export default function HomeSection() {
           onClick={() => setIsAnnouncementModalOpen(true)}
           className="w-full text-left"
           style={{
-            backdropFilter: 'blur(16px) saturate(150%)',
-            'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-            background: 'var(--theme-surface-glass)',
-            border: '1px solid var(--theme-border-glass)',
-            borderRadius: '18px',
-            boxShadow:
-              '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
+            ...homeGlassCardStyle,
             padding: 'clamp(1.5rem, 4vw, 2rem)',
             marginBottom: 'clamp(3rem, 6vw, 5rem)',
             cursor: 'pointer',

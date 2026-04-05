@@ -21,9 +21,8 @@ import { useTheme } from 'next-themes';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-
-import { usePlayerContext } from '@/contexts/PlayerContext';
 import { useHasMounted } from '@/hooks/useHasMounted';
+import { usePlayerContext } from '@/hooks/usePlayerContext';
 import { Link, usePathname, useRouter } from '@/i18n/routing';
 
 import MinecraftAvatar from './MinecraftAvatar';

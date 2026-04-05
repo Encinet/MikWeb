@@ -28,8 +28,8 @@ bun dev
 |------|------|------|
 | `MINECRAFT_SERVER_URL` | ✓ | 主服务器 API base URL |
 | `TOTP_SECRET` | — | HMAC-Timestamp 密钥，用于签名时间戳，随请求头 `X-TOTP-Token` 转发 |
-| `MINECRAFT_SERVER_ADDRESS` | — | Minecraft 服务器地址，供 `GET /api/players` 在主 API 不可用时回退查询 mcstatus / mcapi |
-| `MINECRAFT_SERVER_PORT` | — | Minecraft 服务器端口，默认 `25565`，仅用于 `GET /api/players` 的回退查询 |
+| `MINECRAFT_SERVER_ADDRESS` | — | Minecraft 服务器地址，供 `GET /api/players/online` 在主 API 不可用时回退查询 mcstatus / mcapi |
+| `MINECRAFT_SERVER_PORT` | — | Minecraft 服务器端口，默认 `25565`，仅用于 `GET /api/players/online` 的回退查询 |
 | `BUILDINGS_SERVER_URL` | — | 建筑服务器 API base URL，默认回退到 `MINECRAFT_SERVER_URL` |
 | `BUILDINGS_TOTP_SECRET` | — | 建筑服务器 HMAC-Timestamp 密钥，默认回退到 `TOTP_SECRET` |
 | `NEXT_PUBLIC_BASE_URL` | — | MCP 服务器调用的基础 URL，默认 `http://localhost:3000` |
@@ -41,11 +41,13 @@ openssl rand -hex 32
 
 ## API 路由
 
-除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `lib/proxyRoute.ts` 代理上游服务，并设置 `Cache-Control`。常规成功响应会带 `X-Proxy-Cache: HIT-OR-MISS`；`/api/players` 在主接口失败且配置了回退地址时，会返回 `X-Cache: FALLBACK`。
+除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `lib/proxyRoute.ts` 代理上游服务，并设置 `Cache-Control`。常规成功响应会带 `X-Proxy-Cache: HIT-OR-MISS`；`/api/players/online` 在主接口失败且配置了回退地址时，会返回 `X-Cache: FALLBACK`。
 
 | 路由 | 上游 | `cacheMaxAge` | 备注 |
 |------|------|---------------|------|
-| `GET /api/players` | 主服务器 | `5s` | 主接口失败时可回退查询 `mcstatus.io` / `mcapi.us` |
+| `GET /api/players/online` | 主服务器 | `no-store` | 在线玩家与人数，主接口失败时可回退查询 `mcstatus.io` / `mcapi.us` |
+| `GET /api/players/history` | 主服务器 | `to < now` 时 `300s`，否则 `no-store` | 转发 `from` / `to` / `interval` 查询参数，其中 `interval` 为秒级整数 |
+| `GET /api/players/:uuid/history` | 主服务器 | `no-store` | 转发玩家会话历史查询 |
 | `GET /api/announcements` | 主服务器 | `300s` | 公告列表 |
 | `GET /api/buildings` | 建筑服务器 | `300s` | 默认回退到主服务器地址 |
 | `GET /api/bans` | 主服务器 | `60s` | 封禁列表 |
@@ -54,10 +56,57 @@ openssl rand -hex 32
 ### 数据结构
 
 <details>
-<summary><code>GET /api/players</code></summary>
+<summary><code>GET /api/players/online</code></summary>
 
 ```ts
-{ count: number; players: { name: string; uuid: string }[] }
+{ online: number; players: { name: string; uuid: string; joined_at: string }[] }
+```
+</details>
+
+<details>
+<summary><code>GET /api/players/history</code></summary>
+
+```ts
+{
+  meta: {
+    from: string;
+    to: string;
+    interval: number; // 秒
+    total_points: number;
+  };
+  summary: {
+    peak_online: number;
+    peak_time: string | null;
+    avg_online: number;
+    total_unique_players: number;
+  };
+  data: {
+    timestamp: string;
+    online: number;
+    players: string[];
+  }[];
+}
+```
+</details>
+
+<details>
+<summary><code>GET /api/players/:uuid/history</code></summary>
+
+```ts
+{
+  uuid: string;
+  name: string;
+  sessions: {
+    joined_at: string;
+    left_at: string | null;
+    duration_min?: number;
+  }[];
+  stats: {
+    total_sessions: number;
+    total_hours: number;
+    first_seen: string | null;
+  };
+}
 ```
 </details>
 
@@ -150,7 +199,9 @@ MikWeb/
 │   │   ├── opengraph-image.tsx
 │   │   └── ...
 │   ├── api/
-│   │   ├── players/route.ts
+│   │   ├── players/online/route.ts
+│   │   ├── players/history/route.ts
+│   │   ├── players/[uuid]/history/route.ts
 │   │   ├── announcements/route.ts
 │   │   ├── buildings/route.ts
 │   │   ├── bans/route.ts

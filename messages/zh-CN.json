@@ -37,6 +37,89 @@
       "empty": "暂无公告",
       "clickToViewAll": "点击查看全部公告"
     },
+    "playerHistory": {
+      "title": "在线人数历史",
+      "description": "查看服务器在线人数在不同时间范围内的变化。支持切换采样精度，并查看任意时间点的在线玩家列表。",
+      "loading": "正在加载人数历史...",
+      "empty": "当前时间范围内还没有可用数据。",
+      "error": "人数历史加载失败。",
+      "rangeLabel": "时间范围",
+      "precisionLabel": "采样精度",
+      "precisionOverview": "概览",
+      "precisionDetail": "细节",
+      "precisionHint": "拖动滑块调节采样密度，向左看长期趋势，向右查看更细的短时波动。",
+      "precisionEstimate": "约 {count} 个点",
+      "liveNow": "当前在线",
+      "autoRefresh": "每分钟自动刷新",
+      "refreshing": "正在刷新",
+      "ranges": {
+        "24h": "最近 24 小时",
+        "3d": "最近 3 天",
+        "7d": "最近 7 天",
+        "30d": "最近 30 天"
+      },
+      "intervals": {
+        "m2": "2 分钟",
+        "m3": "3 分钟",
+        "m4": "4 分钟",
+        "m5": "5 分钟",
+        "m6": "6 分钟",
+        "m8": "8 分钟",
+        "m10": "10 分钟",
+        "m12": "12 分钟",
+        "m15": "15 分钟",
+        "m20": "20 分钟",
+        "m30": "30 分钟",
+        "h1": "1 小时",
+        "h2": "2 小时",
+        "h3": "3 小时",
+        "h4": "4 小时",
+        "h6": "6 小时",
+        "h12": "12 小时",
+        "d1": "1 天"
+      },
+      "summary": {
+        "peakOnline": "峰值在线",
+        "averageOnline": "平均在线",
+        "uniquePlayers": "去重玩家",
+        "samples": "采样点数",
+        "perSample": "按当前采样粒度统计",
+        "inWindow": "统计区间内出现过",
+        "noData": "暂无"
+      },
+      "actions": {
+        "peak": "跳到峰值",
+        "latest": "查看最新",
+        "lock": "锁定当前",
+        "prev": "上一个点",
+        "next": "下一个点",
+        "unlock": "取消锁定"
+      },
+      "chart": {
+        "interactionHint": "悬浮探索，点击锁定，继续对比不同时间点。",
+        "keyboardHint": "方向键切换 · End 最新 · Home 峰值 · Esc 解锁"
+      },
+      "selectedPoint": {
+        "title": "时间点",
+        "timestampLabel": "时间",
+        "onlineLabel": "在线人数",
+        "playerCountLabel": "玩家数",
+        "changeLabel": "较上个点变化",
+        "changeRateLabel": "变化率",
+        "samplePositionLabel": "采样位置",
+        "precisionLabel": "采样粒度",
+        "pointStatusLabel": "点位状态",
+        "modeLabel": "查看模式",
+        "live": "跟随悬浮",
+        "locked": "锁定对比",
+        "peak": "峰值点",
+        "latest": "最新点",
+        "normal": "普通点位",
+        "playersLabel": "在线玩家",
+        "noPlayers": "该时间点没有在线玩家。"
+      },
+      "staleWarning": "最新刷新失败，当前仍显示上一次成功获取的数据。"
+    },
     "features": {
       "vanilla": {
         "title": "创造休闲体验",

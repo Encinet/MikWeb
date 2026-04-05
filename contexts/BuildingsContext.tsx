@@ -1,28 +1,15 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createContext, useCallback, useContext, useState } from 'react';
+import { useCallback, useState } from 'react';
+
+import { BuildingsContext } from '@/contexts/buildings-context';
 import { fetchValidatedJson } from '@/lib/clientApi';
-import type { Building, BuildingsContextValue } from '@/lib/types';
+import type { Building } from '@/lib/types';
 import { isBuildingArray } from '@/lib/types';
 
 const BUILDINGS_CACHE_TTL_MS = 300_000;
 const BUILDINGS_REQUEST_TIMEOUT_MS = 15_000;
-
-const defaultBuildingsContextValue: BuildingsContextValue = {
-  buildings: [],
-  buildingCount: 0,
-  isLoading: false,
-  error: null,
-  fetchBuildings: async () => {},
-  lastUpdatedAt: null,
-};
-
-const BuildingsContext = createContext<BuildingsContextValue>(defaultBuildingsContextValue);
-
-export function useBuildingsContext(): BuildingsContextValue {
-  return useContext(BuildingsContext);
-}
 
 export function BuildingsContextProvider({ children }: { children: ReactNode }) {
   const [buildings, setBuildings] = useState<Building[]>([]);

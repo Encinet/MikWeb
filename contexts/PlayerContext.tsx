@@ -1,31 +1,19 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { PlayerContext } from '@/contexts/player-context';
 import { fetchValidatedJson } from '@/lib/clientApi';
-import type { Player, PlayerContextValue } from '@/lib/types';
-import { isPlayerStatusPayload } from '@/lib/types';
+import type { OnlinePlayer } from '@/lib/types';
+import { isPlayerOnlinePayload } from '@/lib/types';
 
 const PLAYER_REQUEST_TIMEOUT_MS = 10_000;
 const BASE_POLL_DELAY_MS = 10_000;
 const MAX_RETRIES = 3;
 
-const defaultPlayerContextValue: PlayerContextValue = {
-  players: [],
-  playerCount: 0,
-  isOnline: true,
-  isLoading: true,
-  networkError: false,
-};
-
-const PlayerContext = createContext<PlayerContextValue>(defaultPlayerContextValue);
-
-export function usePlayerContext(): PlayerContextValue {
-  return useContext(PlayerContext);
-}
-
 export function PlayerContextProvider({ children }: { children: ReactNode }) {
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState<OnlinePlayer[]>([]);
   const [playerCount, setPlayerCount] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,15 +46,15 @@ export function PlayerContextProvider({ children }: { children: ReactNode }) {
     isFetchingRef.current = true;
 
     const result = await fetchValidatedJson({
-      url: '/api/players',
-      validate: isPlayerStatusPayload,
+      url: '/api/players/online',
+      validate: isPlayerOnlinePayload,
       timeoutMs: PLAYER_REQUEST_TIMEOUT_MS,
       cache: 'no-store',
       fallbackErrorMessage: 'Failed to load player data',
       invalidDataMessage: 'Invalid player data format',
     });
 
-    if (result.status === 'success' && result.data.count === -1) {
+    if (result.status === 'success' && result.data.online === -1) {
       setIsOnline(false);
       setNetworkError(false);
       resetPlayersState();
@@ -76,7 +64,7 @@ export function PlayerContextProvider({ children }: { children: ReactNode }) {
       setIsOnline(true);
       setNetworkError(false);
       setPlayers(result.data.players);
-      setPlayerCount(result.data.count);
+      setPlayerCount(result.data.online);
       lastUpdatedAtRef.current = Date.now();
       retryCountRef.current = 0;
     } else if (result.status === 'api-error' || result.status === 'http-error') {
@@ -99,6 +87,10 @@ export function PlayerContextProvider({ children }: { children: ReactNode }) {
   }, [resetPlayersState]);
 
   useEffect(() => {
+    const initialFetchTimer = window.setTimeout(() => {
+      void fetchPlayers();
+    }, 0);
+
     const setupPolling = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -128,11 +120,12 @@ export function PlayerContextProvider({ children }: { children: ReactNode }) {
       setupPolling();
     };
 
-    fetchPlayers();
     setupPolling();
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      window.clearTimeout(initialFetchTimer);
+
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }

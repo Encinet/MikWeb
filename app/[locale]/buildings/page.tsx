@@ -23,7 +23,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry from 'react-masonry-css';
 
 import ScrollReveal from '@/components/ScrollReveal';
-import { useBuildingsContext } from '@/contexts/BuildingsContext';
+import { useBuildingsContext } from '@/hooks/useBuildingsContext';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import type { BuildingFilterId, BuildingSortKey } from '@/lib/buildings';
 import {

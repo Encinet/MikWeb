@@ -11,7 +11,7 @@ import type {
   FuzzyMatchScore,
   LocalizedText,
   MarkdownBlock,
-  PlayerStatusPayload,
+  PlayerOnlinePayload,
   PreparedQuery,
   SearchableWikiBlock,
   WikiLocale,
@@ -263,13 +263,15 @@ const handler = createMcpHandler(
         inputSchema: {},
       },
       async () => {
-        const data: PlayerStatusPayload = await apiFetch(new URL('/api/players', BASE_URL).href);
+        const data: PlayerOnlinePayload = await apiFetch(
+          new URL('/api/players/online', BASE_URL).href,
+        );
 
-        if (data.count === -1) {
+        if (data.online === -1) {
           return { content: [{ type: 'text', text: 'Server offline.' }] };
         }
 
-        if (data.count === 0) {
+        if (data.online === 0) {
           return { content: [{ type: 'text', text: 'Server online, no players.' }] };
         }
 
@@ -279,7 +281,7 @@ const handler = createMcpHandler(
           content: [
             {
               type: 'text',
-              text: `There are currently ${data.count} player(s) online:\n\n${playerList}`,
+              text: `There are currently ${data.online} player(s) online:\n\n${playerList}`,
             },
           ],
         };
