@@ -69,6 +69,7 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 |------|------|
 | `/headdb` | Open the decorative head database and browse custom heads |
 | `/hat` | Wear the item in your hand as a hat |
+| `/nametag` | Set your prefix and suffix. Requires full member status |
 | `/asedit give` | Get the armor stand editor tool |
 | `/sit` | Sit on a block |
 | `/lay` | Lie down |
