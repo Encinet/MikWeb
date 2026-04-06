@@ -33,10 +33,12 @@ export interface PreparedQuery {
 export type FuzzyMatchScore = number;
 
 export interface SearchableWikiBlock {
+  sectionId: WikiSectionId;
   path: string;
   url: string;
   content: string;
   heading: string;
+  slug: string;
   directText: string;
   subtreeText: string;
   searchableText: string;
@@ -44,9 +46,13 @@ export interface SearchableWikiBlock {
 }
 
 export interface WikiSearchResult {
+  sectionId: WikiSectionId;
   path: string;
   url: string;
   content: string;
+  heading: string;
+  slug: string;
+  snippet: string;
   score: number;
 }
 

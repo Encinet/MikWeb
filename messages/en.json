@@ -173,6 +173,12 @@
     "title": "Game Guide",
     "description": "Learn about server rules, commands, and gameplay tips",
     "navigation": "Navigation",
+    "searchPlaceholder": "Search wiki content, commands, or keywords...",
+    "searchResultsLabel": "Search Results",
+    "searchResultsCount": "{count} matches",
+    "searchEmptyTitle": "No matching content found",
+    "searchEmptyDescription": "Try a shorter keyword, a command alias, or a different phrasing.",
+    "clearSearch": "Clear search",
     "sections": {
       "gettingStarted": "Getting Started",
       "rules": "Server Rules",

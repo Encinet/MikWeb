@@ -1,7 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import GithubSlugger from 'github-slugger';
 import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 
@@ -9,177 +8,18 @@ import type {
   AnnouncementsApiResponse,
   BansApiResponse,
   BuildingsApiResponse,
-  FuzzyMatchScore,
   LocalizedText,
-  MarkdownBlock,
   PlayerOnlinePayload,
-  PreparedQuery,
   SearchableWikiBlock,
   WikiLocale,
-  WikiSearchResult,
+  WikiSectionContentMap,
 } from '@/lib/types';
 import { WIKI_LOCALES, WIKI_SECTIONS } from '@/lib/wiki';
+import { buildWikiSearchIndex, searchWikiBlocks } from '@/lib/wikiSearch';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
 const wikiIndexCache = new Map<string, Promise<SearchableWikiBlock[]>>();
-
-function prepareQuery(query: string): PreparedQuery {
-  const lower = query.trim().toLowerCase();
-
-  return {
-    lower,
-    tokens: lower.split(/\s+/).filter(Boolean),
-  };
-}
-
-function fuzzyMatch(query: PreparedQuery, text: string): FuzzyMatchScore {
-  const q = query.lower;
-  const t = text.toLowerCase();
-
-  if (t.includes(q)) return 3;
-
-  let qi = 0;
-  let consecutive = 0;
-  let maxConsecutive = 0;
-  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
-    if (t[ti] === q[qi]) {
-      qi++;
-      consecutive++;
-      maxConsecutive = Math.max(maxConsecutive, consecutive);
-    } else {
-      consecutive = 0;
-    }
-  }
-  if (qi === q.length) {
-    return 2 + maxConsecutive / q.length;
-  }
-
-  const { tokens } = query;
-  if (tokens.length > 1) {
-    const allFound = tokens.every((tok) => t.includes(tok));
-    if (allFound) return 1 + tokens.length * 0.1;
-  }
-
-  if (tokens.some((tok) => tok.length >= 2 && t.includes(tok))) {
-    return 0.5;
-  }
-
-  return 0;
-}
-
-function normalizeWikiSearchPhrases(searchPhrases: string[]): PreparedQuery[] {
-  const uniqueQueries = new Set<string>();
-
-  for (const phrase of searchPhrases) {
-    const trimmed = phrase.trim();
-    if (!trimmed) continue;
-    uniqueQueries.add(trimmed);
-  }
-
-  return Array.from(uniqueQueries).map((item) => prepareQuery(item));
-}
-
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/\r\n?/g, '\n')
-    .replace(/```([^\n]*)\n([\s\S]*?)```/g, (_, __, code: string) => code.trim())
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .split('\n')
-    .map((line) => {
-      const trimmed = line.trim();
-
-      if (!trimmed) return '';
-      if (/^\|?[-:\s|]+\|?$/.test(trimmed)) return '';
-
-      if (trimmed.includes('|')) {
-        const cells = trimmed
-          .split('|')
-          .map((cell) => cell.trim())
-          .filter(Boolean);
-
-        if (cells.length > 0) return cells.join(' | ');
-      }
-
-      return trimmed
-        .replace(/^#{1,6}\s+/, '')
-        .replace(/^>\s?/, '')
-        .replace(/^[-*+]\s\[[ xX]\]\s+/, '')
-        .replace(/^[-*+]\s+/, '')
-        .replace(/^\d+\.\s+/, '')
-        .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')
-        .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
-        .replace(/_{1,3}([^_]+)_{1,3}/g, '$1');
-    })
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
-function parseMarkdownBlocks(sectionId: string, raw: string): MarkdownBlock[] {
-  const lines = raw.replace(/\r\n?/g, '\n').split('\n');
-  const headingMatches = lines
-    .map((line, index) => {
-      const match = line.match(/^(#{1,4})\s+(.+?)\s*#*\s*$/);
-      if (!match) return null;
-
-      return {
-        index,
-        level: match[1].length,
-        heading: match[2].trim(),
-      };
-    })
-    .filter(
-      (
-        value,
-      ): value is {
-        index: number;
-        level: number;
-        heading: string;
-      } => value !== null,
-    );
-
-  if (headingMatches.length === 0) {
-    return [
-      {
-        heading: sectionId,
-        level: 1,
-        slug: '',
-        directRaw: raw.trim(),
-        subtreeRaw: raw.trim(),
-      },
-    ];
-  }
-
-  const slugger = new GithubSlugger();
-
-  return headingMatches.map((current, index) => {
-    const nextHeadingLine = headingMatches[index + 1]?.index ?? lines.length;
-    let nextSameOrHigherLine = lines.length;
-
-    for (let i = index + 1; i < headingMatches.length; i++) {
-      if (headingMatches[i].level <= current.level) {
-        nextSameOrHigherLine = headingMatches[i].index;
-        break;
-      }
-    }
-
-    return {
-      heading: current.heading,
-      level: current.level,
-      slug: slugger.slug(current.heading),
-      directRaw: lines
-        .slice(current.index + 1, nextHeadingLine)
-        .join('\n')
-        .trim(),
-      subtreeRaw: lines
-        .slice(current.index + 1, nextSameOrHigherLine)
-        .join('\n')
-        .trim(),
-    };
-  });
-}
 
 async function buildWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
   const contentDir = path.join(process.cwd(), 'content', locale);
@@ -192,39 +32,14 @@ async function buildWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]
     ),
   );
 
-  const blocks: SearchableWikiBlock[] = [];
+  const content: Partial<WikiSectionContentMap> = {};
 
   for (const fileResult of fileResults) {
     if (!fileResult) continue;
-
-    const { sectionId, raw } = fileResult;
-    const parsedBlocks = parseMarkdownBlocks(sectionId, raw);
-    const pageTitle = parsedBlocks.find((block) => block.level === 1)?.heading ?? sectionId;
-
-    for (const block of parsedBlocks) {
-      const directText = stripMarkdown(block.directRaw);
-      const subtreeText = stripMarkdown(block.subtreeRaw);
-      const searchableText = subtreeText || directText;
-
-      if (!searchableText && !block.heading) continue;
-
-      const hash = block.slug ? `#${block.slug}` : '';
-      blocks.push({
-        path: block.heading === pageTitle ? pageTitle : `${pageTitle} › ${block.heading}`,
-        url: `${BASE_URL}/${locale}/wiki?section=${sectionId}${hash}`,
-        content: [`${'#'.repeat(block.level)} ${block.heading}`, block.subtreeRaw]
-          .filter(Boolean)
-          .join('\n\n'),
-        heading: block.heading,
-        directText,
-        subtreeText,
-        searchableText,
-        level: block.level,
-      });
-    }
+    content[fileResult.sectionId] = fileResult.raw;
   }
 
-  return blocks;
+  return buildWikiSearchIndex(locale, content as WikiSectionContentMap, BASE_URL);
 }
 
 function getWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
@@ -464,39 +279,8 @@ const handler = createMcpHandler(
       async ({ searchPhrases, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
         const maxResults = limit ?? 5;
-        const preparedQueries = normalizeWikiSearchPhrases(searchPhrases);
         const indexedBlocks = await getWikiIndex(loc);
-        const results: WikiSearchResult[] = [];
-
-        for (const block of indexedBlocks) {
-          let headScore = 0;
-          let directScore = 0;
-          let bodyScore = 0;
-
-          for (const preparedQuery of preparedQueries) {
-            headScore = Math.max(headScore, fuzzyMatch(preparedQuery, block.heading));
-            directScore = Math.max(directScore, fuzzyMatch(preparedQuery, block.directText));
-            bodyScore = Math.max(bodyScore, fuzzyMatch(preparedQuery, block.searchableText));
-          }
-
-          const hasDirectContent = block.directText.length > 0;
-          const isContainerHeading = !hasDirectContent && block.subtreeText.length > 0;
-
-          if (headScore <= 0 && directScore <= 0 && bodyScore <= 0) continue;
-
-          const score =
-            Math.max(headScore * 1.8, directScore * 1.2, bodyScore) +
-            block.level * 0.1 +
-            (hasDirectContent ? 0.15 : 0) -
-            (isContainerHeading ? 0.2 : 0);
-
-          results.push({
-            path: block.path,
-            url: block.url,
-            content: block.content,
-            score,
-          });
-        }
+        const results = searchWikiBlocks(indexedBlocks, searchPhrases, maxResults);
 
         if (results.length === 0) {
           return {
@@ -509,18 +293,7 @@ const handler = createMcpHandler(
           };
         }
 
-        results.sort((a, b) => b.score - a.score);
-
-        const seen = new Set<string>();
-        const uniqueResults = results.filter((result) => {
-          const key = `${result.path}\n${result.url}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-
-        const text = uniqueResults
-          .slice(0, maxResults)
+        const text = results
           .map((result) => `[${result.path}]\n${result.url}\n\n${result.content}`)
           .join('\n\n---\n\n');
 

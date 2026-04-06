@@ -1,21 +1,39 @@
 'use client';
 
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { BookOpen, ChevronRight, Home, Menu, Shield, Users, Wrench, X, Zap } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronRight,
+  Home,
+  Menu,
+  Search,
+  Shield,
+  Users,
+  Wrench,
+  X,
+  Zap,
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 
 import type {
+  SearchableWikiBlock,
   WikiSectionContentMap,
   WikiSectionDefinition,
   WikiSectionIcon,
   WikiSectionId,
 } from '@/lib/types';
 import { isWikiSectionId } from '@/lib/wiki';
+import { searchWikiBlocks } from '@/lib/wikiSearch';
+
+interface PendingWikiAnchor {
+  heading: string;
+  slug: string;
+}
 
 const iconMap = new Map<WikiSectionIcon, React.ComponentType<{ className?: string }>>([
   ['Home', Home],
@@ -29,9 +47,17 @@ interface WikiContentProps {
   title: string;
   description: string;
   navigation: string;
+  searchPlaceholder: string;
+  searchResultsLabel: string;
+  searchResultsCountTemplate: string;
+  searchEmptyTitle: string;
+  searchEmptyDescription: string;
+  clearSearchLabel: string;
   sections: WikiSectionDefinition[];
   content: WikiSectionContentMap;
+  searchIndex: SearchableWikiBlock[];
   initialSection?: WikiSectionId;
+  initialQuery?: string;
 }
 
 const markdownDelays = {
@@ -104,13 +130,27 @@ export default function WikiContent({
   title,
   description,
   navigation,
+  searchPlaceholder,
+  searchResultsLabel,
+  searchResultsCountTemplate,
+  searchEmptyTitle,
+  searchEmptyDescription,
+  clearSearchLabel,
   sections,
   content,
+  searchIndex,
   initialSection,
+  initialQuery = '',
 }: WikiContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const urlQuery = searchParams.get('q') ?? initialQuery;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(urlQuery);
+  const deferredSearchQuery = useDeferredValue(searchQuery.trim());
+  const [pendingAnchor, setPendingAnchor] = useState<PendingWikiAnchor | null>(null);
+  const shouldSkipNextQuerySync = useRef(false);
+  const [currentHash, setCurrentHash] = useState('');
   const activeSection = useMemo(() => {
     const section = searchParams.get('section');
 
@@ -124,36 +164,103 @@ export default function WikiContent({
     return new Map(sections.map((section, index) => [section.id, index]));
   }, [sections]);
   const [sectionDirection, setSectionDirection] = useState(0);
+  const isSearching = deferredSearchQuery.length > 0;
+  const searchResults = useMemo(() => {
+    if (!isSearching) return [];
+
+    return searchWikiBlocks(searchIndex, [deferredSearchQuery], 12);
+  }, [deferredSearchQuery, isSearching, searchIndex]);
+  const searchResultsCountLabel = useMemo(() => {
+    return searchResultsCountTemplate.replace('{count}', String(searchResults.length));
+  }, [searchResults.length, searchResultsCountTemplate]);
+
+  useEffect(() => {
+    setSearchQuery(urlQuery);
+  }, [urlQuery]);
+
+  useEffect(() => {
+    const syncHash = () => setCurrentHash(window.location.hash);
+
+    syncHash();
+    window.addEventListener('hashchange', syncHash);
+    return () => window.removeEventListener('hashchange', syncHash);
+  }, []);
+
+  useEffect(() => {
+    if (shouldSkipNextQuerySync.current) {
+      shouldSkipNextQuerySync.current = false;
+      return;
+    }
+
+    const currentQuery = searchParams.get('q') ?? '';
+    if (deferredSearchQuery === currentQuery) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (deferredSearchQuery) {
+      params.set('q', deferredSearchQuery);
+    } else {
+      params.delete('q');
+    }
+
+    const nextQueryString = params.toString();
+    startTransition(() => {
+      router.replace(nextQueryString ? `?${nextQueryString}` : '?', { scroll: false });
+    });
+  }, [deferredSearchQuery, router, searchParams]);
 
   // Scroll to hash target after markdown renders
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (!hash) return;
+    const hash = pendingAnchor?.slug || currentHash.slice(1);
+    const headingText = pendingAnchor?.heading ?? '';
+    if (!hash && !headingText) return;
     const decodedHash = decodeURIComponent(hash);
-    const contentContainer = document.querySelector(`[data-section="${activeSection}"]`);
 
-    const tryScroll = () => {
-      // Find heading by text content (rehype-slug doesn't generate ids for Chinese text)
+    let attempts = 0;
+    const maxAttempts = 24;
+
+    const tryScroll = (): boolean => {
+      const contentContainer = document.querySelector(`[data-section="${activeSection}"]`);
+      if (!contentContainer) return false;
+
+      if (decodedHash) {
+        const hashTarget = document.getElementById(decodedHash);
+        if (hashTarget && contentContainer?.contains(hashTarget)) {
+          const top = hashTarget.getBoundingClientRect().top + window.scrollY - 160;
+          window.scrollTo({ top, behavior: 'smooth' });
+          if (pendingAnchor) setPendingAnchor(null);
+          return true;
+        }
+      }
+
       const headings = contentContainer?.querySelectorAll('h1, h2, h3, h4, h5, h6');
       if (!headings) return false;
       for (const el of headings) {
-        if (el.textContent?.trim() === decodedHash || el.textContent?.trim() === hash) {
+        if (el.textContent?.trim() === headingText || el.textContent?.trim() === decodedHash) {
           const top = el.getBoundingClientRect().top + window.scrollY - 160;
           window.scrollTo({ top, behavior: 'smooth' });
+          if (pendingAnchor) setPendingAnchor(null);
           return true;
         }
       }
       return false;
     };
 
-    if (!tryScroll()) {
-      const timer = setTimeout(tryScroll, 1000);
-      return () => clearTimeout(timer);
+    if (tryScroll()) {
+      return;
     }
-  }, [activeSection]);
+
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (tryScroll() || attempts >= maxAttempts) {
+        window.clearInterval(timer);
+      }
+    }, 120);
+
+    return () => window.clearInterval(timer);
+  }, [activeSection, currentHash, pendingAnchor]);
 
   const handleSectionChange = (id: WikiSectionId) => {
-    if (id === activeSection) return;
+    if (id === activeSection && !isSearching) return;
     const currentSectionIndex = sectionIndexMap.get(activeSection) ?? 0;
     const nextSectionIndex = sectionIndexMap.get(id) ?? currentSectionIndex;
 
@@ -165,9 +272,45 @@ export default function WikiContent({
           : -1,
     );
     setIsSidebarOpen(false);
+    shouldSkipNextQuerySync.current = true;
+    setSearchQuery('');
+    setPendingAnchor(null);
+    setCurrentHash('');
     const params = new URLSearchParams(searchParams.toString());
     params.set('section', id);
-    router.replace(`?${params.toString()}`, { scroll: false });
+    params.delete('q');
+    const nextQueryString = params.toString();
+    router.replace(nextQueryString ? `?${nextQueryString}` : '?', { scroll: false });
+  };
+
+  const handleSearchResultOpen = (result: (typeof searchResults)[number]) => {
+    const currentSectionIndex = sectionIndexMap.get(activeSection) ?? 0;
+    const nextSectionIndex = sectionIndexMap.get(result.sectionId) ?? currentSectionIndex;
+
+    setSectionDirection(
+      nextSectionIndex === currentSectionIndex
+        ? 0
+        : nextSectionIndex > currentSectionIndex
+          ? 1
+          : -1,
+    );
+    setIsSidebarOpen(false);
+    shouldSkipNextQuerySync.current = true;
+    setSearchQuery('');
+    setPendingAnchor({
+      heading: result.heading,
+      slug: result.slug,
+    });
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('section', result.sectionId);
+    params.delete('q');
+    const nextQueryString = params.toString();
+    const nextHash = result.slug ? `#${encodeURIComponent(result.slug)}` : '';
+
+    router.replace(`${nextQueryString ? `?${nextQueryString}` : '?'}${nextHash}`, {
+      scroll: false,
+    });
   };
 
   const markdownComponents = useMemo(() => {
@@ -398,6 +541,44 @@ export default function WikiContent({
             </motion.p>
           </motion.div>
 
+          <motion.div
+            className="mb-6 sm:mb-8"
+            initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ ...spring.gentle, delay: 0.2 }}
+          >
+            <div className="max-w-3xl mx-auto relative">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+                style={{ color: 'var(--theme-text-muted)' }}
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={searchPlaceholder}
+                className="w-full pl-12 pr-12 py-3.5 rounded-xl backdrop-blur-md focus:outline-none transition-all"
+                style={{
+                  color: 'var(--theme-text-primary)',
+                  background: 'var(--theme-surface-glass)',
+                  border: '1px solid var(--theme-border-glass)',
+                  boxShadow: 'var(--theme-shadow-card)',
+                }}
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
+                  style={{ color: 'var(--theme-text-muted-soft)' }}
+                  aria-label={clearSearchLabel}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : null}
+            </div>
+          </motion.div>
+
           {/* ── Mobile FAB + popup ── */}
           <div className="lg:hidden fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
             <AnimatePresence>
@@ -433,7 +614,7 @@ export default function WikiContent({
                   >
                     {sections.map((section) => {
                       const Icon = iconMap.get(section.icon) ?? BookOpen;
-                      const isActive = activeSection === section.id;
+                      const isActive = !isSearching && activeSection === section.id;
                       return (
                         <motion.button
                           key={section.id}
@@ -508,7 +689,7 @@ export default function WikiContent({
                 >
                   {sections.map((section) => {
                     const Icon = iconMap.get(section.icon) ?? BookOpen;
-                    const isActive = activeSection === section.id;
+                    const isActive = !isSearching && activeSection === section.id;
                     return (
                       <motion.button
                         key={section.id}
@@ -602,42 +783,125 @@ export default function WikiContent({
                   boxShadow: 'var(--theme-shadow-card)',
                 }}
               >
-                {/*
-                  Exit  → whole block fades out fast (direction-aware slide).
-                  Enter → each block (h1/h2/p/ul/…) springs in individually via markdownComponents.
-                */}
                 <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeSection}
-                    data-section={activeSection}
-                    initial={{
-                      opacity: 0,
-                      x: sectionDirection * 18,
-                      y: 10,
-                      filter: 'blur(4px)',
-                    }}
-                    animate={{ opacity: 1, x: 0, y: 0, filter: 'blur(0px)' }}
-                    exit={{
-                      opacity: 0,
-                      x: sectionDirection === 0 ? 0 : sectionDirection * -12,
-                      y: -10,
-                      filter: 'blur(4px)',
-                      transition: {
-                        duration: 0.16,
-                        ease: [0.4, 0, 1, 1] as [number, number, number, number],
-                      },
-                    }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                    className="prose prose-invert prose-blue max-w-none"
-                  >
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeSlug]}
-                      components={markdownComponents as object}
+                  {isSearching ? (
+                    <motion.div
+                      key={`search-${deferredSearchQuery}`}
+                      initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      exit={{
+                        opacity: 0,
+                        y: -8,
+                        filter: 'blur(4px)',
+                        transition: {
+                          duration: 0.16,
+                          ease: [0.4, 0, 1, 1] as [number, number, number, number],
+                        },
+                      }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      {content[activeSection]}
-                    </ReactMarkdown>
-                  </motion.div>
+                      <div className="mb-6">
+                        <p
+                          className="text-sm uppercase tracking-[0.2em] mb-2"
+                          style={{ color: 'var(--theme-text-muted)' }}
+                        >
+                          {searchResultsLabel}
+                        </p>
+                        <h2
+                          className="text-2xl sm:text-3xl font-semibold"
+                          style={{ color: 'var(--theme-text-heading)' }}
+                        >
+                          {searchResultsCountLabel}
+                        </h2>
+                      </div>
+
+                      {searchResults.length > 0 ? (
+                        <div className="space-y-4">
+                          {searchResults.map((result) => (
+                            <button
+                              type="button"
+                              key={`${result.sectionId}-${result.slug || result.heading}`}
+                              onClick={() => handleSearchResultOpen(result)}
+                              className="w-full text-left rounded-xl p-4 transition-all"
+                              style={{
+                                background: 'var(--theme-surface-glass-light)',
+                                border: '1px solid var(--theme-border-glass-light)',
+                              }}
+                            >
+                              <p
+                                className="text-xs uppercase tracking-[0.16em] mb-2"
+                                style={{ color: 'var(--theme-text-muted)' }}
+                              >
+                                {result.path}
+                              </p>
+                              <h3
+                                className="text-lg font-semibold mb-2"
+                                style={{ color: 'var(--theme-text-heading)' }}
+                              >
+                                {result.heading}
+                              </h3>
+                              <p
+                                className="text-sm leading-relaxed"
+                                style={{ color: 'var(--theme-text-muted-strong)' }}
+                              >
+                                {result.snippet}
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div
+                          className="rounded-xl p-6 sm:p-8"
+                          style={{
+                            background: 'var(--theme-surface-glass-light)',
+                            border: '1px solid var(--theme-border-glass-light)',
+                          }}
+                        >
+                          <h3
+                            className="text-xl font-semibold mb-3"
+                            style={{ color: 'var(--theme-text-heading)' }}
+                          >
+                            {searchEmptyTitle}
+                          </h3>
+                          <p style={{ color: 'var(--theme-text-muted-strong)' }}>
+                            {searchEmptyDescription}
+                          </p>
+                        </div>
+                      )}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key={activeSection}
+                      data-section={activeSection}
+                      initial={{
+                        opacity: 0,
+                        x: sectionDirection * 18,
+                        y: 10,
+                        filter: 'blur(4px)',
+                      }}
+                      animate={{ opacity: 1, x: 0, y: 0, filter: 'blur(0px)' }}
+                      exit={{
+                        opacity: 0,
+                        x: sectionDirection === 0 ? 0 : sectionDirection * -12,
+                        y: -10,
+                        filter: 'blur(4px)',
+                        transition: {
+                          duration: 0.16,
+                          ease: [0.4, 0, 1, 1] as [number, number, number, number],
+                        },
+                      }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                      className="prose prose-invert prose-blue max-w-none"
+                    >
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSlug]}
+                        components={markdownComponents as object}
+                      >
+                        {content[activeSection]}
+                      </ReactMarkdown>
+                    </motion.div>
+                  )}
                 </AnimatePresence>
               </div>
             </motion.div>
