@@ -55,16 +55,16 @@ export default async function WikiPage({
   return (
     <Suspense>
       <WikiContent
-        title={t('title')}
-        description={t('description')}
-        navigation={t('navigation')}
-        onThisPage={t('onThisPage')}
-        searchPlaceholder={t('searchPlaceholder')}
-        searchResultsLabel={t('searchResultsLabel')}
-        searchResultsCountTemplate={t('searchResultsCount', { count: '{count}' })}
-        searchEmptyTitle={t('searchEmptyTitle')}
-        searchEmptyDescription={t('searchEmptyDescription')}
-        clearSearchLabel={t('clearSearch')}
+        title={t('hero.title')}
+        description={t('hero.description')}
+        navigation={t('navigation.title')}
+        onThisPage={t('navigation.onThisPage')}
+        searchPlaceholder={t('search.placeholder')}
+        searchResultsLabel={t('search.resultsTitle')}
+        searchResultsCountTemplate={t('search.resultsCount', { count: '{count}' })}
+        searchEmptyTitle={t('search.empty.title')}
+        searchEmptyDescription={t('search.empty.description')}
+        clearSearchLabel={t('search.actions.clear')}
         sections={wikiSections}
         sectionGroups={wikiGroups}
         content={wikiContentBySection}

@@ -1038,8 +1038,6 @@ export default function WikiContent({
 
                           <div className="flex flex-wrap gap-2">
                             {activeOutline.map((item) => {
-                              const isCurrent = pendingAnchor?.slug === item.slug;
-
                               return (
                                 <button
                                   type="button"
@@ -1047,17 +1045,9 @@ export default function WikiContent({
                                   onClick={() => handleOutlineOpen(item)}
                                   className="rounded-full px-3 py-1.5 text-sm transition-colors"
                                   style={{
-                                    background: isCurrent
-                                      ? 'var(--theme-surface-blue-accent)'
-                                      : 'transparent',
-                                    border: `1px solid ${
-                                      isCurrent
-                                        ? 'var(--theme-border-blue-accent)'
-                                        : 'var(--theme-border-glass-light)'
-                                    }`,
-                                    color: isCurrent
-                                      ? 'var(--theme-accent-blue)'
-                                      : 'var(--theme-text-muted-strong)',
+                                    background: 'transparent',
+                                    border: '1px solid var(--theme-border-glass-light)',
+                                    color: 'var(--theme-text-muted-strong)',
                                     paddingLeft: item.level === 3 ? '1rem' : '0.75rem',
                                   }}
                                 >

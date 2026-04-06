@@ -125,7 +125,7 @@ export default async function HomePage() {
                       marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
                     }}
                   >
-                    {t('home.features.vanilla.title')}
+                    {t('home.features.creativeFreedom.title')}
                   </h4>
                   <p
                     style={{
@@ -134,7 +134,7 @@ export default async function HomePage() {
                       fontSize: 'clamp(0.875rem, 2vw, 1rem)',
                     }}
                   >
-                    {t('home.features.vanilla.description')}
+                    {t('home.features.creativeFreedom.description')}
                   </p>
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default async function HomePage() {
                       marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
                     }}
                   >
-                    {t('home.features.community.title')}
+                    {t('home.features.curatedCommunity.title')}
                   </h4>
                   <p
                     style={{
@@ -181,7 +181,7 @@ export default async function HomePage() {
                       fontSize: 'clamp(0.875rem, 2vw, 1rem)',
                     }}
                   >
-                    {t('home.features.community.description')}
+                    {t('home.features.curatedCommunity.description')}
                   </p>
                 </div>
               </div>

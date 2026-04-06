@@ -74,7 +74,7 @@ function BuildingTypeBadge({ buildType, t, compact = false }: BuildingTypeBadgeP
           style={{ color: 'var(--theme-accent-green-strong)' }}
         />
         <span className={textClassName} style={{ color: 'var(--theme-accent-green-strong)' }}>
-          {t('labels.original')}
+          {t('types.original')}
         </span>
       </>
     );
@@ -85,7 +85,7 @@ function BuildingTypeBadge({ buildType, t, compact = false }: BuildingTypeBadgeP
       <>
         <Copy className={iconClassName} style={{ color: 'var(--theme-accent-blue)' }} />
         <span className={textClassName} style={{ color: 'var(--theme-accent-blue)' }}>
-          {t('labels.derivative')}
+          {t('types.derivative')}
         </span>
       </>
     );
@@ -95,7 +95,7 @@ function BuildingTypeBadge({ buildType, t, compact = false }: BuildingTypeBadgeP
     <>
       <Copy className={iconClassName} style={{ color: 'var(--theme-accent-amber-strong)' }} />
       <span className={textClassName} style={{ color: 'var(--theme-accent-amber-strong)' }}>
-        {t('labels.replica')}
+        {t('types.replica')}
       </span>
     </>
   );
@@ -205,7 +205,7 @@ function BuildingSourceDetails({
               style={{ color: 'var(--theme-accent-purple)' }}
             />
             <div className="flex-1 min-w-0">
-              <span style={{ color: 'var(--theme-text-muted)' }}>{t('labels.originalAuthor')}</span>
+              <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.originalAuthor')}</span>
               <p className="font-medium" style={{ color: 'var(--theme-accent-purple)' }}>
                 {building.source.originalAuthor}
               </p>
@@ -219,7 +219,7 @@ function BuildingSourceDetails({
               style={{ color: 'var(--theme-accent-purple)' }}
             />
             <div className="flex-1 min-w-0">
-              <span style={{ color: 'var(--theme-text-muted)' }}>{t('labels.source')}</span>
+              <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.source')}</span>
               <a
                 href={building.source.originalLink}
                 target="_blank"
@@ -260,7 +260,7 @@ function BuildingSourceDetails({
           />
           <div className="flex-1">
             <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-              {t('labels.originalAuthor')}
+              {t('fields.originalAuthor')}
             </span>
             <p className="font-medium mt-1" style={{ color: 'var(--theme-accent-purple)' }}>
               {building.source.originalAuthor}
@@ -276,7 +276,7 @@ function BuildingSourceDetails({
           />
           <div className="flex-1 min-w-0">
             <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-              {t('labels.source')}
+              {t('fields.source')}
             </span>
             <a
               href={building.source.originalLink}
@@ -320,7 +320,7 @@ function BuildingCardFacts({ building, formatDate, locale, t }: BuildingCardFact
           className="w-4 h-4 shrink-0"
           style={{ color: 'var(--theme-accent-amber-strong)' }}
         />
-        <span style={{ color: 'var(--theme-text-muted)' }}>{t('labels.coordinates')}</span>
+        <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.coordinates')}</span>
         <code
           style={{
             background: 'var(--theme-surface-code)',
@@ -339,7 +339,7 @@ function BuildingCardFacts({ building, formatDate, locale, t }: BuildingCardFact
         />
         <div className="flex-1">
           <span style={{ color: 'var(--theme-text-muted)' }}>
-            {building.builders.length > 1 ? t('labels.builders') : t('labels.builder')}
+            {building.builders.length > 1 ? t('fields.builders') : t('fields.builder')}
           </span>
           <div className="flex flex-wrap gap-1.5 mt-1">
             <BuilderNames builders={building.builders} compact />
@@ -349,7 +349,7 @@ function BuildingCardFacts({ building, formatDate, locale, t }: BuildingCardFact
 
       <div className="flex items-center gap-2 text-sm">
         <Bell className="w-4 h-4 shrink-0" style={{ color: 'var(--theme-accent-blue)' }} />
-        <span style={{ color: 'var(--theme-text-muted)' }}>{t('labels.buildDate')}</span>
+        <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.buildDate')}</span>
         <span style={{ color: 'var(--theme-accent-blue)' }}>{formatDate(building.buildDate)}</span>
       </div>
 
@@ -378,7 +378,7 @@ function BuildingDetailFacts({ building, formatDate, locale, t }: BuildingDetail
         />
         <div className="flex-1">
           <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-            {t('labels.coordinates')}
+            {t('fields.coordinates')}
           </span>
           <div className="mt-1">
             <code
@@ -401,7 +401,7 @@ function BuildingDetailFacts({ building, formatDate, locale, t }: BuildingDetail
         />
         <div className="flex-1">
           <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-            {building.builders.length > 1 ? t('labels.builders') : t('labels.builder')}
+            {building.builders.length > 1 ? t('fields.builders') : t('fields.builder')}
           </span>
           <div className="flex flex-wrap gap-2 mt-1">
             <BuilderNames builders={building.builders} />
@@ -413,7 +413,7 @@ function BuildingDetailFacts({ building, formatDate, locale, t }: BuildingDetail
         <Bell className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--theme-accent-blue)' }} />
         <div className="flex-1">
           <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-            {t('labels.buildDate')}
+            {t('fields.buildDate')}
           </span>
           <div className="mt-1">
             <span className="text-base" style={{ color: 'var(--theme-accent-blue)' }}>
@@ -1017,18 +1017,18 @@ export default function BuildingsPage() {
   };
 
   const filterOptions: { id: BuildingFilterId; label: string }[] = [
-    { id: 'all', label: t('filters.all') },
-    { id: 'original', label: t('filters.original') },
-    { id: 'derivative', label: t('filters.derivative') },
-    { id: 'replica', label: t('filters.replica') },
+    { id: 'all', label: t('filters.options.all') },
+    { id: 'original', label: t('filters.options.original') },
+    { id: 'derivative', label: t('filters.options.derivative') },
+    { id: 'replica', label: t('filters.options.replica') },
   ];
 
   const sortOptions: { id: BuildingSortKey; label: string }[] = [
-    { id: 'date-desc', label: t('sort.dateDesc') },
-    { id: 'date-asc', label: t('sort.dateAsc') },
-    { id: 'name-asc', label: t('sort.nameAsc') },
-    { id: 'name-desc', label: t('sort.nameDesc') },
-    { id: 'random', label: t('sort.random') },
+    { id: 'date-desc', label: t('sort.options.dateDesc') },
+    { id: 'date-asc', label: t('sort.options.dateAsc') },
+    { id: 'name-asc', label: t('sort.options.nameAsc') },
+    { id: 'name-desc', label: t('sort.options.nameDesc') },
+    { id: 'random', label: t('sort.options.random') },
   ];
 
   const getTagKey = (building: Building, tag: LocalizedText) => {
@@ -1099,14 +1099,14 @@ export default function BuildingsPage() {
               className="text-4xl sm:text-5xl font-bold"
               style={{ color: 'var(--theme-text-heading)' }}
             >
-              {t('title')}
+              {t('hero.title')}
             </h1>
           </div>
           <p
             className="text-base sm:text-lg max-w-2xl mx-auto"
             style={{ color: 'var(--theme-text-muted-soft)' }}
           >
-            {t('description')}
+            {t('hero.description')}
           </p>
         </div>
 
@@ -1116,22 +1116,25 @@ export default function BuildingsPage() {
           onFilterChange={handleFilterChange}
           onSearchQueryChange={handleSearchQueryChange}
           onSortChange={handleSortChange}
-          searchPlaceholder={t('search')}
+          searchPlaceholder={t('search.placeholder')}
           searchQuery={searchQuery}
           sortBy={sortBy}
           sortOptions={sortOptions}
         />
 
         {isLoading ? (
-          <BuildingsLoadingState message={t('loading')} />
+          <BuildingsLoadingState message={t('states.loading')} />
         ) : error ? (
           <BuildingsMessageState
             description={error}
             iconColor="var(--theme-accent-purple)"
-            title={commonT('error')}
+            title={commonT('states.error')}
           />
         ) : filteredBuildings.length === 0 ? (
-          <BuildingsMessageState description={t('empty')} iconColor="var(--theme-text-faint)" />
+          <BuildingsMessageState
+            description={t('states.empty')}
+            iconColor="var(--theme-text-faint)"
+          />
         ) : (
           <InfiniteScroll
             dataLength={displayedBuildings.length}
@@ -1151,7 +1154,7 @@ export default function BuildingsPage() {
             endMessage={
               <div className="text-center py-8">
                 <p style={{ color: 'var(--theme-text-muted)' }} className="text-sm">
-                  {t('noMore')}
+                  {t('states.end')}
                 </p>
               </div>
             }

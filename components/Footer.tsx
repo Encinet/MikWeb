@@ -52,7 +52,7 @@ export default async function Footer() {
             >
               {ORGANIZATION_NAME}
             </a>
-            . {t('licensedUnder')}{' '}
+            . {t('source.licensedUnder')}{' '}
             <a
               href={SOURCE_CODE_URL}
               target="_blank"
@@ -63,12 +63,12 @@ export default async function Footer() {
                 transition: 'color 0.2s ease',
               }}
             >
-              {t('sourceCode')}
+              {t('source.code')}
             </a>
             .
           </p>
           <p style={{ color: 'var(--theme-text-dim)', fontSize: '0.75rem' }}>
-            {t('minecraftTrademark', { organizationName: ORGANIZATION_NAME })}{' '}
+            {t('legal.minecraftTrademark', { organizationName: ORGANIZATION_NAME })}{' '}
             <a
               href="https://www.minecraft.net/en-us/eula"
               target="_blank"
@@ -79,7 +79,7 @@ export default async function Footer() {
                 transition: 'color 0.2s ease',
               }}
             >
-              {t('eula')}
+              {t('legal.eula')}
             </a>
             .
           </p>

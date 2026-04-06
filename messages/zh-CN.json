@@ -4,18 +4,26 @@
     "description": "一个创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作"
   },
   "nav": {
-    "home": "首页",
-    "buildings": "建筑收录",
-    "map": "服务器地图",
-    "bans": "封禁列表",
-    "wiki": "游戏指南",
-    "join": "申请加入",
-    "subtitle": "创造休闲服务器",
-    "online": "在线",
-    "offline": "离线",
-    "networkError": "网络错误",
-    "lightMode": "浅色模式",
-    "darkMode": "深色模式"
+    "brand": {
+      "subtitle": "创造休闲服务器"
+    },
+    "items": {
+      "home": "首页",
+      "buildings": "建筑收录",
+      "map": "服务器地图",
+      "bans": "封禁列表",
+      "wiki": "游戏指南",
+      "join": "申请加入"
+    },
+    "status": {
+      "online": "在线",
+      "offline": "离线",
+      "networkError": "网络错误"
+    },
+    "theme": {
+      "light": "浅色模式",
+      "dark": "深色模式"
+    }
   },
   "home": {
     "hero": {
@@ -32,49 +40,62 @@
       "days": "天"
     },
     "announcements": {
-      "title": "服务器公告",
-      "loading": "加载中...",
-      "empty": "暂无公告",
-      "clickToViewAll": "点击查看全部公告"
+      "section": {
+        "title": "服务器公告"
+      },
+      "states": {
+        "loading": "加载中...",
+        "empty": "暂无公告"
+      },
+      "actions": {
+        "viewAll": "点击查看全部公告"
+      }
     },
     "playerHistory": {
-      "title": "在线人数历史",
-      "loading": "正在加载人数历史...",
-      "empty": "当前时间范围内还没有可用数据。",
-      "error": "人数历史加载失败。",
-      "rangeLabel": "时间范围",
-      "precisionLabel": "采样精度",
-      "precisionOverview": "概览",
-      "precisionDetail": "细节",
-      "precisionEstimate": "约 {count} 个点",
-      "liveNow": "当前在线",
-      "autoRefresh": "每分钟自动刷新",
-      "refreshing": "正在刷新",
-      "ranges": {
-        "24h": "最近 24 小时",
-        "3d": "最近 3 天",
-        "7d": "最近 7 天",
-        "30d": "最近 30 天"
+      "section": {
+        "title": "在线人数历史",
+        "liveNow": "当前在线"
       },
-      "intervals": {
-        "m2": "2 分钟",
-        "m3": "3 分钟",
-        "m4": "4 分钟",
-        "m5": "5 分钟",
-        "m6": "6 分钟",
-        "m8": "8 分钟",
-        "m10": "10 分钟",
-        "m12": "12 分钟",
-        "m15": "15 分钟",
-        "m20": "20 分钟",
-        "m30": "30 分钟",
-        "h1": "1 小时",
-        "h2": "2 小时",
-        "h3": "3 小时",
-        "h4": "4 小时",
-        "h6": "6 小时",
-        "h12": "12 小时",
-        "d1": "1 天"
+      "states": {
+        "loading": "正在加载人数历史...",
+        "empty": "当前时间范围内还没有可用数据。",
+        "error": "人数历史加载失败。",
+        "refreshing": "正在刷新"
+      },
+      "controls": {
+        "rangeLabel": "时间范围",
+        "precisionLabel": "采样精度",
+        "precisionEstimate": "约 {count} 个点",
+        "precisionScale": {
+          "overview": "概览",
+          "detail": "细节"
+        },
+        "ranges": {
+          "24h": "最近 24 小时",
+          "3d": "最近 3 天",
+          "7d": "最近 7 天",
+          "30d": "最近 30 天"
+        },
+        "intervals": {
+          "m2": "2 分钟",
+          "m3": "3 分钟",
+          "m4": "4 分钟",
+          "m5": "5 分钟",
+          "m6": "6 分钟",
+          "m8": "8 分钟",
+          "m10": "10 分钟",
+          "m12": "12 分钟",
+          "m15": "15 分钟",
+          "m20": "20 分钟",
+          "m30": "30 分钟",
+          "h1": "1 小时",
+          "h2": "2 小时",
+          "h3": "3 小时",
+          "h4": "4 小时",
+          "h6": "6 小时",
+          "h12": "12 小时",
+          "d1": "1 天"
+        }
       },
       "summary": {
         "peakOnline": "峰值在线",
@@ -96,108 +117,164 @@
       "chart": {
         "keyboardHint": "方向键切换 · End 最新 · Home 峰值 · Esc 解锁"
       },
-      "selectedPoint": {
+      "details": {
         "title": "时间点",
-        "timestampLabel": "时间",
-        "onlineLabel": "在线人数",
-        "playerCountLabel": "玩家数",
-        "changeLabel": "较上个点变化",
-        "changeRateLabel": "变化率",
-        "samplePositionLabel": "采样位置",
-        "precisionLabel": "采样粒度",
-        "pointStatusLabel": "点位状态",
-        "modeLabel": "查看模式",
-        "live": "跟随悬浮",
-        "locked": "锁定对比",
-        "peak": "峰值点",
-        "latest": "最新点",
-        "normal": "普通点位",
-        "playersLabel": "在线玩家",
-        "noPlayers": "该时间点没有在线玩家。"
+        "mode": {
+          "live": "跟随悬浮",
+          "locked": "锁定对比"
+        },
+        "pointStatus": {
+          "peak": "峰值点",
+          "latest": "最新点",
+          "normal": "普通点位"
+        },
+        "metrics": {
+          "online": "在线人数",
+          "change": "较上个点变化",
+          "changeRate": "变化率"
+        },
+        "players": {
+          "title": "在线玩家",
+          "empty": "该时间点没有在线玩家。"
+        }
       },
-      "staleWarning": "最新刷新失败，当前仍显示上一次成功获取的数据。"
+      "warnings": {
+        "stale": "最新刷新失败，当前仍显示上一次成功获取的数据。"
+      }
     },
     "features": {
-      "vanilla": {
+      "creativeFreedom": {
         "title": "创造休闲体验",
         "description": "服务器允许任意 Mod（包含外挂），支持 Axiom、创世神等强大建筑工具。我们致力于为建筑创作者提供最大的自由度，让你的创意不受限制。"
       },
-      "community": {
+      "curatedCommunity": {
         "title": "精选玩家社区",
         "description": "通过申请制度，我们精心筛选每一位加入服务器的玩家，确保社区氛围友好和谐。在这里，你将遇到一群热爱建筑创作、尊重他人作品的优质玩家。"
       }
     }
   },
   "buildings": {
-    "title": "建筑收录",
-    "description": "展示服务器内玩家的精彩建筑作品",
-    "search": "搜索建筑名称、建造者、标签...",
+    "meta": {
+      "title": "建筑收录",
+      "description": "展示服务器内玩家的精彩建筑作品"
+    },
+    "hero": {
+      "title": "建筑收录",
+      "description": "展示服务器内玩家的精彩建筑作品"
+    },
+    "search": {
+      "placeholder": "搜索建筑名称、建造者、标签..."
+    },
     "filters": {
-      "all": "全部建筑",
-      "original": "原创作品",
-      "derivative": "二创作品",
-      "replica": "搬运作品"
+      "options": {
+        "all": "全部建筑",
+        "original": "原创作品",
+        "derivative": "二创作品",
+        "replica": "搬运作品"
+      }
     },
     "sort": {
-      "dateDesc": "最新优先",
-      "dateAsc": "最旧优先",
-      "nameAsc": "名称 A-Z",
-      "nameDesc": "名称 Z-A",
-      "random": "随机排序"
+      "options": {
+        "dateDesc": "最新优先",
+        "dateAsc": "最旧优先",
+        "nameAsc": "名称 A-Z",
+        "nameDesc": "名称 Z-A",
+        "random": "随机排序"
+      }
     },
-    "labels": {
+    "types": {
       "original": "原创",
       "derivative": "二创",
-      "replica": "搬运",
-      "coordinates": "坐标:",
-      "builder": "建造者:",
-      "builders": "建造者:",
-      "buildDate": "建造日期:",
-      "originalAuthor": "原作者:",
-      "source": "来源:"
+      "replica": "搬运"
     },
-    "loading": "加载中...",
-    "empty": "暂无建筑收录",
-    "noMore": "没有更多建筑了"
+    "fields": {
+      "coordinates": "坐标",
+      "builder": "建造者",
+      "builders": "建造者",
+      "buildDate": "建造日期",
+      "originalAuthor": "原作者",
+      "source": "来源"
+    },
+    "states": {
+      "loading": "加载中...",
+      "empty": "暂无建筑收录",
+      "end": "没有更多建筑了"
+    }
   },
   "common": {
-    "loading": "加载中...",
-    "error": "加载失败"
+    "states": {
+      "loading": "加载中...",
+      "error": "加载失败"
+    }
   },
   "notFound": {
-    "title": "页面不存在",
-    "description": "你访问的页面可能已被移动、删除，或者链接地址有误。",
-    "returnHome": "返回首页"
+    "hero": {
+      "title": "页面不存在",
+      "description": "你访问的页面可能已被移动、删除，或者链接地址有误。"
+    },
+    "actions": {
+      "returnHome": "返回首页"
+    }
   },
   "wiki": {
-    "title": "游戏指南",
-    "description": "了解服务器规则、指令和游戏技巧",
-    "navigation": "导航",
-    "onThisPage": "本页目录",
-    "searchPlaceholder": "搜索 wiki 内容、指令、关键词...",
-    "searchResultsLabel": "搜索结果",
-    "searchResultsCount": "{count} 个匹配结果",
-    "searchEmptyTitle": "没有找到匹配内容",
-    "searchEmptyDescription": "试试更短的关键词、指令别名，或换一种中英文说法。",
-    "clearSearch": "清除搜索"
+    "meta": {
+      "title": "游戏指南",
+      "description": "了解服务器规则、指令和游戏技巧"
+    },
+    "hero": {
+      "title": "游戏指南",
+      "description": "了解服务器规则、指令和游戏技巧"
+    },
+    "navigation": {
+      "title": "导航",
+      "onThisPage": "本页目录"
+    },
+    "search": {
+      "placeholder": "搜索 wiki 内容、指令、关键词...",
+      "resultsTitle": "搜索结果",
+      "resultsCount": "{count} 个匹配结果",
+      "empty": {
+        "title": "没有找到匹配内容",
+        "description": "试试更短的关键词、指令别名，或换一种中英文说法。"
+      },
+      "actions": {
+        "clear": "清除搜索"
+      }
+    }
   },
   "bans": {
-    "title": "封禁列表",
-    "description": "查看服务器封禁记录",
-    "loading": "加载中...",
-    "empty": "暂无封禁记录",
-    "permanent": "永久封禁",
-    "temporary": "临时封禁",
-    "expired": "已过期",
-    "reason": "封禁原因",
-    "bannedBy": "执行者",
-    "bannedAt": "封禁时间",
-    "expiresAt": "解封时间"
+    "meta": {
+      "title": "封禁列表",
+      "description": "查看服务器封禁记录"
+    },
+    "hero": {
+      "title": "封禁列表",
+      "description": "查看服务器封禁记录"
+    },
+    "states": {
+      "loading": "加载中...",
+      "empty": "暂无封禁记录"
+    },
+    "status": {
+      "permanent": "永久封禁",
+      "temporary": "临时封禁",
+      "expired": "已过期"
+    },
+    "fields": {
+      "reason": "封禁原因",
+      "bannedBy": "执行者",
+      "bannedAt": "封禁时间",
+      "expiresAt": "解封时间"
+    }
   },
   "footer": {
-    "licensedUnder": "基于 Apache 2.0 协议开源，源码：",
-    "sourceCode": "GitHub",
-    "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",
-    "eula": "Mojang 的 EULA"
+    "source": {
+      "licensedUnder": "基于 Apache 2.0 协议开源，源码：",
+      "code": "Encinet/MikWeb"
+    },
+    "legal": {
+      "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",
+      "eula": "Mojang 的 EULA"
+    }
   }
 }

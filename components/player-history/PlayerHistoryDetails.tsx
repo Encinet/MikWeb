@@ -68,9 +68,9 @@ export default function PlayerHistoryDetails({
     activePointInsights.isPeakPoint,
     activePointInsights.isLatestPoint,
     {
-      peak: t('selectedPoint.peak'),
-      latest: t('selectedPoint.latest'),
-      normal: t('selectedPoint.normal'),
+      peak: t('details.pointStatus.peak'),
+      latest: t('details.pointStatus.latest'),
+      normal: t('details.pointStatus.normal'),
     },
   );
 
@@ -97,16 +97,14 @@ export default function PlayerHistoryDetails({
                 style={{ color: 'var(--theme-text-muted-soft)' }}
               >
                 <Users2 className="h-4 w-4" style={{ color: '#55AAFF' }} />
-                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                  {t('selectedPoint.title')}
-                </span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t('details.title')}</span>
                 <span style={getHistoryModeBadgeStyle(isPointLocked)}>
                   {isPointLocked ? (
                     <Lock className="h-3.5 w-3.5" />
                   ) : (
                     <Crosshair className="h-3.5 w-3.5" />
                   )}
-                  {isPointLocked ? t('selectedPoint.locked') : t('selectedPoint.live')}
+                  {isPointLocked ? t('details.mode.locked') : t('details.mode.live')}
                 </span>
               </div>
 
@@ -127,7 +125,7 @@ export default function PlayerHistoryDetails({
                 {activePointInsights.isPeakPoint ? (
                   <span style={getHistoryMetaPillStyle('highlight')}>
                     <TrendingUp className="h-3.5 w-3.5" />
-                    {t('selectedPoint.peak')}
+                    {t('details.pointStatus.peak')}
                   </span>
                 ) : null}
               </div>
@@ -143,7 +141,7 @@ export default function PlayerHistoryDetails({
           >
             <div style={historyStatTileStyle}>
               <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
-                {t('selectedPoint.onlineLabel')}
+                {t('details.metrics.online')}
               </div>
               <div
                 style={{
@@ -158,7 +156,7 @@ export default function PlayerHistoryDetails({
 
             <div style={historyStatTileStyle}>
               <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
-                {t('selectedPoint.changeLabel')}
+                {t('details.metrics.change')}
               </div>
               <div
                 style={{
@@ -173,7 +171,7 @@ export default function PlayerHistoryDetails({
 
             <div style={historyStatTileStyle}>
               <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
-                {t('selectedPoint.changeRateLabel')}
+                {t('details.metrics.changeRate')}
               </div>
               <div
                 style={{
@@ -201,7 +199,7 @@ export default function PlayerHistoryDetails({
               <div
                 style={{ color: 'var(--theme-text-heading)', fontSize: '0.92rem', fontWeight: 600 }}
               >
-                {t('selectedPoint.playersLabel')}
+                {t('details.players.title')}
               </div>
             </div>
           </div>
@@ -224,14 +222,14 @@ export default function PlayerHistoryDetails({
                   background: 'rgba(255,255,255,0.02)',
                 }}
               >
-                {t('selectedPoint.noPlayers')}
+                {t('details.players.empty')}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {hasStaleData ? <div style={historyStaleWarningStyle}>{t('staleWarning')}</div> : null}
+      {hasStaleData ? <div style={historyStaleWarningStyle}>{t('warnings.stale')}</div> : null}
     </div>
   );
 }

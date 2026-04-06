@@ -23,7 +23,7 @@ export default function BansPage() {
         url: '/api/bans',
         validate: isBanItemArray,
         timeoutMs: 15_000,
-        fallbackErrorMessage: commonT('error'),
+        fallbackErrorMessage: commonT('states.error'),
       });
 
       if (result.status === 'success') {
@@ -70,14 +70,14 @@ export default function BansPage() {
               className="text-4xl sm:text-5xl font-bold"
               style={{ color: 'var(--theme-text-heading)' }}
             >
-              {t('title')}
+              {t('hero.title')}
             </h1>
           </div>
           <p
             className="text-base sm:text-lg max-w-2xl mx-auto"
             style={{ color: 'var(--theme-text-muted-soft)' }}
           >
-            {t('description')}
+            {t('hero.description')}
           </p>
         </div>
 
@@ -86,7 +86,7 @@ export default function BansPage() {
           <div className="text-center py-20">
             <div className="inline-block w-12 h-12 border-4 border-red-400 border-t-transparent rounded-full animate-spin" />
             <p className="mt-6 text-lg" style={{ color: 'var(--theme-text-muted)' }}>
-              {t('loading')}
+              {t('states.loading')}
             </p>
           </div>
         ) : error ? (
@@ -96,7 +96,7 @@ export default function BansPage() {
               className="text-lg font-semibold mb-2"
               style={{ color: 'var(--theme-text-heading)' }}
             >
-              {commonT('error')}
+              {commonT('states.error')}
             </p>
             <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
               {error}
@@ -109,7 +109,7 @@ export default function BansPage() {
               style={{ color: 'var(--theme-text-faint)' }}
             />
             <p className="text-lg" style={{ color: 'var(--theme-text-muted)' }}>
-              {t('empty')}
+              {t('states.empty')}
             </p>
           </div>
         ) : (
@@ -165,7 +165,9 @@ export default function BansPage() {
                   <div className="flex items-start gap-2 mb-4">
                     <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                     <div className="text-sm">
-                      <span style={{ color: 'var(--theme-text-muted)' }}>{t('reason')}: </span>
+                      <span style={{ color: 'var(--theme-text-muted)' }}>
+                        {t('fields.reason')}:{' '}
+                      </span>
                       <span style={{ color: 'var(--theme-text-primary)' }}>{ban.reason}</span>
                     </div>
                   </div>
@@ -177,7 +179,9 @@ export default function BansPage() {
                         className="w-4 h-4 shrink-0"
                         style={{ color: 'var(--theme-accent-purple)' }}
                       />
-                      <span style={{ color: 'var(--theme-text-muted)' }}>{t('bannedBy')}: </span>
+                      <span style={{ color: 'var(--theme-text-muted)' }}>
+                        {t('fields.bannedBy')}:
+                      </span>
                       <span className="font-medium" style={{ color: 'var(--theme-accent-purple)' }}>
                         {ban.bannedBy}
                       </span>
@@ -188,7 +192,9 @@ export default function BansPage() {
                         className="w-4 h-4 shrink-0"
                         style={{ color: 'var(--theme-accent-blue)' }}
                       />
-                      <span style={{ color: 'var(--theme-text-muted)' }}>{t('bannedAt')}: </span>
+                      <span style={{ color: 'var(--theme-text-muted)' }}>
+                        {t('fields.bannedAt')}:
+                      </span>
                       <span style={{ color: 'var(--theme-accent-blue)' }}>
                         {formatDate(ban.bannedAt)}
                       </span>
@@ -197,7 +203,9 @@ export default function BansPage() {
                     {!ban.isPermanent && ban.expiresAt && (
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                        <span style={{ color: 'var(--theme-text-muted)' }}>{t('expiresAt')}: </span>
+                        <span style={{ color: 'var(--theme-text-muted)' }}>
+                          {t('fields.expiresAt')}:
+                        </span>
                         <span className="text-amber-400">{formatDate(ban.expiresAt)}</span>
                       </div>
                     )}

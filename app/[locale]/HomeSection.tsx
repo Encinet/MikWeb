@@ -350,14 +350,14 @@ export default function HomeSection() {
                 color: 'var(--theme-text-heading)',
               }}
             >
-              {t('home.announcements.title')}
+              {t('home.announcements.section.title')}
             </h3>
           </div>
 
           {isAnnouncementsLoading ? (
-            <AnnouncementLoading label={t('home.announcements.loading')} />
+            <AnnouncementLoading label={t('home.announcements.states.loading')} />
           ) : announcements.length === 0 ? (
-            <AnnouncementEmpty label={t('home.announcements.empty')} />
+            <AnnouncementEmpty label={t('home.announcements.states.empty')} />
           ) : (
             <div className="space-y-3 sm:space-y-4">
               {announcements.slice(0, 3).map((announcement, index) => (
@@ -378,7 +378,7 @@ export default function HomeSection() {
                     marginTop: '1rem',
                   }}
                 >
-                  {t('home.announcements.clickToViewAll')}
+                  {t('home.announcements.actions.viewAll')}
                 </div>
               )}
             </div>
@@ -467,7 +467,7 @@ export default function HomeSection() {
                           color: 'var(--theme-text-heading)',
                         }}
                       >
-                        {t('home.announcements.title')}
+                        {t('home.announcements.section.title')}
                       </h3>
                     </div>
                     <button
@@ -501,9 +501,9 @@ export default function HomeSection() {
                   {/* Modal Content */}
                   <div style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', overflowY: 'auto', flex: 1 }}>
                     {isAnnouncementsLoading ? (
-                      <AnnouncementLoading label={t('home.announcements.loading')} modal />
+                      <AnnouncementLoading label={t('home.announcements.states.loading')} modal />
                     ) : announcements.length === 0 ? (
-                      <AnnouncementEmpty label={t('home.announcements.empty')} modal />
+                      <AnnouncementEmpty label={t('home.announcements.states.empty')} modal />
                     ) : (
                       <div className="space-y-4">
                         {announcements.map((announcement) => (

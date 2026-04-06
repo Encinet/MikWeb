@@ -174,13 +174,13 @@ export default function PlayerHistoryPanel() {
     jumpToLatestPoint,
     clearLockedPoint,
   } = usePlayerHistory({
-    errorMessage: t('error'),
+    errorMessage: t('states.error'),
   });
 
   const rangeLabel = (rangeId: (typeof HISTORY_RANGE_OPTIONS)[number]['id']) =>
-    t(`ranges.${rangeId}`);
+    t(`controls.ranges.${rangeId}`);
   const intervalLabel = (intervalId: (typeof selectedInterval)['id']) =>
-    t(`intervals.${intervalId}`);
+    t(`controls.intervals.${intervalId}`);
   const precisionScale = allowedIntervals;
   const finestInterval = precisionScale[0];
   const coarsestInterval = precisionScale[precisionScale.length - 1];
@@ -280,13 +280,13 @@ export default function PlayerHistoryPanel() {
                     lineHeight: 1.1,
                   }}
                 >
-                  {t('title')}
+                  {t('section.title')}
                 </h3>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <HistoryToolbarBadge label={t('liveNow')} value={liveNowValue} />
+              <HistoryToolbarBadge label={t('section.liveNow')} value={liveNowValue} />
             </div>
           </div>
 
@@ -321,7 +321,7 @@ export default function PlayerHistoryPanel() {
                     }}
                   />
                   <p style={{ color: 'var(--theme-text-muted)', marginTop: '1rem' }}>
-                    {t('loading')}
+                    {t('states.loading')}
                   </p>
                 </div>
               ) : !historySnapshot ? (
@@ -334,7 +334,7 @@ export default function PlayerHistoryPanel() {
                     color: historyError ? 'var(--theme-accent-red)' : 'var(--theme-text-muted)',
                   }}
                 >
-                  {historyError ?? t('empty')}
+                  {historyError ?? t('states.empty')}
                 </div>
               ) : (
                 <PlayerHistoryChart
@@ -388,7 +388,7 @@ export default function PlayerHistoryPanel() {
                       style={{ color: 'var(--theme-text-muted-soft)' }}
                     >
                       <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
-                        {t('rangeLabel')}
+                        {t('controls.rangeLabel')}
                       </span>
                     </div>
                     <div
@@ -438,7 +438,7 @@ export default function PlayerHistoryPanel() {
                           style={{ color: 'var(--theme-text-muted-soft)' }}
                         >
                           <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
-                            {t('precisionLabel')}
+                            {t('controls.precisionLabel')}
                           </span>
                         </div>
                         <div
@@ -455,7 +455,7 @@ export default function PlayerHistoryPanel() {
 
                       <div className="player-history-metric-pill self-start sm:self-auto">
                         <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
-                          {t('precisionEstimate', { count: formattedEstimatedSamples })}
+                          {t('controls.precisionEstimate', { count: formattedEstimatedSamples })}
                         </span>
                       </div>
                     </div>
@@ -469,9 +469,9 @@ export default function PlayerHistoryPanel() {
                   step="1"
                   value={selectedPrecisionIndex}
                   onChange={handlePrecisionSliderChange}
-                  aria-label={t('precisionLabel')}
+                  aria-label={t('controls.precisionLabel')}
                   aria-valuetext={`${intervalLabel(selectedInterval.id)} · ${t(
-                    'precisionEstimate',
+                    'controls.precisionEstimate',
                     {
                       count: formattedEstimatedSamples,
                     },
@@ -498,7 +498,7 @@ export default function PlayerHistoryPanel() {
                     className="col-span-2 text-center sm:col-auto"
                     style={{ color: 'var(--theme-text-muted-soft)' }}
                   >
-                    {t('precisionOverview')} / {t('precisionDetail')}
+                    {t('controls.precisionScale.overview')} / {t('controls.precisionScale.detail')}
                   </span>
                 </div>
               </div>

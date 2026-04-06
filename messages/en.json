@@ -4,18 +4,26 @@
     "description": "A creative casual Minecraft server that allows any mods, focused on building creation"
   },
   "nav": {
-    "home": "Home",
-    "buildings": "Buildings",
-    "map": "Server Map",
-    "bans": "Ban List",
-    "wiki": "Wiki",
-    "join": "Join Us",
-    "subtitle": "Creative Casual Server",
-    "online": "Online",
-    "offline": "Offline",
-    "networkError": "Network Error",
-    "lightMode": "Light Mode",
-    "darkMode": "Dark Mode"
+    "brand": {
+      "subtitle": "Creative Casual Server"
+    },
+    "items": {
+      "home": "Home",
+      "buildings": "Buildings",
+      "map": "Server Map",
+      "bans": "Ban List",
+      "wiki": "Wiki",
+      "join": "Join Us"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "networkError": "Network Error"
+    },
+    "theme": {
+      "light": "Light Mode",
+      "dark": "Dark Mode"
+    }
   },
   "home": {
     "hero": {
@@ -32,49 +40,62 @@
       "days": "Days"
     },
     "announcements": {
-      "title": "Server Announcements",
-      "loading": "Loading...",
-      "empty": "No announcements",
-      "clickToViewAll": "Click to view all announcements"
+      "section": {
+        "title": "Server Announcements"
+      },
+      "states": {
+        "loading": "Loading...",
+        "empty": "No announcements"
+      },
+      "actions": {
+        "viewAll": "Click to view all announcements"
+      }
     },
     "playerHistory": {
-      "title": "Player History",
-      "loading": "Loading player history...",
-      "empty": "No player history is available for this time range.",
-      "error": "Failed to load player history.",
-      "rangeLabel": "Time Range",
-      "precisionLabel": "Precision",
-      "precisionOverview": "Overview",
-      "precisionDetail": "Detail",
-      "precisionEstimate": "~{count} points",
-      "liveNow": "Live Online",
-      "autoRefresh": "Auto refresh every minute",
-      "refreshing": "Refreshing",
-      "ranges": {
-        "24h": "Last 24 Hours",
-        "3d": "Last 3 Days",
-        "7d": "Last 7 Days",
-        "30d": "Last 30 Days"
+      "section": {
+        "title": "Player History",
+        "liveNow": "Live Online"
       },
-      "intervals": {
-        "m2": "2 Minutes",
-        "m3": "3 Minutes",
-        "m4": "4 Minutes",
-        "m5": "5 Minutes",
-        "m6": "6 Minutes",
-        "m8": "8 Minutes",
-        "m10": "10 Minutes",
-        "m12": "12 Minutes",
-        "m15": "15 Minutes",
-        "m20": "20 Minutes",
-        "m30": "30 Minutes",
-        "h1": "1 Hour",
-        "h2": "2 Hours",
-        "h3": "3 Hours",
-        "h4": "4 Hours",
-        "h6": "6 Hours",
-        "h12": "12 Hours",
-        "d1": "1 Day"
+      "states": {
+        "loading": "Loading player history...",
+        "empty": "No player history is available for this time range.",
+        "error": "Failed to load player history.",
+        "refreshing": "Refreshing"
+      },
+      "controls": {
+        "rangeLabel": "Time Range",
+        "precisionLabel": "Precision",
+        "precisionEstimate": "~{count} points",
+        "precisionScale": {
+          "overview": "Overview",
+          "detail": "Detail"
+        },
+        "ranges": {
+          "24h": "Last 24 Hours",
+          "3d": "Last 3 Days",
+          "7d": "Last 7 Days",
+          "30d": "Last 30 Days"
+        },
+        "intervals": {
+          "m2": "2 Minutes",
+          "m3": "3 Minutes",
+          "m4": "4 Minutes",
+          "m5": "5 Minutes",
+          "m6": "6 Minutes",
+          "m8": "8 Minutes",
+          "m10": "10 Minutes",
+          "m12": "12 Minutes",
+          "m15": "15 Minutes",
+          "m20": "20 Minutes",
+          "m30": "30 Minutes",
+          "h1": "1 Hour",
+          "h2": "2 Hours",
+          "h3": "3 Hours",
+          "h4": "4 Hours",
+          "h6": "6 Hours",
+          "h12": "12 Hours",
+          "d1": "1 Day"
+        }
       },
       "summary": {
         "peakOnline": "Peak Online",
@@ -96,108 +117,164 @@
       "chart": {
         "keyboardHint": "Arrow keys to step · End latest · Home peak · Esc unlock"
       },
-      "selectedPoint": {
+      "details": {
         "title": "Selected Point",
-        "timestampLabel": "Time",
-        "onlineLabel": "Online",
-        "playerCountLabel": "Players",
-        "changeLabel": "Change from previous",
-        "changeRateLabel": "Change Rate",
-        "samplePositionLabel": "Sample Position",
-        "precisionLabel": "Precision",
-        "pointStatusLabel": "Point Status",
-        "modeLabel": "Mode",
-        "live": "Hover Follow",
-        "locked": "Locked Compare",
-        "peak": "Peak Point",
-        "latest": "Latest Point",
-        "normal": "Regular Point",
-        "playersLabel": "Players Online",
-        "noPlayers": "No players were online at this point."
+        "mode": {
+          "live": "Hover Follow",
+          "locked": "Locked Compare"
+        },
+        "pointStatus": {
+          "peak": "Peak Point",
+          "latest": "Latest Point",
+          "normal": "Regular Point"
+        },
+        "metrics": {
+          "online": "Online",
+          "change": "Change from previous",
+          "changeRate": "Change Rate"
+        },
+        "players": {
+          "title": "Players Online",
+          "empty": "No players were online at this point."
+        }
       },
-      "staleWarning": "The latest refresh failed. Showing the most recent successful snapshot."
+      "warnings": {
+        "stale": "The latest refresh failed. Showing the most recent successful snapshot."
+      }
     },
     "features": {
-      "vanilla": {
+      "creativeFreedom": {
         "title": "Creative Casual Experience",
         "description": "The server allows any mods (including hacks) and supports powerful building tools like Axiom and WorldEdit. We are committed to providing maximum freedom for building creators, letting your creativity run wild without restrictions."
       },
-      "community": {
+      "curatedCommunity": {
         "title": "Curated Player Community",
         "description": "Through our application system, we carefully select every player who joins the server to ensure a friendly and harmonious community atmosphere. Here, you will meet a group of quality players who love building creation and respect others' works."
       }
     }
   },
   "buildings": {
-    "title": "Building Gallery",
-    "description": "Showcasing amazing building works by our players",
-    "search": "Search buildings, builders, tags...",
+    "meta": {
+      "title": "Building Gallery",
+      "description": "Showcasing amazing building works by our players"
+    },
+    "hero": {
+      "title": "Building Gallery",
+      "description": "Showcasing amazing building works by our players"
+    },
+    "search": {
+      "placeholder": "Search buildings, builders, tags..."
+    },
     "filters": {
-      "all": "All Buildings",
-      "original": "Original Works",
-      "derivative": "Derivative Works",
-      "replica": "Replicas"
+      "options": {
+        "all": "All Buildings",
+        "original": "Original Works",
+        "derivative": "Derivative Works",
+        "replica": "Replicas"
+      }
     },
     "sort": {
-      "dateDesc": "Newest First",
-      "dateAsc": "Oldest First",
-      "nameAsc": "Name A-Z",
-      "nameDesc": "Name Z-A",
-      "random": "Random"
+      "options": {
+        "dateDesc": "Newest First",
+        "dateAsc": "Oldest First",
+        "nameAsc": "Name A-Z",
+        "nameDesc": "Name Z-A",
+        "random": "Random"
+      }
     },
-    "labels": {
+    "types": {
       "original": "Original",
       "derivative": "Derivative",
-      "replica": "Replica",
-      "coordinates": "Coordinates:",
-      "builder": "Builder:",
-      "builders": "Builders:",
-      "buildDate": "Build Date:",
-      "originalAuthor": "Original Author:",
-      "source": "Source:"
+      "replica": "Replica"
     },
-    "loading": "Loading...",
-    "empty": "No buildings yet",
-    "noMore": "No more buildings to load"
+    "fields": {
+      "coordinates": "Coordinates",
+      "builder": "Builder",
+      "builders": "Builders",
+      "buildDate": "Build Date",
+      "originalAuthor": "Original Author",
+      "source": "Source"
+    },
+    "states": {
+      "loading": "Loading...",
+      "empty": "No buildings yet",
+      "end": "No more buildings to load"
+    }
   },
   "common": {
-    "loading": "Loading...",
-    "error": "Failed to load"
+    "states": {
+      "loading": "Loading...",
+      "error": "Failed to load"
+    }
   },
   "notFound": {
-    "title": "Page not found",
-    "description": "The page you requested may have been moved, removed, or the link is incorrect.",
-    "returnHome": "Return Home"
+    "hero": {
+      "title": "Page not found",
+      "description": "The page you requested may have been moved, removed, or the link is incorrect."
+    },
+    "actions": {
+      "returnHome": "Return Home"
+    }
   },
   "wiki": {
-    "title": "Game Guide",
-    "description": "Learn about server rules, commands, and gameplay tips",
-    "navigation": "Navigation",
-    "onThisPage": "On This Page",
-    "searchPlaceholder": "Search wiki content, commands, or keywords...",
-    "searchResultsLabel": "Search Results",
-    "searchResultsCount": "{count} matches",
-    "searchEmptyTitle": "No matching content found",
-    "searchEmptyDescription": "Try a shorter keyword, a command alias, or a different phrasing.",
-    "clearSearch": "Clear search"
+    "meta": {
+      "title": "Game Guide",
+      "description": "Learn about server rules, commands, and gameplay tips"
+    },
+    "hero": {
+      "title": "Game Guide",
+      "description": "Learn about server rules, commands, and gameplay tips"
+    },
+    "navigation": {
+      "title": "Navigation",
+      "onThisPage": "On This Page"
+    },
+    "search": {
+      "placeholder": "Search wiki content, commands, or keywords...",
+      "resultsTitle": "Search Results",
+      "resultsCount": "{count} matches",
+      "empty": {
+        "title": "No matching content found",
+        "description": "Try a shorter keyword, a command alias, or a different phrasing."
+      },
+      "actions": {
+        "clear": "Clear search"
+      }
+    }
   },
   "bans": {
-    "title": "Ban List",
-    "description": "View server ban records",
-    "loading": "Loading...",
-    "empty": "No ban records",
-    "permanent": "Permanent",
-    "temporary": "Temporary",
-    "expired": "Expired",
-    "reason": "Reason",
-    "bannedBy": "Banned By",
-    "bannedAt": "Banned At",
-    "expiresAt": "Expires At"
+    "meta": {
+      "title": "Ban List",
+      "description": "View server ban records"
+    },
+    "hero": {
+      "title": "Ban List",
+      "description": "View server ban records"
+    },
+    "states": {
+      "loading": "Loading...",
+      "empty": "No ban records"
+    },
+    "status": {
+      "permanent": "Permanent",
+      "temporary": "Temporary",
+      "expired": "Expired"
+    },
+    "fields": {
+      "reason": "Reason",
+      "bannedBy": "Banned By",
+      "bannedAt": "Banned At",
+      "expiresAt": "Expires At"
+    }
   },
   "footer": {
-    "licensedUnder": "Licensed under Apache 2.0. Source code:",
-    "sourceCode": "GitHub",
-    "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
-    "eula": "Mojang's EULA"
+    "source": {
+      "licensedUnder": "Licensed under Apache 2.0. Source code:",
+      "code": "Encinet/MikWeb"
+    },
+    "legal": {
+      "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
+      "eula": "Mojang's EULA"
+    }
   }
 }

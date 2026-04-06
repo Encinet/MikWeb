@@ -15,8 +15,8 @@ export async function generateMetadata({
 
   return buildPageMetadata({
     locale,
-    title: t('title'),
-    description: t('description'),
+    title: t('meta.title'),
+    description: t('meta.description'),
     pathname: '/bans',
   });
 }

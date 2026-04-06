@@ -55,20 +55,20 @@ export default function Navbar() {
   };
 
   const navItems = [
-    { id: 'home', icon: Home, label: t('home'), path: '/' },
-    { id: 'buildings', icon: Building2, label: t('buildings'), path: '/buildings' },
-    { id: 'bans', icon: Shield, label: t('bans'), path: '/bans' },
-    { id: 'wiki', icon: BookOpen, label: t('wiki'), path: '/wiki' },
+    { id: 'home', icon: Home, label: t('items.home'), path: '/' },
+    { id: 'buildings', icon: Building2, label: t('items.buildings'), path: '/buildings' },
+    { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
+    { id: 'wiki', icon: BookOpen, label: t('items.wiki'), path: '/wiki' },
     {
       id: 'map',
       icon: MapIcon,
-      label: t('map'),
+      label: t('items.map'),
       link: 'http://203.135.99.76:34567',
     },
     {
       id: 'apply',
       icon: Play,
-      label: t('join'),
+      label: t('items.join'),
       link: 'https://mikapply.noctiro.moe',
       highlight: true,
     },
@@ -191,7 +191,7 @@ export default function Navbar() {
                     marginTop: '-2px',
                   }}
                 >
-                  {t('subtitle')}
+                  {t('brand.subtitle')}
                 </p>
               </div>
             </Link>
@@ -418,7 +418,7 @@ export default function Navbar() {
                         className="text-xs sm:text-sm hidden sm:inline"
                         style={{ color: 'var(--theme-text-muted)' }}
                       >
-                        {t('online')}
+                        {t('status.online')}
                       </span>
                     </>
                   ) : isOnline ? (
@@ -437,7 +437,7 @@ export default function Navbar() {
                         className="text-xs sm:text-sm hidden sm:inline"
                         style={{ color: 'var(--theme-text-muted)' }}
                       >
-                        {t('online')}
+                        {t('status.online')}
                       </span>
                     </>
                   ) : (
@@ -445,7 +445,7 @@ export default function Navbar() {
                       className="text-xs sm:text-sm"
                       style={{ color: 'var(--theme-text-muted)' }}
                     >
-                      {networkError ? t('networkError') : t('offline')}
+                      {networkError ? t('status.networkError') : t('status.offline')}
                     </span>
                   )}
                 </button>
@@ -537,7 +537,7 @@ export default function Navbar() {
                         <div className="w-5 h-5" />
                       )}
                       <span className="text-sm">
-                        {mounted && theme === 'dark' ? t('lightMode') : t('darkMode')}
+                        {mounted && theme === 'dark' ? t('theme.light') : t('theme.dark')}
                       </span>
                     </button>
                   </div>
@@ -584,7 +584,7 @@ export default function Navbar() {
                     letterSpacing: '0.05em',
                   }}
                 >
-                  {t('online')} ({players.length})
+                  {t('status.online')} ({players.length})
                 </div>
                 <div className="space-y-2">
                   {players.map((player) => (

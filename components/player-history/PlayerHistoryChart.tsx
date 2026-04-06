@@ -158,7 +158,7 @@ export default function PlayerHistoryChart({
         <button
           type="button"
           aria-describedby="player-history-chart-hint"
-          aria-label={t('title')}
+          aria-label={t('section.title')}
           aria-pressed={isPointLocked}
           onPointerMove={handlePointerMove}
           onPointerDown={handlePointerMove}
@@ -179,7 +179,7 @@ export default function PlayerHistoryChart({
             className="h-[250px] w-full sm:h-[280px]"
             style={{ display: 'block' }}
           >
-            <title>{t('title')}</title>
+            <title>{t('section.title')}</title>
             <desc>{t('chart.keyboardHint')}</desc>
             <defs>
               <linearGradient id="player-history-fill" x1="0" x2="0" y1="0" y2="1">

@@ -11,10 +11,10 @@ export default async function LocalizedNotFound() {
 
   return (
     <NotFoundView
-      title={notFoundTranslations('title')}
-      description={notFoundTranslations('description')}
+      title={notFoundTranslations('hero.title')}
+      description={notFoundTranslations('hero.description')}
       homeHref={`/${currentLocale}`}
-      homeLabel={notFoundTranslations('returnHome')}
+      homeLabel={notFoundTranslations('actions.returnHome')}
     />
   );
 }
