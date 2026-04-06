@@ -1,6 +1,6 @@
 ---
 title: 服务器规则
-description: 了解服务器的行为边界、建筑规范、版权约定与收录规则。
+description: 了解服务器的行为边界、建筑规范、版权约定与收录规则
 order: 40
 icon: Shield
 ---

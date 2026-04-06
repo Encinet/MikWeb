@@ -1,6 +1,6 @@
 ---
 title: 游戏技巧
-description: 整理建筑、装饰、站内工具和外部资源，适合随时查阅。
+description: 建筑、装饰、站内工具和外部资源
 order: 30
 icon: Zap
 ---

@@ -1,6 +1,6 @@
 ---
 title: 社区指南
-description: 查看联系方式、融入社区的建议，以及官网建筑投稿方式。
+description: 查看联系方式、融入社区的建议，以及官网建筑投稿方式
 order: 50
 icon: Users
 ---

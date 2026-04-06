@@ -1,6 +1,6 @@
 ---
 title: 新手入门
-description: 从申请加入、版本支持到首次进入服务器，先把基础信息看完。
+description: 从申请加入、版本支持到首次进入服务器
 order: 10
 icon: Home
 ---

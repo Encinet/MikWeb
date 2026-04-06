@@ -1,6 +1,6 @@
 ---
 title: 常用指令
-description: 集中查看日常最常用的传送、建筑、装饰和娱乐指令。
+description: 日常服务器中传送、建筑、装饰和娱乐指令
 order: 20
 icon: Wrench
 ---
