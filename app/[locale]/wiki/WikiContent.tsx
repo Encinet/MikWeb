@@ -13,9 +13,8 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import type React from 'react';
-import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
@@ -150,72 +149,134 @@ export default function WikiContent({
   initialSection,
   initialQuery = '',
 }: WikiContentProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const urlQuery = searchParams.get('q') ?? initialQuery;
+  const fallbackSection = initialSection || sections[0]?.id || '';
+  const [activeSection, setActiveSection] = useState(fallbackSection);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(urlQuery);
-  const deferredSearchQuery = useDeferredValue(searchQuery.trim());
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialQuery);
+  const [isSearchComposing, setIsSearchComposing] = useState(false);
+  const liveSearchQuery = searchQuery.trim();
+  const deferredLiveSearchQuery = useDeferredValue(liveSearchQuery);
   const [pendingAnchor, setPendingAnchor] = useState<PendingWikiAnchor | null>(null);
-  const shouldSkipNextQuerySync = useRef(false);
+  const committedSearchQuery = useRef(initialQuery);
   const [currentHash, setCurrentHash] = useState('');
-  const activeSection = useMemo(() => {
-    const selectedSectionId = searchParams.get('section');
-
-    if (selectedSectionId && content[selectedSectionId]) {
-      return selectedSectionId;
-    }
-
-    return initialSection || sections[0]?.id || '';
-  }, [searchParams, content, initialSection, sections]);
   const activeOutline = outlines[activeSection] ?? [];
   const sectionIndexMap = useMemo(() => {
     return new Map(sections.map((section, index) => [section.id, index]));
   }, [sections]);
   const [sectionDirection, setSectionDirection] = useState(0);
-  const isSearching = deferredSearchQuery.length > 0;
+  const activeSearchQuery = isSearchComposing
+    ? debouncedSearchQuery
+    : liveSearchQuery.length > 0
+      ? deferredLiveSearchQuery
+      : '';
+  const isSearching = activeSearchQuery.length > 0;
   const searchResults = useMemo(() => {
     if (!isSearching) return [];
 
-    return searchWikiBlocks(searchIndex, [deferredSearchQuery], 12);
-  }, [deferredSearchQuery, isSearching, searchIndex]);
+    return searchWikiBlocks(searchIndex, [activeSearchQuery], 12);
+  }, [activeSearchQuery, isSearching, searchIndex]);
   const searchResultsCountLabel = useMemo(() => {
     return searchResultsCountTemplate.replace('{count}', String(searchResults.length));
   }, [searchResults.length, searchResultsCountTemplate]);
 
   useEffect(() => {
-    setSearchQuery(urlQuery);
-  }, [urlQuery]);
-
-  useEffect(() => {
-    const syncHash = () => setCurrentHash(window.location.hash);
-
-    syncHash();
-    window.addEventListener('hashchange', syncHash);
-    return () => window.removeEventListener('hashchange', syncHash);
-  }, []);
-
-  useEffect(() => {
-    if (shouldSkipNextQuerySync.current) {
-      shouldSkipNextQuerySync.current = false;
+    if (content[activeSection]) {
       return;
     }
 
-    const currentQuery = searchParams.get('q') ?? '';
-    if (deferredSearchQuery === currentQuery) return;
+    setActiveSection(fallbackSection);
+  }, [activeSection, content, fallbackSection]);
 
-    const params = new URLSearchParams(searchParams.toString());
-    if (deferredSearchQuery) {
-      params.set('q', deferredSearchQuery);
+  useEffect(() => {
+    if (isSearchComposing || liveSearchQuery === debouncedSearchQuery) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setDebouncedSearchQuery(liveSearchQuery);
+    }, 180);
+
+    return () => window.clearTimeout(timer);
+  }, [debouncedSearchQuery, isSearchComposing, liveSearchQuery]);
+
+  useEffect(() => {
+    const syncLocationState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const nextQuery = params.get('q')?.trim() ?? '';
+      const selectedSectionId = params.get('section');
+      const nextSection =
+        selectedSectionId && content[selectedSectionId] ? selectedSectionId : fallbackSection;
+
+      committedSearchQuery.current = nextQuery;
+      setSearchQuery((currentQuery) => (currentQuery === nextQuery ? currentQuery : nextQuery));
+      setDebouncedSearchQuery((currentQuery) =>
+        currentQuery === nextQuery ? currentQuery : nextQuery,
+      );
+      setActiveSection((currentSection) =>
+        currentSection === nextSection ? currentSection : nextSection,
+      );
+      setCurrentHash(window.location.hash);
+    };
+
+    syncLocationState();
+    window.addEventListener('popstate', syncLocationState);
+    window.addEventListener('hashchange', syncLocationState);
+    return () => {
+      window.removeEventListener('popstate', syncLocationState);
+      window.removeEventListener('hashchange', syncLocationState);
+    };
+  }, [content, fallbackSection]);
+
+  useEffect(() => {
+    if (debouncedSearchQuery === committedSearchQuery.current) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (debouncedSearchQuery) {
+      params.set('q', debouncedSearchQuery);
+    } else {
+      params.delete('q');
+    }
+    if (activeSection) {
+      params.set('section', activeSection);
+    } else {
+      params.delete('section');
+    }
+
+    const nextQueryString = params.toString();
+    const nextUrl = `${window.location.pathname}${nextQueryString ? `?${nextQueryString}` : ''}${window.location.hash}`;
+
+    window.history.replaceState(window.history.state, '', nextUrl);
+    committedSearchQuery.current = debouncedSearchQuery;
+  }, [activeSection, debouncedSearchQuery]);
+
+  const replaceUrlState = ({
+    nextSection = activeSection,
+    nextQuery = debouncedSearchQuery,
+    nextHash = currentHash,
+  }: {
+    nextSection?: string;
+    nextQuery?: string;
+    nextHash?: string;
+  }) => {
+    const params = new URLSearchParams(window.location.search);
+    if (nextSection) {
+      params.set('section', nextSection);
+    } else {
+      params.delete('section');
+    }
+    if (nextQuery) {
+      params.set('q', nextQuery);
     } else {
       params.delete('q');
     }
 
     const nextQueryString = params.toString();
-    startTransition(() => {
-      router.replace(nextQueryString ? `?${nextQueryString}` : '?', { scroll: false });
-    });
-  }, [deferredSearchQuery, router, searchParams]);
+    const nextUrl = `${window.location.pathname}${nextQueryString ? `?${nextQueryString}` : ''}${nextHash}`;
+    window.history.replaceState(window.history.state, '', nextUrl);
+  };
 
   // Scroll to hash target after markdown renders
   useEffect(() => {
@@ -281,15 +342,13 @@ export default function WikiContent({
           : -1,
     );
     setIsSidebarOpen(false);
-    shouldSkipNextQuerySync.current = true;
+    committedSearchQuery.current = '';
+    setActiveSection(id);
     setSearchQuery('');
+    setDebouncedSearchQuery('');
     setPendingAnchor(null);
     setCurrentHash('');
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('section', id);
-    params.delete('q');
-    const nextQueryString = params.toString();
-    router.replace(nextQueryString ? `?${nextQueryString}` : '?', { scroll: false });
+    replaceUrlState({ nextSection: id, nextQuery: '', nextHash: '' });
   };
 
   const handleSearchResultOpen = (result: (typeof searchResults)[number]) => {
@@ -304,23 +363,23 @@ export default function WikiContent({
           : -1,
     );
     setIsSidebarOpen(false);
-    shouldSkipNextQuerySync.current = true;
+    committedSearchQuery.current = '';
+    setActiveSection(result.sectionId);
     setSearchQuery('');
+    setDebouncedSearchQuery('');
     setPendingAnchor({
       heading: result.heading,
       slug: result.slug,
     });
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('section', result.sectionId);
-    params.delete('q');
-    const nextQueryString = params.toString();
     const nextHash = result.slug ? `#${encodeURIComponent(result.slug)}` : '';
 
     setCurrentHash(nextHash);
-    router.replace(`${nextQueryString ? `?${nextQueryString}` : '?'}${nextHash}`, {
-      scroll: false,
-    });
+    replaceUrlState({ nextSection: result.sectionId, nextQuery: '', nextHash });
+  };
+
+  const handleSearchClear = () => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
   };
 
   const handleOutlineOpen = (item: WikiSectionOutlineItem) => {
@@ -332,15 +391,10 @@ export default function WikiContent({
       slug: item.slug,
     });
     setCurrentHash(nextHash);
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('section', activeSection);
-    params.delete('q');
-    const nextQueryString = params.toString();
-
-    router.replace(`${nextQueryString ? `?${nextQueryString}` : '?'}${nextHash}`, {
-      scroll: false,
-    });
+    committedSearchQuery.current = '';
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    replaceUrlState({ nextSection: activeSection, nextQuery: '', nextHash });
   };
 
   const markdownComponents = useMemo(() => {
@@ -586,6 +640,14 @@ export default function WikiContent({
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
+                onCompositionStart={() => setIsSearchComposing(true)}
+                onCompositionEnd={(event) => {
+                  const nextQuery = event.currentTarget.value.trim();
+
+                  setIsSearchComposing(false);
+                  setSearchQuery(event.currentTarget.value);
+                  setDebouncedSearchQuery(nextQuery);
+                }}
                 placeholder={searchPlaceholder}
                 className="w-full pl-12 pr-12 py-3.5 rounded-xl backdrop-blur-md focus:outline-none transition-all"
                 style={{
@@ -598,7 +660,7 @@ export default function WikiContent({
               {searchQuery ? (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={handleSearchClear}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
                   style={{ color: 'var(--theme-text-muted-soft)' }}
                   aria-label={clearSearchLabel}
@@ -855,7 +917,7 @@ export default function WikiContent({
                 <AnimatePresence mode="wait" initial={false}>
                   {isSearching ? (
                     <motion.div
-                      key={`search-${deferredSearchQuery}`}
+                      key={`search-${activeSearchQuery}`}
                       initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
                       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                       exit={{
