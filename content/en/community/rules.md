@@ -1,4 +1,9 @@
-# Server Rules
+---
+title: Server Rules
+description: The boundaries for gameplay, building, moderation, licensing, and featured builds.
+order: 40
+icon: Shield
+---
 
 ## What Kind of Server This Is
 

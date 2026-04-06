@@ -7,13 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "format": "biome format . --write",
-    "lint": "biome check .",
-    "lint:fix": "biome check . --write",
-    "lint:unsafe": "biome check . --write --unsafe",
-    "lint:eslint": "eslint",
-    "typecheck": "tsc --noEmit",
-    "check": "bun run lint && bun run typecheck"
+    "fix": "biome check . --write",
+    "check:wiki": "bun run scripts/wiki-check.ts",
+    "check": "biome check . && tsc --noEmit && bun run check:wiki"
   },
   "dependencies": {
     "@otplib/core": "^13.4.0",
@@ -40,13 +36,7 @@
     "@types/node": "^20.19.39",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.4",
-    "eslint-config-next": "16.1.6",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.58.0"
+    "typescript": "^5.9.3"
   }
 }

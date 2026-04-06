@@ -3,7 +3,8 @@ export interface ApiErrorPayload {
   message?: string;
 }
 
-export type WikiSectionId = 'getting-started' | 'rules' | 'commands' | 'community' | 'tips';
+export type WikiSectionId = string;
+export type WikiSectionGroupId = string;
 
 export type WikiLocale = 'zh-CN' | 'en';
 
@@ -13,9 +14,40 @@ export interface WikiSectionDefinition {
   id: WikiSectionId;
   icon: WikiSectionIcon;
   label: string;
+  description: string;
+  groupId: WikiSectionGroupId;
+  groupLabel: string;
+  groupOrder: number;
+  order: number;
 }
 
-export type WikiSectionContentMap = Record<WikiSectionId, string>;
+export interface WikiSectionGroupDefinition {
+  id: WikiSectionGroupId;
+  label: string;
+  sections: WikiSectionDefinition[];
+}
+
+export type WikiSectionContentMap = Record<string, string>;
+export type WikiSectionOutlineMap = Record<string, WikiSectionOutlineItem[]>;
+
+export interface WikiSectionFrontMatter {
+  title: string;
+  description: string;
+  order: number;
+  icon: WikiSectionIcon;
+}
+
+export interface WikiSectionDocument {
+  section: WikiSectionDefinition;
+  content: string;
+  sourcePath: string;
+}
+
+export interface WikiSectionOutlineItem {
+  heading: string;
+  level: number;
+  slug: string;
+}
 
 export interface MarkdownBlock {
   heading: string;

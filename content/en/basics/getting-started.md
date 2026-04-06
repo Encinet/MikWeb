@@ -1,4 +1,9 @@
-# Getting Started
+---
+title: Getting Started
+description: Start with access, version support, recommended mods, and first-login basics.
+order: 10
+icon: Home
+---
 
 Welcome to the Mik server.
 

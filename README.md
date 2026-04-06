@@ -15,12 +15,13 @@ bun dev
 | 脚本 | 说明 |
 |------|------|
 | `bun dev` | 启动开发服务器 |
-| `bun run build` | 生产构建 |
+| `bun build` | 生产构建 |
 | `bun start` | 启动生产服务 |
-| `bun run format` | 使用 Biome 格式化项目 |
-| `bun run lint` | 运行 Biome 检查 |
-| `bun run typecheck` | 运行 TypeScript 类型检查 |
-| `bun run check` | 执行 `lint` + `typecheck` |
+| `bun fix` | 自动修正 Biome 可处理的问题 |
+| `bun check:wiki` | 校验 Wiki 元信息、分组目录、章节结构与多语言文件配对 |
+| `bun check` | 执行代码检查、类型检查和 Wiki 校验 |
+
+协作流程、Wiki 规范、目录约定和多语言维护说明见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ## 环境变量
 
@@ -34,7 +35,8 @@ bun dev
 | `BUILDINGS_TOTP_SECRET` | — | 建筑服务器 HMAC-Timestamp 密钥，默认回退到 `TOTP_SECRET` |
 | `NEXT_PUBLIC_BASE_URL` | — | MCP 服务器调用的基础 URL，默认 `http://localhost:3000` |
 
-生成 HMAC-Timestamp 密钥（32字节hex）：
+生成 HMAC-Timestamp 密钥（32字节 hex）：
+
 ```bash
 openssl rand -hex 32
 ```
@@ -139,6 +141,7 @@ openssl rand -hex 32
   } | null;
 }[]
 ```
+
 前端通过坐标、建造日期和 builder UUID 组合生成稳定 ID。
 </details>
 
@@ -183,81 +186,31 @@ openssl rand -hex 32
 }
 ```
 
-## 项目结构
+## 贡献
 
-```text
-MikWeb/
-├── app/
-│   ├── [locale]/
-│   │   ├── page.tsx / HomeSection.tsx
-│   │   ├── buildings/layout.tsx / page.tsx
-│   │   ├── bans/layout.tsx / page.tsx
-│   │   ├── wiki/layout.tsx / page.tsx / WikiContent.tsx
-│   │   ├── [...rest]/page.tsx      # Wiki 兜底路由
-│   │   ├── layout.tsx
-│   │   ├── not-found.tsx
-│   │   ├── opengraph-image.tsx
-│   │   └── ...
-│   ├── api/
-│   │   ├── players/online/route.ts
-│   │   ├── players/history/route.ts
-│   │   ├── players/[uuid]/history/route.ts
-│   │   ├── announcements/route.ts
-│   │   ├── buildings/route.ts
-│   │   ├── bans/route.ts
-│   │   └── mcp/route.ts       # MCP 服务端点
-│   ├── opengraph-image.tsx
-│   ├── globals.css
-│   ├── manifest.ts / robots.ts / sitemap.ts
-│   └── layout.tsx
-├── components/
-│   ├── Navbar.tsx          # 导航与在线玩家显示
-│   ├── Footer.tsx
-│   ├── Background.tsx      # 背景视觉
-│   ├── MinecraftAvatar.tsx
-│   ├── ScrollReveal.tsx
-│   ├── StructuredData.tsx  # SEO JSON-LD
-│   └── ThemeProvider.tsx
-├── contexts/
-│   ├── PlayerContext.tsx
-│   └── BuildingsContext.tsx
-├── content/                # Wiki Markdown 源文件
-│   ├── zh-CN/{getting-started,commands,tips,rules,community}.md
-│   └── en/
-├── lib/
-│   ├── proxyRoute.ts       # API 代理与缓存头
-│   ├── clientApi.ts        # 前端请求封装
-│   ├── buildings.ts        # 建筑筛选/排序
-│   ├── wiki.ts             # Wiki section / locale 定义
-│   ├── metadata.ts         # 页面 metadata 生成
-│   ├── routeLocale.ts      # locale 参数校验（非法直接 404）
-│   ├── socialImage.tsx     # Open Graph 分享图生成
-│   ├── types.ts
-│   └── site.ts
-├── messages/               # next-intl 文案
-│   ├── zh-CN.json
-│   └── en.json
-├── i18n/routing.ts         # locales 配置
-├── hooks/useHasMounted.ts
-├── i18n.ts
-├── proxy.ts                # i18n 中间件
-├── public/mik-standard-rounded.webp
-├── next.config.ts
-├── package.json
-└── tsconfig.json
+代码改动提交前建议至少运行：
+
+```bash
+bun check
 ```
 
-## 国际化
+仅修改 Wiki 或文案时，至少运行：
 
-翻译文案位于 `messages/`，Wiki 文档位于 `content/<locale>/`，路由配置在 `i18n/routing.ts`。新增语言时，需要同时补齐：
+```bash
+bun check:wiki
+```
 
-1. `i18n/routing.ts` 中的 locale 配置
-2. `messages/<locale>.json`
-3. `content/<locale>/` 下对应 Markdown 文件
+需要自动整理格式和可安全修复的问题时，运行：
+
+```bash
+bun fix
+```
+
+按角色拆分的协作流程、Wiki 元信息规范、命名约束和目录说明见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ## 构建与部署
 
 ```bash
-bun run build
+bun build
 bun start
 ```

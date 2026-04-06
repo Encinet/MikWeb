@@ -24,10 +24,12 @@ import type {
   SearchableWikiBlock,
   WikiSectionContentMap,
   WikiSectionDefinition,
+  WikiSectionGroupDefinition,
   WikiSectionIcon,
   WikiSectionId,
+  WikiSectionOutlineItem,
+  WikiSectionOutlineMap,
 } from '@/lib/types';
-import { isWikiSectionId } from '@/lib/wiki';
 import { searchWikiBlocks } from '@/lib/wikiSearch';
 
 interface PendingWikiAnchor {
@@ -47,6 +49,7 @@ interface WikiContentProps {
   title: string;
   description: string;
   navigation: string;
+  onThisPage: string;
   searchPlaceholder: string;
   searchResultsLabel: string;
   searchResultsCountTemplate: string;
@@ -54,7 +57,9 @@ interface WikiContentProps {
   searchEmptyDescription: string;
   clearSearchLabel: string;
   sections: WikiSectionDefinition[];
+  sectionGroups: WikiSectionGroupDefinition[];
   content: WikiSectionContentMap;
+  outlines: WikiSectionOutlineMap;
   searchIndex: SearchableWikiBlock[];
   initialSection?: WikiSectionId;
   initialQuery?: string;
@@ -130,6 +135,7 @@ export default function WikiContent({
   title,
   description,
   navigation,
+  onThisPage,
   searchPlaceholder,
   searchResultsLabel,
   searchResultsCountTemplate,
@@ -137,7 +143,9 @@ export default function WikiContent({
   searchEmptyDescription,
   clearSearchLabel,
   sections,
+  sectionGroups,
   content,
+  outlines,
   searchIndex,
   initialSection,
   initialQuery = '',
@@ -152,14 +160,15 @@ export default function WikiContent({
   const shouldSkipNextQuerySync = useRef(false);
   const [currentHash, setCurrentHash] = useState('');
   const activeSection = useMemo(() => {
-    const section = searchParams.get('section');
+    const selectedSectionId = searchParams.get('section');
 
-    if (section && isWikiSectionId(section) && content[section]) {
-      return section;
+    if (selectedSectionId && content[selectedSectionId]) {
+      return selectedSectionId;
     }
 
-    return initialSection || sections[0]?.id || 'getting-started';
+    return initialSection || sections[0]?.id || '';
   }, [searchParams, content, initialSection, sections]);
+  const activeOutline = outlines[activeSection] ?? [];
   const sectionIndexMap = useMemo(() => {
     return new Map(sections.map((section, index) => [section.id, index]));
   }, [sections]);
@@ -307,6 +316,27 @@ export default function WikiContent({
     params.delete('q');
     const nextQueryString = params.toString();
     const nextHash = result.slug ? `#${encodeURIComponent(result.slug)}` : '';
+
+    setCurrentHash(nextHash);
+    router.replace(`${nextQueryString ? `?${nextQueryString}` : '?'}${nextHash}`, {
+      scroll: false,
+    });
+  };
+
+  const handleOutlineOpen = (item: WikiSectionOutlineItem) => {
+    const nextHash = item.slug ? `#${encodeURIComponent(item.slug)}` : '';
+    if (!nextHash) return;
+
+    setPendingAnchor({
+      heading: item.heading,
+      slug: item.slug,
+    });
+    setCurrentHash(nextHash);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('section', activeSection);
+    params.delete('q');
+    const nextQueryString = params.toString();
 
     router.replace(`${nextQueryString ? `?${nextQueryString}` : '?'}${nextHash}`, {
       scroll: false,
@@ -607,35 +637,49 @@ export default function WikiContent({
                   }}
                 >
                   <motion.nav
-                    className="space-y-1"
+                    className="space-y-3"
                     variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
                     initial="hidden"
                     animate="show"
                   >
-                    {sections.map((section) => {
-                      const Icon = iconMap.get(section.icon) ?? BookOpen;
-                      const isActive = !isSearching && activeSection === section.id;
-                      return (
-                        <motion.button
-                          key={section.id}
-                          variants={popupItem}
-                          transition={spring.snappy}
-                          onClick={() => handleSectionChange(section.id)}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg relative"
-                          style={{
-                            color: isActive
-                              ? 'var(--theme-accent-blue)'
-                              : 'var(--theme-text-muted-soft)',
-                          }}
-                          whileHover={{ x: 3, transition: spring.snappy }}
-                          whileTap={{ scale: 0.95, transition: spring.snappy }}
+                    {sectionGroups.map((group) => (
+                      <div key={group.id}>
+                        <p
+                          className="px-3 mb-2 text-[11px] uppercase tracking-[0.18em]"
+                          style={{ color: 'var(--theme-text-muted)' }}
                         >
-                          {isActive && <ActivePill layoutId="mobile-pill" />}
-                          <Icon className="w-4 h-4 shrink-0 relative z-10" />
-                          <span className="text-sm font-medium relative z-10">{section.label}</span>
-                        </motion.button>
-                      );
-                    })}
+                          {group.label}
+                        </p>
+                        <div className="space-y-1">
+                          {group.sections.map((section) => {
+                            const Icon = iconMap.get(section.icon) ?? BookOpen;
+                            const isActive = !isSearching && activeSection === section.id;
+                            return (
+                              <motion.button
+                                key={section.id}
+                                variants={popupItem}
+                                transition={spring.snappy}
+                                onClick={() => handleSectionChange(section.id)}
+                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg relative"
+                                style={{
+                                  color: isActive
+                                    ? 'var(--theme-accent-blue)'
+                                    : 'var(--theme-text-muted-soft)',
+                                }}
+                                whileHover={{ x: 3, transition: spring.snappy }}
+                                whileTap={{ scale: 0.95, transition: spring.snappy }}
+                              >
+                                {isActive && <ActivePill layoutId="mobile-pill" />}
+                                <Icon className="w-4 h-4 shrink-0 relative z-10" />
+                                <span className="text-sm font-medium relative z-10">
+                                  {section.label}
+                                </span>
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </motion.nav>
                 </motion.div>
               )}
@@ -682,86 +726,111 @@ export default function WikiContent({
                 </h3>
 
                 <motion.nav
-                  className="space-y-1"
+                  className="space-y-5"
                   variants={navContainer}
                   initial="hidden"
                   animate="show"
                 >
-                  {sections.map((section) => {
-                    const Icon = iconMap.get(section.icon) ?? BookOpen;
-                    const isActive = !isSearching && activeSection === section.id;
-                    return (
-                      <motion.button
-                        key={section.id}
-                        variants={navItem}
-                        onClick={() => handleSectionChange(section.id)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg relative"
-                        // ── original nav colors, no hover color change ──
-                        style={{
-                          color: isActive
-                            ? 'var(--theme-accent-blue)'
-                            : 'var(--theme-text-muted-soft)',
-                          background: 'transparent',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--theme-surface-hover)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                        whileHover={{ x: isActive ? 0 : 4, transition: spring.snappy }}
-                        whileTap={{ scale: 0.97, transition: spring.fab }}
+                  {sectionGroups.map((group) => (
+                    <div key={group.id}>
+                      <p
+                        className="px-2 mb-2 text-[11px] uppercase tracking-[0.2em]"
+                        style={{ color: 'var(--theme-text-muted)' }}
                       >
-                        {isActive && <ActivePill layoutId="desktop-pill" />}
+                        {group.label}
+                      </p>
 
-                        {isActive ? (
-                          <motion.span
-                            key={`${section.id}-${activeSection}`}
-                            className="relative z-10"
-                            initial={{ rotate: -18, scale: 0.82, x: -6, y: 1 }}
-                            animate={{
-                              rotate: [-18, 10, -6, 0],
-                              scale: [0.82, 1.18, 0.97, 1],
-                              x: [-6, 2, -1, 0],
-                              y: [1, -1, 0, 0],
-                            }}
-                            transition={{
-                              duration: 0.52,
-                              times: [0, 0.42, 0.76, 1],
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                          >
-                            <Icon className="w-4 h-4 shrink-0" />
-                          </motion.span>
-                        ) : (
-                          <span className="relative z-10">
-                            <Icon className="w-4 h-4 shrink-0" />
-                          </span>
-                        )}
-
-                        <span className="text-sm font-medium relative z-10">{section.label}</span>
-
-                        <AnimatePresence>
-                          {isActive && (
-                            <motion.span
-                              key="chevron"
-                              className="ml-auto relative z-10"
-                              initial={{ opacity: 0, x: -8, rotate: -30 }}
-                              animate={{ opacity: 1, x: 0, rotate: 0, transition: spring.bouncy }}
-                              exit={{
-                                opacity: 0,
-                                x: -6,
-                                rotate: -20,
-                                transition: { duration: 0.15 },
+                      <div className="space-y-1">
+                        {group.sections.map((section) => {
+                          const Icon = iconMap.get(section.icon) ?? BookOpen;
+                          const isActive = !isSearching && activeSection === section.id;
+                          return (
+                            <motion.button
+                              key={section.id}
+                              variants={navItem}
+                              onClick={() => handleSectionChange(section.id)}
+                              className="w-full flex items-start gap-3 px-3 py-2.5 rounded-lg relative text-left"
+                              style={{
+                                color: isActive
+                                  ? 'var(--theme-accent-blue)'
+                                  : 'var(--theme-text-muted-soft)',
+                                background: 'transparent',
                               }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--theme-surface-hover)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                              }}
+                              whileHover={{ x: isActive ? 0 : 4, transition: spring.snappy }}
+                              whileTap={{ scale: 0.97, transition: spring.fab }}
                             >
-                              <ChevronRight className="w-4 h-4" />
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
-                      </motion.button>
-                    );
-                  })}
+                              {isActive && <ActivePill layoutId="desktop-pill" />}
+
+                              {isActive ? (
+                                <motion.span
+                                  key={`${section.id}-${activeSection}`}
+                                  className="relative z-10 mt-0.5"
+                                  initial={{ rotate: -18, scale: 0.82, x: -6, y: 1 }}
+                                  animate={{
+                                    rotate: [-18, 10, -6, 0],
+                                    scale: [0.82, 1.18, 0.97, 1],
+                                    x: [-6, 2, -1, 0],
+                                    y: [1, -1, 0, 0],
+                                  }}
+                                  transition={{
+                                    duration: 0.52,
+                                    times: [0, 0.42, 0.76, 1],
+                                    ease: [0.22, 1, 0.36, 1],
+                                  }}
+                                >
+                                  <Icon className="w-4 h-4 shrink-0" />
+                                </motion.span>
+                              ) : (
+                                <span className="relative z-10 mt-0.5">
+                                  <Icon className="w-4 h-4 shrink-0" />
+                                </span>
+                              )}
+
+                              <span className="relative z-10 min-w-0">
+                                <span className="block text-sm font-medium">{section.label}</span>
+                                <span
+                                  className="mt-1 block text-xs leading-relaxed"
+                                  style={{ color: 'var(--theme-text-muted)' }}
+                                >
+                                  {section.description}
+                                </span>
+                              </span>
+
+                              <AnimatePresence>
+                                {isActive && (
+                                  <motion.span
+                                    key="chevron"
+                                    className="ml-auto relative z-10 mt-0.5"
+                                    initial={{ opacity: 0, x: -8, rotate: -30 }}
+                                    animate={{
+                                      opacity: 1,
+                                      x: 0,
+                                      rotate: 0,
+                                      transition: spring.bouncy,
+                                    }}
+                                    exit={{
+                                      opacity: 0,
+                                      x: -6,
+                                      rotate: -20,
+                                      transition: { duration: 0.15 },
+                                    }}
+                                  >
+                                    <ChevronRight className="w-4 h-4" />
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </motion.nav>
               </div>
             </motion.div>
@@ -893,6 +962,52 @@ export default function WikiContent({
                       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                       className="prose prose-invert prose-blue max-w-none"
                     >
+                      {activeOutline.length > 0 ? (
+                        <div
+                          className="not-prose mb-8 border-b pb-5"
+                          style={{ borderColor: 'var(--theme-border-glass-light)' }}
+                        >
+                          <p
+                            className="mb-3 text-xs uppercase tracking-[0.2em]"
+                            style={{ color: 'var(--theme-text-muted)' }}
+                          >
+                            {onThisPage}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2">
+                            {activeOutline.map((item) => {
+                              const hash = item.slug ? `#${encodeURIComponent(item.slug)}` : '';
+                              const isCurrent = hash === currentHash;
+
+                              return (
+                                <button
+                                  type="button"
+                                  key={`${item.slug}-${item.heading}`}
+                                  onClick={() => handleOutlineOpen(item)}
+                                  className="rounded-full px-3 py-1.5 text-sm transition-colors"
+                                  style={{
+                                    background: isCurrent
+                                      ? 'var(--theme-surface-blue-accent)'
+                                      : 'transparent',
+                                    border: `1px solid ${
+                                      isCurrent
+                                        ? 'var(--theme-border-blue-accent)'
+                                        : 'var(--theme-border-glass-light)'
+                                    }`,
+                                    color: isCurrent
+                                      ? 'var(--theme-accent-blue)'
+                                      : 'var(--theme-text-muted-strong)',
+                                    paddingLeft: item.level === 3 ? '1rem' : '0.75rem',
+                                  }}
+                                >
+                                  {item.level === 3 ? `↳ ${item.heading}` : item.heading}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeSlug]}

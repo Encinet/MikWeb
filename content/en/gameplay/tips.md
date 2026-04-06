@@ -1,4 +1,9 @@
-# Tips & Tricks
+---
+title: Tips & Tricks
+description: Useful building tricks, decorator tools, and external websites worth bookmarking.
+order: 30
+icon: Zap
+---
 
 ## Elevator System
 

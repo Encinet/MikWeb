@@ -1,10 +1,9 @@
-# Community Guide
-
-## Getting Involved
-
-1. **Say hi and join the conversation** - Talk in chat, share what you are building, and take part in community activities.
-2. **Help other players** - Share building tips, answer questions, and contribute to public projects when you can.
-3. **Show your work** - Credit the builder and original creator where appropriate, then invite other players to visit.
+---
+title: Community Guide
+description: Where to contact the server, how to join the community, and how to submit builds.
+order: 50
+icon: Users
+---
 
 ## Contact
 
@@ -15,6 +14,12 @@
 ### Overseas Players
 
 - **Application Form** - Apply through the form and wait for the email response
+
+## Getting Involved
+
+1. **Say hi and join the conversation** - Talk in chat, share what you are building, and take part in community activities.
+2. **Help other players** - Share building tips, answer questions, and contribute to public projects when you can.
+3. **Show your work** - Credit the builder and original creator where appropriate, then invite other players to visit.
 
 ## Getting Your Build Featured
 

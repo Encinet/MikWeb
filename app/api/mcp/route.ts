@@ -1,6 +1,3 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-
 import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 
@@ -14,7 +11,8 @@ import type {
   WikiLocale,
   WikiSectionContentMap,
 } from '@/lib/types';
-import { WIKI_LOCALES, WIKI_SECTIONS } from '@/lib/wiki';
+import { WIKI_LOCALES } from '@/lib/wiki';
+import { loadWikiSectionDocuments } from '@/lib/wikiContent';
 import { buildWikiSearchIndex, searchWikiBlocks } from '@/lib/wikiSearch';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -22,24 +20,12 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 const wikiIndexCache = new Map<string, Promise<SearchableWikiBlock[]>>();
 
 async function buildWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
-  const contentDir = path.join(process.cwd(), 'content', locale);
-  const fileResults = await Promise.all(
-    WIKI_SECTIONS.map((sectionId) =>
-      fs
-        .readFile(path.join(contentDir, `${sectionId}.md`), 'utf-8')
-        .then((raw) => ({ sectionId, raw }))
-        .catch(() => null),
-    ),
-  );
+  const wikiDocuments = await loadWikiSectionDocuments(locale);
+  const wikiContentBySection = Object.fromEntries(
+    wikiDocuments.map((wikiDocument) => [wikiDocument.section.id, wikiDocument.content]),
+  ) as WikiSectionContentMap;
 
-  const content: Partial<WikiSectionContentMap> = {};
-
-  for (const fileResult of fileResults) {
-    if (!fileResult) continue;
-    content[fileResult.sectionId] = fileResult.raw;
-  }
-
-  return buildWikiSearchIndex(locale, content as WikiSectionContentMap, BASE_URL);
+  return buildWikiSearchIndex(locale, wikiContentBySection, BASE_URL);
 }
 
 function getWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {

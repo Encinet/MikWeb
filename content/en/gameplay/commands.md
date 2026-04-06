@@ -1,31 +1,11 @@
-# Common Commands
+---
+title: Common Commands
+description: A practical command reference for travel, building, decoration, and server-side tools.
+order: 20
+icon: Wrench
+---
 
-Here are the commands players use most often on the server. Vanilla command names link to the Minecraft Wiki if you want the full syntax and details.
-
-## Vanilla Commands
-
-The following vanilla commands are available on the server:
-
-| Command | Description | Member Only |
-|------|------|:----------:|
-| [`/attribute`](https://minecraft.wiki/w/Commands/attribute) | View or change an entity's attribute values | ✔ |
-| [`/clear`](https://minecraft.wiki/w/Commands/clear) | Remove items from a player's inventory | |
-| [`/damage`](https://minecraft.wiki/w/Commands/damage) | Deal a specific type and amount of damage to an entity | ✔ |
-| [`/effect`](https://minecraft.wiki/w/Commands/effect) | Apply or remove status effects | ✔ |
-| [`/enchant`](https://minecraft.wiki/w/Commands/enchant) | Enchant the item a player is holding | |
-| [`/fill`](https://minecraft.wiki/w/Commands/fill) | Fill an area with blocks | ✔ |
-| [`/gamemode`](https://minecraft.wiki/w/Commands/gamemode) | Change a player's game mode | |
-| [`/give`](https://minecraft.wiki/w/Commands/give) | Give an item to a player | |
-| [`/item`](https://minecraft.wiki/w/Commands/item) | Edit items in containers or equipment slots | ✔ |
-| [`/ride`](https://minecraft.wiki/w/Commands/ride) | Control riding relationships between entities | ✔ |
-| [`/save-all`](https://minecraft.wiki/w/Commands/save) | Save the world immediately | ✔ |
-| [`/seed`](https://minecraft.wiki/w/Commands/seed) | Show the world seed | |
-| [`/setblock`](https://minecraft.wiki/w/Commands/setblock) | Place a block at a specific position | ✔ |
-| [`/summon`](https://minecraft.wiki/w/Commands/summon) | Summon an entity at a specific position | ✔ |
-| [`/tp`](https://minecraft.wiki/w/Commands/tp) | Teleport to coordinates or another entity | |
-| [`/tellraw`](https://minecraft.wiki/w/Commands/tellraw) | Send formatted JSON chat messages | |
-| [`/time`](https://minecraft.wiki/w/Commands/time) | Check or change the world time | |
-| [`/weather`](https://minecraft.wiki/w/Commands/weather) | Change the weather | |
+This page lists the commands players use most often on the server. If you need the full syntax for a vanilla command, see the final section, "Vanilla Command Reference."
 
 ## Teleportation & Navigation
 
@@ -107,3 +87,28 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 |------|------|
 | `/apk start` | Start the parkour challenge. The difficulty increases as you progress |
 | `/spy` | Join the "Who's the Killer" mini-game |
+
+## Vanilla Command Reference
+
+The following vanilla commands are available on the server. Click a command name to open the Minecraft Wiki entry with full syntax and details:
+
+| Command | Description | Member Only |
+|------|------|:----------:|
+| [`/attribute`](https://minecraft.wiki/w/Commands/attribute) | View or change an entity's attribute values | ✔ |
+| [`/clear`](https://minecraft.wiki/w/Commands/clear) | Remove items from a player's inventory | |
+| [`/damage`](https://minecraft.wiki/w/Commands/damage) | Deal a specific type and amount of damage to an entity | ✔ |
+| [`/effect`](https://minecraft.wiki/w/Commands/effect) | Apply or remove status effects | ✔ |
+| [`/enchant`](https://minecraft.wiki/w/Commands/enchant) | Enchant the item a player is holding | |
+| [`/fill`](https://minecraft.wiki/w/Commands/fill) | Fill an area with blocks | ✔ |
+| [`/gamemode`](https://minecraft.wiki/w/Commands/gamemode) | Change a player's game mode | |
+| [`/give`](https://minecraft.wiki/w/Commands/give) | Give an item to a player | |
+| [`/item`](https://minecraft.wiki/w/Commands/item) | Edit items in containers or equipment slots | ✔ |
+| [`/ride`](https://minecraft.wiki/w/Commands/ride) | Control riding relationships between entities | ✔ |
+| [`/save-all`](https://minecraft.wiki/w/Commands/save) | Save the world immediately | ✔ |
+| [`/seed`](https://minecraft.wiki/w/Commands/seed) | Show the world seed | |
+| [`/setblock`](https://minecraft.wiki/w/Commands/setblock) | Place a block at a specific position | ✔ |
+| [`/summon`](https://minecraft.wiki/w/Commands/summon) | Summon an entity at a specific position | ✔ |
+| [`/tp`](https://minecraft.wiki/w/Commands/tp) | Teleport to coordinates or another entity | |
+| [`/tellraw`](https://minecraft.wiki/w/Commands/tellraw) | Send formatted JSON chat messages | |
+| [`/time`](https://minecraft.wiki/w/Commands/time) | Check or change the world time | |
+| [`/weather`](https://minecraft.wiki/w/Commands/weather) | Change the weather | |
