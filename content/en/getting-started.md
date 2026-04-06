@@ -7,16 +7,23 @@ Mik is a laid-back creative server built around building, exploring, and sharing
 ## Joining the Server
 
 ### If You Are in Mainland China
+
 1. Join our QQ group.
 2. Ask an admin about whitelist access in the group chat.
 3. Wait for the admin team to review your request.
 
 ### If You Are Outside Mainland China
+
 1. Fill out the application form.
 2. Wait for the email response, usually within 48 hours.
 3. If your application is approved, you will receive the server address.
 
-### If You Have Both Java and Bedrock Accounts
+### Version Support and Bedrock Notes
+
+The current server version is `1.21.11`.
+
+- Java Edition supports `1.9 ~ 26.1`, and `1.21.11` is recommended
+- Bedrock Edition only supports the latest few stable releases
 
 If you plan to join the server from Bedrock Edition, link your account first:
 
