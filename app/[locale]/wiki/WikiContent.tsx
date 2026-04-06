@@ -1038,8 +1038,7 @@ export default function WikiContent({
 
                           <div className="flex flex-wrap gap-2">
                             {activeOutline.map((item) => {
-                              const hash = item.slug ? `#${encodeURIComponent(item.slug)}` : '';
-                              const isCurrent = hash === currentHash;
+                              const isCurrent = pendingAnchor?.slug === item.slug;
 
                               return (
                                 <button
