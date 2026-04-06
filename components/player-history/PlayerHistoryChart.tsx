@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 
 import type { HistoryActivePointInsights, HistoryChartModel } from '@/lib/playerHistory';
-import { formatHistoryPointDate, formatHistoryWindowDate } from '@/lib/playerHistory';
+import { formatHistoryPointDate } from '@/lib/playerHistory';
 import {
   getHistoryActionButtonStyle,
   getHistoryProgressFillStyle,
@@ -120,23 +120,7 @@ export default function PlayerHistoryChart({
 
   return (
     <div style={historyChartCardStyle}>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.82rem' }}>
-            {formatHistoryWindowDate(locale, historySnapshot.meta.from)} -{' '}
-            {formatHistoryWindowDate(locale, historySnapshot.meta.to)}
-          </div>
-          <div
-            style={{
-              marginTop: '0.35rem',
-              color: 'var(--theme-text-muted-soft)',
-              fontSize: '0.82rem',
-            }}
-          >
-            {t('chart.interactionHint')}
-          </div>
-        </div>
-
+      <div className="flex justify-end">
         <div className="player-history-action-group">
           <HistoryActionButton
             icon={Crosshair}
@@ -168,7 +152,7 @@ export default function PlayerHistoryChart({
 
       <div style={historyChartFrameStyle}>
         <p id="player-history-chart-hint" className="sr-only">
-          {t('chart.interactionHint')} {t('chart.keyboardHint')}
+          {t('chart.keyboardHint')}
         </p>
 
         <button
@@ -196,7 +180,7 @@ export default function PlayerHistoryChart({
             style={{ display: 'block' }}
           >
             <title>{t('title')}</title>
-            <desc>{t('chart.interactionHint')}</desc>
+            <desc>{t('chart.keyboardHint')}</desc>
             <defs>
               <linearGradient id="player-history-fill" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stopColor="rgba(255,170,0,0.4)" />
@@ -290,15 +274,9 @@ export default function PlayerHistoryChart({
         </button>
 
         <div style={{ padding: '0 1rem 0.85rem' }}>
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.75rem' }}>
-              {formatHistoryWindowDate(locale, historySnapshot.meta.from)}
-            </span>
+          <div className="mb-2 flex items-center justify-end">
             <span style={{ color: 'var(--theme-text-muted-soft)', fontSize: '0.75rem' }}>
               {samplePositionLabel}
-            </span>
-            <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.75rem' }}>
-              {formatHistoryWindowDate(locale, historySnapshot.meta.to)}
             </span>
           </div>
           <div style={historyProgressTrackStyle}>

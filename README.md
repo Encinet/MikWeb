@@ -41,7 +41,7 @@ openssl rand -hex 32
 
 ## API 路由
 
-除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `lib/proxyRoute.ts` 代理上游服务，并设置 `Cache-Control`。常规成功响应会带 `X-Proxy-Cache`（`MISS` / `HIT` / `STALE` / `COALESCED`）与 `X-Proxy-Source`（`UPSTREAM` / `FALLBACK`）；`/api/players/online` 在主接口失败且配置了回退地址时，会额外返回 `X-Cache: FALLBACK`。
+除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `lib/proxyRoute.ts` 代理上游服务，并设置 `Cache-Control`。代理层会对真实上游请求做进程内串行限速，默认平滑到 `10 req/s`。常规成功响应会带 `X-Proxy-Cache`（`MISS` / `HIT` / `STALE` / `COALESCED`）与 `X-Proxy-Source`（`UPSTREAM` / `FALLBACK`）；`/api/players/online` 在主接口失败且配置了回退地址时，会额外返回 `X-Cache: FALLBACK`。
 
 | 路由 | 上游 | `cacheMaxAge` | 备注 |
 |------|------|---------------|------|

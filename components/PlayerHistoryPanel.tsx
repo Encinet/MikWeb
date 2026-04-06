@@ -231,13 +231,6 @@ export default function PlayerHistoryPanel() {
           hint: t('summary.inWindow'),
           color: 'var(--theme-accent-green-strong)',
         },
-        {
-          icon: Clock3,
-          label: t('summary.samples'),
-          value: formatHistorySummaryNumber(locale, historySnapshot.meta.total_points),
-          hint: `${rangeLabel(selectedRangeId)} · ${intervalLabel(selectedInterval.id)}`,
-          color: 'var(--theme-text-heading)',
-        },
       ]
     : [];
 
@@ -257,7 +250,7 @@ export default function PlayerHistoryPanel() {
         <div className="player-history-panel-glow" aria-hidden="true" />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <div
                 style={{
                   width: '3.1rem',
@@ -289,16 +282,6 @@ export default function PlayerHistoryPanel() {
                 >
                   {t('title')}
                 </h3>
-                <p
-                  style={{
-                    marginTop: '0.45rem',
-                    color: 'var(--theme-text-muted-soft)',
-                    fontSize: '0.96rem',
-                    maxWidth: '48rem',
-                  }}
-                >
-                  {t('description')}
-                </p>
               </div>
             </div>
 
@@ -308,7 +291,7 @@ export default function PlayerHistoryPanel() {
           </div>
 
           {historySnapshot ? (
-            <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
               {summaryCards.map((item) => (
                 <HistorySummaryCard
                   key={item.label}
@@ -322,156 +305,8 @@ export default function PlayerHistoryPanel() {
             </div>
           ) : null}
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.42fr)_minmax(20rem,0.92fr)]">
-            <div className="order-1 flex min-w-0 flex-col gap-4 xl:col-start-2 xl:row-start-1">
-              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-1">
-                <div
-                  className="player-history-control-surface"
-                  style={{
-                    ...historyInsetPanelStyle,
-                    borderRadius: '24px',
-                    padding: '1.15rem',
-                  }}
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="player-history-section-icon">
-                        <Clock3 className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div
-                          className="flex items-center gap-2"
-                          style={{ color: 'var(--theme-text-muted-soft)' }}
-                        >
-                          <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
-                            {t('rangeLabel')}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            marginTop: '0.38rem',
-                            color: 'var(--theme-text-heading)',
-                            fontSize: '1.08rem',
-                            fontWeight: 700,
-                          }}
-                        >
-                          {rangeLabel(selectedRangeId)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {HISTORY_RANGE_OPTIONS.map((range) => (
-                        <HistoryControlButton
-                          key={range.id}
-                          active={range.id === selectedRangeId}
-                          label={rangeLabel(range.id)}
-                          onClick={() => setSelectedRangeId(range.id)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="player-history-control-surface"
-                  style={{
-                    ...historyInsetPanelStyle,
-                    borderRadius: '24px',
-                    padding: '1.15rem',
-                  }}
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-start gap-3">
-                        <div className="player-history-section-icon">
-                          <SlidersHorizontal className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div
-                            className="flex items-center gap-2"
-                            style={{ color: 'var(--theme-text-muted-soft)' }}
-                          >
-                            <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
-                              {t('precisionLabel')}
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              marginTop: '0.38rem',
-                              color: 'var(--theme-text-heading)',
-                              fontSize: '1.08rem',
-                              fontWeight: 700,
-                            }}
-                          >
-                            {intervalLabel(selectedInterval.id)}
-                          </div>
-                          <div
-                            style={{
-                              marginTop: '0.28rem',
-                              color: 'var(--theme-text-muted)',
-                              fontSize: '0.8rem',
-                            }}
-                          >
-                            {t('precisionHint')}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="player-history-metric-pill">
-                        <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.72rem' }}>
-                          {t('precisionEstimate', { count: formattedEstimatedSamples })}
-                        </span>
-                        <strong
-                          style={{
-                            color: 'var(--theme-text-heading)',
-                            fontSize: '1rem',
-                            fontWeight: 700,
-                          }}
-                        >
-                          {formattedEstimatedSamples}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <input
-                      type="range"
-                      min="0"
-                      max={Math.max(precisionScale.length - 1, 0)}
-                      step="1"
-                      value={selectedPrecisionIndex}
-                      onChange={handlePrecisionSliderChange}
-                      aria-label={t('precisionLabel')}
-                      aria-valuetext={`${intervalLabel(selectedInterval.id)} · ${t(
-                        'precisionEstimate',
-                        {
-                          count: formattedEstimatedSamples,
-                        },
-                      )}`}
-                      className="player-history-slider"
-                      style={
-                        {
-                          '--player-history-slider-fill': `${selectedPrecisionProgress}%`,
-                        } as CSSProperties
-                      }
-                    />
-
-                    <div
-                      className="flex items-center justify-between gap-4"
-                      style={{ color: 'var(--theme-text-muted)', fontSize: '0.76rem' }}
-                    >
-                      <span>{finestInterval ? intervalLabel(finestInterval.id) : ''}</span>
-                      <span style={{ color: 'var(--theme-text-muted-soft)' }}>
-                        {t('precisionOverview')} / {t('precisionDetail')}
-                      </span>
-                      <span>{coarsestInterval ? intervalLabel(coarsestInterval.id) : ''}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="order-2 min-w-0 xl:col-start-1 xl:row-start-1">
+          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(22rem,0.95fr)]">
+            <div className="min-w-0">
               {isHistoryLoading && !historySnapshot ? (
                 <div className="player-history-state-card py-14 text-center">
                   <div
@@ -520,16 +355,147 @@ export default function PlayerHistoryPanel() {
               )}
             </div>
 
-            {historySnapshot ? (
-              <div className="order-3 min-w-0 xl:col-span-2 xl:row-start-2">
+            <div className="flex min-w-0 flex-col gap-4">
+              {historySnapshot ? (
                 <PlayerHistoryDetails
                   activePoint={activePoint}
                   activePointInsights={activePointInsights}
                   isPointLocked={isPointLocked}
                   hasStaleData={historyError !== null}
+                  compact
                 />
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div
+              className="player-history-control-surface"
+              style={{
+                ...historyInsetPanelStyle,
+                borderRadius: '24px',
+                padding: '1.15rem',
+              }}
+            >
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="player-history-section-icon">
+                    <Clock3 className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ color: 'var(--theme-text-muted-soft)' }}
+                    >
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
+                        {t('rangeLabel')}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        marginTop: '0.38rem',
+                        color: 'var(--theme-text-heading)',
+                        fontSize: '1.08rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {rangeLabel(selectedRangeId)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {HISTORY_RANGE_OPTIONS.map((range) => (
+                    <HistoryControlButton
+                      key={range.id}
+                      active={range.id === selectedRangeId}
+                      label={rangeLabel(range.id)}
+                      onClick={() => setSelectedRangeId(range.id)}
+                    />
+                  ))}
+                </div>
               </div>
-            ) : null}
+            </div>
+
+            <div
+              className="player-history-control-surface"
+              style={{
+                ...historyInsetPanelStyle,
+                borderRadius: '24px',
+                padding: '1.15rem',
+              }}
+            >
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="player-history-section-icon">
+                    <SlidersHorizontal className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ color: 'var(--theme-text-muted-soft)' }}
+                        >
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
+                            {t('precisionLabel')}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: '0.38rem',
+                            color: 'var(--theme-text-heading)',
+                            fontSize: '1.08rem',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {intervalLabel(selectedInterval.id)}
+                        </div>
+                      </div>
+
+                      <div className="player-history-metric-pill">
+                        <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
+                          {t('precisionEstimate', { count: formattedEstimatedSamples })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <input
+                  type="range"
+                  min="0"
+                  max={Math.max(precisionScale.length - 1, 0)}
+                  step="1"
+                  value={selectedPrecisionIndex}
+                  onChange={handlePrecisionSliderChange}
+                  aria-label={t('precisionLabel')}
+                  aria-valuetext={`${intervalLabel(selectedInterval.id)} · ${t(
+                    'precisionEstimate',
+                    {
+                      count: formattedEstimatedSamples,
+                    },
+                  )}`}
+                  className="player-history-slider"
+                  style={
+                    {
+                      '--player-history-slider-fill': `${selectedPrecisionProgress}%`,
+                    } as CSSProperties
+                  }
+                />
+
+                <div
+                  className="flex items-center justify-between gap-4"
+                  style={{ color: 'var(--theme-text-muted)', fontSize: '0.76rem' }}
+                >
+                  <span>{finestInterval ? intervalLabel(finestInterval.id) : ''}</span>
+                  <span style={{ color: 'var(--theme-text-muted-soft)' }}>
+                    {t('precisionOverview')} / {t('precisionDetail')}
+                  </span>
+                  <span>{coarsestInterval ? intervalLabel(coarsestInterval.id) : ''}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

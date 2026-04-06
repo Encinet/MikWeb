@@ -18,10 +18,21 @@ interface RuntimeCacheEntry<TResponse> {
 
 const runtimeResponseCache = new Map<string, RuntimeCacheEntry<unknown>>();
 const runtimeResponseInflight = new Map<string, Promise<RuntimeCacheEntry<unknown>>>();
+const UPSTREAM_REQUESTS_PER_SECOND = 10;
+const UPSTREAM_REQUEST_INTERVAL_MS = 1000 / UPSTREAM_REQUESTS_PER_SECOND;
+
+let nextUpstreamRequestAt = 0;
+let upstreamRequestQueue = Promise.resolve();
 
 function generateToken(secret: string): string {
   const step = Math.floor(Date.now() / 1000 / 30).toString();
   return createHmac('sha256', secret).update(step).digest('hex');
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 type ProxyPathResolver<TContext> =
@@ -115,6 +126,76 @@ function getRuntimeCacheEntry<TResponse>(
   return entry;
 }
 
+async function waitForUpstreamSlot(): Promise<void> {
+  const reservation = upstreamRequestQueue.then(async () => {
+    const now = Date.now();
+    const scheduledAt = Math.max(now, nextUpstreamRequestAt);
+    const waitMs = scheduledAt - now;
+
+    nextUpstreamRequestAt = scheduledAt + UPSTREAM_REQUEST_INTERVAL_MS;
+
+    if (waitMs > 0) {
+      await sleep(waitMs);
+    }
+  });
+
+  upstreamRequestQueue = reservation.catch(() => undefined);
+
+  await reservation;
+}
+
+function buildUpstreamFetchOptions(
+  targetUrl: URL,
+  maxAge: number | null,
+  totpSecret: string,
+): RequestInit & {
+  next?: {
+    revalidate: number;
+    tags: string[];
+  };
+} {
+  const token = generateToken(totpSecret);
+  const fetchOptions: RequestInit & {
+    next?: {
+      revalidate: number;
+      tags: string[];
+    };
+  } = {
+    headers: {
+      'X-TOTP-Token': token,
+      Accept: 'application/json',
+    },
+    signal: AbortSignal.timeout(5000),
+  };
+
+  if (maxAge && maxAge > 0) {
+    fetchOptions.next = {
+      revalidate: maxAge,
+      tags: [targetUrl.pathname],
+    };
+  } else {
+    fetchOptions.cache = 'no-store';
+  }
+
+  return fetchOptions;
+}
+
+async function fetchUpstreamJson<TResponse>(
+  targetUrl: URL,
+  maxAge: number | null,
+  totpSecret: string,
+): Promise<TResponse> {
+  await waitForUpstreamSlot();
+
+  const response = await fetch(targetUrl, buildUpstreamFetchOptions(targetUrl, maxAge, totpSecret));
+
+  if (!response.ok) {
+    throw new Error(`Upstream status: ${response.status}`);
+  }
+
+  return (await response.json()) as TResponse;
+}
+
 export function createProxyHandler<TResponse, TContext = DefaultRouteContext>(
   config: ProxyRouteConfig<TResponse, TContext>,
 ) {
@@ -161,36 +242,7 @@ export function createProxyHandler<TResponse, TContext = DefaultRouteContext>(
 
     const fetchAndCache = async (): Promise<RuntimeCacheEntry<TResponse>> => {
       try {
-        const token = generateToken(totpSecret);
-        const fetchOptions: RequestInit & {
-          next?: {
-            revalidate: number;
-            tags: string[];
-          };
-        } = {
-          headers: {
-            'X-TOTP-Token': token,
-            'Accept': 'application/json',
-          },
-          signal: AbortSignal.timeout(5000),
-        };
-
-        if (maxAge && maxAge > 0) {
-          fetchOptions.next = {
-            revalidate: maxAge,
-            tags: [targetUrl.pathname],
-          };
-        } else {
-          fetchOptions.cache = 'no-store';
-        }
-
-        const response = await fetch(targetUrl, fetchOptions);
-
-        if (!response.ok) {
-          throw new Error(`Upstream status: ${response.status}`);
-        }
-
-        const data = (await response.json()) as TResponse;
+        const data = await fetchUpstreamJson<TResponse>(targetUrl, maxAge, totpSecret);
         const now = Date.now();
         const entry: RuntimeCacheEntry<TResponse> = {
           data,
@@ -306,36 +358,7 @@ export function createProxyHandler<TResponse, TContext = DefaultRouteContext>(
     }
 
     try {
-      const token = generateToken(totpSecret);
-      const fetchOptions: RequestInit & {
-        next?: {
-          revalidate: number;
-          tags: string[];
-        };
-      } = {
-        headers: {
-          'X-TOTP-Token': token,
-          'Accept': 'application/json',
-        },
-        signal: AbortSignal.timeout(5000),
-      };
-
-      if (maxAge && maxAge > 0) {
-        fetchOptions.next = {
-          revalidate: maxAge,
-          tags: [targetUrl.pathname],
-        };
-      } else {
-        fetchOptions.cache = 'no-store';
-      }
-
-      const response = await fetch(targetUrl, fetchOptions);
-
-      if (!response.ok) {
-        throw new Error(`Upstream status: ${response.status}`);
-      }
-
-      const data = (await response.json()) as TResponse;
+      const data = await fetchUpstreamJson<TResponse>(targetUrl, maxAge, totpSecret);
 
       return buildJsonResponse(data, {
         cacheControl: buildCacheControl(maxAge, 'upstream'),

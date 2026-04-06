@@ -49,6 +49,7 @@ interface PlayerHistoryDetailsProps {
   activePointInsights: HistoryActivePointInsights;
   isPointLocked: boolean;
   hasStaleData: boolean;
+  compact?: boolean;
 }
 
 export default function PlayerHistoryDetails({
@@ -56,13 +57,11 @@ export default function PlayerHistoryDetails({
   activePointInsights,
   isPointLocked,
   hasStaleData,
+  compact = false,
 }: PlayerHistoryDetailsProps) {
   const locale = useLocale();
   const t = useTranslations('home.playerHistory');
   const formattedTimestamp = activePoint
-    ? formatHistoryPointDate(locale, activePoint.timestamp)
-    : '-';
-  const formattedPlayerTimestamp = activePoint
     ? formatHistoryPointDate(locale, activePoint.timestamp, true)
     : '-';
   const pointStatusLabel = resolvePointStatusLabel(
@@ -77,7 +76,11 @@ export default function PlayerHistoryDetails({
 
   return (
     <div style={historyDetailPanelStyle}>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.95fr)]">
+      <div
+        className={
+          compact ? 'grid gap-4' : 'grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.95fr)]'
+        }
+      >
         <div className="min-w-0">
           <div
             style={{
@@ -88,67 +91,56 @@ export default function PlayerHistoryDetails({
                 'linear-gradient(135deg, rgba(255,170,0,0.08), rgba(85,170,255,0.04) 52%, var(--theme-surface-icon) 100%)',
             }}
           >
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div className="min-w-0">
-                <div
-                  className="flex flex-wrap items-center gap-2"
-                  style={{ color: 'var(--theme-text-muted-soft)' }}
-                >
-                  <Users2 className="h-4 w-4" style={{ color: '#55AAFF' }} />
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                    {t('selectedPoint.title')}
-                  </span>
-                  <span style={getHistoryModeBadgeStyle(isPointLocked)}>
-                    {isPointLocked ? (
-                      <Lock className="h-3.5 w-3.5" />
-                    ) : (
-                      <Crosshair className="h-3.5 w-3.5" />
-                    )}
-                    {isPointLocked ? t('selectedPoint.locked') : t('selectedPoint.live')}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '0.65rem',
-                    color: 'var(--theme-text-heading)',
-                    fontSize: 'clamp(1rem, 2vw, 1.2rem)',
-                    fontWeight: 700,
-                    lineHeight: 1.25,
-                  }}
-                >
-                  {formattedTimestamp}
-                </div>
-
-                <div style={historyContextRailStyle}>
-                  <span style={getHistoryMetaPillStyle('highlight')}>{pointStatusLabel}</span>
-                  {activePointInsights.isPeakPoint ? (
-                    <span style={getHistoryMetaPillStyle('highlight')}>
-                      <TrendingUp className="h-3.5 w-3.5" />
-                      {t('selectedPoint.peak')}
-                    </span>
-                  ) : null}
-                </div>
+            <div className="min-w-0">
+              <div
+                className="flex flex-wrap items-center gap-2"
+                style={{ color: 'var(--theme-text-muted-soft)' }}
+              >
+                <Users2 className="h-4 w-4" style={{ color: '#55AAFF' }} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                  {t('selectedPoint.title')}
+                </span>
+                <span style={getHistoryModeBadgeStyle(isPointLocked)}>
+                  {isPointLocked ? (
+                    <Lock className="h-3.5 w-3.5" />
+                  ) : (
+                    <Crosshair className="h-3.5 w-3.5" />
+                  )}
+                  {isPointLocked ? t('selectedPoint.locked') : t('selectedPoint.live')}
+                </span>
               </div>
 
-              <div className="min-w-0 md:max-w-[18rem] md:text-right">
-                <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
-                  {t('selectedPoint.timestampLabel')}
-                </div>
-                <div
-                  style={{
-                    marginTop: '0.18rem',
-                    color: 'var(--theme-text-heading)',
-                    fontWeight: 600,
-                  }}
-                >
-                  {formattedPlayerTimestamp}
-                </div>
+              <div
+                style={{
+                  marginTop: '0.65rem',
+                  color: 'var(--theme-text-heading)',
+                  fontSize: 'clamp(1rem, 2vw, 1.2rem)',
+                  fontWeight: 700,
+                  lineHeight: 1.25,
+                }}
+              >
+                {formattedTimestamp}
+              </div>
+
+              <div style={historyContextRailStyle}>
+                <span style={getHistoryMetaPillStyle('highlight')}>{pointStatusLabel}</span>
+                {activePointInsights.isPeakPoint ? (
+                  <span style={getHistoryMetaPillStyle('highlight')}>
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    {t('selectedPoint.peak')}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            className={
+              compact
+                ? 'mt-4 grid gap-3 sm:grid-cols-3'
+                : 'mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3'
+            }
+          >
             <div style={historyStatTileStyle}>
               <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
                 {t('selectedPoint.onlineLabel')}
@@ -161,21 +153,6 @@ export default function PlayerHistoryDetails({
                 }}
               >
                 {activePoint ? formatHistorySummaryNumber(locale, activePoint.online) : '-'}
-              </div>
-            </div>
-
-            <div style={historyStatTileStyle}>
-              <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
-                {t('selectedPoint.pointStatusLabel')}
-              </div>
-              <div
-                style={{
-                  color: 'var(--theme-text-heading)',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                }}
-              >
-                {pointStatusLabel}
               </div>
             </div>
 
@@ -226,17 +203,7 @@ export default function PlayerHistoryDetails({
               >
                 {t('selectedPoint.playersLabel')}
               </div>
-              <div style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
-                {formattedPlayerTimestamp}
-              </div>
             </div>
-            <span
-              style={getHistoryMetaPillStyle(
-                activePoint && activePoint.players.length > 0 ? 'highlight' : 'default',
-              )}
-            >
-              {activePoint ? formatHistorySummaryNumber(locale, activePoint.players.length) : '0'}
-            </span>
           </div>
 
           <div style={{ ...historyPlayerListStyle, marginTop: '0.85rem' }}>

@@ -39,7 +39,6 @@
     },
     "playerHistory": {
       "title": "在线人数历史",
-      "description": "查看服务器在线人数在不同时间范围内的变化。支持切换采样精度，并查看任意时间点的在线玩家列表。",
       "loading": "正在加载人数历史...",
       "empty": "当前时间范围内还没有可用数据。",
       "error": "人数历史加载失败。",
@@ -47,7 +46,6 @@
       "precisionLabel": "采样精度",
       "precisionOverview": "概览",
       "precisionDetail": "细节",
-      "precisionHint": "拖动滑块调节采样密度，向左看长期趋势，向右查看更细的短时波动。",
       "precisionEstimate": "约 {count} 个点",
       "liveNow": "当前在线",
       "autoRefresh": "每分钟自动刷新",
@@ -96,7 +94,6 @@
         "unlock": "取消锁定"
       },
       "chart": {
-        "interactionHint": "悬浮探索，点击锁定，继续对比不同时间点。",
         "keyboardHint": "方向键切换 · End 最新 · Home 峰值 · Esc 解锁"
       },
       "selectedPoint": {

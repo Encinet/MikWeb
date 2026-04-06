@@ -39,7 +39,6 @@
     },
     "playerHistory": {
       "title": "Player History",
-      "description": "Explore how server population changes over time. Switch sampling precision and inspect the players online at any recorded point.",
       "loading": "Loading player history...",
       "empty": "No player history is available for this time range.",
       "error": "Failed to load player history.",
@@ -47,7 +46,6 @@
       "precisionLabel": "Precision",
       "precisionOverview": "Overview",
       "precisionDetail": "Detail",
-      "precisionHint": "Drag the slider to adjust sampling density. Move left for broader trends and right for finer short-term changes.",
       "precisionEstimate": "~{count} points",
       "liveNow": "Live Online",
       "autoRefresh": "Auto refresh every minute",
@@ -96,7 +94,6 @@
         "unlock": "Unlock"
       },
       "chart": {
-        "interactionHint": "Hover to explore, click to lock, then compare different moments freely.",
         "keyboardHint": "Arrow keys to step · End latest · Home peak · Esc unlock"
       },
       "selectedPoint": {
