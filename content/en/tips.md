@@ -14,6 +14,8 @@ Use `/asedit give` to get the editor tool, then right-click any armor stand to o
 ## Common Commands
 
 - Get a player head: `/give @s minecraft:player_head[minecraft:profile={name:"PlayerID"}]`
+- Get a glowing invisible item frame: `/imageframe giveinvisibleframe glowing`
+- Get a regular invisible item frame: `/imageframe giveinvisibleframe regular`
 
 ## Building Tips
 

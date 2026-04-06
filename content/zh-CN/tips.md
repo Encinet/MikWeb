@@ -16,6 +16,8 @@
 ## 常用命令
 
 - 获取玩家头 `/give @s minecraft:player_head[minecraft:profile={name:"玩家ID"}]`
+- 获取发光隐形展示框 `/imageframe giveinvisibleframe glowing`
+- 获取普通隐形展示框 `/imageframe giveinvisibleframe regular`
 
 ## 建筑小技巧
 

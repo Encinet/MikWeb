@@ -11,11 +11,12 @@ New players join with **Yellow Name** status and begin in a probation period. Du
 There is no fixed probation length. Promotion to full member status (**White Name / Member**) is handled automatically based on player activity, and the exact formula is not public. If a player breaks rules or behaves inappropriately during probation, admins may extend it.
 
 - **Yellow Name**: Default status for new players. The following restrictions apply:
-  - No access to the decorative head command `/hdb`
   - Limited access to Axiom
-  - No access to server status commands `/mspt` and `/tps`
   - No formatted text in chat
+  - No access to the decorative head command `/hdb`
+  - No access to server status commands `/mspt` and `/tps`
   - No access to `/rmitems`
+  - No access to `/nametag` for setting prefixes and suffixes
   - No access to vanilla commands `/attribute`, `/damage`, `/effect`, `/fill`, `/item`, `/ride`, `/save-all`, `/setblock`, `/summon`
 - **White Name / Member**: Full member status. These restrictions are removed after automatic promotion.
 

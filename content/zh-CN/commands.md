@@ -71,6 +71,8 @@
 | `/hat` | 将手中持有的物品戴到头上 |
 | `/nametag` | 设置你的前缀与后缀，需要正式成员权限 |
 | `/asedit give` | 获取盔甲架编辑器 |
+| `/imageframe giveinvisibleframe glowing` | 获取发光隐形展示框 |
+| `/imageframe giveinvisibleframe regular` | 获取普通隐形展示框 |
 | `/sit` | 坐下（在方块上） |
 | `/lay` | 躺下 |
 | `/crawl` | 爬行 |

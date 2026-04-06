@@ -71,6 +71,8 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 | `/hat` | Wear the item in your hand as a hat |
 | `/nametag` | Set your prefix and suffix. Requires full member status |
 | `/asedit give` | Get the armor stand editor tool |
+| `/imageframe giveinvisibleframe glowing` | Get a glowing invisible item frame |
+| `/imageframe giveinvisibleframe regular` | Get a regular invisible item frame |
 | `/sit` | Sit on a block |
 | `/lay` | Lie down |
 | `/crawl` | Crawl |
