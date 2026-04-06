@@ -488,9 +488,14 @@ body {
 }
 
 @media (max-width: 767px) {
-  .player-history-toolbar-badge,
-  .player-history-metric-pill {
+  .player-history-toolbar-badge {
     width: 100%;
+  }
+
+  .player-history-metric-pill {
+    width: auto;
+    max-width: 100%;
+    white-space: normal;
   }
 
   .player-history-panel-glow {

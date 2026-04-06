@@ -453,7 +453,7 @@ export default function PlayerHistoryPanel() {
                         </div>
                       </div>
 
-                      <div className="player-history-metric-pill">
+                      <div className="player-history-metric-pill self-start sm:self-auto">
                         <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.78rem' }}>
                           {t('precisionEstimate', { count: formattedEstimatedSamples })}
                         </span>
@@ -485,14 +485,21 @@ export default function PlayerHistoryPanel() {
                 />
 
                 <div
-                  className="flex items-center justify-between gap-4"
+                  className="grid grid-cols-2 items-center gap-x-4 gap-y-2 sm:flex sm:items-center sm:justify-between"
                   style={{ color: 'var(--theme-text-muted)', fontSize: '0.76rem' }}
                 >
-                  <span>{finestInterval ? intervalLabel(finestInterval.id) : ''}</span>
-                  <span style={{ color: 'var(--theme-text-muted-soft)' }}>
+                  <span className="text-left">
+                    {finestInterval ? intervalLabel(finestInterval.id) : ''}
+                  </span>
+                  <span className="text-right sm:text-left">
+                    {coarsestInterval ? intervalLabel(coarsestInterval.id) : ''}
+                  </span>
+                  <span
+                    className="col-span-2 text-center sm:col-auto"
+                    style={{ color: 'var(--theme-text-muted-soft)' }}
+                  >
                     {t('precisionOverview')} / {t('precisionDetail')}
                   </span>
-                  <span>{coarsestInterval ? intervalLabel(coarsestInterval.id) : ''}</span>
                 </div>
               </div>
             </div>
