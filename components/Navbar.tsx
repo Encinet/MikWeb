@@ -130,6 +130,7 @@ export default function Navbar() {
 
   return (
     <div
+      className="safe-navbar-shell"
       style={{
         position: 'fixed',
         top: 0,
@@ -138,15 +139,13 @@ export default function Navbar() {
         zIndex: 50,
         display: 'flex',
         justifyContent: 'center',
-        padding:
-          'var(--safe-area-top) calc(1rem + var(--safe-area-right)) 0 calc(1rem + var(--safe-area-left))',
       }}
     >
       <nav
+        className="safe-navbar-card"
         style={{
           width: '100%',
           maxWidth: 'min(95%, 1400px)',
-          marginTop: '1rem',
           backdropFilter: 'blur(16px) saturate(150%)',
           'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
           background: 'var(--theme-surface-glass)',

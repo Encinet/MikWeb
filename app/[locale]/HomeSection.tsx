@@ -428,7 +428,8 @@ export default function HomeSection() {
                       '0 24px 64px var(--theme-shadow-modal), 0 8px 32px var(--theme-shadow-modal-soft), inset 0 1px 0 var(--theme-shadow-modal-inset)',
                     maxWidth: '800px',
                     width: '100%',
-                    maxHeight: '100%',
+                    maxHeight:
+                      'calc(var(--viewport-height-dynamic) - var(--viewport-top-inset) - var(--viewport-bottom-inset) - 2rem)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',

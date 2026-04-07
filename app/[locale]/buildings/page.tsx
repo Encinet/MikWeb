@@ -1208,9 +1208,10 @@ export default function BuildingsPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative flex h-full w-full max-w-7xl flex-col gap-0 overflow-hidden rounded-3xl shadow-2xl lg:flex-row"
+                  className="relative flex w-full max-w-7xl flex-col gap-0 overflow-hidden rounded-3xl shadow-2xl lg:flex-row"
                   style={{
-                    maxHeight: '56rem',
+                    maxHeight:
+                      'min(56rem, calc(var(--viewport-height-dynamic) - var(--viewport-top-inset) - var(--viewport-bottom-inset) - 2rem))',
                     background: 'var(--theme-surface-modal)',
                     backdropFilter: 'blur(24px) saturate(180%)',
                     'WebkitBackdropFilter': 'blur(24px) saturate(180%)',
