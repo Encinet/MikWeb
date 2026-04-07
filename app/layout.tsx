@@ -70,7 +70,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <body className="app-body">
         {children}
         <Analytics />
       </body>

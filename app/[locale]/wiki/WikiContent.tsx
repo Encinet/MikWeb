@@ -581,7 +581,7 @@ export default function WikiContent({
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
+      <div className="page-shell">
         <div className="max-w-7xl mx-auto">
           {/* ── Header ── */}
           <motion.div
@@ -672,7 +672,7 @@ export default function WikiContent({
           </motion.div>
 
           {/* ── Mobile FAB + popup ── */}
-          <div className="lg:hidden fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+          <div className="safe-floating-bottom-right lg:hidden fixed z-50 flex flex-col items-end gap-2">
             <AnimatePresence>
               {isSidebarOpen && (
                 <motion.div

@@ -1088,7 +1088,7 @@ export default function BuildingsPage() {
   };
 
   return (
-    <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
+    <div className="page-shell">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 sm:mb-12 animate-fadeIn">
           <div className="inline-flex items-center gap-3 mb-4">
@@ -1194,7 +1194,7 @@ export default function BuildingsPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 md:p-8"
+                className="safe-fixed-overlay fixed inset-0 flex items-center justify-center"
                 style={{
                   zIndex: 9999,
                   background: 'rgba(0, 0, 0, 0.4)',
@@ -1208,8 +1208,9 @@ export default function BuildingsPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative w-full max-w-7xl h-[90vh] flex flex-col lg:flex-row gap-0 rounded-3xl overflow-hidden shadow-2xl"
+                  className="relative flex h-full w-full max-w-7xl flex-col gap-0 overflow-hidden rounded-3xl shadow-2xl lg:flex-row"
                   style={{
+                    maxHeight: '56rem',
                     background: 'var(--theme-surface-modal)',
                     backdropFilter: 'blur(24px) saturate(180%)',
                     'WebkitBackdropFilter': 'blur(24px) saturate(180%)',

@@ -58,7 +58,7 @@ export default function BansPage() {
   };
 
   return (
-    <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
+    <div className="page-shell">
       <div className="max-w-7xl mx-auto">
         {/* ── Header ── */}
         <div className="text-center mb-8 sm:mb-12 animate-fadeIn">

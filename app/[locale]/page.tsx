@@ -9,7 +9,7 @@ export default async function HomePage() {
   const t = await getTranslations();
 
   return (
-    <div className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
+    <div className="page-shell">
       <div className="max-w-7xl mx-auto">
         {/* ── Hero Section (SSR — 立即渲染，直接改善 LCP) ── */}
         <div className="text-center mb-12 sm:mb-20 animate-fadeIn">

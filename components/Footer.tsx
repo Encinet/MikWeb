@@ -15,7 +15,8 @@ export default async function Footer() {
       style={{
         display: 'flex',
         justifyContent: 'center',
-        padding: '0 0 1rem 0',
+        padding:
+          '0 calc(1rem + var(--safe-area-right)) var(--safe-area-bottom) calc(1rem + var(--safe-area-left))',
         marginTop: 'clamp(3rem, 6vw, 5rem)',
       }}
     >
@@ -23,6 +24,7 @@ export default async function Footer() {
         style={{
           width: '100%',
           maxWidth: 'min(95%, 1400px)',
+          marginBottom: '1rem',
           backdropFilter: 'blur(16px) saturate(150%)',
           'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
           background: 'var(--theme-surface-glass)',

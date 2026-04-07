@@ -392,6 +392,7 @@ export default function HomeSection() {
           <AnimatePresence>
             {isAnnouncementModalOpen && (
               <MotionDiv
+                className="safe-fixed-overlay"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -409,7 +410,6 @@ export default function HomeSection() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   zIndex: 9999,
-                  padding: '1rem',
                 }}
                 onClick={() => setIsAnnouncementModalOpen(false)}
               >
@@ -428,7 +428,7 @@ export default function HomeSection() {
                       '0 24px 64px var(--theme-shadow-modal), 0 8px 32px var(--theme-shadow-modal-soft), inset 0 1px 0 var(--theme-shadow-modal-inset)',
                     maxWidth: '800px',
                     width: '100%',
-                    maxHeight: '85vh',
+                    maxHeight: '100%',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
