@@ -958,9 +958,6 @@ body {
 }
 
 .ui-nav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   border: none;
   background: transparent;
   color: var(--theme-text-nav);
@@ -986,9 +983,6 @@ body {
 }
 
 .ui-icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   border: none;
   border-radius: 12px;
   background: transparent;
@@ -1006,9 +1000,6 @@ body {
 }
 
 .ui-nav-chip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   border-radius: 12px;
   border: 1px solid var(--theme-border-glass);
   background: var(--theme-surface-icon);

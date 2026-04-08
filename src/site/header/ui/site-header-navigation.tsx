@@ -38,8 +38,8 @@ export function DesktopSiteHeaderNavigation({
               rel="noopener noreferrer"
               className={
                 item.highlight
-                  ? 'ui-nav-chip ui-nav-chip--highlight whitespace-nowrap px-4 py-2'
-                  : 'ui-nav-link whitespace-nowrap py-2'
+                  ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-3 whitespace-nowrap px-4 py-2'
+                  : 'ui-nav-link inline-flex items-center gap-2 whitespace-nowrap py-2'
               }
               style={{
                 position: 'relative',
@@ -55,7 +55,7 @@ export function DesktopSiteHeaderNavigation({
           <Link
             key={item.id}
             href={item.path as string}
-            className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative whitespace-nowrap py-2`}
+            className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
             style={{
               position: 'relative',
             }}
@@ -102,10 +102,8 @@ interface MobileSiteHeaderMenuProps {
   activePathname: string;
   isOpen: boolean;
   items: SiteHeaderNavItem[];
-  localeLabel: string;
   mounted: boolean;
   onClose: () => void;
-  onLocaleSwitch: () => void;
   onThemeToggle: () => void;
   theme: string | undefined;
   themeDarkLabel: string;
@@ -116,10 +114,8 @@ export function MobileSiteHeaderMenu({
   activePathname,
   isOpen,
   items,
-  localeLabel,
   mounted,
   onClose,
-  onLocaleSwitch,
   onThemeToggle,
   theme,
   themeDarkLabel,
@@ -148,7 +144,7 @@ export function MobileSiteHeaderMenu({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={onClose}
-                      className={`ui-nav-chip px-4 py-3 ${item.highlight ? 'ui-nav-chip--highlight' : ''}`}
+                      className={`ui-nav-chip flex items-center gap-3 px-4 py-3 ${item.highlight ? 'ui-nav-chip--highlight' : ''}`}
                     >
                       <item.icon className="h-5 w-5" />
                       <span className="whitespace-nowrap text-sm">{item.label}</span>
@@ -161,7 +157,7 @@ export function MobileSiteHeaderMenu({
                     key={item.id}
                     href={item.path as string}
                     onClick={onClose}
-                    className={`ui-nav-chip px-4 py-3 ${isActive ? 'ui-nav-chip--active' : ''}`}
+                    className={`ui-nav-chip flex items-center gap-3 px-4 py-3 ${isActive ? 'ui-nav-chip--active' : ''}`}
                   >
                     <item.icon className="h-5 w-5" />
                     <span className="whitespace-nowrap text-sm">{item.label}</span>
@@ -169,14 +165,10 @@ export function MobileSiteHeaderMenu({
                 );
               })}
 
-              <button type="button" onClick={onLocaleSwitch} className="ui-nav-chip px-4 py-3">
-                <span className="text-sm">{localeLabel}</span>
-              </button>
-
               <button
                 type="button"
                 onClick={onThemeToggle}
-                className="ui-nav-chip px-4 py-3 sm:hidden"
+                className="ui-nav-chip flex items-center gap-3 px-4 py-3 sm:hidden"
               >
                 <span className="text-sm">
                   {mounted && theme === 'dark' ? themeLightLabel : themeDarkLabel}

@@ -208,10 +208,8 @@ export default function SiteHeader() {
             activePathname={pathname}
             isOpen={isMobileMenuOpen}
             items={navItems}
-            localeLabel={locale === 'zh-CN' ? 'Switch to English' : '切换到中文'}
             mounted={mounted}
             onClose={() => setIsMobileMenuOpen(false)}
-            onLocaleSwitch={switchLocale}
             onThemeToggle={handleThemeToggle}
             theme={theme}
             themeDarkLabel={t('theme.dark')}

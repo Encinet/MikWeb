@@ -58,7 +58,7 @@ export function SiteHeaderControls({
         <button
           type="button"
           onClick={onMobileMenuToggle}
-          className="ui-icon-button p-2 xl:hidden"
+          className="ui-icon-button inline-flex items-center justify-center p-2 xl:hidden"
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -67,7 +67,7 @@ export function SiteHeaderControls({
         <button
           type="button"
           onClick={onThemeToggle}
-          className="ui-nav-link hidden gap-1.5 py-2 sm:inline-flex"
+          className="ui-nav-link hidden items-center gap-1.5 py-2 sm:inline-flex"
         >
           {mounted ? (
             theme === 'dark' ? (
@@ -80,7 +80,11 @@ export function SiteHeaderControls({
           )}
         </button>
 
-        <button type="button" onClick={onLocaleSwitch} className="ui-nav-link gap-1.5 py-2">
+        <button
+          type="button"
+          onClick={onLocaleSwitch}
+          className="ui-nav-link inline-flex items-center gap-1.5 py-2"
+        >
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{localeLabel}</span>
         </button>
@@ -88,7 +92,7 @@ export function SiteHeaderControls({
         <div ref={playerDropdownAnchorRef} className="relative">
           <button
             type="button"
-            className="ui-nav-link cursor-pointer gap-1.5 sm:gap-2"
+            className="ui-nav-link inline-flex items-center gap-1.5 cursor-pointer sm:gap-2"
             aria-haspopup="true"
             aria-expanded={playerDropdownVisible}
             onMouseEnter={onPlayerDropdownOpen}
