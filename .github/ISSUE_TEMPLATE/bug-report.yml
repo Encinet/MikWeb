@@ -1,0 +1,86 @@
+name: Bug Report
+description: Report a defect or regression
+title: "fix(scope): "
+labels:
+  - bug
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Regression
+      options:
+        - "yes"
+        - "no"
+        - unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the bug directly
+      placeholder: What is wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      placeholder: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+      placeholder: What happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Affected Area
+      description: Path, page, widget, API route, or content area
+      placeholder: src/widgets/site-header/... or /api/players/online
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, device, locale, route, request parameters, or runtime context
+      placeholder: Chrome 136 / macOS / zh-CN / /wiki?q=...
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Logs, screenshots, related commits, or extra context
+      placeholder: Optional

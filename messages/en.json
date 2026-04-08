@@ -195,6 +195,12 @@
       "originalAuthor": "Original Author",
       "source": "Source"
     },
+    "dialog": {
+      "close": "Close building details",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "currentImage": "Current image {current} / {total}"
+    },
     "states": {
       "loading": "Loading...",
       "empty": "No buildings yet",

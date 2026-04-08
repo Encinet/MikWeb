@@ -195,6 +195,12 @@
       "originalAuthor": "原作者",
       "source": "来源"
     },
+    "dialog": {
+      "close": "关闭建筑详情",
+      "previousImage": "上一张图片",
+      "nextImage": "下一张图片",
+      "currentImage": "当前图片 {current} / {total}"
+    },
     "states": {
       "loading": "加载中...",
       "empty": "暂无建筑收录",

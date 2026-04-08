@@ -9,7 +9,7 @@
     "start": "next start",
     "fix": "biome check . --write",
     "check:wiki": "bun run scripts/wiki-check.ts",
-    "check": "biome check . && tsc --noEmit && bun run check:wiki"
+    "check": "biome check . && tsc --noEmit -p tsconfig.check.json && bun run check:wiki"
   },
   "dependencies": {
     "@otplib/core": "^13.4.0",

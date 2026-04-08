@@ -1,6 +1,6 @@
 import { getRequestConfig } from 'next-intl/server';
 
-import { isRoutingLocale, routing } from './i18n/routing';
+import { isRoutingLocale, routing } from './src/shared/i18n/routing';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;

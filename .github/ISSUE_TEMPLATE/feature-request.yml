@@ -1,0 +1,66 @@
+name: Feature Request
+description: Propose a focused enhancement
+title: "feat(scope): "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the feature directly
+      placeholder: What should be added or changed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this needed?
+      placeholder: Problem, gap, or user-facing need
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Suggested implementation or behavior
+      placeholder: Expected behavior, scope, constraints
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected_area
+    attributes:
+      label: Affected Area
+      description: Path, page, widget, API route, or content area
+      placeholder: src/pages/wiki/... or src/entities/player/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Concrete checks for completion
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      description: Explicitly out-of-scope items
+      placeholder: Optional
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Mockups, references, or related issues
+      placeholder: Optional

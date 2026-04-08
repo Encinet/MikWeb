@@ -27,7 +27,7 @@ Mik is a laid-back creative server built around building, exploring, and sharing
 
 The current server version is `1.21.11`.
 
-- Java Edition supports `1.9 ~ 26.1`, and `1.21.11` is recommended
+- Java Edition supports `1.9 ~ 26.1.1`, and `1.21.11` is recommended
 - Bedrock Edition only supports the latest few stable releases
 
 If you plan to join the server from Bedrock Edition, link your account first:

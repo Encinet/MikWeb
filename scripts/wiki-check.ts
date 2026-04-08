@@ -1,12 +1,16 @@
+import {
+  createWikiSectionGroups,
+  sortWikiSections,
+  WIKI_LOCALES,
+} from '@/modules/wiki/lib/wiki-grouping';
+import { parseWikiMarkdownBlocks } from '@/modules/wiki/lib/wiki-search';
 import type {
   WikiLocale,
   WikiSectionDefinition,
   WikiSectionDocument,
   WikiSectionId,
-} from '@/lib/types';
-import { createWikiSectionGroups, sortWikiSections, WIKI_LOCALES } from '@/lib/wiki';
-import { loadWikiSectionDocuments } from '@/lib/wikiContent';
-import { parseWikiMarkdownBlocks } from '@/lib/wikiSearch';
+} from '@/modules/wiki/model/wiki-section-types';
+import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
 
 function createWikiCheckError(title: string, details: string[], suggestion?: string): Error {
   return new Error(
