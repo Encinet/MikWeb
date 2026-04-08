@@ -10,7 +10,7 @@ import {
   navItem,
   popupItem,
   spring,
-  wikiPanelSurfaceStyle,
+  wikiPanelSurfaceClassName,
 } from '@/modules/wiki/lib/wiki-browser-config';
 import type {
   WikiSectionGroupDefinition,
@@ -179,9 +179,8 @@ export function WikiNavigation({
                 ease: [0.4, 0, 1, 1] as [number, number, number, number],
               },
             }}
-            className="w-48 rounded-2xl p-3"
+            className={`${wikiPanelSurfaceClassName} w-48 rounded-2xl p-3`}
             style={{
-              ...wikiPanelSurfaceStyle,
               transformOrigin: 'bottom right',
             }}
           >
@@ -256,9 +255,8 @@ export function WikiNavigation({
 
       <aside className="hidden self-start lg:sticky lg:block" style={{ top: desktopStickyTop }}>
         <div
-          className="rounded-2xl p-4"
+          className={`${wikiPanelSurfaceClassName} rounded-2xl p-4`}
           style={{
-            ...wikiPanelSurfaceStyle,
             maxHeight: desktopStickyMaxHeight,
           }}
         >
@@ -319,15 +317,12 @@ export function WikiNavigation({
                             color: isActive
                               ? 'var(--theme-accent-blue)'
                               : 'var(--theme-text-muted-soft)',
-                            background: 'transparent',
                           }}
-                          onMouseEnter={(event) => {
-                            event.currentTarget.style.background = 'var(--theme-surface-hover)';
+                          whileHover={{
+                            backgroundColor: 'var(--theme-surface-hover)',
+                            x: isActive ? 0 : 4,
+                            transition: spring.snappy,
                           }}
-                          onMouseLeave={(event) => {
-                            event.currentTarget.style.background = 'transparent';
-                          }}
-                          whileHover={{ x: isActive ? 0 : 4, transition: spring.snappy }}
                           whileTap={{ scale: 0.97, transition: spring.fab }}
                         >
                           {isActive ? (

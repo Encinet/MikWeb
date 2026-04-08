@@ -43,7 +43,7 @@ export function AnnouncementFeedDialog({
     <AnimatePresence>
       {isOpen ? (
         <MotionDiv
-          className="safe-fixed-overlay"
+          className="ui-dialog-overlay safe-fixed-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -54,9 +54,6 @@ export function AnnouncementFeedDialog({
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(32px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(32px) saturate(180%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -65,18 +62,13 @@ export function AnnouncementFeedDialog({
           onClick={onClose}
         >
           <MotionDiv
+            className="ui-dialog-surface"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              backdropFilter: 'blur(24px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-              background: 'var(--theme-surface-modal)',
-              border: '1px solid var(--theme-border-modal)',
               borderRadius: '24px',
-              boxShadow:
-                '0 24px 64px var(--theme-shadow-modal), 0 8px 32px var(--theme-shadow-modal-soft), inset 0 1px 0 var(--theme-shadow-modal-inset)',
               maxWidth: '800px',
               width: '100%',
               maxHeight:
@@ -98,13 +90,10 @@ export function AnnouncementFeedDialog({
             >
               <div className="flex items-center gap-3">
                 <div
+                  className="ui-card-icon-surface"
                   style={{
                     padding: '10px',
                     borderRadius: '14px',
-                    backdropFilter: 'blur(16px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-                    background: 'var(--theme-surface-icon)',
-                    border: '1px solid var(--theme-border-glass)',
                     boxShadow: '0 4px 12px rgba(255, 170, 0, 0.15)',
                   }}
                 >
@@ -124,25 +113,16 @@ export function AnnouncementFeedDialog({
               <button
                 type="button"
                 onClick={onClose}
+                className="ui-floating-surface ui-floating-control"
                 style={{
                   padding: '10px',
                   borderRadius: '12px',
                   border: 'none',
-                  background: 'transparent',
                   color: 'var(--theme-text-muted)',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                }}
-                onMouseEnter={(event) => {
-                  event.currentTarget.style.color = 'var(--theme-text-primary)';
-                  event.currentTarget.style.background = 'var(--theme-surface-icon)';
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.color = 'var(--theme-text-muted)';
-                  event.currentTarget.style.background = 'transparent';
                 }}
               >
                 <X className="h-5 w-5 sm:h-6 sm:w-6" />

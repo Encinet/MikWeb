@@ -46,10 +46,7 @@ export function BuildingCard({
     <button
       type="button"
       onClick={() => onOpen(building)}
-      className="glass-card group mb-6 w-full cursor-pointer overflow-hidden rounded-2xl text-left transition-all duration-300 hover:scale-[1.02] hover:border-purple-400/30"
-      style={{
-        WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-      }}
+      className="ui-card-surface ui-card-interactive ui-card-interactive--accent-purple group mb-6 w-full cursor-pointer overflow-hidden rounded-2xl text-left"
     >
       <div className="relative h-56 overflow-hidden bg-linear-to-br from-purple-900/20 to-blue-900/20">
         {coverImage && !isImageError(coverImage) ? (
@@ -76,13 +73,7 @@ export function BuildingCard({
             <Building2 className="h-20 w-20" style={{ color: 'var(--theme-text-faint)' }} />
           </div>
         )}
-        <div
-          className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 backdrop-blur-md"
-          style={{
-            background: 'var(--theme-surface-badge)',
-            border: '1px solid var(--theme-border-glass)',
-          }}
-        >
+        <div className="ui-building-card-badge-surface absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5">
           <BuildingTypeBadge buildType={building.buildType} compact t={t} />
         </div>
       </div>

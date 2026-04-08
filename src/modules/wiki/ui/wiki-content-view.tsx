@@ -6,7 +6,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
-import { spring, wikiPanelSurfaceStyle } from '@/modules/wiki/lib/wiki-browser-config';
+import { spring, wikiPanelSurfaceClassName } from '@/modules/wiki/lib/wiki-browser-config';
 import { createWikiMarkdownRenderers } from '@/modules/wiki/lib/wiki-markdown-renderers';
 import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import type {
@@ -406,12 +406,7 @@ export default function WikiContent({
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               transition={{ ...spring.gentle, delay: 0.25 }}
             >
-              <div
-                className="rounded-2xl p-6 sm:p-8"
-                style={{
-                  ...wikiPanelSurfaceStyle,
-                }}
-              >
+              <div className={`${wikiPanelSurfaceClassName} rounded-2xl p-6 sm:p-8`}>
                 <AnimatePresence mode="wait" initial={false}>
                   {isSearching ? (
                     <WikiSearchResults

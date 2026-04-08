@@ -58,17 +58,7 @@ export function SiteHeaderControls({
         <button
           type="button"
           onClick={onMobileMenuToggle}
-          className="rounded-lg p-2 transition-colors xl:hidden"
-          style={{
-            color: 'var(--theme-text-nav)',
-            background: 'transparent',
-          }}
-          onMouseEnter={(event) => {
-            event.currentTarget.style.background = 'var(--theme-surface-hover)';
-          }}
-          onMouseLeave={(event) => {
-            event.currentTarget.style.background = 'transparent';
-          }}
+          className="ui-icon-button p-2 xl:hidden"
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -77,23 +67,7 @@ export function SiteHeaderControls({
         <button
           type="button"
           onClick={onThemeToggle}
-          className="hidden items-center gap-1.5 sm:flex"
-          style={{
-            padding: '8px 0',
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--theme-text-nav)',
-            fontSize: '14px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(event) => {
-            event.currentTarget.style.color = 'var(--theme-text-nav-hover)';
-          }}
-          onMouseLeave={(event) => {
-            event.currentTarget.style.color = 'var(--theme-text-nav)';
-          }}
+          className="ui-nav-link hidden gap-1.5 py-2 sm:inline-flex"
         >
           {mounted ? (
             theme === 'dark' ? (
@@ -106,29 +80,7 @@ export function SiteHeaderControls({
           )}
         </button>
 
-        <button
-          type="button"
-          onClick={onLocaleSwitch}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 0',
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--theme-text-nav)',
-            fontSize: '14px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(event) => {
-            event.currentTarget.style.color = 'var(--theme-text-nav-hover)';
-          }}
-          onMouseLeave={(event) => {
-            event.currentTarget.style.color = 'var(--theme-text-nav)';
-          }}
-        >
+        <button type="button" onClick={onLocaleSwitch} className="ui-nav-link gap-1.5 py-2">
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{localeLabel}</span>
         </button>
@@ -136,7 +88,7 @@ export function SiteHeaderControls({
         <div ref={playerDropdownAnchorRef} className="relative">
           <button
             type="button"
-            className="flex cursor-pointer items-center gap-1.5 sm:gap-2"
+            className="ui-nav-link cursor-pointer gap-1.5 sm:gap-2"
             aria-haspopup="true"
             aria-expanded={playerDropdownVisible}
             onMouseEnter={onPlayerDropdownOpen}
@@ -155,10 +107,7 @@ export function SiteHeaderControls({
                   : '0 0 8px var(--theme-status-offline-glow)',
               }}
             />
-            <Users
-              className="h-3.5 w-3.5 sm:h-4 sm:w-4"
-              style={{ color: 'var(--theme-text-nav)' }}
-            />
+            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             {isLoadingPlayers ? (
               <>
                 <span
@@ -275,17 +224,13 @@ function PlayerDropdownPortal({
             {players.map((player) => (
               <div
                 key={player.uuid}
-                className="transition-all hover:translate-x-1"
+                className="ui-list-row rounded-lg"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
                   padding: '8px 10px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--theme-border-glass)',
-                  transition: 'all 0.2s ease',
                   cursor: 'default',
-                  backgroundColor: 'var(--theme-surface-icon)',
                 }}
               >
                 <MinecraftAvatar

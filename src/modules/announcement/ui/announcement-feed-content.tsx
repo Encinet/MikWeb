@@ -2,7 +2,6 @@
 
 import { Bell } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { CSSProperties } from 'react';
 
 import { formatAnnouncementDate } from '@/modules/announcement/lib/format-announcement-date';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
@@ -10,13 +9,6 @@ import { GlassSkeletonCard, SectionMessage, SkeletonLine } from '@/shared/ui/fee
 
 const ANNOUNCEMENT_PREVIEW_SKELETON_IDS = ['preview-a', 'preview-b', 'preview-c'] as const;
 const ANNOUNCEMENT_DIALOG_SKELETON_IDS = ['dialog-a', 'dialog-b', 'dialog-c', 'dialog-d'] as const;
-
-const announcementCardSurfaceStyle: CSSProperties = {
-  backdropFilter: 'blur(16px) saturate(150%)',
-  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-  background: 'var(--theme-surface-icon)',
-  border: '1px solid var(--theme-border-glass)',
-};
 
 interface AnnouncementFeedContentProps {
   announcements: AnnouncementItem[];
@@ -113,16 +105,15 @@ function AnnouncementEntryCard({
   return (
     <div
       className={[
-        isDialog ? 'transition-transform hover:scale-[1.01]' : '',
+        'ui-card-surface ui-card-surface--soft',
+        isDialog ? 'ui-card-interactive' : '',
         shouldAnimateOnEnter ? 'animate-card-enter' : '',
       ]
         .filter(Boolean)
         .join(' ')}
       style={{
-        ...announcementCardSurfaceStyle,
         borderRadius: isDialog ? '16px' : '12px',
         padding: 'clamp(1rem, 3vw, 1.5rem)',
-        transition: isDialog ? 'all 0.2s ease' : undefined,
         animationDelay: shouldAnimateOnEnter ? animationDelay : undefined,
       }}
     >
@@ -175,8 +166,8 @@ function AnnouncementSkeletonList({ isDialog }: { isDialog: boolean }) {
       {skeletonIds.map((skeletonId) => (
         <GlassSkeletonCard
           key={`announcement-skeleton-${skeletonId}`}
+          className="ui-card-surface--soft"
           style={{
-            ...announcementCardSurfaceStyle,
             borderRadius: isDialog ? '16px' : '12px',
             padding: 'clamp(1rem, 3vw, 1.5rem)',
           }}

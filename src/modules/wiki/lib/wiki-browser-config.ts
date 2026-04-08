@@ -20,13 +20,7 @@ export const markdownDelays = {
   block: 0.24,
 };
 
-export const wikiPanelSurfaceStyle = {
-  backdropFilter: 'blur(16px) saturate(150%)',
-  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-  background: 'var(--theme-surface-glass)',
-  border: '1px solid var(--theme-border-glass)',
-  boxShadow: 'var(--theme-shadow-card)',
-} as const;
+export const wikiPanelSurfaceClassName = 'ui-card-surface';
 
 export const spring = {
   snappy: { type: 'spring' as const, stiffness: 500, damping: 30, mass: 0.8 },

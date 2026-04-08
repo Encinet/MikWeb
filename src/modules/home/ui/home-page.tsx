@@ -12,17 +12,12 @@ export default async function HomePage() {
         {/* ── Hero Section (SSR — 立即渲染，直接改善 LCP) ── */}
         <div className="text-center mb-12 sm:mb-20 animate-fadeIn">
           <div
+            className="ui-floating-surface"
             style={{
               display: 'inline-block',
               marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
               padding: '8px 24px',
-              backdropFilter: 'blur(16px) saturate(150%)',
-              'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-              background: 'var(--theme-surface-glass)',
               borderRadius: '12px',
-              border: '1px solid var(--theme-border-glass)',
-              boxShadow:
-                '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
             }}
           >
             <div className="flex items-center gap-2" style={{ color: '#FFAA00' }}>
@@ -71,13 +66,10 @@ export default async function HomePage() {
             </a>
 
             <div
+              className="ui-floating-surface"
               style={{
-                backdropFilter: 'blur(16px) saturate(150%)',
-                'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                background: 'var(--theme-surface-glass)',
                 padding: '8px 24px',
                 borderRadius: '12px',
-                border: '1px solid var(--theme-border-glass)',
                 color: 'var(--theme-text-muted)',
                 fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
               }}
@@ -94,21 +86,14 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           <ScrollReveal direction="left" delay={0.1}>
             <div
-              className="glass-card hover-lift"
-              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}
+              className="ui-card-surface ui-card-interactive"
+              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)' }}
             >
               <div className="flex items-start gap-4 sm:gap-6">
                 <div
+                  className="ui-card-icon-surface"
                   style={{
                     padding: '12px',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(16px) saturate(150%)',
-                    'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                    background: 'var(--theme-surface-icon)',
-                    border: '1px solid var(--theme-border-glass)',
-                    boxShadow:
-                      '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
-                    flexShrink: 0,
                   }}
                 >
                   <Award className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#FFAA00' }} />
@@ -141,21 +126,14 @@ export default async function HomePage() {
 
           <ScrollReveal direction="right" delay={0.1}>
             <div
-              className="glass-card hover-lift"
-              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', cursor: 'pointer' }}
+              className="ui-card-surface ui-card-interactive"
+              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)' }}
             >
               <div className="flex items-start gap-4 sm:gap-6">
                 <div
+                  className="ui-card-icon-surface"
                   style={{
                     padding: '12px',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(16px) saturate(150%)',
-                    'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-                    background: 'var(--theme-surface-icon)',
-                    border: '1px solid var(--theme-border-glass)',
-                    boxShadow:
-                      '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
-                    flexShrink: 0,
                   }}
                 >
                   <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#55FF55' }} />

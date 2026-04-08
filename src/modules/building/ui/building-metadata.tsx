@@ -174,14 +174,7 @@ export function BuildingSourceDetails({
                 href={building.source.originalLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block truncate underline"
-                style={{ color: 'var(--theme-accent-purple)' }}
-                onMouseEnter={(event) => {
-                  event.currentTarget.style.opacity = '0.8';
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.opacity = '1';
-                }}
+                className="ui-content-link ui-content-link--purple block truncate"
               >
                 {building.source.originalLink}
               </a>
@@ -232,14 +225,7 @@ export function BuildingSourceDetails({
               href={building.source.originalLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 block truncate underline"
-              style={{ color: 'var(--theme-accent-purple)' }}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.opacity = '0.8';
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.opacity = '1';
-              }}
+              className="ui-content-link ui-content-link--purple mt-1 block truncate"
             >
               {building.source.originalLink}
             </a>

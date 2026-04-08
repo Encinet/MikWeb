@@ -39,19 +39,6 @@ interface BuildingDetailsDialogProps {
   t: BuildingsTranslator;
 }
 
-const detailPanelSurfaceStyle = {
-  background: 'var(--theme-surface-glass-light)',
-  border: '1px solid var(--theme-border-glass-light)',
-  boxShadow: 'inset 0 1px 0 var(--theme-shadow-modal-inset)',
-};
-
-const floatingControlStyle = {
-  background: 'var(--theme-surface-glass)',
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
-  border: '1px solid var(--theme-border-glass)',
-};
-
 function BuildingDetailGallery({
   activeImage,
   buildingName,
@@ -112,22 +99,30 @@ function BuildingDetailGallery({
     <div
       className="relative flex h-[min(44vh,24rem)] min-h-72 w-full items-center justify-center overflow-hidden lg:h-auto lg:min-h-[42rem] lg:w-[58%]"
       style={{
-        background:
-          'radial-gradient(circle at top left, rgba(192, 132, 252, 0.16), transparent 42%), rgba(0, 0, 0, 0.2)',
+        background: 'var(--theme-building-dialog-gallery-base)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
       }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/6 via-transparent to-black/18" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/38 via-black/10 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-black/48 via-black/12 to-transparent" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'var(--theme-building-dialog-gallery-overlay)' }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-28"
+        style={{ background: 'var(--theme-building-dialog-gallery-top-fade)' }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
+        style={{ background: 'var(--theme-building-dialog-gallery-bottom-fade)' }}
+      />
 
       {activeImage && !isImageError(activeImage) ? (
         <>
           <div className="absolute top-4 left-4 z-10 flex max-w-[calc(100%-5rem)] flex-wrap gap-2">
             <div
-              className="rounded-full px-3 py-1.5 text-xs font-medium text-white/90 sm:text-sm"
-              style={floatingControlStyle}
+              className="ui-floating-surface rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm"
+              style={{ color: 'var(--theme-text-primary)' }}
             >
               {t('dialog.currentImage', {
                 current: currentImageIndex + 1,
@@ -195,14 +190,7 @@ function BuildingDetailGallery({
                 onClick={onPreviousImage}
                 aria-label={t('dialog.previousImage')}
                 title={t('dialog.previousImage')}
-                className="absolute top-1/2 left-4 z-10 -translate-y-1/2 rounded-full p-3 transition-all duration-200"
-                style={floatingControlStyle}
-                onMouseEnter={(event) => {
-                  event.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.background = 'var(--theme-surface-glass)';
-                }}
+                className="ui-floating-surface ui-floating-control absolute top-1/2 left-4 z-10 flex -translate-y-1/2 items-center justify-center rounded-full p-3"
               >
                 <ChevronLeft className="h-6 w-6" style={{ color: 'var(--theme-text-primary)' }} />
               </button>
@@ -212,22 +200,14 @@ function BuildingDetailGallery({
                 onClick={onNextImage}
                 aria-label={t('dialog.nextImage')}
                 title={t('dialog.nextImage')}
-                className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-full p-3 transition-all duration-200"
-                style={floatingControlStyle}
-                onMouseEnter={(event) => {
-                  event.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.background = 'var(--theme-surface-glass)';
-                }}
+                className="ui-floating-surface ui-floating-control absolute top-1/2 right-4 z-10 flex -translate-y-1/2 items-center justify-center rounded-full p-3"
               >
                 <ChevronRight className="h-6 w-6" style={{ color: 'var(--theme-text-primary)' }} />
               </button>
 
               <div
                 ref={desktopControllerRef}
-                className="building-dialog-control-scroll absolute right-4 bottom-4 left-4 z-10 hidden overflow-x-auto rounded-2xl p-2 sm:block"
-                style={floatingControlStyle}
+                className="ui-floating-surface building-dialog-control-scroll absolute right-4 bottom-4 left-4 z-10 hidden overflow-x-auto rounded-2xl p-2 sm:block"
               >
                 <div className="mx-auto flex w-max min-w-full items-center justify-center gap-2">
                   {imageUrls.map((imageUrl, index) => (
@@ -246,11 +226,11 @@ function BuildingDetailGallery({
                       style={{
                         border:
                           index === currentImageIndex
-                            ? '1px solid rgba(255, 255, 255, 0.72)'
-                            : '1px solid rgba(255, 255, 255, 0.18)',
+                            ? '1px solid var(--theme-building-dialog-thumb-border-active)'
+                            : '1px solid var(--theme-building-dialog-thumb-border-inactive)',
                         boxShadow:
                           index === currentImageIndex
-                            ? '0 0 0 1px rgba(255, 255, 255, 0.14), 0 10px 20px rgba(0, 0, 0, 0.16)'
+                            ? 'var(--theme-building-dialog-thumb-shadow-active)'
                             : 'none',
                         transform: index === currentImageIndex ? 'translateY(-1px)' : 'none',
                       }}
@@ -268,10 +248,13 @@ function BuildingDetailGallery({
                           onError={() => onImageError(imageUrl)}
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                        <div
+                          className="absolute inset-0 flex items-center justify-center"
+                          style={{ background: 'var(--theme-building-dialog-thumb-fallback-bg)' }}
+                        >
                           <Building2
                             className="h-5 w-5"
-                            style={{ color: 'rgba(255,255,255,0.72)' }}
+                            style={{ color: 'var(--theme-building-dialog-thumb-fallback-icon)' }}
                           />
                         </div>
                       )}
@@ -280,8 +263,8 @@ function BuildingDetailGallery({
                         style={{
                           background:
                             index === currentImageIndex
-                              ? 'linear-gradient(to top, rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.04))'
-                              : 'rgba(0, 0, 0, 0.28)',
+                              ? 'var(--theme-building-dialog-thumb-overlay-active)'
+                              : 'var(--theme-building-dialog-thumb-overlay-inactive)',
                         }}
                       />
                     </button>
@@ -294,7 +277,7 @@ function BuildingDetailGallery({
                 className="building-dialog-control-scroll absolute right-4 bottom-4 left-4 z-10 overflow-x-auto sm:hidden"
               >
                 <div className="mx-auto flex w-max min-w-full justify-center">
-                  <div className="flex gap-2 rounded-full px-3 py-2" style={floatingControlStyle}>
+                  <div className="ui-floating-surface flex gap-2 rounded-full px-3 py-2">
                     {imageUrls.map((imageUrl, index) => (
                       <button
                         type="button"
@@ -314,17 +297,7 @@ function BuildingDetailGallery({
                           background:
                             index === currentImageIndex
                               ? 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)'
-                              : 'rgba(255, 255, 255, 0.3)',
-                        }}
-                        onMouseEnter={(event) => {
-                          if (index !== currentImageIndex) {
-                            event.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)';
-                          }
-                        }}
-                        onMouseLeave={(event) => {
-                          if (index !== currentImageIndex) {
-                            event.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-                          }
+                              : 'var(--theme-building-dialog-mobile-dot-inactive)',
                         }}
                       />
                     ))}
@@ -357,10 +330,10 @@ function BuildingDetailInfo({
   return (
     <div
       className="w-full lg:w-[42%]"
-      style={{ background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.12))' }}
+      style={{ background: 'var(--theme-building-dialog-info-rail)' }}
     >
       <div className="building-dialog-scrollbar flex h-full flex-col overflow-y-auto p-4 sm:p-6 lg:p-8">
-        <div className="space-y-4 rounded-[1.75rem] p-5 sm:p-6" style={detailPanelSurfaceStyle}>
+        <div className="ui-panel-surface space-y-4 rounded-[1.75rem] p-5 sm:p-6">
           <h2
             className="mb-2 text-2xl font-bold sm:text-3xl lg:text-4xl"
             style={{ color: 'var(--theme-text-heading)' }}
@@ -382,7 +355,7 @@ function BuildingDetailInfo({
           <BuildingTags building={building} getTagKey={getTagKey} locale={locale} />
         </div>
 
-        <div className="mt-4 rounded-[1.75rem] p-5 sm:p-6" style={detailPanelSurfaceStyle}>
+        <div className="ui-panel-surface mt-4 rounded-[1.75rem] p-5 sm:p-6">
           <p
             className="text-base leading-relaxed whitespace-pre-line"
             style={{ color: 'var(--theme-text-muted-soft)' }}
@@ -391,7 +364,7 @@ function BuildingDetailInfo({
           </p>
         </div>
 
-        <div className="mt-4 rounded-[1.75rem] p-5 sm:p-6" style={detailPanelSurfaceStyle}>
+        <div className="ui-panel-surface mt-4 rounded-[1.75rem] p-5 sm:p-6">
           <BuildingDetailFacts
             building={building}
             formatDate={formatDate}
@@ -473,12 +446,9 @@ export function BuildingDetailsDialog({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="safe-fixed-overlay fixed inset-0 flex items-start justify-center overflow-y-auto sm:items-center"
+          className="ui-dialog-overlay safe-fixed-overlay fixed inset-0 flex items-start justify-center overflow-y-auto sm:items-center"
           style={{
             zIndex: 9999,
-            background: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(32px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(32px) saturate(180%)',
           }}
           onClick={onClose}
         >
@@ -490,16 +460,10 @@ export function BuildingDetailsDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative my-auto flex w-full max-w-7xl flex-col gap-0 overflow-hidden rounded-[2rem] shadow-2xl lg:flex-row"
+            className="ui-dialog-surface relative my-auto flex w-full max-w-7xl flex-col gap-0 overflow-hidden rounded-[2rem] shadow-2xl lg:flex-row"
             style={{
               maxHeight:
                 'min(56rem, calc(var(--viewport-height-dynamic) - var(--viewport-top-inset) - var(--viewport-bottom-inset) - 2rem))',
-              background: 'var(--theme-surface-modal)',
-              backdropFilter: 'blur(24px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-              border: '1px solid var(--theme-border-modal)',
-              boxShadow:
-                '0 24px 64px var(--theme-shadow-modal), 0 8px 32px var(--theme-shadow-modal-soft), inset 0 1px 0 var(--theme-shadow-modal-inset)',
             }}
             onClick={(event) => event.stopPropagation()}
           >
@@ -508,14 +472,7 @@ export function BuildingDetailsDialog({
               onClick={onClose}
               aria-label={t('dialog.close')}
               title={t('dialog.close')}
-              className="absolute top-4 right-4 z-20 rounded-full p-2 transition-all duration-200"
-              style={floatingControlStyle}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.background = 'var(--theme-surface-glass)';
-              }}
+              className="ui-floating-surface ui-floating-control absolute top-4 right-4 z-20 flex items-center justify-center rounded-full p-2"
             >
               <X className="h-6 w-6" style={{ color: 'var(--theme-text-primary)' }} />
             </button>

@@ -16,7 +16,6 @@ import { usePlayerHistory } from '@/modules/player-history/model/use-player-hist
 import { PlayerHistoryControls } from '@/modules/player-history/ui/player-history-controls';
 import { historyInsetPanelStyle } from '@/modules/player-history/ui/player-history-panel-styles';
 import ScrollReveal from '@/shared/ui/motion/scroll-reveal';
-import { glassCardSurfaceStyle } from '@/shared/ui/surfaces/glass-card-surface-style';
 import PlayerHistoryChart from './player-history-chart';
 import PlayerHistoryDetails from './player-history-details';
 import type { PlayerHistorySummaryCardItem } from './player-history-summary-grid';
@@ -99,14 +98,11 @@ export default function PlayerHistoryPanel() {
   return (
     <ScrollReveal direction="up">
       <section
-        className="player-history-panel"
+        className="ui-card-surface player-history-panel"
         style={{
-          ...glassCardSurfaceStyle,
           padding: 'clamp(1.25rem, 3vw, 2.1rem)',
           marginBottom: 'clamp(3rem, 6vw, 4.5rem)',
           overflow: 'hidden',
-          position: 'relative',
-          isolation: 'isolate',
         }}
       >
         <div className="player-history-panel-glow" aria-hidden="true" />
@@ -114,19 +110,14 @@ export default function PlayerHistoryPanel() {
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="flex items-center gap-4">
               <div
+                className="ui-card-icon-surface"
                 style={{
                   width: '3.1rem',
                   height: '3.1rem',
                   borderRadius: '18px',
-                  backdropFilter: 'blur(18px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(18px) saturate(150%)',
                   background:
                     'linear-gradient(145deg, rgba(255, 170, 0, 0.22), rgba(85, 170, 255, 0.12))',
                   border: '1px solid rgba(255, 170, 0, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
                   boxShadow: '0 12px 28px rgba(255, 170, 0, 0.1)',
                 }}
               >

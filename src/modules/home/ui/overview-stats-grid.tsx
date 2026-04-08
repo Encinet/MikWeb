@@ -2,8 +2,6 @@
 
 import type { LucideIcon } from 'lucide-react';
 
-import { glassCardSurfaceStyle } from '@/shared/ui/surfaces/glass-card-surface-style';
-
 export interface HomeOverviewStat {
   id: string;
   icon: LucideIcon;
@@ -30,23 +28,16 @@ export function OverviewStatsGrid({ stats }: OverviewStatsGridProps) {
 function OverviewStatCard({ stat }: { stat: HomeOverviewStat }) {
   return (
     <div
-      className="transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1"
+      className="ui-card-surface ui-card-interactive"
       style={{
-        ...glassCardSurfaceStyle,
         padding: 'clamp(1.25rem, 3vw, 1.5rem)',
       }}
     >
       <div
+        className="ui-card-icon-surface"
         style={{
           width: 'clamp(2.5rem, 6vw, 3rem)',
           height: 'clamp(2.5rem, 6vw, 3rem)',
-          borderRadius: '12px',
-          backdropFilter: 'blur(16px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-          background: 'var(--theme-surface-icon)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
         }}
       >

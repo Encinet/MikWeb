@@ -132,18 +132,7 @@ export function createWikiMarkdownRenderers() {
     a: ({ children, href }: React.PropsWithChildren<{ href?: string }>) => (
       <a
         href={href}
-        className="underline"
-        style={{
-          color: 'var(--theme-accent-blue-strong)',
-          textUnderlineOffset: '3px',
-          textDecorationThickness: '1.5px',
-        }}
-        onMouseEnter={(event) => {
-          event.currentTarget.style.color = 'var(--theme-accent-blue)';
-        }}
-        onMouseLeave={(event) => {
-          event.currentTarget.style.color = 'var(--theme-accent-blue-strong)';
-        }}
+        className="ui-content-link ui-content-link--blue"
         target="_blank"
         rel="noopener noreferrer"
       >

@@ -20,14 +20,10 @@ export default async function SiteFooter() {
       }}
     >
       <footer
-        className="safe-footer-card"
+        className="ui-card-surface safe-footer-card"
         style={{
           width: '100%',
           maxWidth: 'min(95%, 1400px)',
-          backdropFilter: 'blur(16px) saturate(150%)',
-          'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-          background: 'var(--theme-surface-glass)',
-          border: '1px solid var(--theme-border-glass)',
           borderRadius: 'clamp(12px, 2vw, 24px)',
           padding: 'clamp(1.5rem, 4vw, 2rem) 0',
         }}

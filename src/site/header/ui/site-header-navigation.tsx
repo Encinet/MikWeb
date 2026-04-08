@@ -36,34 +36,13 @@ export function DesktopSiteHeaderNavigation({
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
+              className={
+                item.highlight
+                  ? 'ui-nav-chip ui-nav-chip--highlight whitespace-nowrap px-4 py-2'
+                  : 'ui-nav-link whitespace-nowrap py-2'
+              }
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: item.highlight ? '#FFAA00' : 'transparent',
-                padding: item.highlight ? '8px 16px' : '8px 0',
-                borderRadius: item.highlight ? '8px' : '0',
-                color: item.highlight ? '#0e0e10' : 'var(--theme-text-nav)',
-                fontSize: '14px',
-                fontWeight: item.highlight ? 600 : 500,
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
                 position: 'relative',
-                whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={(event) => {
-                if (item.highlight) {
-                  event.currentTarget.style.background = '#e09900';
-                } else {
-                  event.currentTarget.style.color = 'var(--theme-text-nav-hover)';
-                }
-              }}
-              onMouseLeave={(event) => {
-                if (item.highlight) {
-                  event.currentTarget.style.background = '#FFAA00';
-                } else {
-                  event.currentTarget.style.color = 'var(--theme-text-nav)';
-                }
               }}
             >
               <item.icon className="h-4 w-4" />
@@ -76,26 +55,9 @@ export function DesktopSiteHeaderNavigation({
           <Link
             key={item.id}
             href={item.path as string}
+            className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative whitespace-nowrap py-2`}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 0',
-              color: isActive ? 'var(--theme-text-nav-active)' : 'var(--theme-text-nav)',
-              fontSize: '14px',
-              fontWeight: 500,
-              textDecoration: 'none',
-              transition: 'color 0.2s ease',
               position: 'relative',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={(event) => {
-              event.currentTarget.style.color = 'var(--theme-text-nav-hover)';
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.style.color = isActive
-                ? 'var(--theme-text-nav-active)'
-                : 'var(--theme-text-nav)';
             }}
           >
             <item.icon className="relative z-10 h-4 w-4" />
@@ -186,15 +148,7 @@ export function MobileSiteHeaderMenu({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={onClose}
-                      className="flex items-center gap-3 rounded-lg px-4 py-3 transition-all"
-                      style={{
-                        background: item.highlight ? '#FFAA00' : 'var(--theme-surface-icon)',
-                        color: item.highlight ? '#0e0e10' : 'var(--theme-text-nav)',
-                        fontWeight: item.highlight ? 600 : 500,
-                        border: `1px solid ${
-                          item.highlight ? 'transparent' : 'var(--theme-border-glass)'
-                        }`,
-                      }}
+                      className={`ui-nav-chip px-4 py-3 ${item.highlight ? 'ui-nav-chip--highlight' : ''}`}
                     >
                       <item.icon className="h-5 w-5" />
                       <span className="whitespace-nowrap text-sm">{item.label}</span>
@@ -207,14 +161,7 @@ export function MobileSiteHeaderMenu({
                     key={item.id}
                     href={item.path as string}
                     onClick={onClose}
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 transition-all"
-                    style={{
-                      background: isActive
-                        ? 'var(--theme-surface-hover)'
-                        : 'var(--theme-surface-icon)',
-                      color: isActive ? 'var(--theme-text-nav-active)' : 'var(--theme-text-nav)',
-                      border: `1px solid ${isActive ? '#FFAA00' : 'var(--theme-border-glass)'}`,
-                    }}
+                    className={`ui-nav-chip px-4 py-3 ${isActive ? 'ui-nav-chip--active' : ''}`}
                   >
                     <item.icon className="h-5 w-5" />
                     <span className="whitespace-nowrap text-sm">{item.label}</span>
@@ -222,28 +169,14 @@ export function MobileSiteHeaderMenu({
                 );
               })}
 
-              <button
-                type="button"
-                onClick={onLocaleSwitch}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 transition-all"
-                style={{
-                  background: 'var(--theme-surface-icon)',
-                  color: 'var(--theme-text-nav)',
-                  border: '1px solid var(--theme-border-glass)',
-                }}
-              >
+              <button type="button" onClick={onLocaleSwitch} className="ui-nav-chip px-4 py-3">
                 <span className="text-sm">{localeLabel}</span>
               </button>
 
               <button
                 type="button"
                 onClick={onThemeToggle}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 transition-all sm:hidden"
-                style={{
-                  background: 'var(--theme-surface-icon)',
-                  color: 'var(--theme-text-nav)',
-                  border: '1px solid var(--theme-border-glass)',
-                }}
+                className="ui-nav-chip px-4 py-3 sm:hidden"
               >
                 <span className="text-sm">
                   {mounted && theme === 'dark' ? themeLightLabel : themeDarkLabel}

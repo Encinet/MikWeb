@@ -117,9 +117,8 @@ export default function BansPage() {
               {banEntries.map((banEntry, banEntryIndex) => (
                 <div
                   key={banEntry.playerUuid}
-                  className="glass-card animate-card-enter group mb-4 break-inside-avoid overflow-hidden rounded-2xl transition-all duration-300 hover:border-red-400/30"
+                  className="ui-card-surface ui-card-interactive ui-card-interactive--accent-red animate-card-enter group mb-4 break-inside-avoid overflow-hidden rounded-2xl"
                   style={{
-                    WebkitBackdropFilter: 'blur(16px) saturate(150%)',
                     animationDelay: `${banEntryIndex * 0.04}s`,
                   }}
                 >
@@ -150,10 +149,7 @@ export default function BansPage() {
                     </div>
 
                     {/* ── Divider ── */}
-                    <div
-                      className="mb-3"
-                      style={{ height: '1px', background: 'var(--theme-border-glass)' }}
-                    />
+                    <div className="ui-card-divider mb-3" />
 
                     {/* ── Reason ── */}
                     <div className="flex items-start gap-2 mb-4">

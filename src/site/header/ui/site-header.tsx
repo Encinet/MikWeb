@@ -159,18 +159,11 @@ export default function SiteHeader() {
       }}
     >
       <nav
-        className="safe-navbar-card"
+        className="ui-card-surface safe-navbar-card"
         style={{
           width: '100%',
           maxWidth: 'min(95%, 1400px)',
-          backdropFilter: 'blur(16px) saturate(150%)',
-          'WebkitBackdropFilter': 'blur(16px) saturate(150%)',
-          background: 'var(--theme-surface-glass)',
-          border: '1px solid var(--theme-border-glass)',
           borderRadius: 'clamp(12px, 2vw, 24px)',
-          boxShadow:
-            '0 4px 24px var(--theme-shadow-glass), inset 0 1px 0 var(--theme-shadow-glass-inset)',
-          transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
