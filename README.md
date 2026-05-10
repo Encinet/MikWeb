@@ -62,6 +62,8 @@ openssl rand -hex 32
 
 除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `src/shared/api/proxy-route.ts` 代理上游服务。
 
+完整 API 文档：[OpenAPI (Swagger UI)](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Encinet/MikWeb/refs/heads/main/openapi.yaml)
+
 | 路由 | 说明 |
 |------|------|
 | `GET /api/players/online` | 在线玩家与人数；主接口失败时可回退查询 |

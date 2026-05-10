@@ -43,3 +43,7 @@ next-env.d.ts
 
 # todo
 todo/
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
