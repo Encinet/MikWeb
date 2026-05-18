@@ -38,8 +38,8 @@
 
   /* Card System */
   --ui-card-radius: 18px;
-  --ui-card-blur: 16px;
-  --ui-card-saturation: 150%;
+  --ui-card-blur: 10px;
+  --ui-card-saturation: 130%;
   --ui-card-hover-offset: -0.25rem;
   --ui-card-transition-duration: 300ms;
   --ui-card-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
@@ -326,10 +326,6 @@
   );
   --theme-building-dialog-thumb-overlay-inactive: rgba(95, 74, 37, 0.12);
   --theme-building-dialog-mobile-dot-inactive: rgba(95, 74, 37, 0.22);
-}
-
-* {
-  font-family: var(--font-base);
 }
 
 body {
@@ -838,16 +834,13 @@ body {
   border-radius: inherit;
   -webkit-backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
   backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
-  background:
-    linear-gradient(180deg, var(--ui-card-surface-fill) 0%, var(--ui-card-surface-fill) 100%),
-    linear-gradient(180deg, var(--ui-card-surface-overlay-from), var(--ui-card-surface-overlay-to));
+  background: var(--ui-card-surface-fill);
   border: var(--theme-border-card);
   box-shadow: var(--theme-shadow-card);
   transition:
     background var(--ui-card-transition-duration) ease,
     border-color var(--ui-card-transition-duration) var(--ui-card-transition-easing),
     box-shadow var(--ui-card-transition-duration) var(--ui-card-transition-easing);
-  transform: translateZ(0);
 }
 
 .ui-card-surface--soft {
@@ -885,23 +878,19 @@ body {
   justify-content: center;
   flex-shrink: 0;
   border-radius: 12px;
-  -webkit-backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
-  backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
   background: var(--theme-surface-icon);
   border: 1px solid var(--theme-border-glass);
   box-shadow: var(--theme-shadow-card);
 }
 
 .ui-card-badge-surface {
-  -webkit-backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
-  backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
   background: var(--theme-surface-badge);
   border: 1px solid var(--theme-border-glass);
 }
 
 .ui-building-card-badge-surface {
-  -webkit-backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
-  backdrop-filter: blur(var(--ui-card-blur)) saturate(var(--ui-card-saturation));
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  backdrop-filter: blur(8px) saturate(130%);
   background: var(--theme-surface-building-card-badge);
   border: 1px solid var(--theme-border-building-card-badge);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
@@ -914,8 +903,8 @@ body {
 
 .ui-dialog-overlay {
   background: rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
 }
 
 .ui-dialog-surface {
@@ -925,8 +914,8 @@ body {
     0 24px 64px var(--theme-shadow-modal),
     0 8px 32px var(--theme-shadow-modal-soft),
     inset 0 1px 0 var(--theme-shadow-modal-inset);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
 }
 
 .ui-panel-surface {
@@ -939,8 +928,8 @@ body {
   background: var(--theme-surface-glass);
   border: 1px solid var(--theme-border-glass);
   box-shadow: var(--theme-shadow-card);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .ui-floating-control {
@@ -1132,11 +1121,9 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  backdrop-filter: blur(32px) saturate(200%);
-  background:
-    linear-gradient(180deg, var(--theme-surface-glass) 0%, var(--theme-surface-glass) 100%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  background: var(--theme-surface-glass);
   border: 1px solid var(--theme-border-glass);
   border-radius: inherit;
   box-shadow:
