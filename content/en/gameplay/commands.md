@@ -5,19 +5,41 @@ order: 20
 icon: Wrench
 ---
 
-This page lists the commands players use most often on the server. If you need the full syntax for a vanilla command, see the final section, "Vanilla Command Reference."
+This page lists commands for regular players. New players start with Yellow Name status, and promoted players become White Name full members. Staff/admin commands are not listed here.
+
+If you need the full syntax for a vanilla command, see the final section, "Vanilla Command Reference."
 
 ## Teleportation & Navigation
 
-| Command | Description |
-|------|------|
-| `/spawn` | Return to the main city |
-| [`/tp`](https://minecraft.wiki/w/Commands/tp) | Teleport to specific coordinates or another player |
-| `/sethome` | Save your current location as a home |
-| `/home` | Return to a saved home |
-| `/delhome` | Delete a saved home |
-| `/homelist` | View all of your saved homes |
-| `/back` | Return to your previous location, such as where you died or where you were before teleporting |
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Spawn</td><td><code>/spawn</code></td><td>Return to the main city</td></tr>
+<tr><td>Vanilla teleport</td><td><a href="https://minecraft.wiki/w/Commands/tp"><code>/tp</code></a></td><td>Teleport to specific coordinates or another player</td></tr>
+<tr><td rowspan="3">Homes</td><td><code>/sethome &lt;name&gt;</code></td><td>Save your current position as a home</td></tr>
+<tr><td><code>/home &lt;name&gt;</code></td><td>Return to a saved home; running it without a name shows your homes and usage</td></tr>
+<tr><td><code>/delhome &lt;name&gt;</code></td><td>Delete a saved home. New players can save up to 2 homes; full members can save up to 20</td></tr>
+<tr><td rowspan="3">Back history</td><td><code>/back</code></td><td>Return to your previous teleport or death location</td></tr>
+<tr><td><code>/back [times]</code></td><td>Go back multiple history entries at once</td></tr>
+<tr><td><code>/back undo</code> or <code>/reback</code></td><td>Undo your last back step and return to where you just were</td></tr>
+</tbody>
+</table>
+
+## Status & Server Info
+
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="2">Idle status</td><td><code>/afk</code></td><td>Toggle idle status</td></tr>
+<tr><td><code>/afk &lt;status&gt;</code></td><td>Go idle and show a custom status above your head, up to 12 characters</td></tr>
+<tr><td>Announcements</td><td><code>/announcements</code></td><td>Open the server announcements menu</td></tr>
+<tr><td>Tips</td><td><code>/tip</code></td><td>Show one server tip</td></tr>
+</tbody>
+</table>
 
 ## Building & Editing
 
@@ -45,48 +67,82 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 
 ## Decoration & Interaction
 
-| Command | Description |
-|------|------|
-| `/headdb` | Open the decorative head database and browse custom heads |
-| `/hat` | Wear the item in your hand as a hat |
-| `/nametag` | Set your prefix and suffix. Requires full member status |
-| `/asedit give` | Get the armor stand editor tool |
-| `/imageframe giveinvisibleframe glowing` | Get a glowing invisible item frame |
-| `/imageframe giveinvisibleframe regular` | Get a regular invisible item frame |
-| `/sit` | Sit on a block |
-| `/lay` | Lie down |
-| `/crawl` | Crawl |
-| `/trash` | Open the trash interface. Anything placed inside is deleted permanently |
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Decorative heads</td><td><code>/headdb</code></td><td>Open the decorative head database and browse custom heads</td></tr>
+<tr><td>Hat</td><td><code>/hat</code></td><td>Wear the item in your hand as a hat</td></tr>
+<tr><td rowspan="4">Name tag</td><td><code>/nametag</code></td><td>View your current custom prefix and suffix</td></tr>
+<tr><td><code>/nametag prefix set &lt;content&gt;</code></td><td>Set your name prefix. Requires full member status</td></tr>
+<tr><td><code>/nametag suffix set &lt;content&gt;</code></td><td>Set your name suffix. Requires full member status</td></tr>
+<tr><td><code>/nametag clear</code></td><td>Clear your custom prefix and suffix</td></tr>
+<tr><td>Armor stands</td><td><code>/asedit give</code></td><td>Get the armor stand editor tool</td></tr>
+<tr><td rowspan="2">Invisible item frames</td><td><code>/imageframe giveinvisibleframe glowing</code></td><td>Get glowing invisible item frames</td></tr>
+<tr><td><code>/imageframe giveinvisibleframe regular</code></td><td>Get regular invisible item frames</td></tr>
+<tr><td rowspan="3">Poses</td><td><code>/sit</code></td><td>Sit down</td></tr>
+<tr><td><code>/lay</code></td><td>Lie down</td></tr>
+<tr><td><code>/crawl</code></td><td>Crawl</td></tr>
+<tr><td>Trash</td><td><code>/trash</code></td><td>Open the trash interface. Anything placed inside is deleted permanently</td></tr>
+</tbody>
+</table>
 
 ## Item & World Management
 
-| Command | Description |
-|------|------|
-| `/rmitems [radius]` | Remove dropped items around you. The default radius is 50 blocks. You can also set your own radius, for example `/rmitems 20` |
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="2">Dropped item cleanup</td><td><code>/rmitems</code></td><td>Remove nearby dropped items with the default 50-block radius</td></tr>
+<tr><td><code>/rmitems &lt;radius&gt;</code></td><td>Remove dropped items within a custom radius, for example <code>/rmitems 20</code></td></tr>
+<tr><td>Temporary whitelist</td><td><code>/tempwhitelist &lt;player&gt;</code></td><td>Add a 1-hour temporary whitelist entry for a friend. Requires full member status</td></tr>
+</tbody>
+</table>
 
-> Players with yellow-name status (Default status for new players) cannot use `/rmitems`.
+> Players with yellow-name status (the default status for new players) cannot use `/rmitems` or `/tempwhitelist`.
 
 ## Music & Fun
 
-| Command | Description |
-|------|------|
-| `/music` | Open the music console to play or control background music. Requires [PlasmoVoice](https://modrinth.com/plugin/plasmo-voice) |
-| `/firework gun` | Get a random firework launcher |
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="5">Music</td><td><code>/music</code></td><td>Open the music console. Requires <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a></td></tr>
+<tr><td><code>/music search &lt;keyword&gt;</code></td><td>Search songs</td></tr>
+<tr><td><code>/music page &lt;page&gt;</code></td><td>Switch music list pages</td></tr>
+<tr><td><code>/music random</code></td><td>Get a random disc</td></tr>
+<tr><td><code>/music randomplay</code></td><td>Play random music at the nearest jukebox</td></tr>
+<tr><td>Fireworks</td><td><code>/firework gun</code></td><td>Get a random firework launcher</td></tr>
+</tbody>
+</table>
 
 ## PVP
 
-| Command | Description |
-|------|------|
-| `/pvp` | Manually toggle your PVP status. PVP is disabled by default |
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>PVP status</td><td><code>/pvp</code></td><td>Manually toggle your PVP status. PVP is disabled by default</td></tr>
+</tbody>
+</table>
 
 > Please only enable PVP when both sides agree.
 
 ## Mini-Games
 
-| Command | Description |
-|------|------|
-| `/apk start` | Start the parkour challenge. The difficulty increases as you progress |
-| `/spy` | Join the "Who's the Killer" mini-game |
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Parkour</td><td><code>/apk start</code></td><td>Start the parkour challenge. The difficulty increases as you progress</td></tr>
+<tr><td>Who's the Killer</td><td><code>/spy</code></td><td>Join the "Who's the Killer" mini-game</td></tr>
+</tbody>
+</table>
 
 ## Vanilla Command Reference
 

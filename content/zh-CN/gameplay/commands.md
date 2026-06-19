@@ -5,19 +5,41 @@ order: 20
 icon: Wrench
 ---
 
-本页整理服务器中最常用的指令。需要查询原版命令完整语法时，请直接查看文末的「原版指令参考」。
+本页整理普通玩家会用到的指令。新玩家默认为黄名身份，考察通过后会成为白名正式成员；管理员命令不在本页列出。
+
+需要查询原版命令完整语法时，请直接查看文末的「原版指令参考」。
 
 ## 传送与位置
 
-| 指令 | 说明 |
-|------|------|
-| `/spawn` | 回到主城 |
-| [`/tp`](https://zh.minecraft.wiki/w/命令/tp) | 传送到指定坐标或玩家位置 |
-| `/sethome` | 将当前位置设置为家 |
-| `/home` | 传送回已设置的家 |
-| `/delhome` | 删除已设置的家 |
-| `/homelist` | 查看所有已设置的家 |
-| `/back` | 返回上一次所在的位置（如死亡点、传送前位置） |
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td>主城</td><td><code>/spawn</code></td><td>回到主城</td></tr>
+<tr><td>原版传送</td><td><a href="https://zh.minecraft.wiki/w/命令/tp"><code>/tp</code></a></td><td>传送到指定坐标或玩家位置</td></tr>
+<tr><td rowspan="3">家</td><td><code>/sethome &lt;名字&gt;</code></td><td>把当前位置保存为一个家</td></tr>
+<tr><td><code>/home &lt;名字&gt;</code></td><td>回到指定的家；不带名字时会显示已有家和用法</td></tr>
+<tr><td><code>/delhome &lt;名字&gt;</code></td><td>删除指定的家；新成员最多 2 个家，正式成员最多 20 个家</td></tr>
+<tr><td rowspan="3">返回历史位置</td><td><code>/back</code></td><td>返回上一次传送或死亡前的位置</td></tr>
+<tr><td><code>/back [次数]</code></td><td>一次回退多条历史记录</td></tr>
+<tr><td><code>/back undo</code> 或 <code>/reback</code></td><td>撤销上一次返回，回到刚才的位置</td></tr>
+</tbody>
+</table>
+
+## 状态与服务器信息
+
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="2">挂机状态</td><td><code>/afk</code></td><td>切换挂机状态</td></tr>
+<tr><td><code>/afk &lt;状态&gt;</code></td><td>进入挂机并把自定义状态显示在头顶，最多 12 个字</td></tr>
+<tr><td>公告</td><td><code>/announcements</code></td><td>打开服务器公告菜单</td></tr>
+<tr><td>小提示</td><td><code>/tip</code></td><td>查看一条服务器小提示</td></tr>
+</tbody>
+</table>
 
 ## 建筑与创作
 
@@ -45,48 +67,82 @@ icon: Wrench
 
 ## 装饰与互动
 
-| 指令 | 说明 |
-|------|------|
-| `/headdb` | 打开装饰头颅数据库，获取各类装饰用头颅 |
-| `/hat` | 将手中持有的物品戴到头上 |
-| `/nametag` | 设置你的前缀与后缀，需要正式成员权限 |
-| `/asedit give` | 获取盔甲架编辑器 |
-| `/imageframe giveinvisibleframe glowing` | 获取发光隐形展示框 |
-| `/imageframe giveinvisibleframe regular` | 获取普通隐形展示框 |
-| `/sit` | 坐下（在方块上） |
-| `/lay` | 躺下 |
-| `/crawl` | 爬行 |
-| `/trash` | 打开垃圾桶界面，放入其中的物品将被永久销毁 |
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td>装饰头颅</td><td><code>/headdb</code></td><td>打开装饰头颅数据库，获取各类装饰用头颅</td></tr>
+<tr><td>帽子</td><td><code>/hat</code></td><td>将手中持有的物品戴到头上</td></tr>
+<tr><td rowspan="4">名称标签</td><td><code>/nametag</code></td><td>查看当前自定义前缀和后缀</td></tr>
+<tr><td><code>/nametag prefix set &lt;内容&gt;</code></td><td>设置名称前缀，需要正式成员权限</td></tr>
+<tr><td><code>/nametag suffix set &lt;内容&gt;</code></td><td>设置名称后缀，需要正式成员权限</td></tr>
+<tr><td><code>/nametag clear</code></td><td>清除自定义前缀和后缀</td></tr>
+<tr><td>盔甲架</td><td><code>/asedit give</code></td><td>获取盔甲架编辑器</td></tr>
+<tr><td rowspan="2">隐形展示框</td><td><code>/imageframe giveinvisibleframe glowing</code></td><td>获取发光隐形展示框</td></tr>
+<tr><td><code>/imageframe giveinvisibleframe regular</code></td><td>获取普通隐形展示框</td></tr>
+<tr><td rowspan="3">姿势动作</td><td><code>/sit</code></td><td>坐下</td></tr>
+<tr><td><code>/lay</code></td><td>躺下</td></tr>
+<tr><td><code>/crawl</code></td><td>爬行</td></tr>
+<tr><td>垃圾桶</td><td><code>/trash</code></td><td>打开垃圾桶界面，放入其中的物品将被永久销毁</td></tr>
+</tbody>
+</table>
 
 ## 物品与世界管理
 
-| 指令 | 说明 |
-|------|------|
-| `/rmitems [半径]` | 清理周围的掉落物，默认清理半径为 50 格。可手动指定半径，例如 `/rmitems 20` 仅清理 20 格内的掉落物 |
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="2">清理掉落物</td><td><code>/rmitems</code></td><td>按默认 50 格半径清理周围掉落物</td></tr>
+<tr><td><code>/rmitems &lt;半径&gt;</code></td><td>按指定半径清理掉落物，例如 <code>/rmitems 20</code></td></tr>
+<tr><td>临时白名单</td><td><code>/tempwhitelist &lt;玩家名&gt;</code></td><td>为朋友添加 1 小时临时白名单，需要正式成员权限</td></tr>
+</tbody>
+</table>
 
-> 黄名玩家(新玩家默认身份)无法使用 `/rmitems`。
+> 黄名玩家（新成员默认身份）无法使用 `/rmitems` 和 `/tempwhitelist`。
 
 ## 音乐与娱乐
 
-| 指令 | 说明 |
-|------|------|
-| `/music` | 打开音乐控制台，播放/控制背景音乐（需要安装 [PlasmoVoice](https://modrinth.com/plugin/plasmo-voice) 模组） |
-| `/firework gun` | 获取一把随机烟花发射器 |
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="5">音乐</td><td><code>/music</code></td><td>打开音乐控制台，需要安装 <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a> 模组</td></tr>
+<tr><td><code>/music search &lt;关键词&gt;</code></td><td>搜索歌曲</td></tr>
+<tr><td><code>/music page &lt;页码&gt;</code></td><td>切换音乐列表页码</td></tr>
+<tr><td><code>/music random</code></td><td>获得一张随机唱片</td></tr>
+<tr><td><code>/music randomplay</code></td><td>在最近的唱片机播放随机音乐</td></tr>
+<tr><td>烟花</td><td><code>/firework gun</code></td><td>获取一把随机烟花发射器</td></tr>
+</tbody>
+</table>
 
 ## PVP 控制
 
-| 指令 | 说明 |
-|------|------|
-| `/pvp` | 手动开启或关闭 PVP 状态（服务器默认禁止 PVP） |
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td>PVP 状态</td><td><code>/pvp</code></td><td>手动开启或关闭 PVP 状态，服务器默认禁止 PVP</td></tr>
+</tbody>
+</table>
 
 > PVP 默认处于关闭状态，请在双方同意的前提下开启。
 
 ## 小游戏
 
-| 指令 | 说明 |
-|------|------|
-| `/apk start` | 开始跑酷挑战（难度随进度递增） |
-| `/spy` | 进入「谁是杀手」小游戏 |
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td>跑酷</td><td><code>/apk start</code></td><td>开始跑酷挑战，难度随进度递增</td></tr>
+<tr><td>谁是杀手</td><td><code>/spy</code></td><td>进入「谁是杀手」小游戏</td></tr>
+</tbody>
+</table>
 
 ## 原版指令参考
 

@@ -18,9 +18,10 @@ There is no fixed probation length. Promotion to full member status (**White Nam
 - **Yellow Name**: Default status for new players. The following restrictions apply:
   - Limited access to Axiom
   - No formatted text in chat
-  - No access to the decorative head command `/hdb`
+  - No access to the decorative head command `/headdb` (or `/hdb`)
   - No access to server status commands `/mspt` and `/tps`
   - No access to `/rmitems`
+  - No access to `/tempwhitelist`
   - No access to `/nametag` for setting prefixes and suffixes
   - No access to vanilla commands `/attribute`, `/damage`, `/effect`, `/fill`, `/item`, `/ride`, `/save-all`, `/setblock`, `/summon`
 - **White Name / Member**: Full member status. These restrictions are removed after automatic promotion.

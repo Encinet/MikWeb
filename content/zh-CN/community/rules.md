@@ -18,9 +18,10 @@ icon: Shield
 - **黄名**：新玩家默认身份，处于考察阶段，具有以下权限限制：
   - Axiom 功能受限
   - 无法在聊天中使用格式化文本
-  - 无法使用装饰头颅获取命令 `/hdb`
+  - 无法使用装饰头颅获取命令 `/headdb`（或 `/hdb`）
   - 无法使用服务器状态查询命令 `/mspt`、`/tps`
   - 无法使用清除周围掉落物命令 `/rmitems`
+  - 无法使用临时白名单命令 `/tempwhitelist`
   - 无法使用前后缀设置命令 `/nametag`
   - 无法使用原版命令 `/attribute`、`/damage`、`/effect`、`/fill`、`/item`、`/ride`、`/save-all`、`/setblock`、`/summon`
 - **白名 Member**：考察通过后的正式成员身份，由系统根据活跃度自动晋升，解除上述限制

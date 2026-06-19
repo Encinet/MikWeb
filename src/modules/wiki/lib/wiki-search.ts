@@ -68,12 +68,26 @@ export function normalizeWikiSearchPhrases(searchPhrases: string[]): PreparedQue
   return Array.from(uniqueQueries).map((item) => prepareWikiQuery(item));
 }
 
+function decodeWikiHtmlEntities(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
 export function stripWikiMarkdown(text: string): string {
   return text
     .replace(/\r\n?/g, '\n')
     .replace(/```([^\n]*)\n([\s\S]*?)```/g, (_, __, code: string) => code.trim())
     .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/<\/(?:td|th)>/gi, ' | ')
+    .replace(/<\/tr>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&(?:lt|gt|amp|quot|#39);/g, (entity) => decodeWikiHtmlEntities(entity))
     .split('\n')
     .map((line) => {
       const trimmed = line.trim();

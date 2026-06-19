@@ -4,6 +4,8 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { BookOpen } from 'lucide-react';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import { spring, wikiPanelSurfaceClassName } from '@/modules/wiki/lib/wiki-browser-config';
@@ -23,6 +25,15 @@ import { WikiOutlineLinks } from '@/modules/wiki/ui/wiki-outline-links';
 import { WikiSearchBox } from '@/modules/wiki/ui/wiki-search-box';
 import { WikiSearchResults } from '@/modules/wiki/ui/wiki-search-results';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
+
+const wikiSanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    td: [...(defaultSchema.attributes?.td ?? []), 'rowSpan', 'colSpan'],
+    th: [...(defaultSchema.attributes?.th ?? []), 'rowSpan', 'colSpan', 'scope'],
+  },
+};
 
 interface PendingWikiAnchor {
   heading: string;
@@ -445,7 +456,11 @@ export default function WikiContent({
 
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[rehypeSlug]}
+                        rehypePlugins={[
+                          rehypeRaw,
+                          [rehypeSanitize, wikiSanitizeSchema],
+                          rehypeSlug,
+                        ]}
                         components={markdownComponents as object}
                       >
                         {content[activeSection]}

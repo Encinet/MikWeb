@@ -5,6 +5,13 @@ import type React from 'react';
 
 import { markdownDelays, spring } from '@/modules/wiki/lib/wiki-browser-config';
 
+type MarkdownTableCellProps = React.PropsWithChildren<
+  React.ThHTMLAttributes<HTMLTableCellElement> &
+    React.TdHTMLAttributes<HTMLTableCellElement> & {
+      node?: unknown;
+    }
+>;
+
 export function createWikiMarkdownRenderers() {
   const baseMotionProps = {
     initial: false,
@@ -146,33 +153,36 @@ export function createWikiMarkdownRenderers() {
         className="my-4 overflow-x-auto rounded-lg border"
         style={{ borderColor: 'var(--theme-border-glass-light)' }}
       >
-        <table className="min-w-full">{children}</table>
+        <table className="w-full min-w-max table-auto [&_code]:whitespace-nowrap">{children}</table>
       </motion.div>
     ),
     thead: ({ children }: React.PropsWithChildren) => (
       <thead style={{ background: 'var(--theme-surface-glass-light)' }}>{children}</thead>
     ),
-    th: ({ children }: React.PropsWithChildren) => (
+    th: ({ children, node: _node, className: _className, ...props }: MarkdownTableCellProps) => (
       <th
+        {...props}
         style={{
           color: 'var(--theme-text-heading)',
           borderColor: 'var(--theme-border-glass-light)',
         }}
-        className="border-b px-4 py-2 text-left font-semibold"
+        className="border-b px-4 py-2 text-left align-top font-semibold"
       >
         {children}
       </th>
     ),
-    td: ({ children }: React.PropsWithChildren) => (
+    td: ({ children, node: _node, className: _className, ...props }: MarkdownTableCellProps) => (
       <td
+        {...props}
         style={{
           color: 'var(--theme-text-muted-strong)',
           borderColor: 'var(--theme-border-light)',
         }}
-        className="border-b px-4 py-2"
+        className="border-b px-4 py-2 align-top leading-relaxed"
       >
         {children}
       </td>
     ),
+    br: () => <br />,
   };
 }
