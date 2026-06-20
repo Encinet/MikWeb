@@ -18,8 +18,10 @@ icon: Wrench
 <tbody>
 <tr><td>主城</td><td><code>/spawn</code></td><td>回到主城</td></tr>
 <tr><td>原版传送</td><td><a href="https://zh.minecraft.wiki/w/命令/tp"><code>/tp</code></a></td><td>传送到指定坐标或玩家位置</td></tr>
-<tr><td rowspan="3">家</td><td><code>/sethome &lt;名字&gt;</code></td><td>把当前位置保存为一个家</td></tr>
-<tr><td><code>/home &lt;名字&gt;</code></td><td>回到指定的家；不带名字时会显示已有家和用法</td></tr>
+<tr><td rowspan="5">家</td><td><code>/sethome &lt;名字&gt;</code></td><td>把当前位置保存为一个家</td></tr>
+<tr><td><code>/home</code> 或 <code>/home gui</code></td><td>打开家菜单</td></tr>
+<tr><td><code>/home &lt;名字&gt;</code></td><td>直接回到指定的家</td></tr>
+<tr><td><code>/home icon &lt;材质&gt; &lt;名字&gt;</code></td><td>把指定材质设置为家的图标，例如 <code>/home icon diamond_block home</code></td></tr>
 <tr><td><code>/delhome &lt;名字&gt;</code></td><td>删除指定的家；新成员最多 2 个家，正式成员最多 20 个家</td></tr>
 <tr><td rowspan="3">返回历史位置</td><td><code>/back</code></td><td>返回上一次传送或死亡前的位置</td></tr>
 <tr><td><code>/back [次数]</code></td><td>一次回退多条历史记录</td></tr>
@@ -35,9 +37,10 @@ icon: Wrench
 </thead>
 <tbody>
 <tr><td rowspan="2">挂机状态</td><td><code>/afk</code></td><td>切换挂机状态</td></tr>
-<tr><td><code>/afk &lt;状态&gt;</code></td><td>进入挂机并把自定义状态显示在头顶，最多 12 个字</td></tr>
+<tr><td><code>/afk &lt;状态&gt;</code></td><td>进入挂机并把自定义状态显示在头顶和 Tab 列表，最多 12 个字</td></tr>
 <tr><td>公告</td><td><code>/announcements</code></td><td>打开服务器公告菜单</td></tr>
 <tr><td>小提示</td><td><code>/tip</code></td><td>查看一条服务器小提示</td></tr>
+<tr><td>主菜单</td><td><code>/menu</code></td><td>打开主菜单</td></tr>
 </tbody>
 </table>
 

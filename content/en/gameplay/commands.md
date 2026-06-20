@@ -18,8 +18,10 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tbody>
 <tr><td>Spawn</td><td><code>/spawn</code></td><td>Return to the main city</td></tr>
 <tr><td>Vanilla teleport</td><td><a href="https://minecraft.wiki/w/Commands/tp"><code>/tp</code></a></td><td>Teleport to specific coordinates or another player</td></tr>
-<tr><td rowspan="3">Homes</td><td><code>/sethome &lt;name&gt;</code></td><td>Save your current position as a home</td></tr>
-<tr><td><code>/home &lt;name&gt;</code></td><td>Return to a saved home; running it without a name shows your homes and usage</td></tr>
+<tr><td rowspan="5">Homes</td><td><code>/sethome &lt;name&gt;</code></td><td>Save your current position as a home.</td></tr>
+<tr><td><code>/home</code> or <code>/home gui</code></td><td>Open the home menu to teleport</td></tr>
+<tr><td><code>/home &lt;name&gt;</code></td><td>Return directly to a saved home</td></tr>
+<tr><td><code>/home icon &lt;material&gt; &lt;name&gt;</code></td><td>Set a custom home icon, for example <code>/home icon diamond_block home</code></td></tr>
 <tr><td><code>/delhome &lt;name&gt;</code></td><td>Delete a saved home. New players can save up to 2 homes; full members can save up to 20</td></tr>
 <tr><td rowspan="3">Back history</td><td><code>/back</code></td><td>Return to your previous teleport or death location</td></tr>
 <tr><td><code>/back [times]</code></td><td>Go back multiple history entries at once</td></tr>
@@ -35,9 +37,10 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 </thead>
 <tbody>
 <tr><td rowspan="2">Idle status</td><td><code>/afk</code></td><td>Toggle idle status</td></tr>
-<tr><td><code>/afk &lt;status&gt;</code></td><td>Go idle and show a custom status above your head, up to 12 characters</td></tr>
+<tr><td><code>/afk &lt;status&gt;</code></td><td>Go idle and show a custom status above your head and in the tab list, up to 12 characters</td></tr>
 <tr><td>Announcements</td><td><code>/announcements</code></td><td>Open the server announcements menu</td></tr>
 <tr><td>Tips</td><td><code>/tip</code></td><td>Show one server tip</td></tr>
+<tr><td>Main menu</td><td><code>/menu</code></td><td>Open the main menu</td></tr>
 </tbody>
 </table>
 
