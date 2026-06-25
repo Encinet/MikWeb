@@ -1773,7 +1773,7 @@ body {
 
 .home-project-bento-card--large {
   min-height: 23rem;
-  --bento-image: url('/mao.webp');
+  --bento-image: url('/Mao.webp');
   --bento-image-opacity: 0.72;
 }
 
