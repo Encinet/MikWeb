@@ -1,7 +1,6 @@
 export const SITE_URL = 'https://mcmik.top';
 export const SITE_NAME = 'Mik Casual';
-export const PCL2_HOMEPAGE_PATH = '/pcl2.xml';
-export const PCL2_HOMEPAGE_URL = `${SITE_URL}${PCL2_HOMEPAGE_PATH}`;
+export const PCL2_HOMEPAGE_ROUTE = '/pcl2';
 export const SITE_TITLE = `${SITE_NAME} - 创造休闲 Minecraft 服务器`;
 export const SITE_DESCRIPTION = 'Mik Casual 是高版本Minecraft Java版本公益创造休闲服务器';
 export const SITE_LONG_DESCRIPTION =
@@ -44,3 +43,11 @@ export const ORGANIZATION_SOCIAL_LINKS = [
   'https://github.com/Encinet',
   'https://space.bilibili.com/650182011',
 ] as const;
+
+export function getPcl2HomepagePath(locale: string): string {
+  return `/${locale}${PCL2_HOMEPAGE_ROUTE}`;
+}
+
+export function getPcl2HomepageUrl(locale: string): string {
+  return `${SITE_URL}${getPcl2HomepagePath(locale)}`;
+}

@@ -26,6 +26,11 @@
       "system": "System"
     }
   },
+  "pcl2Page": {
+    "title": "PCL2 Homepage",
+    "description": "1. Settings -> Personalization -> Custom homepage\n2. Click “Online update”\n3. Enter the address below in the download address field\n4. Return to the launcher home page and you're done!",
+    "addressLabel": "Homepage URL"
+  },
   "home": {
     "hero": {
       "badge": "MINECRAFT COMMUNITY",
@@ -398,6 +403,9 @@
     "source": {
       "licensedUnder": "Licensed under Apache 2.0. Source code:",
       "code": "Encinet/MikWeb"
+    },
+    "links": {
+      "pcl2Homepage": "PCL2 Homepage"
     },
     "legal": {
       "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",

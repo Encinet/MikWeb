@@ -26,6 +26,11 @@
       "system": "跟随系统"
     }
   },
+  "pcl2Page": {
+    "title": "PCL2 主页",
+    "description": "1. 设置 -> 个性化 -> 自定义主页\n2. 点击“联网更新”\n3. 在“下载地址”栏输入下方地址\n4. 返回启动页，完成！",
+    "addressLabel": "主页地址"
+  },
   "home": {
     "hero": {
       "badge": "MINECRAFT COMMUNITY",
@@ -398,6 +403,9 @@
     "source": {
       "licensedUnder": "基于 Apache 2.0 协议开源，源码：",
       "code": "Encinet/MikWeb"
+    },
+    "links": {
+      "pcl2Homepage": "PCL2 主页"
     },
     "legal": {
       "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",

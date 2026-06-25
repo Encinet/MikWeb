@@ -3,12 +3,9 @@ import type {
   PlayerOnlinePayload,
   PlayersHistorySummary,
 } from '@/modules/player/model/player-types';
-import {
-  PCL2_HOMEPAGE_URL,
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITE_URL,
-} from '@/site/config/site-config';
+import type { AppLocale } from '@/shared/i18n/routing';
+import { absoluteUrl } from '@/shared/url/request-url';
+import { getPcl2HomepagePath, SITE_NAME } from '@/site/config/site-config';
 import type { XamlAttributeList, XamlNode } from './xaml-builder';
 import { attr, renderXamlFragment, xaml } from './xaml-builder';
 
@@ -19,7 +16,9 @@ interface Pcl2HomepageData {
   announcements: AnnouncementItem[];
   buildingCount: number | null;
   historySummary: PlayersHistorySummary | null;
+  locale: AppLocale;
   onlinePlayers: PlayerOnlinePayload;
+  siteOrigin: string;
   serverAddress: string;
 }
 
@@ -27,6 +26,111 @@ interface StatItem {
   label: string;
   value: string;
 }
+
+const PCL2_COPY = {
+  'zh-CN': {
+    about: {
+      body: `${SITE_NAME} 是高版本 Minecraft Java 版公益创造休闲服务器。`,
+      title: '关于',
+      updatedAt: '更新时间',
+    },
+    announcements: {
+      empty: '暂无公告',
+      title: '公告',
+    },
+    description: 'Mik Casual 是高版本 Minecraft Java 版公益创造休闲服务器',
+    hint: '点击下方按钮即可一键启动游戏并加入服务器。',
+    links: {
+      buildingsInfo: '查看所有建筑作品详情',
+      buildingsTitle: '建筑展示',
+      officialInfo: '打开 Mik Casual 官网',
+      officialTitle: '官网',
+      title: '网页入口',
+      wikiInfo: '服务器帮助文档',
+      wikiTitle: 'Wiki',
+      intro: '以下入口将在浏览器中打开对应页面。',
+    },
+    players: {
+      empty: '暂无玩家在线',
+      joinedAt: '上线于',
+      noDetails: '已获取在线人数，但暂无详细玩家列表',
+      title: '在线玩家',
+    },
+    server: {
+      addressCopiedButton: '复制 IP',
+      joinButton: '启动游戏并加入服务器',
+      joinTooltip: (serverAddress: string) =>
+        `使用当前选中的 Minecraft 版本启动，并自动进入 ${serverAddress}`,
+      refreshButton: '刷新',
+      statusTitle: `${SITE_NAME} 服务器状态`,
+    },
+    stats: {
+      averageOnline: '平均在线',
+      buildings: '建筑作品',
+      empty: '暂无法获取统计数据',
+      peakOnline: '历史峰值',
+      playersUnit: '人',
+      title: '服务器数据',
+      totalPlayers: '独立玩家',
+    },
+    status: {
+      empty: '无人在线',
+      offline: '服务器离线',
+      online: (count: number) => `${count} 人在线`,
+    },
+  },
+  en: {
+    about: {
+      body: `${SITE_NAME} is a modern Minecraft Java creative casual server.`,
+      title: 'About',
+      updatedAt: 'Updated',
+    },
+    announcements: {
+      empty: 'No announcements yet',
+      title: 'Announcements',
+    },
+    description: 'Mik Casual is a modern Minecraft Java creative casual server',
+    hint: 'Use the button below to launch the game and join the server.',
+    links: {
+      buildingsInfo: 'View all building showcases',
+      buildingsTitle: 'Buildings',
+      officialInfo: 'Open the Mik Casual website',
+      officialTitle: 'Website',
+      title: 'Web links',
+      wikiInfo: 'Server help and documentation',
+      wikiTitle: 'Wiki',
+      intro: 'These links will open in your browser.',
+    },
+    players: {
+      empty: 'No players online',
+      joinedAt: 'Joined at',
+      noDetails: 'Online count is available, but the player list is empty',
+      title: 'Online players',
+    },
+    server: {
+      addressCopiedButton: 'Copy IP',
+      joinButton: 'Launch and join server',
+      joinTooltip: (serverAddress: string) =>
+        `Launch the currently selected Minecraft version and join ${serverAddress}`,
+      refreshButton: 'Refresh',
+      statusTitle: `${SITE_NAME} server status`,
+    },
+    stats: {
+      averageOnline: 'Average online',
+      buildings: 'Buildings',
+      empty: 'Server stats are unavailable',
+      peakOnline: 'Peak online',
+      playersUnit: 'players',
+      title: 'Server stats',
+      totalPlayers: 'Unique players',
+    },
+    status: {
+      empty: 'No players online',
+      offline: 'Server offline',
+      online: (count: number) => `${count} online`,
+    },
+  },
+} satisfies Record<AppLocale, Record<string, unknown>>;
 
 function formatPclTime(timestamp: string | null | undefined): string {
   if (!timestamp) {
@@ -180,25 +284,31 @@ function buildStatsGrid(items: StatItem[]): XamlNode {
   );
 }
 
+function formatPlayerCount(count: number, locale: AppLocale): string {
+  return locale === 'zh-CN' ? `${count} 人` : `${count} players`;
+}
+
 function getServerStatus(data: Pcl2HomepageData) {
   const onlineCount = data.onlinePlayers.online ?? -1;
+  const copy = PCL2_COPY[data.locale].status;
 
   if (onlineCount < 0) {
-    return { color: '#E05555', text: '服务器离线' };
+    return { color: '#E05555', text: copy.offline };
   }
 
   if (onlineCount === 0) {
-    return { color: '#D4941E', text: '无人在线' };
+    return { color: '#D4941E', text: copy.empty };
   }
 
-  return { color: '#2ECC40', text: `${onlineCount} 人在线` };
+  return { color: '#2ECC40', text: copy.online(onlineCount) };
 }
 
 function buildStatusCard(data: Pcl2HomepageData): XamlNode {
+  const copy = PCL2_COPY[data.locale];
   const status = getServerStatus(data);
 
   return card(
-    `${SITE_NAME} 服务器状态`,
+    copy.server.statusTitle,
     [
       stackPanel(
         [attr('Margin', '0,0,0,8'), attr('Orientation', 'Horizontal')],
@@ -227,20 +337,20 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
       ),
       xaml('local:MyHint', [
         attr('Margin', '0,0,0,12'),
-        attr('Text', '点击下方按钮即可一键启动游戏并加入服务器。'),
+        attr('Text', copy.hint),
         attr('Theme', 'Blue'),
       ]),
       stackPanel(
         [attr('HorizontalAlignment', 'Center')],
         [
-          button('启动游戏并加入服务器', [
+          button(copy.server.joinButton, [
             attr('ColorType', 'Highlight'),
             attr('EventData', `\\current|${data.serverAddress}`),
             attr('EventType', '启动游戏'),
             attr('Height', 42),
             attr('Margin', '0,0,0,0'),
             attr('Padding', '20,0,20,0'),
-            attr('ToolTip', `使用当前选中的 Minecraft 版本启动，并自动进入 ${data.serverAddress}`),
+            attr('ToolTip', copy.server.joinTooltip(data.serverAddress)),
             attr('Width', 260),
           ]),
         ],
@@ -252,14 +362,14 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
           attr('Orientation', 'Horizontal'),
         ],
         [
-          button('刷新', [
+          button(copy.server.refreshButton, [
             attr('EventType', '刷新主页'),
             attr('Height', 42),
             attr('Margin', '0,0,10,0'),
             attr('Padding', '13,0,13,0'),
             attr('Width', 125),
           ]),
-          button('复制 IP', [
+          button(copy.server.addressCopiedButton, [
             attr('EventData', data.serverAddress),
             attr('EventType', '复制文本'),
             attr('Height', 42),
@@ -269,7 +379,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
           ]),
         ],
       ),
-      textBlock(SITE_DESCRIPTION, [
+      textBlock(copy.description, [
         attr('FontSize', 12),
         attr('Foreground', '#888888'),
         attr('Margin', '0,14,0,0'),
@@ -281,23 +391,23 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
 }
 
 function buildPlayerCard(data: Pcl2HomepageData): XamlNode {
+  const copy = PCL2_COPY[data.locale].players;
   const players = data.onlinePlayers.players ?? [];
 
   if (players.length === 0) {
-    const text =
-      data.onlinePlayers.online > 0 ? '已获取在线人数，但暂无详细玩家列表' : '暂无玩家在线';
-    return card('在线玩家', [textBlock(text)], { isSwapped: false });
+    const text = data.onlinePlayers.online > 0 ? copy.noDetails : copy.empty;
+    return card(copy.title, [textBlock(text)], { isSwapped: false });
   }
 
   const visiblePlayers = players.slice(0, MAX_PCL2_PLAYERS);
 
   return card(
-    `在线玩家 (${players.length})`,
+    `${copy.title} (${players.length})`,
     visiblePlayers.map((player, index) =>
       separatedRow(
         [
           textBlock(player.name, [attr('FontWeight', 'Bold'), attr('TextWrapping', null)]),
-          textBlock(`上线于 ${formatPclTime(player.joined_at)}`, [
+          textBlock(`${copy.joinedAt} ${formatPclTime(player.joined_at)}`, [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
             attr('Margin', '0,2,0,0'),
@@ -313,15 +423,18 @@ function buildPlayerCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildAnnouncementCard(announcements: AnnouncementItem[]): XamlNode {
+function buildAnnouncementCard(data: Pcl2HomepageData): XamlNode {
+  const copy = PCL2_COPY[data.locale].announcements;
+  const { announcements } = data;
+
   if (announcements.length === 0) {
-    return card('公告', [textBlock('暂无公告')]);
+    return card(copy.title, [textBlock(copy.empty)]);
   }
 
   const visibleAnnouncements = announcements.slice(0, MAX_PCL2_ANNOUNCEMENTS);
 
   return card(
-    `公告 (${visibleAnnouncements.length})`,
+    `${copy.title} (${visibleAnnouncements.length})`,
     visibleAnnouncements.map((announcement, index) =>
       separatedRow(
         [
@@ -342,51 +455,73 @@ function buildAnnouncementCard(announcements: AnnouncementItem[]): XamlNode {
 }
 
 function buildSummaryCard(data: Pcl2HomepageData): XamlNode {
+  const copy = PCL2_COPY[data.locale].stats;
   const stats: StatItem[] = [];
 
   if (data.historySummary) {
-    stats.push({ label: '历史峰值', value: `${data.historySummary.peak_online} 人` });
-    stats.push({ label: '平均在线', value: `${data.historySummary.avg_online.toFixed(1)} 人` });
-    stats.push({ label: '独立玩家', value: `${data.historySummary.total_unique_players} 人` });
+    stats.push({
+      label: copy.peakOnline,
+      value: formatPlayerCount(data.historySummary.peak_online, data.locale),
+    });
+    stats.push({
+      label: copy.averageOnline,
+      value: formatPlayerCount(Number(data.historySummary.avg_online.toFixed(1)), data.locale),
+    });
+    stats.push({
+      label: copy.totalPlayers,
+      value: formatPlayerCount(data.historySummary.total_unique_players, data.locale),
+    });
   }
 
   if (data.buildingCount !== null) {
-    stats.push({ label: '建筑作品', value: `${data.buildingCount} 个` });
+    stats.push({
+      label: copy.buildings,
+      value: data.locale === 'zh-CN' ? `${data.buildingCount} 个` : String(data.buildingCount),
+    });
   }
 
   if (stats.length === 0) {
-    return card('服务器数据', [textBlock('暂无法获取统计数据')]);
+    return card(copy.title, [textBlock(copy.empty)]);
   }
 
-  return card('服务器数据', [buildStatsGrid(stats)], { isSwapped: false });
+  return card(copy.title, [buildStatsGrid(stats)], { isSwapped: false });
 }
 
-function buildLinksCard(): XamlNode {
+function buildLinksCard(locale: AppLocale, siteOrigin: string): XamlNode {
+  const copy = PCL2_COPY[locale].links;
+
   return card(
-    '网页入口',
+    copy.title,
     [
-      textBlock('以下入口将在浏览器中打开对应页面。', [attr('Margin', '0,0,0,8')]),
-      listItem('官网', '打开 Mik Casual 官网', SITE_URL),
-      listItem('建筑展示', '查看所有建筑作品详情', `${SITE_URL}/zh-CN/buildings`),
-      listItem('Wiki', '服务器帮助文档', `${SITE_URL}/zh-CN/wiki`),
+      textBlock(copy.intro, [attr('Margin', '0,0,0,8')]),
+      listItem(copy.officialTitle, copy.officialInfo, absoluteUrl(`/${locale}`, siteOrigin)),
+      listItem(
+        copy.buildingsTitle,
+        copy.buildingsInfo,
+        absoluteUrl(`/${locale}/buildings`, siteOrigin),
+      ),
+      listItem(copy.wikiTitle, copy.wikiInfo, absoluteUrl(`/${locale}/wiki`, siteOrigin)),
     ],
     { isSwapped: true },
   );
 }
 
-function buildAboutCard(): XamlNode {
+function buildAboutCard(locale: AppLocale, siteOrigin: string): XamlNode {
+  const copy = PCL2_COPY[locale].about;
+
   return card(
-    '关于',
+    copy.title,
     [
-      textBlock(`${SITE_NAME} 是高版本 Minecraft Java 版公益创造休闲服务器。`, [
-        attr('Margin', '0,0,0,6'),
-      ]),
-      textBlock(`更新时间: {time}  ·  PCL {pcl_version}  ·  ${PCL2_HOMEPAGE_URL}`, [
-        attr('FontSize', 11),
-        attr('Foreground', '#666666'),
-        attr('HorizontalAlignment', 'Center'),
-        attr('Margin', '0,10,0,0'),
-      ]),
+      textBlock(copy.body, [attr('Margin', '0,0,0,6')]),
+      textBlock(
+        `${copy.updatedAt}: {time}  ·  PCL {pcl_version}  ·  ${absoluteUrl(getPcl2HomepagePath(locale), siteOrigin)}`,
+        [
+          attr('FontSize', 11),
+          attr('Foreground', '#666666'),
+          attr('HorizontalAlignment', 'Center'),
+          attr('Margin', '0,10,0,0'),
+        ],
+      ),
     ],
     { isSwapped: true },
   );
@@ -396,9 +531,9 @@ export function buildPcl2HomepageXml(data: Pcl2HomepageData): string {
   return renderXamlFragment([
     buildStatusCard(data),
     buildPlayerCard(data),
-    buildAnnouncementCard(data.announcements),
+    buildAnnouncementCard(data),
     buildSummaryCard(data),
-    buildLinksCard(),
-    buildAboutCard(),
+    buildLinksCard(data.locale, data.siteOrigin),
+    buildAboutCard(data.locale, data.siteOrigin),
   ]);
 }

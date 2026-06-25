@@ -12,6 +12,8 @@ import {
   isPlayersHistoryPayload,
 } from '@/modules/player/model/player-types';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
+import { isRoutingLocale } from '@/shared/i18n/routing';
+import { getRequestOriginFromRequest } from '@/shared/url/request-url';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +22,10 @@ interface Pcl2HomepageApiData {
   buildingCount: number | null;
   historySummary: PlayersHistorySummary | null;
   onlinePlayers: PlayerOnlinePayload;
+}
+
+interface RouteContext {
+  params: Promise<{ locale: string }>;
 }
 
 const FALLBACK_ONLINE_PLAYERS: PlayerOnlinePayload = {
@@ -89,15 +95,25 @@ async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiDa
   };
 }
 
-export async function GET(request: Request) {
-  const data = await loadPcl2HomepageData(request);
-  const serverAddress = process.env.MINECRAFT_SERVER_ADDRESS || 'mcmik.top';
+export async function GET(request: Request, context: RouteContext) {
+  const { locale: rawLocale } = await context.params;
 
-  return new Response(buildPcl2HomepageXml({ ...data, serverAddress }), {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300',
-      'Content-Type': 'application/xml; charset=utf-8',
+  if (!isRoutingLocale(rawLocale)) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const serverAddress = process.env.MINECRAFT_SERVER_ADDRESS || 'mcmik.top';
+  const data = await loadPcl2HomepageData(request);
+  const siteOrigin = getRequestOriginFromRequest(request);
+
+  return new Response(
+    buildPcl2HomepageXml({ ...data, locale: rawLocale, serverAddress, siteOrigin }),
+    {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300',
+        'Content-Type': 'application/xml; charset=utf-8',
+      },
     },
-  });
+  );
 }

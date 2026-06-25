@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Building2, Clock, Copy, Server, Users } from 'lucide-react';
+import { ArrowRight, Building2, Clock, Server, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -13,6 +13,7 @@ import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-f
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
+import { CopyButton } from '@/shared/ui/action/copy-button';
 
 const SERVER_START_DATE = new Date('2025-07-15');
 
@@ -83,7 +84,7 @@ export default function HomeLiveOverview() {
           <div className="home-live-status-panel__address">
             <Server className="h-4 w-4" />
             <code>mcmik.top</code>
-            <Copy className="h-4 w-4" />
+            <CopyButton className="home-live-status-panel__copy" value="mcmik.top" />
           </div>
         </div>
 
