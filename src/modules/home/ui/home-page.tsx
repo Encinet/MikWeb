@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 
 import HomeLiveOverview from '@/modules/home/ui/home-live-overview';
 import { Link } from '@/shared/i18n/routing';
-import ScrollReveal from '@/shared/ui/motion/scroll-reveal';
 
 const APPLY_URL = 'https://apply.mcmik.top';
 const MAP_URL = '/map';
@@ -90,30 +89,22 @@ export default async function HomePage() {
       <div className="home-project-container home-project-flow">
         <section className="home-project-section home-project-showcase">
           <div className="home-project-bento-grid">
-            {showcaseItems.map((item, index) => {
+            {showcaseItems.map((item) => {
               const Icon = item.icon;
               const card = (
-                <ScrollReveal
-                  key={item.key}
-                  className="home-project-bento-reveal"
-                  direction="up"
-                  delay={0.045 * index}
-                  style={{ height: '100%' }}
-                >
-                  <span className={`home-project-bento-card ${item.className}`}>
-                    <span className="home-project-bento-card__shade" aria-hidden="true" />
-                    <span className="home-project-bento-card__content">
-                      <span className="home-project-bento-card__icon">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="home-project-bento-card__copy">
-                        <strong>{item.title}</strong>
-                        <span>{item.description}</span>
-                      </span>
+                <span className={`home-project-bento-card ${item.className}`}>
+                  <span className="home-project-bento-card__shade" aria-hidden="true" />
+                  <span className="home-project-bento-card__content">
+                    <span className="home-project-bento-card__icon">
+                      <Icon className="h-5 w-5" />
                     </span>
-                    <ArrowRight className="home-project-bento-card__arrow h-5 w-5" />
+                    <span className="home-project-bento-card__copy">
+                      <strong>{item.title}</strong>
+                      <span>{item.description}</span>
+                    </span>
                   </span>
-                </ScrollReveal>
+                  <ArrowRight className="home-project-bento-card__arrow h-5 w-5" />
+                </span>
               );
 
               if (item.external) {

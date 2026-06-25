@@ -1941,9 +1941,12 @@ body {
 }
 
 .home-project-page {
+  --home-project-page-bg: #101816;
+  --home-hero-scroll-buffer: clamp(7rem, 14vw, 12rem);
+  --home-hero-transition-depth: clamp(9rem, 18vw, 16rem);
   min-height: 100vh;
   overflow: hidden;
-  background: #101816;
+  background: var(--home-project-page-bg);
   color: #f3efe7;
 }
 
@@ -1955,24 +1958,44 @@ body {
 .home-project-hero {
   position: relative;
   display: grid;
-  min-height: 100svh;
+  min-height: calc(100svh + var(--home-hero-scroll-buffer));
   place-items: center;
   padding: clamp(7rem, 14vw, 10rem) 0 clamp(4rem, 10vw, 7rem);
   background:
     linear-gradient(
       180deg,
       rgba(6, 9, 8, 0.16) 0%,
-      rgba(6, 9, 8, 0.24) 42%,
-      rgba(11, 17, 16, 0.74) 100%
+      rgba(6, 9, 8, 0.22) 56%,
+      rgba(11, 17, 16, 0.38) 100%
     ),
     radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.24) 76%),
     url("/home-hero-library.webp") center / cover no-repeat;
+  isolation: isolate;
   text-align: center;
+}
+
+.home-project-hero::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  z-index: 1;
+  height: calc(var(--home-hero-transition-depth) + var(--home-hero-scroll-buffer) * 0.35);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(16, 24, 22, 0.3) 26%,
+    rgba(16, 24, 22, 0.78) 62%,
+    var(--home-project-page-bg) 100%
+  );
+  content: "";
 }
 
 .home-project-hero__backdrop {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background:
     linear-gradient(
       90deg,
@@ -1987,8 +2010,9 @@ body {
 
 .home-project-hero__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
+  transform: translateY(calc(var(--home-hero-scroll-buffer) * -0.42));
   flex-direction: column;
   align-items: center;
 }
@@ -2084,6 +2108,8 @@ body {
 }
 
 .home-project-flow {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: clamp(3rem, 7vw, 5.5rem);
@@ -2120,10 +2146,6 @@ body {
   display: block;
   height: 100%;
   min-height: 100%;
-}
-
-.home-project-bento-reveal {
-  height: 100%;
 }
 
 .home-project-bento-grid > a > * {
@@ -2514,8 +2536,18 @@ body {
 }
 
 [data-theme="light"] .home-project-page {
-  background: #ffffff;
+  --home-project-page-bg: #ffffff;
   color: #26362d;
+}
+
+[data-theme="light"] .home-project-hero::after {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(16, 24, 22, 0.36) 24%,
+    rgba(255, 255, 255, 0.78) 76%,
+    var(--home-project-page-bg) 100%
+  );
 }
 
 [data-theme="light"] .home-project-flow {
