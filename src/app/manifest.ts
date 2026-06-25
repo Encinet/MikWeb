@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/site/config/site-config';
+import { SITE_DESCRIPTION, SITE_LOGO_PATH, SITE_NAME, SITE_TITLE } from '@/site/config/site-config';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -13,7 +13,7 @@ export default function manifest(): MetadataRoute.Manifest {
     'theme_color': '#8b5cf6',
     icons: [
       {
-        src: '/mik-standard-rounded.svg',
+        src: SITE_LOGO_PATH,
         sizes: 'any',
         type: 'image/svg+xml',
       },

@@ -7,6 +7,7 @@ import { getLocale } from 'next-intl/server';
 import {
   ORGANIZATION_NAME,
   SITE_DESCRIPTION,
+  SITE_FAVICON_PATH,
   SITE_KEYWORDS,
   SITE_LOGO_PATH,
   SITE_LONG_DESCRIPTION,
@@ -27,11 +28,8 @@ export const metadata: Metadata = {
   creator: ORGANIZATION_NAME,
   publisher: 'Mik',
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-      { url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' },
-    ],
-    shortcut: '/favicon.ico',
+    icon: [{ url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' }],
+    shortcut: SITE_FAVICON_PATH,
     apple: [{ url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' }],
   },
   robots: {

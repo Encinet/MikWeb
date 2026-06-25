@@ -2,7 +2,13 @@ import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/shared/i18n/routing';
-import { ORGANIZATION_NAME, ORGANIZATION_URL, SOURCE_CODE_URL } from '@/site/config/site-config';
+import {
+  ORGANIZATION_LOGO_PATH,
+  ORGANIZATION_NAME,
+  ORGANIZATION_URL,
+  SITE_LOGO_PATH,
+  SOURCE_CODE_URL,
+} from '@/site/config/site-config';
 
 export default async function SiteFooter() {
   const t = await getTranslations();
@@ -21,7 +27,7 @@ export default async function SiteFooter() {
         <div className="site-footer__col site-footer__col--brand">
           <Link href="/" className="site-footer__brand">
             <Image
-              src="/mik-standard-rounded.svg"
+              src={SITE_LOGO_PATH}
               alt="Mik"
               width={36}
               height={36}
@@ -69,10 +75,10 @@ export default async function SiteFooter() {
                 href={ORGANIZATION_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="site-footer__encinet"
+                className="site-footer__organization"
               >
                 <Image
-                  src="/encinet.webp"
+                  src={ORGANIZATION_LOGO_PATH}
                   alt={ORGANIZATION_NAME}
                   width={18}
                   height={18}

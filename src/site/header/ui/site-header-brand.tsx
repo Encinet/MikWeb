@@ -1,12 +1,13 @@
 import Image from 'next/image';
 
 import { Link } from '@/shared/i18n/routing';
+import { SITE_LOGO_PATH } from '@/site/config/site-config';
 
 export function SiteHeaderBrand({ subtitle }: { subtitle: string }) {
   return (
     <Link href="/" className="project-navbar-brand" aria-label={subtitle}>
       <Image
-        src="/mik-standard-rounded.svg"
+        src={SITE_LOGO_PATH}
         alt="Mik Server Logo"
         width={36}
         height={36}
