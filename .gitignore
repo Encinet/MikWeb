@@ -45,5 +45,10 @@ next-env.d.ts
 todo/
 
 
+# Claude Code internals
+.claude/worktrees/
+.claude/scheduled_tasks.json
+.playwright-mcp/
+
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md

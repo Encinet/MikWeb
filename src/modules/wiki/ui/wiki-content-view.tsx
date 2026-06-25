@@ -1,7 +1,6 @@
 'use client';
 
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { BookOpen } from 'lucide-react';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -334,47 +333,30 @@ export default function WikiContent({
     <MotionConfig reducedMotion="user">
       <div className="page-shell">
         <div className="max-w-7xl mx-auto">
-          {/* ── Header ── */}
-          <motion.div
-            className="text-center mb-8 sm:mb-12"
+          <motion.section
+            className="content-page-hero"
             initial={false}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ ...spring.gentle, delay: 0.05 }}
           >
-            <div className="inline-flex items-center gap-3 mb-4">
-              <motion.div
-                className="p-3 rounded-xl backdrop-blur-sm shadow-lg"
-                style={{
-                  background:
-                    'linear-gradient(135deg, var(--theme-surface-blue-accent) 0%, rgba(255, 255, 255, 0) 100%)',
-                  border: '1px solid var(--theme-border-blue-accent)',
-                }}
-                initial={false}
-                animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                transition={{ ...spring.bouncy, delay: 0.1 }}
-              >
-                <BookOpen className="w-8 h-8" style={{ color: 'var(--theme-accent-blue)' }} />
-              </motion.div>
+            <div>
+              <p className="content-page-hero__eyebrow">WIKI</p>
               <motion.h1
-                className="text-4xl sm:text-5xl font-bold"
-                style={{ color: 'var(--theme-text-heading)' }}
                 initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ ...spring.snappy, delay: 0.15 }}
               >
                 {title}
               </motion.h1>
+              <motion.p
+                initial={false}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spring.gentle, delay: 0.22 }}
+              >
+                {description}
+              </motion.p>
             </div>
-            <motion.p
-              className="text-base sm:text-lg max-w-2xl mx-auto"
-              style={{ color: 'var(--theme-text-muted-soft)' }}
-              initial={false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...spring.gentle, delay: 0.22 }}
-            >
-              {description}
-            </motion.p>
-          </motion.div>
+          </motion.section>
 
           <motion.div
             className="mb-6 sm:mb-8"

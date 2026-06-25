@@ -29,10 +29,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-      { url: SITE_LOGO_PATH, sizes: '1000x1000', type: 'image/webp' },
+      { url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' },
     ],
     shortcut: '/favicon.ico',
-    apple: [{ url: SITE_LOGO_PATH, sizes: '1000x1000', type: 'image/webp' }],
+    apple: [{ url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' }],
   },
   robots: {
     index: true,
@@ -79,6 +79,14 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#101816" />
+        <meta name="color-scheme" content="dark light" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Mik Server" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href={SITE_LOGO_PATH} />
+      </head>
       <body className="app-body">
         {children}
         <Analytics />

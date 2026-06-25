@@ -8,6 +8,7 @@ import { routing } from '@/shared/i18n/routing';
 import SiteBackground from '@/site/background/ui/site-background';
 import SiteFooter from '@/site/footer/ui/site-footer';
 import SiteHeader from '@/site/header/ui/site-header';
+import { ThemeColor } from '@/site/providers/theme-color';
 import { ThemeProvider } from '@/site/providers/theme-provider';
 import { buildPageMetadata } from '@/site/seo/build-page-metadata';
 import StructuredData from '@/site/structured-data/ui/structured-data';
@@ -77,6 +78,7 @@ export default async function LocaleLayout({
       <NextIntlClientProvider messages={messages}>
         <PlayerStatusProvider>
           <BuildingsProvider>
+            <ThemeColor />
             <StructuredData />
             <SiteBackground />
             <SiteHeader />

@@ -29,6 +29,7 @@ export default function SiteHeader() {
     isLoading: isLoadingPlayers,
     networkError,
   } = usePlayerStatus();
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPlayerDropdownOpen, setIsPlayerDropdownOpen] = useState(false);
   const [isPlayerDropdownVisible, setIsPlayerDropdownVisible] = useState(false);
@@ -39,22 +40,32 @@ export default function SiteHeader() {
 
   const mounted = useHasMounted();
 
+  const nextThemeLabel =
+    theme === 'dark'
+      ? t('theme.light')
+      : theme === 'light'
+        ? t('theme.system')
+        : t('theme.dark');
+  const themeTooltip = mounted ? nextThemeLabel : '';
+  const localeTooltip = locale === 'zh-CN' ? 'English' : '中文 (简体)';
+
   const handleThemeToggle = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    if (theme === 'dark') {
+      setTheme('light');
+    } else if (theme === 'light') {
+      setTheme('system');
+    } else {
+      setTheme('dark');
+    }
   };
 
   const navItems = useMemo<SiteHeaderNavItem[]>(
     () => [
       { id: 'home', icon: Home, label: t('items.home'), path: '/' },
       { id: 'buildings', icon: Building2, label: t('items.buildings'), path: '/buildings' },
-      { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
       { id: 'wiki', icon: BookOpen, label: t('items.wiki'), path: '/wiki' },
-      {
-        id: 'map',
-        icon: MapIcon,
-        label: t('items.map'),
-        link: 'http://203.135.99.76:34567',
-      },
+      { id: 'map', icon: MapIcon, label: t('items.map'), path: '/map' },
+      { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
       {
         id: 'apply',
         icon: Play,
@@ -110,6 +121,15 @@ export default function SiteHeader() {
   };
 
   useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
     if (!isPlayerDropdownOpen) {
       if (playerDropdownAnimationFrameRef.current !== null) {
         cancelAnimationFrame(playerDropdownAnimationFrameRef.current);
@@ -147,7 +167,7 @@ export default function SiteHeader() {
 
   return (
     <div
-      className="safe-navbar-shell"
+      className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}`}
       style={{
         position: 'fixed',
         top: 0,
@@ -158,15 +178,8 @@ export default function SiteHeader() {
         justifyContent: 'center',
       }}
     >
-      <nav
-        className="ui-card-surface safe-navbar-card"
-        style={{
-          width: '100%',
-          maxWidth: 'min(95%, 1400px)',
-          borderRadius: 'clamp(12px, 2vw, 24px)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+      <nav className="project-navbar-card">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between gap-4">
             <SiteHeaderBrand subtitle={t('brand.subtitle')} />
 
@@ -185,6 +198,7 @@ export default function SiteHeader() {
               isMobileMenuOpen={isMobileMenuOpen}
               isOnline={isOnline}
               localeLabel={locale === 'zh-CN' ? 'EN' : '中文'}
+              localeTooltip={localeTooltip}
               mounted={mounted}
               networkError={networkError}
               onLocaleSwitch={switchLocale}
@@ -201,6 +215,7 @@ export default function SiteHeader() {
               statusOfflineLabel={t('status.offline')}
               statusOnlineLabel={t('status.online')}
               theme={theme}
+              themeTooltip={themeTooltip}
             />
           </div>
 
@@ -214,6 +229,7 @@ export default function SiteHeader() {
             theme={theme}
             themeDarkLabel={t('theme.dark')}
             themeLightLabel={t('theme.light')}
+            themeSystemLabel={t('theme.system')}
           />
         </div>
       </nav>

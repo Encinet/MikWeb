@@ -1,6 +1,6 @@
 'use client';
 
-import { Globe, Menu, Moon, Sun, Users, X } from 'lucide-react';
+import { Globe, Menu, Monitor, Moon, Sun, Users, X } from 'lucide-react';
 import type { CSSProperties, RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -12,6 +12,7 @@ interface SiteHeaderControlsProps {
   isMobileMenuOpen: boolean;
   isOnline: boolean;
   localeLabel: string;
+  localeTooltip: string;
   mounted: boolean;
   networkError: boolean;
   onLocaleSwitch: () => void;
@@ -28,6 +29,7 @@ interface SiteHeaderControlsProps {
   statusOfflineLabel: string;
   statusOnlineLabel: string;
   theme: string | undefined;
+  themeTooltip: string;
 }
 
 export function SiteHeaderControls({
@@ -35,6 +37,7 @@ export function SiteHeaderControls({
   isMobileMenuOpen,
   isOnline,
   localeLabel,
+  localeTooltip,
   mounted,
   networkError,
   onLocaleSwitch,
@@ -51,10 +54,11 @@ export function SiteHeaderControls({
   statusOfflineLabel,
   statusOnlineLabel,
   theme,
+  themeTooltip,
 }: SiteHeaderControlsProps) {
   return (
     <>
-      <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+      <div className="project-navbar-controls flex shrink-0 items-center gap-3 sm:gap-4">
         <button
           type="button"
           onClick={onMobileMenuToggle}
@@ -64,32 +68,38 @@ export function SiteHeaderControls({
           {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
 
-        <button
-          type="button"
-          onClick={onThemeToggle}
-          className="ui-nav-link hidden items-center gap-1.5 py-2 sm:inline-flex"
-        >
-          {mounted ? (
-            theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
+        <div className="project-navbar-control-cluster" aria-label="Display controls">
+          <button
+            type="button"
+            onClick={onThemeToggle}
+            className="project-theme-toggle ui-nav-link hidden items-center gap-1.5 py-2 sm:inline-flex"
+            title={themeTooltip}
+          >
+            {mounted ? (
+              theme === 'dark' ? (
+                <Moon className="h-4 w-4" />
+              ) : theme === 'light' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Monitor className="h-4 w-4" />
+              )
             ) : (
-              <Moon className="h-4 w-4" />
-            )
-          ) : (
-            <div className="h-4 w-4" />
-          )}
-        </button>
+              <div className="h-4 w-4" />
+            )}
+          </button>
 
-        <button
-          type="button"
-          onClick={onLocaleSwitch}
-          className="ui-nav-link inline-flex items-center gap-1.5 py-2"
-        >
-          <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">{localeLabel}</span>
-        </button>
+          <button
+            type="button"
+            onClick={onLocaleSwitch}
+            className="project-locale-toggle ui-nav-link inline-flex items-center gap-1.5 py-2"
+            title={localeTooltip}
+          >
+            <Globe className="h-4 w-4" />
+            <span className="hidden sm:inline">{localeLabel}</span>
+          </button>
+        </div>
 
-        <div ref={playerDropdownAnchorRef} className="relative">
+        <div ref={playerDropdownAnchorRef} className="project-player-control relative">
           <button
             type="button"
             className="ui-nav-link inline-flex items-center gap-1.5 cursor-pointer sm:gap-2"
@@ -112,7 +122,7 @@ export function SiteHeaderControls({
               }}
             />
             <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            {isLoadingPlayers ? (
+            {isLoadingPlayers || isOnline ? (
               <>
                 <span
                   style={{
@@ -122,26 +132,7 @@ export function SiteHeaderControls({
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
-                  -
-                </span>
-                <span
-                  className="hidden text-xs sm:inline sm:text-sm"
-                  style={{ color: 'var(--theme-text-muted)' }}
-                >
-                  {statusOnlineLabel}
-                </span>
-              </>
-            ) : isOnline ? (
-              <>
-                <span
-                  style={{
-                    color: 'var(--theme-text-player-count)',
-                    fontWeight: 600,
-                    fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {playerCount}
+                  {isLoadingPlayers ? '-' : playerCount}
                 </span>
                 <span
                   className="hidden text-xs sm:inline sm:text-sm"
@@ -200,8 +191,12 @@ function PlayerDropdownPortal({
         {
           position: 'fixed',
           top: playerDropdownRect.bottom + 8,
-          left: Math.max(16, playerDropdownRect.right - 240),
+          left: Math.min(
+            Math.max(16, playerDropdownRect.right - 240),
+            window.innerWidth - 256,
+          ),
           minWidth: '240px',
+          maxWidth: `min(320px, calc(100vw - 2rem - var(--viewport-right-inset)))`,
           zIndex: 100,
           opacity: 1,
           transform: 'translateY(0)',

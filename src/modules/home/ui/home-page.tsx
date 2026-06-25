@@ -1,170 +1,137 @@
-import { Award, MessageCircle, Play, Zap } from 'lucide-react';
+import { ArrowRight, BookOpen, Building2, MapIcon, Play, Shield } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
+
 import HomeLiveOverview from '@/modules/home/ui/home-live-overview';
+import { Link } from '@/shared/i18n/routing';
 import ScrollReveal from '@/shared/ui/motion/scroll-reveal';
+
+const APPLY_URL = 'https://mikapply.noctiro.moe';
+const MAP_URL = '/map';
 
 export default async function HomePage() {
   const t = await getTranslations();
 
+  const showcaseItems = [
+    {
+      href: '/buildings',
+      icon: Building2,
+      key: 'builds',
+      title: t('home.showcase.builds.title'),
+      description: t('home.showcase.builds.description'),
+      className: 'home-project-bento-card--large',
+    },
+    {
+      href: MAP_URL,
+      icon: MapIcon,
+      key: 'map',
+      title: t('home.showcase.map.title'),
+      description: t('home.showcase.map.description'),
+      className: 'home-project-bento-card--medium home-project-bento-card--image-map',
+    },
+    {
+      href: '/wiki',
+      icon: BookOpen,
+      key: 'wiki',
+      title: t('home.showcase.wiki.title'),
+      description: t('home.showcase.wiki.description'),
+      className: 'home-project-bento-card--medium home-project-bento-card--image-wiki',
+    },
+    {
+      href: APPLY_URL,
+      icon: Play,
+      key: 'apply',
+      title: t('home.showcase.apply.title'),
+      description: t('home.showcase.apply.description'),
+      external: true,
+      className: 'home-project-bento-card--small home-project-bento-card--tone-green',
+    },
+    {
+      href: '/bans',
+      icon: Shield,
+      key: 'records',
+      title: t('home.showcase.records.title'),
+      description: t('home.showcase.records.description'),
+      className: 'home-project-bento-card--small home-project-bento-card--tone-brown',
+    },
+  ];
+
   return (
-    <div className="page-shell">
-      <div className="max-w-7xl mx-auto">
-        {/* ── Hero Section (SSR — 立即渲染，直接改善 LCP) ── */}
-        <div className="text-center mb-12 sm:mb-20 animate-fadeIn">
-          <div
-            className="ui-floating-surface"
-            style={{
-              display: 'inline-block',
-              marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-              padding: '8px 24px',
-              borderRadius: '12px',
-            }}
-          >
-            <div className="flex items-center gap-2" style={{ color: '#FFAA00' }}>
-              <Zap className="w-4 h-4" />
-              <span className="text-xs sm:text-sm" style={{ fontWeight: 400 }}>
-                {t('home.hero.badge')}
-              </span>
-            </div>
-          </div>
+    <main className="home-project-page">
+      <section className="home-project-hero">
+        <div className="home-project-hero__backdrop" aria-hidden="true" />
+        <div className="home-project-container home-project-hero__content">
+          <p className="home-project-kicker">{t('home.hero.badge')}</p>
+          <h1>{t('home.hero.title')}</h1>
+          <p className="home-project-hero__description">{t('home.hero.description')}</p>
 
-          <h2
-            style={{
-              fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
-              fontWeight: 600,
-              letterSpacing: '-0.02em',
-              marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-              color: 'var(--theme-text-primary)',
-              padding: '0 1rem',
-            }}
-          >
-            {t('home.hero.title')}
-          </h2>
-
-          <p
-            style={{
-              fontSize: 'clamp(0.9375rem, 2vw, 1.25rem)',
-              lineHeight: 1.75,
-              color: 'var(--theme-text-muted)',
-              maxWidth: '42rem',
-              margin: '0 auto clamp(2rem, 5vw, 3rem)',
-              padding: '0 1rem',
-            }}
-          >
-            {t('home.hero.description')}
-          </p>
-
-          <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 px-4">
-            <a
-              href="https://mikapply.noctiro.moe"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hero-join-btn"
-            >
-              <Play className="w-5 h-5" />
+          <div className="home-project-hero__actions">
+            <a href={APPLY_URL} target="_blank" rel="noopener noreferrer" className="home-project-button">
+              <Play className="h-5 w-5" />
               <span>{t('home.hero.joinButton')}</span>
             </a>
+            <Link href="/wiki" className="home-project-button home-project-button--secondary">
+              <BookOpen className="h-5 w-5" />
+              <span>{t('home.hero.wikiButton')}</span>
+            </Link>
+          </div>
 
-            <div
-              className="ui-floating-surface"
-              style={{
-                padding: '8px 24px',
-                borderRadius: '12px',
-                color: 'var(--theme-text-muted)',
-                fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
-              }}
-            >
-              {t('home.hero.notice')}
-            </div>
+          <div className="home-project-hero__server">
+            <span>{t('home.hero.notice')}</span>
+            <strong>{t('home.hero.serverAddress')}</strong>
           </div>
         </div>
+      </section>
 
-        {/* ── Dynamic Client Section: Stats + Announcements ── */}
-        <HomeLiveOverview />
-
-        {/* ── Features (SSR — 静态文字，无需 JS) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-          <ScrollReveal direction="left" delay={0.1}>
-            <div
-              className="ui-card-surface ui-card-interactive"
-              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)' }}
-            >
-              <div className="flex items-start gap-4 sm:gap-6">
-                <div
-                  className="ui-card-icon-surface"
-                  style={{
-                    padding: '12px',
-                  }}
+      <div className="home-project-container home-project-flow">
+        <section className="home-project-section home-project-showcase">
+          <div className="home-project-bento-grid">
+            {showcaseItems.map((item, index) => {
+              const Icon = item.icon;
+              const card = (
+                <ScrollReveal
+                  key={item.key}
+                  className="home-project-bento-reveal"
+                  direction="up"
+                  delay={0.045 * index}
+                  style={{ height: '100%' }}
                 >
-                  <Award className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#FFAA00' }} />
-                </div>
-                <div className="flex-1">
-                  <h4
-                    style={{
-                      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                      fontWeight: 600,
-                      letterSpacing: '-0.02em',
-                      color: 'var(--theme-text-heading)',
-                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
-                    }}
-                  >
-                    {t('home.features.creativeFreedom.title')}
-                  </h4>
-                  <p
-                    style={{
-                      color: 'var(--theme-text-muted)',
-                      lineHeight: 1.75,
-                      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
-                    }}
-                  >
-                    {t('home.features.creativeFreedom.description')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
+                  <span className={`home-project-bento-card ${item.className}`}>
+                    <span className="home-project-bento-card__shade" aria-hidden="true" />
+                    <span className="home-project-bento-card__content">
+                      <span className="home-project-bento-card__icon">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="home-project-bento-card__copy">
+                        <strong>{item.title}</strong>
+                        <span>{item.description}</span>
+                      </span>
+                    </span>
+                    <ArrowRight className="home-project-bento-card__arrow h-5 w-5" />
+                  </span>
+                </ScrollReveal>
+              );
 
-          <ScrollReveal direction="right" delay={0.1}>
-            <div
-              className="ui-card-surface ui-card-interactive"
-              style={{ padding: 'clamp(1.5rem, 4vw, 2rem)' }}
-            >
-              <div className="flex items-start gap-4 sm:gap-6">
-                <div
-                  className="ui-card-icon-surface"
-                  style={{
-                    padding: '12px',
-                  }}
-                >
-                  <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: '#55FF55' }} />
-                </div>
-                <div className="flex-1">
-                  <h4
-                    style={{
-                      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                      fontWeight: 600,
-                      letterSpacing: '-0.02em',
-                      color: 'var(--theme-text-heading)',
-                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
-                    }}
-                  >
-                    {t('home.features.curatedCommunity.title')}
-                  </h4>
-                  <p
-                    style={{
-                      color: 'var(--theme-text-muted)',
-                      lineHeight: 1.75,
-                      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
-                    }}
-                  >
-                    {t('home.features.curatedCommunity.description')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
+              if (item.external) {
+                return (
+                  <a key={item.key} href={item.href} target="_blank" rel="noopener noreferrer">
+                    {card}
+                  </a>
+                );
+              }
+
+              return (
+                <Link key={item.key} href={item.href}>
+                  {card}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="home-project-section home-project-live">
+          <HomeLiveOverview />
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

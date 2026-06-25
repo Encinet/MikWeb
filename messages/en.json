@@ -13,7 +13,7 @@
       "map": "Server Map",
       "bans": "Ban List",
       "wiki": "Wiki",
-      "join": "Join Us"
+      "join": "Apply to Join"
     },
     "status": {
       "online": "Online",
@@ -22,16 +22,119 @@
     },
     "theme": {
       "light": "Light Mode",
-      "dark": "Dark Mode"
+      "dark": "Dark Mode",
+      "system": "System"
     }
   },
   "home": {
     "hero": {
-      "badge": "Creative Mode • Mods Allowed • Application Required",
-      "title": "Welcome to Mik Server",
-      "description": "A free, non-profit creative server where anything goes — mods, hacks, you name it — as long as you don't grief others' builds. Unleash your creativity with powerful tools like Axiom and WorldEdit, and explore the endless possibilities of building alongside like-minded players.",
+      "badge": "MINECRAFT COMMUNITY",
+      "title": "Mik Causual",
+      "description": "A Minecraft non-profit, casual creation server where you can leave your masterpieces.",
       "joinButton": "Apply to Join Server",
-      "notice": "This server requires application and is only open to approved players"
+      "wikiButton": "View Wiki",
+      "notice": "Application-only server",
+      "serverAddress": "mik.noctiro.moe"
+    },
+    "showcase": {
+      "eyebrow": "Server Highlights",
+      "title": "Show the server before explaining it.",
+      "description": "After the hero, the page leads with the world, builds, map, and joining path through image-led Minecraft cards instead of long copy blocks.",
+      "builds": {
+        "title": "Long-term builds and player work",
+        "description": "From central areas to personal projects, each build can become part of the server archive."
+      },
+      "map": {
+        "title": "Live map",
+        "description": "Open the online map to view the world, coordinates, and active areas."
+      },
+      "wiki": {
+        "title": "Wiki and rules",
+        "description": "Browse server commands, rules, help, and all kinds of useful information here."
+      },
+      "apply": {
+        "title": "Application-only access",
+        "description": "Build a high-quality player environment."
+      },
+      "records": {
+        "title": "Public records",
+        "description": "Moderation and ban records are publicly available."
+      },
+      "community": {
+        "title": "Casual creative community",
+        "description": "Less about short-term hype, more about long-term play, collaboration, and lasting work."
+      }
+    },
+    "about": {
+      "eyebrow": "Who We Are",
+      "title": "A Minecraft community built around building and long-term play.",
+      "description": "Mik cares about a stable world, clear rules, player collaboration, and every project worth preserving in the server archive.",
+      "detail": "It is not a one-off event or a pure utility server; it is a shared world that keeps growing over time."
+    },
+    "explore": {
+      "eyebrow": "Explore",
+      "title": "Start understanding the server here.",
+      "description": "Buildings, documentation, map access, and public records are placed clearly so you can learn the community before diving into details.",
+      "buildings": {
+        "title": "Building Gallery",
+        "description": "Browse player builds and long-term server projects."
+      },
+      "wiki": {
+        "title": "Wiki Docs",
+        "description": "Read rules, tutorials, joining steps, and frequently asked questions."
+      },
+      "map": {
+        "title": "Server Map",
+        "description": "Open the live map to view the world and player locations."
+      },
+      "bans": {
+        "title": "Ban Records",
+        "description": "View public moderation and ban records."
+      }
+    },
+    "builds": {
+      "eyebrow": "Featured Builds",
+      "title": "Let player work become the homepage lead.",
+      "description": "The v0 establishes a gallery entry point; real screenshots and selected projects can be added next.",
+      "panelTitle": "Server building archive",
+      "panelDescription": "Browse submitted buildings, authors, tags, and project notes. Once real screenshots are ready, this can become a large visual gallery.",
+      "action": "View buildings"
+    },
+    "join": {
+      "eyebrow": "How to Join",
+      "title": "Enter the community in three steps.",
+      "action": "Start application",
+      "steps": {
+        "rules": {
+          "title": "Read the rules",
+          "description": "Understand community boundaries, build protection, and collaboration expectations."
+        },
+        "client": {
+          "title": "Prepare your client",
+          "description": "Confirm your version, mods, and tools match the server guide."
+        },
+        "apply": {
+          "title": "Submit application",
+          "description": "Once approved, you can enter the server and start building."
+        }
+      }
+    },
+    "live": {
+      "eyebrow": "Live Updates",
+      "title": "Announcements, status, and player history.",
+      "description": "These details remain available, but now support the project story instead of leading the page.",
+      "statusTitle": "Mik current status",
+      "playersOnline": "players online",
+      "metricsLabel": "Server metrics",
+      "openMap": "Open map",
+      "viewAnnouncements": "View announcements",
+      "announcementEyebrow": "Server notices",
+      "status": {
+        "loading": "Fetching status",
+        "online": "Server online",
+        "offline": "Server offline",
+        "networkError": "Status unavailable"
+      }
     },
     "stats": {
       "activePlayers": "Online Players",
@@ -248,6 +351,22 @@
       }
     }
   },
+  "map": {
+    "meta": {
+      "title": "Server Map",
+      "description": "View the Mik server live map, world coordinates, and active areas inside the site"
+    },
+    "hero": {
+      "eyebrow": "LIVE MAP",
+      "title": "Server Map",
+      "description": "View the world map, coordinates, and active areas directly inside the site."
+    },
+    "actions": {
+      "openExternal": "Open map in new window"
+    },
+    "frameLabel": "Mik server live map",
+    "frameTitle": "Mik Live Map"
+  },
   "bans": {
     "meta": {
       "title": "Ban List",
@@ -274,6 +393,8 @@
     }
   },
   "footer": {
+    "navigation": "Site Navigation",
+    "siteInfo": "Site Info",
     "source": {
       "licensedUnder": "Licensed under Apache 2.0. Source code:",
       "code": "Encinet/MikWeb"

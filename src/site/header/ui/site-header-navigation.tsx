@@ -25,7 +25,7 @@ export function DesktopSiteHeaderNavigation({
   underlineOrigin,
 }: DesktopSiteHeaderNavigationProps) {
   return (
-    <div className="relative hidden items-center gap-4 whitespace-nowrap xl:flex xl:gap-6">
+    <div className="project-navbar-links relative hidden items-center gap-1 whitespace-nowrap xl:flex">
       {items.map((item) => {
         const isActive = activePathname === item.path;
 
@@ -41,9 +41,7 @@ export function DesktopSiteHeaderNavigation({
                   ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-3 whitespace-nowrap px-4 py-2'
                   : 'ui-nav-link inline-flex items-center gap-2 whitespace-nowrap py-2'
               }
-              style={{
-                position: 'relative',
-              }}
+              style={{ position: 'relative' }}
             >
               <item.icon className="h-4 w-4" />
               <span className="whitespace-nowrap">{item.label}</span>
@@ -56,9 +54,7 @@ export function DesktopSiteHeaderNavigation({
             key={item.id}
             href={item.path as string}
             className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
-            style={{
-              position: 'relative',
-            }}
+            style={{ position: 'relative' }}
           >
             <item.icon className="relative z-10 h-4 w-4" />
             <span className="relative z-10 whitespace-nowrap">{item.label}</span>
@@ -70,19 +66,10 @@ export function DesktopSiteHeaderNavigation({
                   scaleX: underlineInitialScale,
                   opacity: underlineDistance === 0 ? 0.75 : 0.92,
                 }}
-                animate={{
-                  scaleX: 1,
-                  opacity: 1,
-                }}
+                animate={{ scaleX: 1, opacity: 1 }}
                 transition={{
-                  scaleX: {
-                    duration: underlineDuration,
-                    ease: [0.18, 1, 0.3, 1],
-                  },
-                  opacity: {
-                    duration: Math.min(0.2, underlineDuration),
-                    ease: 'easeOut',
-                  },
+                  scaleX: { duration: underlineDuration, ease: [0.18, 1, 0.3, 1] },
+                  opacity: { duration: Math.min(0.2, underlineDuration), ease: 'easeOut' },
                 }}
                 style={{
                   backgroundColor: '#FFAA00',
@@ -108,6 +95,7 @@ interface MobileSiteHeaderMenuProps {
   theme: string | undefined;
   themeDarkLabel: string;
   themeLightLabel: string;
+  themeSystemLabel: string;
 }
 
 export function MobileSiteHeaderMenu({
@@ -120,6 +108,7 @@ export function MobileSiteHeaderMenu({
   theme,
   themeDarkLabel,
   themeLightLabel,
+  themeSystemLabel,
 }: MobileSiteHeaderMenuProps) {
   return (
     <AnimatePresence>
@@ -171,7 +160,13 @@ export function MobileSiteHeaderMenu({
                 className="ui-nav-chip flex items-center gap-3 px-4 py-3 sm:hidden"
               >
                 <span className="text-sm">
-                  {mounted && theme === 'dark' ? themeLightLabel : themeDarkLabel}
+                  {mounted
+                    ? theme === 'dark'
+                      ? themeLightLabel
+                      : theme === 'light'
+                        ? themeSystemLabel
+                        : themeDarkLabel
+                    : themeDarkLabel}
                 </span>
               </button>
             </div>

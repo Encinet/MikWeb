@@ -1,18 +1,15 @@
 'use client';
 
-import { Building2, Clock, Users } from 'lucide-react';
+import { ArrowRight, Bell, Building2, Clock, Copy, MapIcon, Server, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAnnouncementsFeed } from '@/modules/announcement/model/use-announcements-feed';
 import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-feed-dialog';
-import { AnnouncementFeedSection } from '@/modules/announcement/ui/announcement-feed-section';
 import { useBuildings } from '@/modules/building/model/use-buildings';
-import type { HomeOverviewStat } from '@/modules/home/ui/overview-stats-grid';
-import { OverviewStatsGrid } from '@/modules/home/ui/overview-stats-grid';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
-import PlayerHistoryPanel from '@/modules/player-history/ui/player-history-panel';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
+import { Link } from '@/shared/i18n/routing';
 
 const SERVER_START_DATE = new Date('2025-07-15');
 
@@ -22,6 +19,7 @@ export default function HomeLiveOverview() {
   const {
     playerCount,
     isLoading: isLoadingPlayers,
+    isOnline,
     networkError: hasPlayerNetworkError,
   } = usePlayerStatus();
   const { buildingCount, fetchBuildings, lastUpdatedAt } = useBuildings();
@@ -53,43 +51,104 @@ export default function HomeLiveOverview() {
   useEffect(() => {
     fetchBuildings();
   }, [fetchBuildings]);
-  const stats: HomeOverviewStat[] = [
-    {
-      id: 'active-players',
-      icon: Users,
-      label: t('home.stats.activePlayers'),
-      value: isLoadingPlayers || hasPlayerNetworkError ? '-' : `${playerCount}`,
-      iconColor: 'var(--theme-accent-green-strong)',
-    },
-    {
-      id: 'total-buildings',
-      icon: Building2,
-      label: t('home.stats.totalBuildings'),
-      value: lastUpdatedAt === null ? '-' : `${buildingCount}`,
-      iconColor: '#FFAA00',
-    },
-    {
-      id: 'uptime-days',
-      icon: Clock,
-      label: t('home.stats.uptime'),
-      value: mounted && uptime > 0 ? `${uptime}` : '-',
-      suffix: t('home.stats.days'),
-      iconColor: '#55AAFF',
-    },
-  ];
+  const statusLabel = isLoadingPlayers
+    ? t('home.live.status.loading')
+    : hasPlayerNetworkError
+      ? t('home.live.status.networkError')
+      : isOnline
+        ? t('home.live.status.online')
+        : t('home.live.status.offline');
+  const onlinePlayersValue = isLoadingPlayers || hasPlayerNetworkError ? '-' : `${playerCount}`;
+  const uptimeValue = mounted && uptime > 0 ? `${uptime}` : '-';
+  const announcementPreview = announcements.slice(0, 2);
 
   return (
     <>
-      <OverviewStatsGrid stats={stats} />
+      <section className="home-live-status-panel" aria-label={t('home.live.statusTitle')}>
+        <div className="home-live-status-panel__main">
+          <div className="home-live-status-panel__label">
+            <span
+              className={`home-live-status-panel__dot ${isOnline && !hasPlayerNetworkError ? 'is-online' : ''}`}
+            />
+            <span>{statusLabel}</span>
+          </div>
+          <div className="home-live-status-panel__headline">
+            <strong>{onlinePlayersValue}</strong>
+            <span>{t('home.live.playersOnline')}</span>
+          </div>
+          <div className="home-live-status-panel__address">
+            <Server className="h-4 w-4" />
+            <code>mik.noctiro.moe</code>
+            <Copy className="h-4 w-4" />
+          </div>
+        </div>
 
-      <PlayerHistoryPanel />
+        <div className="home-live-status-panel__metrics" aria-label={t('home.live.metricsLabel')}>
+          <div>
+            <Users className="h-4 w-4" />
+            <span>{t('home.stats.activePlayers')}</span>
+            <strong>{onlinePlayersValue}</strong>
+          </div>
+          <div>
+            <Building2 className="h-4 w-4" />
+            <span>{t('home.stats.totalBuildings')}</span>
+            <strong>{lastUpdatedAt === null ? '-' : buildingCount}</strong>
+          </div>
+          <div>
+            <Clock className="h-4 w-4" />
+            <span>{t('home.stats.uptime')}</span>
+            <strong>
+              {uptimeValue}
+              <small>{t('home.stats.days')}</small>
+            </strong>
+          </div>
+        </div>
 
-      <AnnouncementFeedSection
-        announcements={announcements}
-        errorMessage={announcementsErrorMessage}
-        isLoading={isLoadingAnnouncements}
-        onOpen={() => setIsAnnouncementsModalOpen(true)}
-      />
+        <div className="home-live-status-panel__actions">
+          <Link href="/map">
+            <MapIcon className="h-4 w-4" />
+            <span>{t('home.live.openMap')}</span>
+          </Link>
+          <button type="button" onClick={() => setIsAnnouncementsModalOpen(true)}>
+            <Bell className="h-4 w-4" />
+            <span>{t('home.live.viewAnnouncements')}</span>
+          </button>
+        </div>
+      </section>
+
+      <section className="home-live-announcements">
+        <div className="home-live-announcements__head">
+          <div>
+            <span>{t('home.live.announcementEyebrow')}</span>
+            <strong>{t('home.announcements.section.title')}</strong>
+          </div>
+          <button type="button" onClick={() => setIsAnnouncementsModalOpen(true)}>
+            {t('home.announcements.actions.viewAll')}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="home-live-announcements__list">
+          {isLoadingAnnouncements ? (
+            <p>{t('home.announcements.states.loading')}</p>
+          ) : announcementsErrorMessage ? (
+            <p>{announcementsErrorMessage}</p>
+          ) : announcementPreview.length > 0 ? (
+            announcementPreview.map((announcement) => (
+              <button
+                key={`${announcement.timestamp}-${announcement.content}`}
+                type="button"
+                onClick={() => setIsAnnouncementsModalOpen(true)}
+              >
+                <time>{announcement.timestamp}</time>
+                <span>{announcement.content}</span>
+              </button>
+            ))
+          ) : (
+            <p>{t('home.announcements.states.empty')}</p>
+          )}
+        </div>
+      </section>
 
       <AnnouncementFeedDialog
         announcements={announcements}

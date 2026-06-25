@@ -94,10 +94,10 @@ export function AnnouncementFeedDialog({
                   style={{
                     padding: '10px',
                     borderRadius: '14px',
-                    boxShadow: '0 4px 12px rgba(255, 170, 0, 0.15)',
+                    boxShadow: '0 4px 12px rgba(121, 184, 111, 0.16)',
                   }}
                 >
-                  <Bell className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#FFAA00' }} />
+                  <Bell className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#79B86F' }} />
                 </div>
                 <h3
                   style={{

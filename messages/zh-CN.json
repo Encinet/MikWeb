@@ -22,16 +22,119 @@
     },
     "theme": {
       "light": "浅色模式",
-      "dark": "深色模式"
+      "dark": "深色模式",
+      "system": "跟随系统"
     }
   },
   "home": {
     "hero": {
-      "badge": "创造模式 • 允许 Mod • 申请制",
-      "title": "欢迎来到 Mik 米客服务器",
-      "description": "本服务器为公益创造休闲向服务器，允许任意 Mod（包含外挂），但前提是不破坏建筑与他人创作。在这里，你可以尽情发挥创造力，使用 Axiom、创世神等强大工具，与志同道合的伙伴一起探索建筑的无限可能。",
+      "badge": "MINECRAFT COMMUNITY",
+      "title": "Mik Causual",
+      "description": "一个 Minecraft 公益创造休闲向服务器，在这里留下属于你的杰作。",
       "joinButton": "申请加入服务器",
-      "notice": "本服务器为申请制，仅向审核通过的玩家开放"
+      "wikiButton": "查看 Wiki",
+      "notice": "申请制服务器",
+      "serverAddress": "mik.noctiro.moe"
+    },
+    "showcase": {
+      "eyebrow": "服务器特色",
+      "title": "把服务器的内容直接展示出来。",
+      "description": "开屏之后先看到世界、建筑、地图和加入入口，用更像 Minecraft 官网的图片卡片代替大段说明。",
+      "builds": {
+        "title": "高质量玩家作品",
+        "description": "从主城到个人工程，每个作品都能成为服务器存档的一部分。"
+      },
+      "map": {
+        "title": "实时地图",
+        "description": "打开在线地图，查看世界、坐标和正在活动的区域。"
+      },
+      "wiki": {
+        "title": "Wiki 与规则",
+        "description": "查看服务器命令、规则、帮助，各种各样的信息可以尝试在这里查找。"
+      },
+      "apply": {
+        "title": "申请制加入",
+        "description": "打造一个优质的玩家环境。"
+      },
+      "records": {
+        "title": "公开记录",
+        "description": "处罚与封禁记录公开可查。"
+      },
+      "community": {
+        "title": "休闲创造社区",
+        "description": "不追求短期热闹，更重视长期游玩、协作和作品沉淀。"
+      }
+    },
+    "about": {
+      "eyebrow": "我们是谁",
+      "title": "一个围绕建筑与长期游玩的 Minecraft 社区。",
+      "description": "Mik 重视稳定的世界、清晰的规则、玩家之间的协作，以及每一个值得被留下来的建筑项目。",
+      "detail": "这里不是一次性活动，也不是单纯的功能服务器；它更像一个持续生长的共同存档。"
+    },
+    "explore": {
+      "eyebrow": "探索入口",
+      "title": "从这里开始了解服务器。",
+      "description": "把建筑、文档、地图和公开记录放在清晰的位置，先了解社区，再进入细节。",
+      "buildings": {
+        "title": "建筑作品",
+        "description": "查看服务器中的玩家建筑与长期工程。"
+      },
+      "wiki": {
+        "title": "Wiki 文档",
+        "description": "阅读规则、教程、加入方式和常见问题。"
+      },
+      "map": {
+        "title": "服务器地图",
+        "description": "打开在线地图，查看世界与玩家位置。"
+      },
+      "bans": {
+        "title": "封禁记录",
+        "description": "查看公开的处罚与封禁记录。"
+      }
+    },
+    "builds": {
+      "eyebrow": "精选建筑",
+      "title": "让作品成为首页的主角。",
+      "description": "v0 先建立 Gallery 入口；后续可以接入真实建筑截图与精选项目。",
+      "panelTitle": "服务器建筑收录",
+      "panelDescription": "浏览玩家提交的建筑、作者信息、标签与项目说明。真实截图准备好后，这里可以升级为大图 Gallery。",
+      "action": "查看建筑作品"
+    },
+    "join": {
+      "eyebrow": "如何加入",
+      "title": "三步进入社区。",
+      "action": "开始申请",
+      "steps": {
+        "rules": {
+          "title": "阅读规则",
+          "description": "先了解社区边界、建筑保护与协作约定。"
+        },
+        "client": {
+          "title": "准备客户端",
+          "description": "确认版本、Mod 与工具配置符合服务器说明。"
+        },
+        "apply": {
+          "title": "提交申请",
+          "description": "通过申请后即可进入服务器开始建造。"
+        }
+      }
+    },
+    "live": {
+      "eyebrow": "最新动态",
+      "title": "公告、状态与玩家历史。",
+      "description": "这些信息仍然保留，但放在项目介绍之后，作为持续运营状态的补充。",
+      "statusTitle": "Mik 当前状态",
+      "playersOnline": "名玩家在线",
+      "metricsLabel": "服务器指标",
+      "openMap": "查看地图",
+      "viewAnnouncements": "查看公告",
+      "announcementEyebrow": "服务器公告",
+      "status": {
+        "loading": "正在获取状态",
+        "online": "服务器在线",
+        "offline": "服务器离线",
+        "networkError": "状态获取失败"
+      }
     },
     "stats": {
       "activePlayers": "在线玩家",
@@ -248,6 +351,22 @@
       }
     }
   },
+  "map": {
+    "meta": {
+      "title": "服务器地图",
+      "description": "在站内查看 Mik 服务器实时地图、世界坐标和玩家活动区域"
+    },
+    "hero": {
+      "eyebrow": "LIVE MAP",
+      "title": "服务器地图",
+      "description": "直接在网站内查看世界地图、坐标和正在活动的区域。"
+    },
+    "actions": {
+      "openExternal": "新窗口打开地图"
+    },
+    "frameLabel": "Mik 服务器实时地图",
+    "frameTitle": "Mik Live Map"
+  },
   "bans": {
     "meta": {
       "title": "封禁列表",
@@ -274,6 +393,8 @@
     }
   },
   "footer": {
+    "navigation": "站内导航",
+    "siteInfo": "本站信息",
     "source": {
       "licensedUnder": "基于 Apache 2.0 协议开源，源码：",
       "code": "Encinet/MikWeb"

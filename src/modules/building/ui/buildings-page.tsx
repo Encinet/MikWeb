@@ -204,25 +204,13 @@ export default function BuildingsPage() {
   return (
     <div className="page-shell page-shell-stable">
       <div className="page-shell-content max-w-7xl mx-auto">
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-linear-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-400/30 shadow-lg">
-              <Building2 className="w-8 h-8" style={{ color: 'var(--theme-accent-purple)' }} />
-            </div>
-            <h1
-              className="text-4xl sm:text-5xl font-bold"
-              style={{ color: 'var(--theme-text-heading)' }}
-            >
-              {t('hero.title')}
-            </h1>
+        <section className="content-page-hero">
+          <div>
+            <p className="content-page-hero__eyebrow">BUILDINGS</p>
+            <h1>{t('hero.title')}</h1>
+            <p>{t('hero.description')}</p>
           </div>
-          <p
-            className="text-base sm:text-lg max-w-2xl mx-auto"
-            style={{ color: 'var(--theme-text-muted-soft)' }}
-          >
-            {t('hero.description')}
-          </p>
-        </div>
+        </section>
 
         <BuildingCatalogControls
           activeFilter={buildingFilter}

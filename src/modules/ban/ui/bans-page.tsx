@@ -73,26 +73,13 @@ export default function BansPage() {
   return (
     <div className="page-shell page-shell-stable">
       <div className="page-shell-content max-w-7xl mx-auto">
-        {/* ── Header ── */}
-        <div className="text-center mb-8 sm:mb-12 animate-fadeIn">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-linear-to-br from-red-500/20 to-red-600/20 backdrop-blur-sm border border-red-400/30 shadow-lg">
-              <Shield className="w-8 h-8 text-red-400" />
-            </div>
-            <h1
-              className="text-4xl sm:text-5xl font-bold"
-              style={{ color: 'var(--theme-text-heading)' }}
-            >
-              {bansT('hero.title')}
-            </h1>
+        <section className="content-page-hero">
+          <div>
+            <p className="content-page-hero__eyebrow">BAN RECORDS</p>
+            <h1>{bansT('hero.title')}</h1>
+            <p>{bansT('hero.description')}</p>
           </div>
-          <p
-            className="text-base sm:text-lg max-w-2xl mx-auto"
-            style={{ color: 'var(--theme-text-muted-soft)' }}
-          >
-            {bansT('hero.description')}
-          </p>
-        </div>
+        </section>
 
         {/* ── States ── */}
         <div className="page-state-region">
