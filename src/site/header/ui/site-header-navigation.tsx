@@ -121,7 +121,7 @@ export function MobileSiteHeaderMenu({
           className="overflow-hidden xl:hidden"
         >
           <div className="mobile-menu-panel">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col">
               {items.map((item) => {
                 const isActive = activePathname === item.path;
 
@@ -133,8 +133,9 @@ export function MobileSiteHeaderMenu({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={onClose}
-                      className={`ui-nav-chip ${item.highlight ? 'ui-nav-chip--highlight' : ''}`}
+                      className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight' : 'ui-nav-link'} inline-flex items-center gap-2 py-2.5 px-3`}
                     >
+                      <item.icon className="h-4 w-4" />
                       <span>{item.label}</span>
                     </a>
                   );
@@ -145,8 +146,9 @@ export function MobileSiteHeaderMenu({
                     key={item.id}
                     href={item.path as string}
                     onClick={onClose}
-                    className={`ui-nav-chip ${isActive ? 'ui-nav-chip--active' : ''}`}
+                    className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} inline-flex items-center gap-2 py-2.5 px-3`}
                   >
+                    <item.icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -155,7 +157,7 @@ export function MobileSiteHeaderMenu({
               <button
                 type="button"
                 onClick={onThemeToggle}
-                className="ui-nav-chip sm:hidden"
+                className="ui-nav-link inline-flex items-center gap-2 py-2.5 px-3 sm:hidden"
               >
                 <span>
                   {mounted
