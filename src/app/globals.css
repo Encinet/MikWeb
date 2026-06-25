@@ -35,7 +35,6 @@
   --ui-card-radius: 18px;
   --ui-card-blur: 0px;
   --ui-card-saturation: 100%;
-  --ui-card-hover-offset: -0.125rem;
   --ui-card-transition-duration: 300ms;
   --ui-card-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
   --ui-card-shadow-hover: 0 12px 28px var(--theme-shadow-glass);
@@ -456,14 +455,12 @@ body {
   background: var(--theme-surface-modal);
   color: var(--theme-text-primary);
   transition:
-    transform 180ms ease,
     border-color 180ms ease,
     background 180ms ease,
     color 180ms ease;
 }
 
 .copy-button:hover {
-  transform: translateY(-1px);
   border-color: var(--theme-border-nav-hover);
 }
 
@@ -769,7 +766,6 @@ body {
 }
 
 .player-history-control-button:hover {
-  transform: translateY(-1px);
   border-color: rgba(255, 170, 0, 0.2);
 }
 
@@ -802,13 +798,11 @@ body {
     0 12px 28px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition:
-    transform 0.24s ease,
     border-color 0.24s ease,
     box-shadow 0.24s ease;
 }
 
 .player-history-summary-card:hover {
-  transform: translateY(-2px);
   border-color: rgba(255, 170, 0, 0.18);
   box-shadow:
     0 18px 34px rgba(0, 0, 0, 0.12),
@@ -935,12 +929,11 @@ body {
 }
 
 .ui-card-interactive {
-  transition: transform var(--ui-card-transition-duration) var(--ui-card-transition-easing);
-  will-change: transform;
+  transition: filter var(--ui-card-transition-duration) var(--ui-card-transition-easing);
 }
 
 .ui-card-interactive:hover {
-  transform: translateY(var(--ui-card-hover-offset));
+  filter: brightness(1.02);
 }
 
 .ui-card-interactive:hover::before {
@@ -1009,14 +1002,12 @@ body {
   transition:
     background 180ms ease,
     border-color 180ms ease,
-    color 180ms ease,
-    transform 180ms var(--ui-card-transition-easing);
+    color 180ms ease;
 }
 
 .ui-floating-control:hover {
   background: var(--theme-surface-hover);
   color: var(--theme-text-primary);
-  transform: translateY(-1px);
 }
 
 .app-dialog-window {
@@ -1259,14 +1250,12 @@ body {
   transition:
     background 180ms ease,
     border-color 180ms ease,
-    color 180ms ease,
-    transform 180ms var(--ui-card-transition-easing);
+    color 180ms ease;
 }
 
 .ui-nav-chip:hover {
   background: var(--theme-surface-hover);
   color: var(--theme-text-nav-hover);
-  transform: translateY(-1px);
 }
 
 .ui-nav-chip--active {
@@ -1296,13 +1285,12 @@ body {
   background: var(--theme-surface-icon);
   transition:
     background 180ms ease,
-    border-color 180ms ease,
-    transform 180ms var(--ui-card-transition-easing);
+    border-color 180ms ease;
 }
 
 .ui-list-row:hover {
   background: var(--theme-surface-hover);
-  transform: translateX(4px);
+  border-color: var(--theme-border-nav-hover);
 }
 
 .ui-content-link {
@@ -1350,13 +1338,6 @@ body {
   .ui-list-row,
   .ui-content-link {
     transition: none;
-  }
-
-  .ui-card-interactive:hover,
-  .ui-floating-control:hover,
-  .ui-nav-chip:hover,
-  .ui-list-row:hover {
-    transform: none;
   }
 }
 
@@ -1742,7 +1723,6 @@ body {
   background: #36c44d;
   color: #fff;
   box-shadow: 0 10px 24px rgba(47, 179, 68, 0.26);
-  transform: translateY(-1px);
 }
 
 .project-navbar-links .ui-nav-chip--highlight {
@@ -1937,7 +1917,6 @@ body {
   background: #36c44d;
   color: #fff;
   box-shadow: 0 10px 24px rgba(47, 179, 68, 0.26);
-  transform: translateY(-1px);
 }
 
 .home-project-page {
@@ -2070,13 +2049,11 @@ body {
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
+    color 0.2s ease;
 }
 
 .home-project-button:hover {
   background: #8fcb84;
-  transform: translateY(-2px);
 }
 
 .home-project-button--secondary {
@@ -2167,7 +2144,6 @@ body {
   color: #f8f1e5;
   transition:
     border-color 0.2s ease,
-    transform 0.2s ease,
     filter 0.2s ease;
 }
 
@@ -2199,7 +2175,6 @@ body {
 .home-project-bento-card:hover {
   border-color: rgba(121, 184, 111, 0.38);
   filter: brightness(1.06);
-  transform: translateY(-4px);
 }
 
 .home-project-bento-card:hover::before {
@@ -2456,14 +2431,12 @@ body {
   font-weight: 760;
   transition:
     border-color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s ease;
+    background 0.2s ease;
 }
 
 .home-live-announcements__head button:hover {
   border-color: rgba(121, 184, 111, 0.32);
   background: rgba(121, 184, 111, 0.1);
-  transform: translateY(-1px);
 }
 
 .home-live-announcements {
@@ -2687,14 +2660,12 @@ body:has(.map-page),
   backdrop-filter: blur(16px) saturate(150%);
   transition:
     border-color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s ease;
+    background 0.2s ease;
 }
 
 .map-page__external-link:hover {
   border-color: rgba(121, 184, 111, 0.32);
   background: rgba(121, 184, 111, 0.1);
-  transform: translateY(-1px);
 }
 
 .map-page__frame-shell {
