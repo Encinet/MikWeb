@@ -223,13 +223,7 @@ export default function SiteHeader() {
             activePathname={pathname}
             isOpen={isMobileMenuOpen}
             items={navItems}
-            mounted={mounted}
             onClose={() => setIsMobileMenuOpen(false)}
-            onThemeToggle={handleThemeToggle}
-            theme={theme}
-            themeDarkLabel={t('theme.dark')}
-            themeLightLabel={t('theme.light')}
-            themeSystemLabel={t('theme.system')}
           />
         </div>
       </nav>

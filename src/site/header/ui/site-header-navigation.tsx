@@ -89,26 +89,14 @@ interface MobileSiteHeaderMenuProps {
   activePathname: string;
   isOpen: boolean;
   items: SiteHeaderNavItem[];
-  mounted: boolean;
   onClose: () => void;
-  onThemeToggle: () => void;
-  theme: string | undefined;
-  themeDarkLabel: string;
-  themeLightLabel: string;
-  themeSystemLabel: string;
 }
 
 export function MobileSiteHeaderMenu({
   activePathname,
   isOpen,
   items,
-  mounted,
   onClose,
-  onThemeToggle,
-  theme,
-  themeDarkLabel,
-  themeLightLabel,
-  themeSystemLabel,
 }: MobileSiteHeaderMenuProps) {
   return (
     <AnimatePresence>
@@ -133,10 +121,10 @@ export function MobileSiteHeaderMenu({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={onClose}
-                      className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight' : 'ui-nav-link'} inline-flex items-center gap-2 py-2.5 px-3`}
+                      className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-2' : 'ui-nav-link block'} py-3 px-4`}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
+                      {item.highlight && <item.icon className="h-4 w-4" />}
+                      {item.label}
                     </a>
                   );
                 }
@@ -146,29 +134,12 @@ export function MobileSiteHeaderMenu({
                     key={item.id}
                     href={item.path as string}
                     onClick={onClose}
-                    className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} inline-flex items-center gap-2 py-2.5 px-3`}
+                    className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} block py-3 px-4`}
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    {item.label}
                   </Link>
                 );
               })}
-
-              <button
-                type="button"
-                onClick={onThemeToggle}
-                className="ui-nav-link inline-flex items-center gap-2 py-2.5 px-3 sm:hidden"
-              >
-                <span>
-                  {mounted
-                    ? theme === 'dark'
-                      ? themeLightLabel
-                      : theme === 'light'
-                        ? themeSystemLabel
-                        : themeDarkLabel
-                    : themeDarkLabel}
-                </span>
-              </button>
             </div>
           </div>
         </motion.div>
