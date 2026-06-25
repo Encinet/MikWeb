@@ -23,10 +23,6 @@
   --viewport-height-small: 100vh;
   --viewport-height-dynamic: 100vh;
   --viewport-height-large: 100vh;
-  --viewport-chrome-bottom-inset: max(
-    0px,
-    calc(var(--viewport-height-large) - var(--viewport-height-dynamic))
-  );
   --viewport-top-inset: var(--safe-area-top);
   --viewport-right-inset: var(--safe-area-right);
   --viewport-bottom-inset: var(--safe-area-bottom);
@@ -1561,6 +1557,13 @@ body {
   --project-navbar-glass-opacity: 1;
   --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
   --project-navbar-scroll-progress: 0;
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
   padding: calc(0.75rem + var(--viewport-top-inset)) var(--viewport-right-inset) 0
     var(--viewport-left-inset);
   pointer-events: none;
@@ -1576,7 +1579,10 @@ body {
 .project-navbar-shell::before {
   position: absolute;
   z-index: 0;
-  inset: 0 0 -2.75rem;
+  top: var(--viewport-top-inset);
+  right: 0;
+  bottom: -2.75rem;
+  left: 0;
   pointer-events: none;
   content: "";
   opacity: var(--project-navbar-glass-opacity);
@@ -1608,6 +1614,17 @@ body {
     rgba(0, 0, 0, 0.78) 70%,
     transparent 100%
   );
+}
+
+@supports (-webkit-touch-callout: none) {
+  .project-navbar-shell {
+    top: var(--viewport-top-inset);
+    padding-top: 0.75rem;
+  }
+
+  .project-navbar-shell::before {
+    top: 0;
+  }
 }
 
 .project-navbar-shell.is-scrolled {

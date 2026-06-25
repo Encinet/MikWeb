@@ -214,13 +214,6 @@ export default function SiteHeader() {
       style={
         {
           '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          display: 'flex',
-          justifyContent: 'center',
         } as CSSProperties
       }
     >
