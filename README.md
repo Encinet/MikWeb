@@ -73,6 +73,7 @@ openssl rand -hex 32
 | `GET /api/buildings` | 建筑列表 |
 | `GET /api/bans` | 封禁列表 |
 | `GET /api/mcp` | MCP 工具入口 |
+| `GET /pcl2.xml` | PCL2 动态主页 XML，地址为 `https://mcmik.top/pcl2.xml` |
 
 ## MCP
 
