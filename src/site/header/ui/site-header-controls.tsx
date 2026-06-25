@@ -62,10 +62,10 @@ export function SiteHeaderControls({
         <button
           type="button"
           onClick={onMobileMenuToggle}
-          className="ui-icon-button inline-flex items-center justify-center p-2 xl:hidden"
+          className="inline-flex items-center justify-center xl:hidden"
           aria-label="Toggle menu"
         >
-          {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
 
         <div className="project-navbar-control-cluster" aria-label="Display controls">

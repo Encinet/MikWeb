@@ -1476,10 +1476,14 @@ body {
 
 .project-navbar-controls > button:first-child {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
   color: #fff;
   background: rgba(0, 0, 0, 0.32);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 0.35rem;
+  border-radius: 999px;
 }
 
 [data-theme="light"] .project-navbar-controls > button:first-child {
@@ -1492,6 +1496,37 @@ body {
   .project-navbar-controls > button:first-child {
     display: none;
   }
+}
+
+.mobile-menu-panel {
+  margin-top: 0.75rem;
+  border: 1px solid var(--theme-border-glass);
+  border-radius: 1.25rem;
+  background: var(--theme-surface-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 var(--theme-shadow-glass-inset);
+  padding: 0.5rem;
+}
+
+[data-theme="light"] .mobile-menu-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(31, 46, 37, 0.12);
+}
+
+.mobile-menu-panel .ui-nav-chip {
+  border-radius: 0.9rem;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.mobile-menu-panel .ui-nav-chip--highlight {
+  border-radius: 0.9rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
 }
 
 .home-project-page {

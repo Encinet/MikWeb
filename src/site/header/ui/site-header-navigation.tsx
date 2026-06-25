@@ -117,11 +117,11 @@ export function MobileSiteHeaderMenu({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          transition={{ duration: 0.28, ease: 'easeInOut' }}
           className="overflow-hidden xl:hidden"
         >
-          <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--theme-border-glass)' }}>
-            <div className="flex flex-col space-y-2">
+          <div className="mobile-menu-panel">
+            <div className="flex flex-col gap-1.5">
               {items.map((item) => {
                 const isActive = activePathname === item.path;
 
@@ -133,10 +133,9 @@ export function MobileSiteHeaderMenu({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={onClose}
-                      className={`ui-nav-chip flex items-center gap-3 px-4 py-3 ${item.highlight ? 'ui-nav-chip--highlight' : ''}`}
+                      className={`ui-nav-chip ${item.highlight ? 'ui-nav-chip--highlight' : ''}`}
                     >
-                      <item.icon className="h-5 w-5" />
-                      <span className="whitespace-nowrap text-sm">{item.label}</span>
+                      <span>{item.label}</span>
                     </a>
                   );
                 }
@@ -146,10 +145,9 @@ export function MobileSiteHeaderMenu({
                     key={item.id}
                     href={item.path as string}
                     onClick={onClose}
-                    className={`ui-nav-chip flex items-center gap-3 px-4 py-3 ${isActive ? 'ui-nav-chip--active' : ''}`}
+                    className={`ui-nav-chip ${isActive ? 'ui-nav-chip--active' : ''}`}
                   >
-                    <item.icon className="h-5 w-5" />
-                    <span className="whitespace-nowrap text-sm">{item.label}</span>
+                    <span>{item.label}</span>
                   </Link>
                 );
               })}
@@ -157,9 +155,9 @@ export function MobileSiteHeaderMenu({
               <button
                 type="button"
                 onClick={onThemeToggle}
-                className="ui-nav-chip flex items-center gap-3 px-4 py-3 sm:hidden"
+                className="ui-nav-chip sm:hidden"
               >
-                <span className="text-sm">
+                <span>
                   {mounted
                     ? theme === 'dark'
                       ? themeLightLabel
