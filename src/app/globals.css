@@ -1255,34 +1255,90 @@ body {
 
 /* BuildTheEarth-inspired project homepage v0 */
 .project-navbar-shell {
+  --project-navbar-glass-top: rgba(16, 24, 22, 0.74);
+  --project-navbar-glass-mid: rgba(16, 24, 22, 0.46);
+  --project-navbar-glass-bottom: rgba(16, 24, 22, 0.08);
+  --project-navbar-glass-blur: 18px;
+  --project-navbar-glass-saturation: 165%;
+  --project-navbar-glass-line: rgba(255, 255, 255, 0.08);
+  --project-navbar-glass-opacity: 1;
+  --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
+  --project-navbar-scroll-progress: 0;
   padding: calc(0.75rem + var(--viewport-top-inset)) var(--viewport-right-inset) 0
     var(--viewport-left-inset);
   pointer-events: none;
   background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  isolation: isolate;
   transition:
-    background 0.35s ease,
-    backdrop-filter 0.35s ease,
-    -webkit-backdrop-filter 0.35s ease;
+    --project-navbar-glass-top 0.35s ease,
+    --project-navbar-glass-mid 0.35s ease,
+    --project-navbar-glass-bottom 0.35s ease,
+    --project-navbar-glass-blur 0.35s ease;
+}
+
+.project-navbar-shell::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 -2.75rem;
+  pointer-events: none;
+  content: "";
+  opacity: var(--project-navbar-glass-opacity);
+  background: linear-gradient(
+    to bottom,
+    var(--project-navbar-glass-top) 0%,
+    var(--project-navbar-glass-mid) 48%,
+    var(--project-navbar-glass-bottom) 74%,
+    transparent 100%
+  );
+  box-shadow:
+    inset 0 1px 0 var(--project-navbar-glass-line),
+    0 20px 42px var(--project-navbar-glass-shadow);
+  -webkit-backdrop-filter: blur(var(--project-navbar-glass-blur))
+    saturate(var(--project-navbar-glass-saturation));
+  backdrop-filter: blur(var(--project-navbar-glass-blur))
+    saturate(var(--project-navbar-glass-saturation));
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 52%,
+    rgba(0, 0, 0, 0.78) 70%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 52%,
+    rgba(0, 0, 0, 0.78) 70%,
+    transparent 100%
+  );
 }
 
 .project-navbar-shell.is-scrolled {
-  background: linear-gradient(
-    to bottom,
-    rgba(16, 24, 22, 0.94) 0%,
-    rgba(16, 24, 22, 0.85) 100%
-  );
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
+  --project-navbar-glass-top: rgba(16, 24, 22, 0.74);
+  --project-navbar-glass-mid: rgba(16, 24, 22, 0.46);
+  --project-navbar-glass-bottom: rgba(16, 24, 22, 0.08);
+  --project-navbar-glass-blur: 18px;
+  --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
+}
+
+[data-theme="light"] .project-navbar-shell {
+  --project-navbar-glass-top: rgba(255, 255, 255, 0.74);
+  --project-navbar-glass-mid: rgba(255, 255, 255, 0.48);
+  --project-navbar-glass-bottom: rgba(255, 255, 255, 0.1);
+  --project-navbar-glass-line: rgba(255, 255, 255, 0.65);
+  --project-navbar-glass-shadow: rgba(46, 34, 14, 0.08);
 }
 
 [data-theme="light"] .project-navbar-shell.is-scrolled {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.94) 0%,
-    rgba(255, 255, 255, 0.85) 100%
-  );
+  --project-navbar-glass-top: rgba(255, 255, 255, 0.74);
+  --project-navbar-glass-mid: rgba(255, 255, 255, 0.48);
+  --project-navbar-glass-bottom: rgba(255, 255, 255, 0.1);
+  --project-navbar-glass-shadow: rgba(46, 34, 14, 0.08);
+}
+
+:root:has(.home-project-page) .project-navbar-shell:not(.is-scrolled) {
+  --project-navbar-glass-opacity: var(--project-navbar-scroll-progress);
+  --project-navbar-glass-blur: calc(18px * var(--project-navbar-scroll-progress));
 }
 
 .project-navbar-card {
@@ -1312,6 +1368,9 @@ body {
   font-size: clamp(0.95rem, 1.5vw, 1.15rem);
   letter-spacing: 0.02em;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.38);
+  transition:
+    color 220ms ease,
+    text-shadow 220ms ease;
 }
 
 [data-theme="light"] .project-navbar-brand {
@@ -1342,6 +1401,9 @@ body {
   font-weight: 700;
   letter-spacing: 0.01em;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.32);
+  transition:
+    color 220ms ease,
+    text-shadow 220ms ease;
 }
 
 [data-theme="light"] .project-navbar-links .ui-nav-link,
@@ -1350,8 +1412,8 @@ body {
   text-shadow: none;
 }
 
-.project-navbar-links .ui-nav-link svg,
-.project-navbar-links .ui-nav-chip:not(.ui-nav-chip--highlight) svg {
+:where(.project-navbar-links) :where(.ui-nav-link) svg,
+:where(.project-navbar-links) :where(.ui-nav-chip):not(:where(.ui-nav-chip--highlight)) svg {
   display: none;
 }
 
@@ -1468,12 +1530,6 @@ body {
   border-left-color: rgba(255, 255, 255, 0.14);
 }
 
-[data-theme="light"]:has(.home-project-page) .project-navbar-shell:not(.is-scrolled) .project-navbar-controls > button:first-child {
-  color: #fff;
-  background: rgba(0, 0, 0, 0.32);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
 .project-navbar-controls > button:first-child {
   display: inline-flex;
   align-items: center;
@@ -1496,6 +1552,12 @@ body {
   .project-navbar-controls > button:first-child {
     display: none;
   }
+}
+
+[data-theme="light"]:has(.home-project-page) .project-navbar-shell:not(.is-scrolled) .project-navbar-controls > button:first-child {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.32);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .mobile-menu-panel {

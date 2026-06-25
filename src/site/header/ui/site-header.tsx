@@ -3,6 +3,7 @@
 import { BookOpen, Building2, Home, MapIcon, Play, Shield } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
+import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
@@ -30,12 +31,16 @@ export default function SiteHeader() {
     networkError,
   } = usePlayerStatus();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [navbarScrollProgress, setNavbarScrollProgress] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPlayerDropdownOpen, setIsPlayerDropdownOpen] = useState(false);
   const [isPlayerDropdownVisible, setIsPlayerDropdownVisible] = useState(false);
   const [playerDropdownRect, setPlayerDropdownRect] = useState<DOMRect | null>(null);
   const playerDropdownAnchorRef = useRef<HTMLDivElement | null>(null);
   const playerDropdownAnimationFrameRef = useRef<number | null>(null);
+  const navbarProgressAnimationFrameRef = useRef<number | null>(null);
+  const navbarProgressTargetRef = useRef(0);
+  const navbarProgressCurrentRef = useRef(0);
   const previousActiveNavIndexRef = useRef<number | null>(null);
 
   const mounted = useHasMounted();
@@ -121,12 +126,54 @@ export default function SiteHeader() {
   };
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+    const scrollRange = 240;
+    const smoothProgress = (value: number) => value * value * (3 - 2 * value);
+
+    const stopAnimation = () => {
+      if (navbarProgressAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(navbarProgressAnimationFrameRef.current);
+        navbarProgressAnimationFrameRef.current = null;
+      }
     };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    const step = () => {
+      const current = navbarProgressCurrentRef.current;
+      const target = navbarProgressTargetRef.current;
+      const delta = target - current;
+
+      if (Math.abs(delta) < 0.001) {
+        navbarProgressCurrentRef.current = target;
+        setNavbarScrollProgress(target);
+        setIsScrolled(target >= 0.999);
+        navbarProgressAnimationFrameRef.current = null;
+        return;
+      }
+
+      const next = current + delta * 0.12;
+      navbarProgressCurrentRef.current = next;
+      setNavbarScrollProgress(next);
+      setIsScrolled(next >= 0.999);
+      navbarProgressAnimationFrameRef.current = requestAnimationFrame(step);
+    };
+
+    const syncScrollProgress = () => {
+      const rawProgress = Math.min(1, window.scrollY / scrollRange);
+      navbarProgressTargetRef.current = smoothProgress(rawProgress);
+
+      if (navbarProgressAnimationFrameRef.current === null) {
+        navbarProgressAnimationFrameRef.current = requestAnimationFrame(step);
+      }
+    };
+
+    syncScrollProgress();
+    window.addEventListener('scroll', syncScrollProgress, { passive: true });
+    window.addEventListener('resize', syncScrollProgress, { passive: true });
+
+    return () => {
+      stopAnimation();
+      window.removeEventListener('scroll', syncScrollProgress);
+      window.removeEventListener('resize', syncScrollProgress);
+    };
   }, []);
 
   useEffect(() => {
@@ -169,6 +216,7 @@ export default function SiteHeader() {
     <div
       className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}`}
       style={{
+        '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
         position: 'fixed',
         top: 0,
         left: 0,
@@ -176,7 +224,7 @@ export default function SiteHeader() {
         zIndex: 50,
         display: 'flex',
         justifyContent: 'center',
-      }}
+      } as CSSProperties}
     >
       <nav className="project-navbar-card">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
