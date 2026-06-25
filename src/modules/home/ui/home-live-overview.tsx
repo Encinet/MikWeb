@@ -78,7 +78,7 @@ export default function HomeLiveOverview() {
           </div>
           <div className="home-live-status-panel__address">
             <Server className="h-4 w-4" />
-            <code>mik.noctiro.moe</code>
+            <code>mcmik.top</code>
             <Copy className="h-4 w-4" />
           </div>
         </div>

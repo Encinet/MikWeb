@@ -153,7 +153,7 @@ export function createSocialImage(locale: AppLocale) {
             color: 'rgba(255, 255, 255, 0.75)',
           }}
         >
-          <span style={{ display: 'flex' }}>mik.noctiro.moe</span>
+          <span style={{ display: 'flex' }}>mcmik.top</span>
           <span style={{ display: 'flex', color: '#FFAA00', fontWeight: 700 }}>Mik Casual</span>
         </div>
       </div>

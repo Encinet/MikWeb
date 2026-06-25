@@ -93,7 +93,7 @@ openssl rand -hex 32
   "mcpServers": {
     "mikweb": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mik.noctiro.moe/api/mcp"]
+      "args": ["-y", "mcp-remote", "https://mcmik.top/api/mcp"]
     }
   }
 }
