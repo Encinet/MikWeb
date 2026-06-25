@@ -5,7 +5,7 @@ import HomeLiveOverview from '@/modules/home/ui/home-live-overview';
 import { Link } from '@/shared/i18n/routing';
 import ScrollReveal from '@/shared/ui/motion/scroll-reveal';
 
-const APPLY_URL = 'https://mikapply.noctiro.moe';
+const APPLY_URL = 'https://apply.mcmik.top';
 const MAP_URL = '/map';
 
 export default async function HomePage() {

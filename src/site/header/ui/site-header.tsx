@@ -75,7 +75,7 @@ export default function SiteHeader() {
         id: 'apply',
         icon: Play,
         label: t('items.join'),
-        link: 'https://mikapply.noctiro.moe',
+        link: 'https://apply.mcmik.top',
         highlight: true,
       },
     ],
