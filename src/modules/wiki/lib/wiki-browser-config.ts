@@ -20,7 +20,7 @@ export const markdownDelays = {
   block: 0.24,
 };
 
-export const wikiPanelSurfaceClassName = 'ui-card-surface';
+export const wikiPanelSurfaceClassName = 'ui-document-surface';
 
 export const spring = {
   snappy: { type: 'spring' as const, stiffness: 500, damping: 30, mass: 0.8 },

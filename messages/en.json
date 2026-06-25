@@ -33,7 +33,7 @@
       "description": "A Minecraft non-profit, casual creation server where you can leave your masterpieces.",
       "joinButton": "Apply to Join Server",
       "wikiButton": "View Wiki",
-      "notice": "Application-only server",
+      "notice": "Server address",
       "serverAddress": "mcmik.top"
     },
     "showcase": {

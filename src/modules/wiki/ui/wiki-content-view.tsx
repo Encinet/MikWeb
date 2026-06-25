@@ -40,8 +40,6 @@ interface PendingWikiAnchor {
 }
 
 interface WikiContentProps {
-  title: string;
-  description: string;
   navigation: string;
   onThisPage: string;
   searchPlaceholder: string;
@@ -60,8 +58,6 @@ interface WikiContentProps {
 }
 
 export default function WikiContent({
-  title,
-  description,
   navigation,
   onThisPage,
   searchPlaceholder,
@@ -333,31 +329,6 @@ export default function WikiContent({
     <MotionConfig reducedMotion="user">
       <div className="page-shell">
         <div className="max-w-7xl mx-auto">
-          <motion.section
-            className="content-page-hero"
-            initial={false}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ ...spring.gentle, delay: 0.05 }}
-          >
-            <div>
-              <p className="content-page-hero__eyebrow">WIKI</p>
-              <motion.h1
-                initial={false}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ ...spring.snappy, delay: 0.15 }}
-              >
-                {title}
-              </motion.h1>
-              <motion.p
-                initial={false}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...spring.gentle, delay: 0.22 }}
-              >
-                {description}
-              </motion.p>
-            </div>
-          </motion.section>
-
           <motion.div
             className="mb-6 sm:mb-8"
             initial={false}

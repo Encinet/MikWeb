@@ -4,7 +4,7 @@ export const SITE_TITLE = `${SITE_NAME} - 创造休闲 Minecraft 服务器`;
 export const SITE_DESCRIPTION = 'Mik Casual 是高版本Minecraft Java版本公益创造休闲服务器';
 export const SITE_LONG_DESCRIPTION =
   'Mik Casual 是高版本Minecraft Java版公益创造休闲服务器，允许任意 Mod，专注于建筑创作与社区交流';
-export const SITE_LOGO_PATH = '/mik-standard-rounded.svg';
+export const SITE_LOGO_PATH = '/mik-logo.svg';
 export const SITE_FAVICON_PATH = '/site-favicon.ico';
 export const SITE_KEYWORDS = [
   'Minecraft',

@@ -235,10 +235,10 @@ export function WikiNavigation({
 
       <motion.button
         onClick={() => onSidebarOpenChange(!isSidebarOpen)}
-        className="rounded-full p-3.5 shadow-lg backdrop-blur-lg"
+        className="rounded-full p-3.5 shadow-sm"
         style={{
           color: 'var(--theme-accent-blue)',
-          background: 'var(--theme-surface-blue-accent)',
+          background: 'var(--theme-surface-modal)',
           border: '1px solid var(--theme-border-blue-accent)',
         }}
         whileHover={{ scale: 1.12, transition: spring.snappy }}

@@ -73,14 +73,6 @@ export default function BansPage() {
   return (
     <div className="page-shell page-shell-stable">
       <div className="page-shell-content max-w-7xl mx-auto">
-        <section className="content-page-hero">
-          <div>
-            <p className="content-page-hero__eyebrow">BAN RECORDS</p>
-            <h1>{bansT('hero.title')}</h1>
-            <p>{bansT('hero.description')}</p>
-          </div>
-        </section>
-
         {/* ── States ── */}
         <div className="page-state-region">
           {isLoadingBanEntries ? (
@@ -104,7 +96,7 @@ export default function BansPage() {
               {banEntries.map((banEntry, banEntryIndex) => (
                 <div
                   key={banEntry.playerUuid}
-                  className="ui-card-surface ui-card-interactive ui-card-interactive--accent-red animate-card-enter group mb-4 break-inside-avoid overflow-hidden rounded-2xl"
+                  className="ui-card-surface ui-card-interactive animate-card-enter group mb-4 break-inside-avoid overflow-hidden rounded-2xl"
                   style={{
                     animationDelay: `${banEntryIndex * 0.04}s`,
                   }}
@@ -117,7 +109,7 @@ export default function BansPage() {
                         name={banEntry.playerName}
                         size={56}
                         className="w-14 h-14 rounded-xl shrink-0"
-                        style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.18)' }}
                       />
                       <div className="min-w-0">
                         <h3

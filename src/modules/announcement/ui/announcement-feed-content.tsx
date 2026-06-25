@@ -3,7 +3,10 @@
 import { Bell } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { formatAnnouncementDate } from '@/modules/announcement/lib/format-announcement-date';
+import {
+  formatAnnouncementDate,
+  getAnnouncementDateTimeValue,
+} from '@/modules/announcement/lib/format-announcement-date';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import { GlassSkeletonCard, SectionMessage, SkeletonLine } from '@/shared/ui/feedback/async-state';
 
@@ -60,12 +63,13 @@ export function AnnouncementFeedContent({
   const visibleAnnouncements = isDialog ? announcements : announcements.slice(0, 3);
 
   return (
-    <div className={isDialog ? 'space-y-4' : 'space-y-3 sm:space-y-4'}>
+    <div className={isDialog ? 'space-y-2.5' : 'space-y-3 sm:space-y-4'}>
       {visibleAnnouncements.map((announcement, announcementIndex) => (
         <AnnouncementEntryCard
           key={buildAnnouncementKey(announcement)}
           animationDelay={isDialog ? undefined : `${announcementIndex * 0.1}s`}
           announcement={announcement}
+          dateTime={getAnnouncementDateTimeValue(announcement.timestamp)}
           formattedDate={formatAnnouncementDate(announcement.timestamp, locale)}
           variant={variant}
         />
@@ -88,6 +92,7 @@ export function AnnouncementFeedContent({
 
 interface AnnouncementEntryCardProps {
   announcement: AnnouncementItem;
+  dateTime: string;
   formattedDate: string;
   variant: 'preview' | 'dialog';
   animationDelay?: string;
@@ -95,6 +100,7 @@ interface AnnouncementEntryCardProps {
 
 function AnnouncementEntryCard({
   announcement,
+  dateTime,
   formattedDate,
   variant,
   animationDelay,
@@ -112,8 +118,8 @@ function AnnouncementEntryCard({
         .filter(Boolean)
         .join(' ')}
       style={{
-        borderRadius: isDialog ? '16px' : '12px',
-        padding: 'clamp(1rem, 3vw, 1.5rem)',
+        borderRadius: isDialog ? '12px' : '12px',
+        padding: isDialog ? '0.875rem 1rem' : 'clamp(1rem, 3vw, 1.5rem)',
         animationDelay: shouldAnimateOnEnter ? animationDelay : undefined,
       }}
     >
@@ -126,26 +132,26 @@ function AnnouncementEntryCard({
             background: '#79B86F',
             borderRadius: '50%',
             flexShrink: 0,
-            boxShadow: isDialog ? '0 0 12px rgba(121, 184, 111, 0.52)' : undefined,
           }}
         />
         <div className="min-w-0 flex-1">
-          <div
+          <time
+            dateTime={dateTime}
             style={{
-              fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
+              fontSize: isDialog ? '0.75rem' : 'clamp(0.75rem, 1.5vw, 0.875rem)',
               color: 'var(--theme-text-muted)',
-              marginBottom: '8px',
+              marginBottom: isDialog ? '6px' : '8px',
               fontWeight: isDialog ? 500 : undefined,
             }}
           >
             {formattedDate}
-          </div>
+          </time>
           <div
             style={{
               color: 'var(--theme-text-primary)',
-              lineHeight: 1.75,
+              lineHeight: isDialog ? 1.65 : 1.75,
               whiteSpace: 'pre-line',
-              fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+              fontSize: isDialog ? '0.9375rem' : 'clamp(0.875rem, 2vw, 1rem)',
             }}
           >
             {announcement.content}
@@ -168,8 +174,8 @@ function AnnouncementSkeletonList({ isDialog }: { isDialog: boolean }) {
           key={`announcement-skeleton-${skeletonId}`}
           className="ui-card-surface--soft"
           style={{
-            borderRadius: isDialog ? '16px' : '12px',
-            padding: 'clamp(1rem, 3vw, 1.5rem)',
+            borderRadius: isDialog ? '12px' : '12px',
+            padding: isDialog ? '0.875rem 1rem' : 'clamp(1rem, 3vw, 1.5rem)',
           }}
         >
           <div className="flex items-start gap-3 sm:gap-4">

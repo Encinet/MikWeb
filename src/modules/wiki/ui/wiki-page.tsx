@@ -54,8 +54,6 @@ export default async function WikiPage({
   return (
     <Suspense>
       <WikiContentView
-        title={t('hero.title')}
-        description={t('hero.description')}
         navigation={t('navigation.title')}
         onThisPage={t('navigation.onThisPage')}
         searchPlaceholder={t('search.placeholder')}

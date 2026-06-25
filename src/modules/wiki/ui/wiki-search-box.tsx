@@ -44,12 +44,12 @@ export function WikiSearchBox({
           onCompositionStart={onCompositionStart}
           onCompositionEnd={onCompositionEnd}
           placeholder={placeholder}
-          className="w-full rounded-xl border px-12 py-3.5 pr-12 backdrop-blur-md transition-all focus:outline-none"
+          className="w-full rounded-xl border px-12 py-3.5 pr-12 transition-colors focus:outline-none"
           style={{
             color: 'var(--theme-text-primary)',
-            background: 'var(--theme-surface-glass)',
+            background: 'var(--theme-surface-modal)',
             borderColor: 'var(--theme-border-glass)',
-            boxShadow: 'var(--theme-shadow-card)',
+            boxShadow: '0 1px 2px var(--theme-shadow-glass)',
           }}
         />
         {searchQuery ? (

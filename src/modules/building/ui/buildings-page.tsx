@@ -204,14 +204,6 @@ export default function BuildingsPage() {
   return (
     <div className="page-shell page-shell-stable">
       <div className="page-shell-content max-w-7xl mx-auto">
-        <section className="content-page-hero">
-          <div>
-            <p className="content-page-hero__eyebrow">BUILDINGS</p>
-            <h1>{t('hero.title')}</h1>
-            <p>{t('hero.description')}</p>
-          </div>
-        </section>
-
         <BuildingCatalogControls
           activeFilter={buildingFilter}
           filterOptions={filterOptions}

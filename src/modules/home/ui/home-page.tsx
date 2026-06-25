@@ -65,7 +65,12 @@ export default async function HomePage() {
           <p className="home-project-hero__description">{t('home.hero.description')}</p>
 
           <div className="home-project-hero__actions">
-            <a href={APPLY_URL} target="_blank" rel="noopener noreferrer" className="home-project-button">
+            <a
+              href={APPLY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="home-project-button"
+            >
               <Play className="h-5 w-5" />
               <span>{t('home.hero.joinButton')}</span>
             </a>

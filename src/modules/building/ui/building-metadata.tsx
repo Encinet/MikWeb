@@ -72,8 +72,8 @@ export function BuildingTags({ building, getTagKey, locale, compact = false }: B
           key={getTagKey(building, tag)}
           className={
             compact
-              ? 'rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur-md'
-              : 'rounded-full px-3 py-1.5 text-sm font-medium backdrop-blur-md'
+              ? 'rounded-full px-2.5 py-1 text-xs font-medium'
+              : 'rounded-full px-3 py-1.5 text-sm font-medium'
           }
           style={{
             background: 'var(--theme-surface-tag)',

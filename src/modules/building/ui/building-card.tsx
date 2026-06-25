@@ -46,7 +46,7 @@ export function BuildingCard({
     <button
       type="button"
       onClick={() => onOpen(building)}
-      className="ui-card-surface ui-card-interactive ui-card-interactive--accent-purple group mb-6 w-full cursor-pointer overflow-hidden rounded-2xl text-left"
+      className="ui-card-surface ui-card-interactive group mb-6 w-full cursor-pointer overflow-hidden rounded-2xl text-left"
     >
       <div className="relative h-56 overflow-hidden bg-linear-to-br from-purple-900/20 to-blue-900/20">
         {coverImage && !isImageError(coverImage) ? (
@@ -63,7 +63,7 @@ export function BuildingCard({
               onError={() => onImageError(coverImage)}
             />
             {buildingImages.length > 1 ? (
-              <div className="absolute right-3 bottom-3 rounded-full border border-white/20 bg-black/50 px-2.5 py-1 backdrop-blur-md">
+              <div className="absolute right-3 bottom-3 rounded-full border border-white/20 bg-black/70 px-2.5 py-1">
                 <span className="text-xs font-medium text-white">+{buildingImages.length - 1}</span>
               </div>
             ) : null}
@@ -80,7 +80,7 @@ export function BuildingCard({
 
       <div className="p-6">
         <h3
-          className="mb-3 text-xl font-bold transition-colors group-hover:text-purple-300"
+          className="mb-3 text-xl font-bold transition-colors"
           style={{ color: 'var(--theme-text-heading)' }}
         >
           {getBuildingName(building, locale)}

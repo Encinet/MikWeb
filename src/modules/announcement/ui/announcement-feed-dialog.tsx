@@ -62,74 +62,34 @@ export function AnnouncementFeedDialog({
           onClick={onClose}
         >
           <MotionDiv
-            className="ui-dialog-surface"
+            className="ui-dialog-surface app-dialog-window app-dialog-window--compact"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              borderRadius: '24px',
-              maxWidth: '800px',
-              width: '100%',
-              maxHeight:
-                'calc(var(--viewport-height-dynamic) - var(--viewport-top-inset) - var(--viewport-bottom-inset) - 2rem)',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
+              maxWidth: 'none',
             }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div
-              style={{
-                padding: 'clamp(1.5rem, 4vw, 2rem)',
-                borderBottom: '1px solid var(--theme-border-glass)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="ui-card-icon-surface"
-                  style={{
-                    padding: '10px',
-                    borderRadius: '14px',
-                    boxShadow: '0 4px 12px rgba(121, 184, 111, 0.16)',
-                  }}
-                >
-                  <Bell className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#79B86F' }} />
-                </div>
-                <h3
-                  style={{
-                    fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                    fontWeight: 600,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--theme-text-heading)',
-                  }}
-                >
-                  {t('home.announcements.section.title')}
-                </h3>
+            <div className="app-dialog-chrome">
+              <div aria-hidden="true" />
+
+              <div className="app-dialog-title">
+                <Bell className="h-4 w-4 shrink-0" style={{ color: '#79B86F' }} />
+                <span>{t('home.announcements.section.title')}</span>
               </div>
+
               <button
                 type="button"
                 onClick={onClose}
-                className="ui-floating-surface ui-floating-control"
-                style={{
-                  padding: '10px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  color: 'var(--theme-text-muted)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="app-dialog-close ui-floating-control"
               >
-                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div style={{ padding: 'clamp(1.5rem, 4vw, 2rem)', overflowY: 'auto', flex: 1 }}>
+            <div className="app-dialog-body">
               <AnnouncementFeedContent
                 announcements={announcements}
                 errorMessage={errorMessage}

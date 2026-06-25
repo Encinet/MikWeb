@@ -46,11 +46,11 @@ export function BuildingCatalogControls({
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
-            className="relative z-0 w-full rounded-lg border px-4 py-3 pr-4 pl-12 backdrop-blur-md transition-all focus:border-purple-400/50 focus:outline-none"
+            className="relative z-0 w-full rounded-lg border px-4 py-3 pr-4 pl-12 transition-colors focus:border-purple-400/50 focus:outline-none"
             style={{
               color: 'var(--theme-text-primary)',
               fontSize: '0.875rem',
-              background: 'var(--theme-surface-glass)',
+              background: 'var(--theme-surface-modal)',
               borderColor: 'var(--theme-border-glass)',
             }}
           />
@@ -68,11 +68,11 @@ export function BuildingCatalogControls({
                 onSortChange(event.target.value);
               }
             }}
-            className="relative z-0 w-full cursor-pointer appearance-none rounded-lg border px-4 py-3 pr-10 pl-12 backdrop-blur-md transition-all focus:border-purple-400/50 focus:outline-none"
+            className="relative z-0 w-full cursor-pointer appearance-none rounded-lg border px-4 py-3 pr-10 pl-12 transition-colors focus:border-purple-400/50 focus:outline-none"
             style={{
               color: 'var(--theme-text-primary)',
               fontSize: '0.875rem',
-              background: 'var(--theme-surface-glass)',
+              background: 'var(--theme-surface-modal)',
               borderColor: 'var(--theme-border-glass)',
             }}
           >
@@ -91,7 +91,7 @@ export function BuildingCatalogControls({
             type="button"
             key={filterOption.id}
             onClick={() => onFilterChange(filterOption.id)}
-            className="rounded-lg px-4 py-2.5 text-xs font-medium backdrop-blur-md transition-all duration-300 sm:px-6 sm:text-sm"
+            className="rounded-lg px-4 py-2.5 text-xs font-medium transition-colors duration-200 sm:px-6 sm:text-sm"
             style={{
               color:
                 activeFilter === filterOption.id
@@ -100,16 +100,15 @@ export function BuildingCatalogControls({
               background:
                 activeFilter === filterOption.id
                   ? 'var(--theme-surface-filter-active)'
-                  : 'var(--theme-surface-glass)',
+                  : 'var(--theme-surface-modal-badge)',
               border:
                 activeFilter === filterOption.id
                   ? '1px solid var(--theme-border-filter-active)'
                   : '1px solid var(--theme-border-glass)',
               boxShadow:
                 activeFilter === filterOption.id
-                  ? '0 10px 15px -3px var(--theme-shadow-filter-active)'
+                  ? '0 1px 2px var(--theme-shadow-filter-active)'
                   : 'none',
-              transform: activeFilter === filterOption.id ? 'scale(1.05)' : 'scale(1)',
             }}
           >
             {filterOption.label}

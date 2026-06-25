@@ -1,20 +1,24 @@
 'use client';
 
-import { ArrowRight, Bell, Building2, Clock, Copy, MapIcon, Server, Users } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { ArrowRight, Building2, Clock, Copy, Server, Users } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import {
+  formatAnnouncementDate,
+  getAnnouncementDateTimeValue,
+} from '@/modules/announcement/lib/format-announcement-date';
 import { useAnnouncementsFeed } from '@/modules/announcement/model/use-announcements-feed';
 import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-feed-dialog';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
-import { Link } from '@/shared/i18n/routing';
 
 const SERVER_START_DATE = new Date('2025-07-15');
 
 export default function HomeLiveOverview() {
   const commonT = useTranslations('common');
+  const locale = useLocale();
   const t = useTranslations();
   const {
     playerCount,
@@ -83,7 +87,8 @@ export default function HomeLiveOverview() {
           </div>
         </div>
 
-        <div className="home-live-status-panel__metrics" aria-label={t('home.live.metricsLabel')}>
+        <fieldset className="home-live-status-panel__metrics">
+          <legend className="sr-only">{t('home.live.metricsLabel')}</legend>
           <div>
             <Users className="h-4 w-4" />
             <span>{t('home.stats.activePlayers')}</span>
@@ -102,26 +107,12 @@ export default function HomeLiveOverview() {
               <small>{t('home.stats.days')}</small>
             </strong>
           </div>
-        </div>
-
-        <div className="home-live-status-panel__actions">
-          <Link href="/map">
-            <MapIcon className="h-4 w-4" />
-            <span>{t('home.live.openMap')}</span>
-          </Link>
-          <button type="button" onClick={() => setIsAnnouncementsModalOpen(true)}>
-            <Bell className="h-4 w-4" />
-            <span>{t('home.live.viewAnnouncements')}</span>
-          </button>
-        </div>
+        </fieldset>
       </section>
 
       <section className="home-live-announcements">
         <div className="home-live-announcements__head">
-          <div>
-            <span>{t('home.live.announcementEyebrow')}</span>
-            <strong>{t('home.announcements.section.title')}</strong>
-          </div>
+          <strong>{t('home.announcements.section.title')}</strong>
           <button type="button" onClick={() => setIsAnnouncementsModalOpen(true)}>
             {t('home.announcements.actions.viewAll')}
             <ArrowRight className="h-4 w-4" />
@@ -140,7 +131,9 @@ export default function HomeLiveOverview() {
                 type="button"
                 onClick={() => setIsAnnouncementsModalOpen(true)}
               >
-                <time>{announcement.timestamp}</time>
+                <time dateTime={getAnnouncementDateTimeValue(announcement.timestamp)}>
+                  {formatAnnouncementDate(announcement.timestamp, locale)}
+                </time>
                 <span>{announcement.content}</span>
               </button>
             ))

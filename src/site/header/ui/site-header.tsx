@@ -46,11 +46,7 @@ export default function SiteHeader() {
   const mounted = useHasMounted();
 
   const nextThemeLabel =
-    theme === 'dark'
-      ? t('theme.light')
-      : theme === 'light'
-        ? t('theme.system')
-        : t('theme.dark');
+    theme === 'dark' ? t('theme.light') : theme === 'light' ? t('theme.system') : t('theme.dark');
   const themeTooltip = mounted ? nextThemeLabel : '';
   const localeTooltip = locale === 'zh-CN' ? 'English' : '中文 (简体)';
 
@@ -215,16 +211,18 @@ export default function SiteHeader() {
   return (
     <div
       className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}`}
-      style={{
-        '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        display: 'flex',
-        justifyContent: 'center',
-      } as CSSProperties}
+      style={
+        {
+          '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          display: 'flex',
+          justifyContent: 'center',
+        } as CSSProperties
+      }
     >
       <nav className="project-navbar-card">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">

@@ -68,7 +68,8 @@ export function SiteHeaderControls({
           {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
 
-        <div className="project-navbar-control-cluster" aria-label="Display controls">
+        <fieldset className="project-navbar-control-cluster">
+          <legend className="sr-only">Display controls</legend>
           <button
             type="button"
             onClick={onThemeToggle}
@@ -97,7 +98,7 @@ export function SiteHeaderControls({
             <Globe className="h-4 w-4" />
             <span className="hidden sm:inline">{localeLabel}</span>
           </button>
-        </div>
+        </fieldset>
 
         <div ref={playerDropdownAnchorRef} className="project-player-control relative">
           <button
@@ -191,10 +192,7 @@ function PlayerDropdownPortal({
         {
           position: 'fixed',
           top: playerDropdownRect.bottom + 8,
-          left: Math.min(
-            Math.max(16, playerDropdownRect.right - 240),
-            window.innerWidth - 256,
-          ),
+          left: Math.min(Math.max(16, playerDropdownRect.right - 240), window.innerWidth - 256),
           minWidth: '240px',
           maxWidth: `min(320px, calc(100vw - 2rem - var(--viewport-right-inset)))`,
           zIndex: 100,

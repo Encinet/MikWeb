@@ -92,11 +92,11 @@ export function createWikiMarkdownRenderers() {
         {...baseMotionProps}
         transition={{ ...spring.gentle, delay: markdownDelays.block }}
         style={{
-          background: 'var(--theme-surface-glass-light)',
+          background: 'var(--theme-surface-modal-badge)',
           borderLeftColor: 'var(--theme-border-blue-accent)',
           borderColor: 'var(--theme-border-glass-light)',
         }}
-        className="my-4 rounded-lg border border-l-4 py-1 pl-4 backdrop-blur-sm [&>p:last-child]:mb-0 [&>p]:mb-0"
+        className="my-4 rounded-lg border border-l-4 py-1 pl-4 [&>p:last-child]:mb-0 [&>p]:mb-0"
       >
         {children}
       </motion.blockquote>
@@ -157,7 +157,7 @@ export function createWikiMarkdownRenderers() {
       </motion.div>
     ),
     thead: ({ children }: React.PropsWithChildren) => (
-      <thead style={{ background: 'var(--theme-surface-glass-light)' }}>{children}</thead>
+      <thead style={{ background: 'var(--theme-surface-modal-badge)' }}>{children}</thead>
     ),
     th: ({ children, node: _node, className: _className, ...props }: MarkdownTableCellProps) => (
       <th

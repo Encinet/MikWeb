@@ -65,7 +65,7 @@ export function WikiSearchResults({
                   onClick={() => onOpenResult(result)}
                   className="w-full rounded-xl p-4 text-left transition-all"
                   style={{
-                    background: 'var(--theme-surface-glass-light)',
+                    background: 'var(--theme-surface-modal-badge)',
                     border: '1px solid var(--theme-border-glass-light)',
                   }}
                 >
@@ -94,7 +94,7 @@ export function WikiSearchResults({
             <div
               className="rounded-xl p-6 sm:p-8"
               style={{
-                background: 'var(--theme-surface-glass-light)',
+                background: 'var(--theme-surface-modal-badge)',
                 border: '1px solid var(--theme-border-glass-light)',
               }}
             >
