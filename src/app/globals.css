@@ -20,16 +20,16 @@
   --safe-area-left: 0px;
 
   /* Viewport Units */
+  --viewport-height-small: 100vh;
   --viewport-height-dynamic: 100vh;
   --viewport-height-large: 100vh;
-
-  --browser-chrome-bottom-inset: max(
+  --viewport-chrome-bottom-inset: max(
     0px,
     calc(var(--viewport-height-large) - var(--viewport-height-dynamic))
   );
   --viewport-top-inset: var(--safe-area-top);
   --viewport-right-inset: var(--safe-area-right);
-  --viewport-bottom-inset: max(var(--safe-area-bottom), var(--browser-chrome-bottom-inset));
+  --viewport-bottom-inset: var(--safe-area-bottom);
   --viewport-left-inset: var(--safe-area-left);
 
   /* Layout */
@@ -67,6 +67,12 @@
 @supports (height: 100dvh) {
   :root {
     --viewport-height-dynamic: 100dvh;
+  }
+}
+
+@supports (height: 100svh) {
+  :root {
+    --viewport-height-small: 100svh;
   }
 }
 
@@ -314,14 +320,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
-  min-height: var(--viewport-height-dynamic);
+  min-height: max(var(--viewport-height-small), var(--viewport-height-dynamic));
   position: relative;
 }
 
 .site-background {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
   z-index: 0;
+  min-height: 100%;
+  height: var(--viewport-height-large);
   pointer-events: none;
   background: #101816;
   transition: background 0.24s ease;
@@ -399,8 +409,8 @@ html {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
   width: 100%;
-  min-height: 100%;
-  height: var(--viewport-height-dynamic);
+  min-height: var(--viewport-height-small);
+  background: var(--theme-bg-base);
 }
 
 html,
@@ -413,18 +423,7 @@ body {
 .app-body {
   display: flex;
   flex-direction: column;
-  min-height: var(--viewport-height-dynamic);
-}
-
-@supports (-webkit-touch-callout: none) {
-  html {
-    min-height: var(--viewport-height-dynamic);
-  }
-
-  body,
-  .app-body {
-    min-height: var(--viewport-height-dynamic);
-  }
+  min-height: max(var(--viewport-height-small), var(--viewport-height-dynamic));
 }
 
 .page-shell {
@@ -1385,7 +1384,8 @@ body {
 .site-footer {
   position: relative;
   z-index: 10;
-  padding: clamp(2rem, 5vw, 3.5rem) 1rem calc(2rem + var(--viewport-bottom-inset));
+  padding: clamp(2rem, 5vw, 3.5rem) calc(1rem + var(--viewport-right-inset))
+    calc(2rem + var(--viewport-bottom-inset)) calc(1rem + var(--viewport-left-inset));
   border-top: 1px solid var(--theme-border-glass);
 }
 
@@ -1930,23 +1930,24 @@ body {
   --home-project-page-bg: #101816;
   --home-hero-scroll-buffer: clamp(7rem, 14vw, 12rem);
   --home-hero-transition-depth: clamp(9rem, 18vw, 16rem);
-  min-height: 100vh;
+  min-height: var(--viewport-height-large);
   overflow: hidden;
   background: var(--home-project-page-bg);
   color: #f3efe7;
 }
 
 .home-project-container {
-  width: min(calc(100% - 2rem), 1200px);
+  width: min(calc(100% - 2rem - var(--viewport-left-inset) - var(--viewport-right-inset)), 1200px);
   margin: 0 auto;
 }
 
 .home-project-hero {
   position: relative;
   display: grid;
-  min-height: calc(100svh + var(--home-hero-scroll-buffer));
+  min-height: calc(var(--viewport-height-large) + var(--home-hero-scroll-buffer));
   place-items: center;
-  padding: clamp(7rem, 14vw, 10rem) 0 clamp(4rem, 10vw, 7rem);
+  padding: calc(clamp(7rem, 14vw, 10rem) + var(--viewport-top-inset)) 0
+    calc(clamp(4rem, 10vw, 7rem) + var(--viewport-bottom-inset));
   background:
     linear-gradient(
       180deg,
@@ -2677,13 +2678,17 @@ body:has(.map-page),
 
 .map-page__frame-shell {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  min-height: 100%;
+  height: var(--viewport-height-large);
   overflow: hidden;
   background: #0b1110;
 }
 
 .map-page__overlay {
-  position: absolute;
+  position: fixed;
   right: calc(1rem + var(--viewport-right-inset));
   bottom: calc(1rem + var(--viewport-bottom-inset));
   left: calc(1rem + var(--viewport-left-inset));
@@ -2727,7 +2732,8 @@ body:has(.map-page),
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: var(--viewport-height-large);
+  min-height: 100%;
   border: 0;
   background: #0b1110;
 }
@@ -2779,11 +2785,14 @@ body:has(.map-page),
 
 @media (max-width: 640px) {
   .home-project-container {
-    width: min(calc(100% - 1rem), 1200px);
+    width: min(
+      calc(100% - 1rem - var(--viewport-left-inset) - var(--viewport-right-inset)),
+      1200px
+    );
   }
 
   .home-project-hero {
-    min-height: 92svh;
+    min-height: max(92svh, calc(var(--viewport-height-large) - 4rem));
     text-align: left;
   }
 
