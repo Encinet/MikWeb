@@ -89,7 +89,7 @@ export async function GET(request: Request, context: RouteContext) {
   return new Response(
     buildPcl2HomepageXml({
       ...data,
-      displayAddress: process.env.MINECRAFT_DISPLAY_ADDRESS || 'mcmik.top',
+      displayAddress: 'mcmik.top',
       echoQuotes,
       locale: rawLocale,
       serverAddress,
