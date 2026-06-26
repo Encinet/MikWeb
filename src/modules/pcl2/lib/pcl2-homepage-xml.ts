@@ -11,7 +11,7 @@ import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
 import { getPcl2HomepagePath, SITE_NAME } from '@/site/config/site-config';
 import type { XamlAttributeList, XamlNode } from './xaml-builder';
-import { attr, escapeXml, renderXamlFragment, xaml } from './xaml-builder';
+import { attr, renderXamlFragment, xaml } from './xaml-builder';
 
 const MAX_PCL2_PLAYERS = 12;
 const MAX_PCL2_ANNOUNCEMENTS = 5;
@@ -59,6 +59,7 @@ const PCL2_COPY = {
     buildings: {
       builders: '建设者',
       coordinates: '坐标',
+      empty: '暂无建筑',
       original: '原创',
       replica: '复刻',
       title: '建筑收录',
@@ -128,6 +129,7 @@ const PCL2_COPY = {
     buildings: {
       builders: 'Builders',
       coordinates: 'Coords',
+      empty: 'No buildings yet',
       original: 'Original',
       replica: 'Replica',
       title: 'Buildings',
@@ -351,7 +353,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
                     [],
                     [
                       xaml('local:CustomEvent', [
-                        attr('Data', `${copy.echo.title}|${escapeXml(quote)}`),
+                        attr('Data', `${copy.echo.title}|${quote}`),
                         attr('Type', '弹出窗口'),
                       ]),
                       xaml('local:CustomEvent', [attr('Data', '-'), attr('Type', '刷新主页')]),
@@ -542,11 +544,12 @@ function buildSummaryCard(data: Pcl2HomepageData): XamlNode {
 
 function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
   const copy = PCL2_COPY[data.locale].buildings;
-  if (!data.buildings || data.buildings.length === 0) return card(copy.title, [tb('?')]);
+  if (!data.buildings || data.buildings.length === 0) return card(copy.title, [tb(copy.empty)]);
   const visible = data.buildings.slice(0, MAX_PCL2_BUILDINGS);
   const innerCards = visible.map((b) => {
-    const name = b.name?.['zh-CN'] || b.name?.en || '?';
-    const description = b.description?.['zh-CN'] || b.description?.en || '';
+    const name = b.name?.[data.locale] || b.name?.['zh-CN'] || b.name?.en || '?';
+    const description =
+      b.description?.[data.locale] || b.description?.['zh-CN'] || b.description?.en || '';
     const builders = (b.builders ?? []).map((bd) => bd.name).join(', ');
     const isReplica = b.buildType === 'replica';
     const coordText = `${copy.coordinates}: [${b.coordinates?.x ?? '?'}, ${b.coordinates?.y ?? '?'}, ${b.coordinates?.z ?? '?'}]  ·  ${isReplica ? copy.replica : copy.original}`;
