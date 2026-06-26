@@ -1,6 +1,10 @@
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
+import type { BanItem } from '@/modules/ban/model/ban-types';
+import { isBanItemArray } from '@/modules/ban/model/ban-types';
+import type { Building } from '@/modules/building/model/building-types';
 import { isBuildingArray } from '@/modules/building/model/building-types';
+import { echoQuotes } from '@/modules/pcl2/echo-quotes';
 import { buildPcl2HomepageXml } from '@/modules/pcl2/lib/pcl2-homepage-xml';
 import type {
   PlayerOnlinePayload,
@@ -19,7 +23,9 @@ export const dynamic = 'force-dynamic';
 
 interface Pcl2HomepageApiData {
   announcements: AnnouncementItem[];
+  bans: BanItem[] | null;
   buildingCount: number | null;
+  buildings: Building[] | null;
   historySummary: PlayersHistorySummary | null;
   onlinePlayers: PlayerOnlinePayload;
 }
@@ -65,7 +71,7 @@ async function loadJson<TData>(
 }
 
 async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiData> {
-  const [onlinePlayers, announcements, history, buildings] = await Promise.all([
+  const [onlinePlayers, announcements, history, buildings, bans] = await Promise.all([
     loadJson(
       request,
       '/api/players/online',
@@ -85,11 +91,14 @@ async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiDa
       'Failed to load player history',
     ),
     loadJson(request, '/api/buildings', isBuildingArray, 'Failed to load buildings'),
+    loadJson(request, '/api/bans', isBanItemArray, 'Failed to load bans'),
   ]);
 
   return {
     announcements: announcements ?? [],
+    bans: bans as BanItem[] | null,
     buildingCount: buildings?.length ?? null,
+    buildings: buildings as Building[] | null,
     historySummary: (history as PlayersHistoryPayload | null)?.summary ?? null,
     onlinePlayers: onlinePlayers ?? FALLBACK_ONLINE_PLAYERS,
   };
@@ -107,7 +116,14 @@ export async function GET(request: Request, context: RouteContext) {
   const siteOrigin = getRequestOriginFromRequest(request);
 
   return new Response(
-    buildPcl2HomepageXml({ ...data, locale: rawLocale, serverAddress, siteOrigin }),
+    buildPcl2HomepageXml({
+      ...data,
+      displayAddress: process.env.MINECRAFT_DISPLAY_ADDRESS || 'mikserver.noctiro.moe',
+      echoQuotes,
+      locale: rawLocale,
+      serverAddress,
+      siteOrigin,
+    }),
     {
       headers: {
         'Access-Control-Allow-Origin': '*',
