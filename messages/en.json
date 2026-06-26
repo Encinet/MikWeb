@@ -27,9 +27,56 @@
     }
   },
   "pcl2Page": {
+    "badge": "PCL2 CUSTOM HOME",
     "title": "PCL2 Homepage",
-    "description": "1. Settings -> Personalization -> Custom homepage\n2. Click “Online update”\n3. Enter the address below in the download address field\n4. Return to the launcher home page and you're done!",
-    "addressLabel": "Homepage URL"
+    "subtitle": "Bring Mik server status, announcements, building highlights, and quick links into the launcher home page.",
+    "description": "Open Settings -> Personalization -> Custom homepage, choose Online update, paste the URL above into the download address field, then return to the launcher home page.",
+    "addressLabel": "Homepage URL",
+    "stepsTitle": "Guide",
+    "steps": {
+      "settings": {
+        "title": "Open personalization",
+        "description": "Go to the personalization page in PCL2 settings."
+      },
+      "update": {
+        "title": "Use online update",
+        "description": "Switch the custom homepage to online update mode."
+      },
+      "address": {
+        "title": "Paste the URL",
+        "description": "Put the homepage URL from this page into the download address field."
+      },
+      "done": {
+        "title": "Return home",
+        "description": "Reopen the launcher home page to see the Mik page."
+      }
+    }
+  },
+  "mcpPage": {
+    "badge": "MCP SERVER",
+    "title": "MCP Config",
+    "subtitle": "Connect Mik server status, building records, ban records, announcements, and Wiki search to MCP-capable clients.",
+    "description": "The Mik MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
+    "configTitle": "Config Text",
+    "stepsTitle": "Guide",
+    "steps": {
+      "copy": {
+        "title": "Copy config",
+        "description": "Copy the JSON on the left into an MCP-capable client."
+      },
+      "client": {
+        "title": "Open client settings",
+        "description": "Go to the MCP configuration page in your client."
+      },
+      "connect": {
+        "title": "Add HTTP server",
+        "description": "Add Mik as a remote MCP service."
+      },
+      "done": {
+        "title": "Test tools",
+        "description": "After connecting, query players, buildings, announcements, and Wiki content."
+      }
+    }
   },
   "home": {
     "hero": {
@@ -223,7 +270,8 @@
     "navigation": "Site Navigation",
     "siteInfo": "Site Info",
     "links": {
-      "pcl2Homepage": "PCL2 Homepage"
+      "pcl2Homepage": "PCL2 Homepage",
+      "mcpConfig": "MCP Config"
     },
     "legal": {
       "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",

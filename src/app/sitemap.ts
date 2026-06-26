@@ -8,7 +8,7 @@ import { SITE_URL } from '@/site/config/site-config';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
-  const staticPages = ['', '/buildings', '/wiki', '/bans'];
+  const staticPages = ['', '/buildings', '/wiki', '/map', '/bans', '/pcl2', '/mcp'];
 
   const locales = routing.locales;
 

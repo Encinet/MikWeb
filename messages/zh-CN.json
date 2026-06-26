@@ -27,9 +27,56 @@
     }
   },
   "pcl2Page": {
+    "badge": "PCL2 CUSTOM HOME",
     "title": "PCL2 主页",
-    "description": "1. 设置 -> 个性化 -> 自定义主页\n2. 点击“联网更新”\n3. 在“下载地址”栏输入下方地址\n4. 返回启动页，完成！",
-    "addressLabel": "主页地址"
+    "subtitle": "把 Mik 的服务器状态、公告、建筑收录和快捷入口放进启动器首页。",
+    "description": "设置 -> 个性化 -> 自定义主页，点击“联网更新”，在“下载地址”栏输入上方地址，然后返回启动页即可完成。",
+    "addressLabel": "主页地址",
+    "stepsTitle": "操作指南",
+    "steps": {
+      "settings": {
+        "title": "进入个性化",
+        "description": "打开 PCL2 设置里的个性化页面。"
+      },
+      "update": {
+        "title": "选择联网更新",
+        "description": "切换到自定义主页的联网更新模式。"
+      },
+      "address": {
+        "title": "粘贴地址",
+        "description": "把页面中的主页地址填入下载地址栏。"
+      },
+      "done": {
+        "title": "返回启动页",
+        "description": "重新打开启动页后即可看到 Mik 首页。"
+      }
+    }
+  },
+  "mcpPage": {
+    "badge": "MCP SERVER",
+    "title": "MCP 配置",
+    "subtitle": "把 Mik 的服务器状态、建筑收录、封禁记录、公告和 Wiki 搜索接入支持 MCP 的客户端。",
+    "description": "Mik MCP 服务提供玩家在线状态、建筑收录、封禁记录、公告和 Wiki 搜索工具。",
+    "configTitle": "配置文本",
+    "stepsTitle": "操作指南",
+    "steps": {
+      "copy": {
+        "title": "复制配置",
+        "description": "复制左侧 JSON 到支持 MCP 的客户端。"
+      },
+      "client": {
+        "title": "打开客户端设置",
+        "description": "进入支持 MCP 的客户端配置页面。"
+      },
+      "connect": {
+        "title": "添加 HTTP 服务",
+        "description": "将 Mik 添加为远程 MCP 服务。"
+      },
+      "done": {
+        "title": "测试工具",
+        "description": "连接后可查询在线玩家、建筑、公告和 Wiki。"
+      }
+    }
   },
   "home": {
     "hero": {
@@ -223,7 +270,8 @@
     "navigation": "站内导航",
     "siteInfo": "本站信息",
     "links": {
-      "pcl2Homepage": "PCL2 主页"
+      "pcl2Homepage": "PCL2 主页",
+      "mcpConfig": "MCP 配置"
     },
     "legal": {
       "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",

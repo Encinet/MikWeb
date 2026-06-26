@@ -10,6 +10,9 @@ import {
   SOURCE_CODE_URL,
 } from '@/site/config/site-config';
 
+const COPYRIGHT_START_YEAR = 2021;
+const COPYRIGHT_BUILD_YEAR = new Date().getFullYear();
+
 export default async function SiteFooter() {
   const t = await getTranslations();
 
@@ -20,6 +23,7 @@ export default async function SiteFooter() {
     { href: '/map', label: t('nav.items.map') },
     { href: '/bans', label: t('nav.items.bans') },
     { href: '/pcl2', label: t('footer.links.pcl2Homepage') },
+    { href: '/mcp', label: t('footer.links.mcpConfig') },
   ];
 
   return (
@@ -38,7 +42,7 @@ export default async function SiteFooter() {
           </Link>
           <p className="site-footer__desc">{t('metadata.description')}</p>
           <p className="site-footer__copyright">
-            &copy; 2021-2026{' '}
+            &copy; {COPYRIGHT_START_YEAR}-{COPYRIGHT_BUILD_YEAR}{' '}
             <a href={ORGANIZATION_URL} target="_blank" rel="noopener noreferrer">
               {ORGANIZATION_NAME}
             </a>
