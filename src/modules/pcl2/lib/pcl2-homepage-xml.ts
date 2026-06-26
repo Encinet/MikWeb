@@ -444,7 +444,7 @@ function buildBanCard(data: Pcl2HomepageData): XamlNode {
         ],
       ),
     ),
-    { isSwapped: false },
+    { isSwapped: true },
   );
 }
 
