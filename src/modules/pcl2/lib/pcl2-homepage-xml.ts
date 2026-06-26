@@ -3,7 +3,10 @@ import type { BanItem } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
 import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
 import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
-import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
+import type {
+  PlayerOnlinePayload,
+  PlayersHistorySummary,
+} from '@/modules/player/model/player-types';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
 import { getPcl2HomepagePath, SITE_NAME } from '@/site/config/site-config';
@@ -21,6 +24,7 @@ interface Pcl2HomepageData {
   buildingCount: number | null;
   buildings: Building[] | null;
   echoQuotes: EchoQuote[];
+  historySummary: PlayersHistorySummary | null;
   locale: AppLocale;
   onlinePlayers: PlayerOnlinePayload;
   siteOrigin: string;
@@ -254,6 +258,10 @@ function getStatus(data: Pcl2HomepageData) {
   return { color: '#2ECC40', text: copy.online(online) };
 }
 
+function fmtPlayerCount(count: number, locale: AppLocale): string {
+  return locale === 'zh-CN' ? `${count} 人` : `${count} players`;
+}
+
 // ── Card builders ──────────────────────────────────────
 
 function buildStatusCard(data: Pcl2HomepageData): XamlNode {
@@ -449,7 +457,20 @@ function buildBanCard(data: Pcl2HomepageData): XamlNode {
 function buildSummaryCard(data: Pcl2HomepageData): XamlNode {
   const copy = PCL2_COPY[data.locale].stats;
   const items: StatItem[] = [];
-
+  if (data.historySummary) {
+    items.push({
+      label: copy.peakOnline,
+      value: fmtPlayerCount(data.historySummary.peak_online, data.locale),
+    });
+    items.push({
+      label: copy.averageOnline,
+      value: fmtPlayerCount(Number(data.historySummary.avg_online.toFixed(1)), data.locale),
+    });
+    items.push({
+      label: copy.totalPlayers,
+      value: fmtPlayerCount(data.historySummary.total_unique_players, data.locale),
+    });
+  }
   if (data.buildingCount !== null)
     items.push({
       label: copy.buildings,
