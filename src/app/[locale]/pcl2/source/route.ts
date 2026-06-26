@@ -8,6 +8,7 @@ import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
 import { buildPcl2HomepageXml } from '@/modules/pcl2/lib/pcl2-homepage-xml';
 import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 import { getRequestOriginFromRequest } from '@/shared/url/request-url';
@@ -31,18 +32,13 @@ const FALLBACK_ONLINE_PLAYERS: PlayerOnlinePayload = {
   players: [],
 };
 
-function apiUrl(request: Request, pathname: string): string {
-  return new URL(pathname, request.url).href;
-}
-
 async function loadJson<TData>(
-  request: Request,
   pathname: string,
   validate: (value: unknown) => value is TData,
   fallbackErrorMessage: string,
 ) {
   const result = await fetchValidatedJson({
-    url: apiUrl(request, pathname),
+    url: dataApiUrl(pathname),
     validate,
     timeoutMs: 8_000,
     cache: 'no-store',
@@ -62,17 +58,12 @@ async function loadJson<TData>(
   return null;
 }
 
-async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiData> {
+async function loadPcl2HomepageData(): Promise<Pcl2HomepageApiData> {
   const [onlinePlayers, announcements, buildings, bans] = await Promise.all([
-    loadJson(request, '/api/players', isPlayerOnlinePayload, 'Failed to load online players'),
-    loadJson(
-      request,
-      '/api/announcements',
-      isAnnouncementItemArray,
-      'Failed to load announcements',
-    ),
-    loadJson(request, '/api/buildings', isBuildingArray, 'Failed to load buildings'),
-    loadJson(request, '/api/bans', isBanItemArray, 'Failed to load bans'),
+    loadJson('/players', isPlayerOnlinePayload, 'Failed to load online players'),
+    loadJson('/announcements', isAnnouncementItemArray, 'Failed to load announcements'),
+    loadJson('/buildings', isBuildingArray, 'Failed to load buildings'),
+    loadJson('/bans', isBanItemArray, 'Failed to load bans'),
   ]);
 
   return {
@@ -92,7 +83,7 @@ export async function GET(request: Request, context: RouteContext) {
   }
 
   const serverAddress = process.env.MINECRAFT_SERVER_ADDRESS || 'mcmik.top';
-  const data = await loadPcl2HomepageData(request);
+  const data = await loadPcl2HomepageData();
   const siteOrigin = getRequestOriginFromRequest(request);
 
   return new Response(
