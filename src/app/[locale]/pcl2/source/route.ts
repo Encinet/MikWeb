@@ -4,7 +4,7 @@ import type { BanItem } from '@/modules/ban/model/ban-types';
 import { isBanItemArray } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
 import { isBuildingArray } from '@/modules/building/model/building-types';
-import { echoQuotes } from '@/modules/pcl2/echo-quotes';
+import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
 import { buildPcl2HomepageXml } from '@/modules/pcl2/lib/pcl2-homepage-xml';
 import type {
   PlayerOnlinePayload,

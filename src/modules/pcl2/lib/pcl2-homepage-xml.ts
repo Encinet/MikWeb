@@ -1,7 +1,8 @@
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import type { BanItem } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
-import type { EchoQuote } from '@/modules/pcl2/echo-quote-types';
+import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
+import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
 import type {
   PlayerOnlinePayload,
   PlayersHistorySummary,
@@ -266,7 +267,10 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
   const status = getStatus(data);
   const quote =
     data.echoQuotes.length > 0
-      ? data.echoQuotes[Math.floor(Math.random() * data.echoQuotes.length)].text
+      ? getEchoText(
+          data.echoQuotes[Math.floor(Math.random() * data.echoQuotes.length)],
+          data.locale,
+        )
       : data.locale === 'zh-CN'
         ? '今天也是方块人的一天！'
         : 'Today is a blocky day!';
