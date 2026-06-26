@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import type { BanItem } from '@/modules/ban/model/ban-types';
 import { isBanItemArray } from '@/modules/ban/model/ban-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { SectionMessage } from '@/shared/ui/feedback/async-state';
 
@@ -32,7 +33,7 @@ export default function BansPage() {
   useEffect(() => {
     const fetchBans = async () => {
       const bansResult = await fetchValidatedJson({
-        url: '/api/bans',
+        url: dataApiUrl('/bans'),
         validate: isBanItemArray,
         timeoutMs: 15_000,
         fallbackErrorMessage: commonT('states.error'),

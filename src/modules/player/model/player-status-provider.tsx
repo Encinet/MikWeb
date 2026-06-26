@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 
 import { PlayerStatusContext } from './player-status-state-context';
@@ -47,7 +48,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
     isFetchingRef.current = true;
 
     const result = await fetchValidatedJson({
-      url: '/api/players/online',
+      url: dataApiUrl('/players'),
       validate: isPlayerOnlinePayload,
       timeoutMs: PLAYER_REQUEST_TIMEOUT_MS,
       cache: 'no-store',

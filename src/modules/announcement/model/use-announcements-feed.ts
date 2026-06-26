@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 
 interface UseAnnouncementsFeedOptions {
@@ -20,7 +21,7 @@ export function useAnnouncementsFeed({ fallbackErrorMessage }: UseAnnouncementsF
 
     const loadAnnouncements = async () => {
       const announcementsResult = await fetchValidatedJson({
-        url: '/api/announcements',
+        url: dataApiUrl('/announcements'),
         validate: isAnnouncementItemArray,
         timeoutMs: 15_000,
         fallbackErrorMessage,

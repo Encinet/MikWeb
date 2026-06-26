@@ -2,15 +2,9 @@ import type { AnnouncementItem } from '@/modules/announcement/model/announcement
 import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
 import { isBuildingArray } from '@/modules/building/model/building-types';
 import { buildPcl2HomepageXml } from '@/modules/pcl2/lib/pcl2-homepage-xml';
-import type {
-  PlayerOnlinePayload,
-  PlayersHistoryPayload,
-  PlayersHistorySummary,
-} from '@/modules/player/model/player-types';
-import {
-  isPlayerOnlinePayload,
-  isPlayersHistoryPayload,
-} from '@/modules/player/model/player-types';
+import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 import { getRequestOriginFromRequest } from '@/shared/url/request-url';
@@ -20,7 +14,6 @@ export const dynamic = 'force-dynamic';
 interface Pcl2HomepageApiData {
   announcements: AnnouncementItem[];
   buildingCount: number | null;
-  historySummary: PlayersHistorySummary | null;
   onlinePlayers: PlayerOnlinePayload;
 }
 
@@ -33,18 +26,13 @@ const FALLBACK_ONLINE_PLAYERS: PlayerOnlinePayload = {
   players: [],
 };
 
-function apiUrl(request: Request, pathname: string): string {
-  return new URL(pathname, request.url).href;
-}
-
 async function loadJson<TData>(
-  request: Request,
   pathname: string,
   validate: (value: unknown) => value is TData,
   fallbackErrorMessage: string,
 ) {
   const result = await fetchValidatedJson({
-    url: apiUrl(request, pathname),
+    url: dataApiUrl(pathname),
     validate,
     timeoutMs: 8_000,
     cache: 'no-store',
@@ -64,33 +52,16 @@ async function loadJson<TData>(
   return null;
 }
 
-async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiData> {
-  const [onlinePlayers, announcements, history, buildings] = await Promise.all([
-    loadJson(
-      request,
-      '/api/players/online',
-      isPlayerOnlinePayload,
-      'Failed to load online players',
-    ),
-    loadJson(
-      request,
-      '/api/announcements',
-      isAnnouncementItemArray,
-      'Failed to load announcements',
-    ),
-    loadJson(
-      request,
-      '/api/players/history',
-      isPlayersHistoryPayload,
-      'Failed to load player history',
-    ),
-    loadJson(request, '/api/buildings', isBuildingArray, 'Failed to load buildings'),
+async function loadPcl2HomepageData(): Promise<Pcl2HomepageApiData> {
+  const [onlinePlayers, announcements, buildings] = await Promise.all([
+    loadJson('/players', isPlayerOnlinePayload, 'Failed to load online players'),
+    loadJson('/announcements', isAnnouncementItemArray, 'Failed to load announcements'),
+    loadJson('/buildings', isBuildingArray, 'Failed to load buildings'),
   ]);
 
   return {
     announcements: announcements ?? [],
     buildingCount: buildings?.length ?? null,
-    historySummary: (history as PlayersHistoryPayload | null)?.summary ?? null,
     onlinePlayers: onlinePlayers ?? FALLBACK_ONLINE_PLAYERS,
   };
 }
@@ -102,8 +73,8 @@ export async function GET(request: Request, context: RouteContext) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const serverAddress = process.env.MINECRAFT_SERVER_ADDRESS || 'mcmik.top';
-  const data = await loadPcl2HomepageData(request);
+  const serverAddress = 'mcmik.top';
+  const data = await loadPcl2HomepageData();
   const siteOrigin = getRequestOriginFromRequest(request);
 
   return new Response(

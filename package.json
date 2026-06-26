@@ -12,7 +12,6 @@
     "check": "biome check . && tsc --noEmit -p tsconfig.check.json && bun run check:wiki"
   },
   "dependencies": {
-    "@otplib/core": "^13.4.1",
     "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.42.0",
     "lucide-react": "^0.575.0",

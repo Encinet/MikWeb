@@ -1,12 +1,11 @@
 # MikWeb
 
-Mik Casual 官网与内容站点，支持 `zh-CN` / `en` 双语，包含官网页面、Wiki、建筑展示、封禁列表、公告代理接口以及 MCP 服务端点。
+Mik Casual 官网与内容站点，支持 `zh-CN` / `en` 双语，包含官网页面、Wiki、建筑展示、封禁列表、公告展示、PCL2 主页以及 MCP 服务端点。
 
 ## 快速开始
 
 ```bash
 bun install
-cp .env.example .env
 bun dev
 ```
 
@@ -40,40 +39,14 @@ src/
 
 协作规则、命名约定和 Wiki 规范见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
-## 环境变量
+## 项目路由
 
-| 变量 | 必填 | 说明 |
-|------|------|------|
-| `MINECRAFT_SERVER_URL` | ✓ | 主服务器 API 地址 |
-| `TOTP_SECRET` | — | 主服务器签名密钥，随请求头 `X-TOTP-Token` 转发 |
-| `MINECRAFT_SERVER_ADDRESS` | — | 在线人数回退查询地址 |
-| `MINECRAFT_SERVER_PORT` | — | 在线人数回退查询端口，默认 `25565` |
-| `BUILDINGS_SERVER_URL` | — | 建筑服务地址，默认回退到 `MINECRAFT_SERVER_URL` |
-| `BUILDINGS_TOTP_SECRET` | — | 建筑服务签名密钥，默认回退到 `TOTP_SECRET` |
-| `NEXT_PUBLIC_BASE_URL` | — | 对外基础地址，默认 `http://localhost:3000` |
+MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数据固定从 `https://data.mcmik.top/api` 读取。
 
-生成密钥：
+本站保留的动态入口：
 
-```bash
-openssl rand -hex 32
-```
-
-## API 路由
-
-除 `GET /api/mcp` 外，其余 `/api/*` 路由均通过 `src/shared/api/proxy-route.ts` 代理上游服务。
-
-完整 API 文档：[OpenAPI (Swagger UI)](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Encinet/MikWeb/refs/heads/main/openapi.yaml)
-
-| 路由 | 说明 |
-|------|------|
-| `GET /api/players/online` | 在线玩家与人数；主接口失败时可回退查询 |
-| `GET /api/players/history` | 历史在线人数曲线 |
-| `GET /api/players/:uuid/history` | 单个玩家会话历史 |
-| `GET /api/announcements` | 公告列表 |
-| `GET /api/buildings` | 建筑列表 |
-| `GET /api/bans` | 封禁列表 |
-| `GET /api/mcp` | MCP 工具入口 |
-| `GET /:locale/pcl2` | PCL2 主页，中文地址 `https://mcmik.top/zh-CN/pcl2`，英文地址 `https://mcmik.top/en/pcl2`；浏览器访问显示说明页，PCL2 请求返回对应语言的 XAML |
+- `GET /api/mcp`：MCP 工具入口
+- `GET /:locale/pcl2`：PCL2 主页；浏览器访问显示说明页，PCL2 请求返回对应语言的 XAML
 
 ## MCP
 

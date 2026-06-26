@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import type { Building } from './building-types';
 import { isBuildingArray } from './building-types';
@@ -27,7 +28,7 @@ export function BuildingsProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     const result = await fetchValidatedJson({
-      url: '/api/buildings',
+      url: dataApiUrl('/buildings'),
       validate: isBuildingArray,
       timeoutMs: BUILDINGS_REQUEST_TIMEOUT_MS,
       cache: 'default',

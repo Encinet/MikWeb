@@ -1,12 +1,12 @@
 # Contributing
 
-协作规则、内容规范和维护边界统一放在这里。项目简介、运行方式、环境变量、API 路由和 MCP 接入信息见 [README.md](./README.md)。
+协作规则、内容规范和维护边界统一放在这里。项目简介、运行方式、项目路由和 MCP 接入信息见 [README.md](./README.md)。
 
 ## 开始
 
 ```bash
 bun install
-cp .env.example .env
+bun dev
 ```
 
 ## 检查
@@ -29,7 +29,7 @@ bun check
 |------|------|------|
 | Wiki / 内容编辑 | `content/<locale>/<group>/` | `bun check:wiki` |
 | 前端开发 | `src/app/` `src/modules/` `src/site/` `src/shared/` | `bun check` |
-| API / MCP 维护 | `src/app/api/` `src/shared/api/proxy-route.ts` `src/app/api/mcp/route.ts` | `bun check` |
+| API / MCP 维护 | `src/app/api/mcp/route.ts` `src/shared/api/` | `bun check` |
 | 文档 / 翻译维护 | `README.md` `CONTRIBUTING.md` `messages/` `content/<locale>/<group>/` | 按改动范围执行 |
 
 ## 结构
@@ -66,7 +66,7 @@ src/
 - React 组件、Provider、类型名使用 `PascalCase`
 - 函数、变量使用 `camelCase`
 - 避免新增 `utils.ts`、`helpers.ts`、`common.ts`、`model.ts` 这类泛名文件
-- 文件名应直接体现职责，例如 `player-history-panel.tsx`、`building-types.ts`
+- 文件名应直接体现职责，例如 `home-live-overview.tsx`、`building-types.ts`
 
 ## 代码规则
 
@@ -254,12 +254,12 @@ icon: Home
 
 ## API / MCP
 
-- `/api/*` 的代理行为优先复用 `src/shared/api/proxy-route.ts`
+- 数据 API 由独立的 `mikdata` Worker 提供；MikWeb 内不要重新引入 Minecraft 上游代理或 TOTP secret
 - MCP 工具变更后，同步更新 [README.md](./README.md) 中的对外说明
-- 涉及响应结构、缓存行为或新增端点时，同步更新 README
+- 涉及数据 API 响应结构、缓存行为或新增端点时，在 `mikdata` 项目维护对应文档
 
 ## 文档维护
 
-- `README.md` 保留项目入口、运行方式、API 路由和 MCP 接入信息
+- `README.md` 保留项目入口、运行方式、项目路由和 MCP 接入信息
 - `CONTRIBUTING.md` 维护协作流程、内容规范、目录约定和提交规则
 - 修改检查命令、Wiki 元信息结构或接口说明时，相关文档必须一起更新

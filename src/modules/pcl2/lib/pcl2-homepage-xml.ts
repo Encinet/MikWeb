@@ -1,8 +1,5 @@
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
-import type {
-  PlayerOnlinePayload,
-  PlayersHistorySummary,
-} from '@/modules/player/model/player-types';
+import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
 import { getPcl2HomepagePath, SITE_NAME } from '@/site/config/site-config';
@@ -15,7 +12,6 @@ const MAX_PCL2_ANNOUNCEMENTS = 5;
 interface Pcl2HomepageData {
   announcements: AnnouncementItem[];
   buildingCount: number | null;
-  historySummary: PlayersHistorySummary | null;
   locale: AppLocale;
   onlinePlayers: PlayerOnlinePayload;
   siteOrigin: string;
@@ -284,10 +280,6 @@ function buildStatsGrid(items: StatItem[]): XamlNode {
   );
 }
 
-function formatPlayerCount(count: number, locale: AppLocale): string {
-  return locale === 'zh-CN' ? `${count} 人` : `${count} players`;
-}
-
 function getServerStatus(data: Pcl2HomepageData) {
   const onlineCount = data.onlinePlayers.online ?? -1;
   const copy = PCL2_COPY[data.locale].status;
@@ -457,21 +449,6 @@ function buildAnnouncementCard(data: Pcl2HomepageData): XamlNode {
 function buildSummaryCard(data: Pcl2HomepageData): XamlNode {
   const copy = PCL2_COPY[data.locale].stats;
   const stats: StatItem[] = [];
-
-  if (data.historySummary) {
-    stats.push({
-      label: copy.peakOnline,
-      value: formatPlayerCount(data.historySummary.peak_online, data.locale),
-    });
-    stats.push({
-      label: copy.averageOnline,
-      value: formatPlayerCount(Number(data.historySummary.avg_online.toFixed(1)), data.locale),
-    });
-    stats.push({
-      label: copy.totalPlayers,
-      value: formatPlayerCount(data.historySummary.total_unique_players, data.locale),
-    });
-  }
 
   if (data.buildingCount !== null) {
     stats.push({

@@ -19,7 +19,7 @@ export default function proxy(request: NextRequest) {
     return NextResponse.rewrite(pcl2Rewrite);
   }
 
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  if (request.nextUrl.pathname === '/api/mcp') {
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 204, headers: corsHeaders });
     }
@@ -65,5 +65,5 @@ function isBrowserDocumentRequest(request: NextRequest): boolean {
 }
 
 export const config = {
-  matcher: ['/((?!_next|_vercel|.*\\..*).*)', '/api/:path*'],
+  matcher: ['/((?!_next|_vercel|.*\\..*).*)', '/api/mcp'],
 };

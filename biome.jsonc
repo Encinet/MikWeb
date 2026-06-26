@@ -63,7 +63,7 @@
                 "selector": {
                   "kind": "objectLiteralProperty"
                 },
-                "match": "Webkit[A-Za-z]+|short_name|start_url|background_color|theme_color|query-input|X-TOTP-Token|Accept|(.*)"
+                "match": "Webkit[A-Za-z]+|short_name|start_url|background_color|theme_color|query-input|Accept|(.*)"
               }
             ]
           }

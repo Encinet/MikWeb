@@ -13,8 +13,10 @@ import type {
   WikiSectionContentMap,
 } from '@/modules/wiki/model/wiki-section-types';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+import { dataApiUrl } from '@/shared/api/data-api-url';
+import { SITE_URL } from '@/site/config/site-config';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const BASE_URL = SITE_URL;
 
 const wikiIndexCache = new Map<string, Promise<SearchableWikiBlock[]>>();
 
@@ -64,9 +66,7 @@ const handler = createMcpHandler(
         inputSchema: {},
       },
       async () => {
-        const data: PlayerOnlinePayload = await apiFetch(
-          new URL('/api/players/online', BASE_URL).href,
-        );
+        const data: PlayerOnlinePayload = await apiFetch(dataApiUrl('/players'));
 
         if (data.online === -1) {
           return { content: [{ type: 'text', text: 'Server offline.' }] };
@@ -103,7 +103,7 @@ const handler = createMcpHandler(
         },
       },
       async ({ locale }) => {
-        const data: BuildingsApiResponse = await apiFetch(new URL('/api/buildings', BASE_URL).href);
+        const data: BuildingsApiResponse = await apiFetch(dataApiUrl('/buildings'));
 
         if (data.length === 0) {
           return {
@@ -172,7 +172,7 @@ const handler = createMcpHandler(
         inputSchema: {},
       },
       async () => {
-        const data: BansApiResponse = await apiFetch(new URL('/api/bans', BASE_URL).href);
+        const data: BansApiResponse = await apiFetch(dataApiUrl('/bans'));
 
         if (data.length === 0) {
           return {
@@ -213,9 +213,7 @@ const handler = createMcpHandler(
         },
       },
       async ({ count }) => {
-        const data: AnnouncementsApiResponse = await apiFetch(
-          new URL('/api/announcements', BASE_URL).href,
-        );
+        const data: AnnouncementsApiResponse = await apiFetch(dataApiUrl('/announcements'));
 
         if (data.length === 0) {
           return {
