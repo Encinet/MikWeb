@@ -7,7 +7,7 @@
       "dependencies": {
         "@otplib/core": "^13.4.1",
         "@vercel/analytics": "^2.0.1",
-        "framer-motion": "^12.40.0",
+        "framer-motion": "^12.42.0",
         "lucide-react": "^0.575.0",
         "mcp-handler": "^1.1.0",
         "next": "16.1.6",
@@ -24,7 +24,7 @@
         "remark-gfm": "^4.0.1",
       },
       "devDependencies": {
-        "@biomejs/biome": "^2.5.0",
+        "@biomejs/biome": "^2.5.1",
         "@tailwindcss/postcss": "^4.3.1",
         "@types/node": "^20.19.43",
         "@types/react": "^19.2.17",
