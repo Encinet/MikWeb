@@ -28,11 +28,6 @@ interface Pcl2HomepageData {
   displayAddress: string;
 }
 
-interface StatItem {
-  label: string;
-  value: string;
-}
-
 const PCL2_COPY = {
   'zh-CN': {
     about: {
@@ -88,15 +83,6 @@ const PCL2_COPY = {
       joinTooltip: (addr: string) => `使用当前选中的 Minecraft 版本启动，并自动进入 ${addr}`,
       refreshButton: '刷新',
       statusTitle: `${SITE_NAME} 服务器状态`,
-    },
-    stats: {
-      averageOnline: '平均在线',
-      buildings: '建筑作品',
-      empty: '暂无法获取统计数据',
-      peakOnline: '历史峰值',
-      playersUnit: '人',
-      title: '服务器数据',
-      totalPlayers: '独立玩家',
     },
     status: {
       empty: '无人在线',
@@ -159,15 +145,6 @@ const PCL2_COPY = {
         `Launch the currently selected Minecraft version and join ${addr}`,
       refreshButton: 'Refresh',
       statusTitle: `${SITE_NAME} server status`,
-    },
-    stats: {
-      averageOnline: 'Average online',
-      buildings: 'Buildings',
-      empty: 'Server stats are unavailable',
-      peakOnline: 'Peak online',
-      playersUnit: 'players',
-      title: 'Server stats',
-      totalPlayers: 'Unique players',
     },
     status: {
       empty: 'No players online',
@@ -446,81 +423,6 @@ function buildBanCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildSummaryCard(data: Pcl2HomepageData): XamlNode {
-  const copy = PCL2_COPY[data.locale].stats;
-  const items: StatItem[] = [];
-
-  if (data.buildingCount !== null)
-    items.push({
-      label: copy.buildings,
-      value: data.locale === 'zh-CN' ? `${data.buildingCount} 个` : String(data.buildingCount),
-    });
-  if (items.length === 0) return card(copy.title, [tb(copy.empty)]);
-
-  const rowCount = Math.ceil(items.length / 2);
-  return card(
-    copy.title,
-    [
-      xaml(
-        'Grid',
-        [],
-        [
-          xaml(
-            'Grid.ColumnDefinitions',
-            [],
-            [
-              xaml('ColumnDefinition', [attr('Width', '*')]),
-              xaml('ColumnDefinition', [attr('Width', '*')]),
-            ],
-          ),
-          xaml(
-            'Grid.RowDefinitions',
-            [],
-            Array.from({ length: rowCount }, () => xaml('RowDefinition', [attr('Height', 'Auto')])),
-          ),
-          ...items.map((item, idx) => {
-            const row = Math.floor(idx / 2);
-            const col = idx % 2;
-            return xaml(
-              'Border',
-              [
-                attr('Background', '#0DFFFFFF'),
-                attr('CornerRadius', 4),
-                attr('Grid.Column', col),
-                attr('Grid.Row', row),
-                attr(
-                  'Margin',
-                  `${col === 1 ? 6 : 0},0,${col === 0 ? 6 : 0},${row < rowCount - 1 ? 10 : 0}`,
-                ),
-                attr('Padding', '12,8,12,10'),
-              ],
-              [
-                sp(
-                  [],
-                  [
-                    tb(item.label, [
-                      attr('FontSize', 11),
-                      attr('Foreground', '#888888'),
-                      attr('Margin', '0,0,0,3'),
-                      attr('TextWrapping', null),
-                    ]),
-                    tb(item.value, [
-                      attr('FontSize', 18),
-                      attr('FontWeight', 'Bold'),
-                      attr('TextWrapping', null),
-                    ]),
-                  ],
-                ),
-              ],
-            );
-          }),
-        ],
-      ),
-    ],
-    { isSwapped: false },
-  );
-}
-
 function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
   const copy = PCL2_COPY[data.locale].buildings;
   if (!data.buildings || data.buildings.length === 0) return card(copy.title, [tb(copy.empty)]);
@@ -617,7 +519,6 @@ export function buildPcl2HomepageXml(data: Pcl2HomepageData): string {
     buildPlayerCard(data),
     buildAnnouncementCard(data),
     buildBanCard(data),
-    buildSummaryCard(data),
     buildBuildingCard(data),
     buildLinksCard(data.locale, data.siteOrigin),
     buildAboutCard(data.locale, data.siteOrigin),
