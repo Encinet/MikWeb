@@ -118,7 +118,7 @@ export async function GET(request: Request, context: RouteContext) {
   return new Response(
     buildPcl2HomepageXml({
       ...data,
-      displayAddress: process.env.MINECRAFT_DISPLAY_ADDRESS || 'mikserver.noctiro.moe',
+      displayAddress: process.env.MINECRAFT_DISPLAY_ADDRESS || 'mcmik.top',
       echoQuotes,
       locale: rawLocale,
       serverAddress,
