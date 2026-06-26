@@ -3,10 +3,7 @@ import type { BanItem } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
 import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
 import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
-import type {
-  PlayerOnlinePayload,
-  PlayersHistorySummary,
-} from '@/modules/player/model/player-types';
+import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
 import { getPcl2HomepagePath, SITE_NAME } from '@/site/config/site-config';
@@ -24,7 +21,6 @@ interface Pcl2HomepageData {
   buildingCount: number | null;
   buildings: Building[] | null;
   echoQuotes: EchoQuote[];
-  historySummary: PlayersHistorySummary | null;
   locale: AppLocale;
   onlinePlayers: PlayerOnlinePayload;
   siteOrigin: string;
