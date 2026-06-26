@@ -42,9 +42,6 @@
       "serverAddress": "mcmik.top"
     },
     "showcase": {
-      "eyebrow": "Server Highlights",
-      "title": "Show the server before explaining it.",
-      "description": "After the hero, the page leads with the world, builds, map, and joining path through image-led Minecraft cards instead of long copy blocks.",
       "builds": {
         "title": "Long-term builds and player work",
         "description": "From central areas to personal projects, each build can become part of the server archive."
@@ -64,76 +61,12 @@
       "records": {
         "title": "Public records",
         "description": "Moderation and ban records are publicly available."
-      },
-      "community": {
-        "title": "Casual creative community",
-        "description": "Less about short-term hype, more about long-term play, collaboration, and lasting work."
-      }
-    },
-    "about": {
-      "eyebrow": "Who We Are",
-      "title": "A Minecraft community built around building and long-term play.",
-      "description": "Mik cares about a stable world, clear rules, player collaboration, and every project worth preserving in the server archive.",
-      "detail": "It is not a one-off event or a pure utility server; it is a shared world that keeps growing over time."
-    },
-    "explore": {
-      "eyebrow": "Explore",
-      "title": "Start understanding the server here.",
-      "description": "Buildings, documentation, map access, and public records are placed clearly so you can learn the community before diving into details.",
-      "buildings": {
-        "title": "Building Gallery",
-        "description": "Browse player builds and long-term server projects."
-      },
-      "wiki": {
-        "title": "Wiki Docs",
-        "description": "Read rules, tutorials, joining steps, and frequently asked questions."
-      },
-      "map": {
-        "title": "Server Map",
-        "description": "Open the live map to view the world and player locations."
-      },
-      "bans": {
-        "title": "Ban Records",
-        "description": "View public moderation and ban records."
-      }
-    },
-    "builds": {
-      "eyebrow": "Featured Builds",
-      "title": "Let player work become the homepage lead.",
-      "description": "The v0 establishes a gallery entry point; real screenshots and selected projects can be added next.",
-      "panelTitle": "Server building archive",
-      "panelDescription": "Browse submitted buildings, authors, tags, and project notes. Once real screenshots are ready, this can become a large visual gallery.",
-      "action": "View buildings"
-    },
-    "join": {
-      "eyebrow": "How to Join",
-      "title": "Enter the community in three steps.",
-      "action": "Start application",
-      "steps": {
-        "rules": {
-          "title": "Read the rules",
-          "description": "Understand community boundaries, build protection, and collaboration expectations."
-        },
-        "client": {
-          "title": "Prepare your client",
-          "description": "Confirm your version, mods, and tools match the server guide."
-        },
-        "apply": {
-          "title": "Submit application",
-          "description": "Once approved, you can enter the server and start building."
-        }
       }
     },
     "live": {
-      "eyebrow": "Live Updates",
-      "title": "Announcements, status, and live players.",
-      "description": "These details remain available, but now support the project story instead of leading the page.",
       "statusTitle": "Mik current status",
       "playersOnline": "players online",
       "metricsLabel": "Server metrics",
-      "openMap": "Open map",
-      "viewAnnouncements": "View announcements",
-      "announcementEyebrow": "Server notices",
       "status": {
         "loading": "Fetching status",
         "online": "Server online",
@@ -157,16 +90,6 @@
       },
       "actions": {
         "viewAll": "Click to view all announcements"
-      }
-    },
-    "features": {
-      "creativeFreedom": {
-        "title": "Creative Casual Experience",
-        "description": "The server allows any mods (including hacks) and supports powerful building tools like Axiom and WorldEdit. We are committed to providing maximum freedom for building creators, letting your creativity run wild without restrictions."
-      },
-      "curatedCommunity": {
-        "title": "Curated Player Community",
-        "description": "Through our application system, we carefully select every player who joins the server to ensure a friendly and harmonious community atmosphere. Here, you will meet a group of quality players who love building creation and respect others' works."
       }
     }
   },
@@ -270,11 +193,6 @@
       "title": "Server Map",
       "description": "View the Mik server live map, world coordinates, and active areas inside the site"
     },
-    "hero": {
-      "eyebrow": "LIVE MAP",
-      "title": "Server Map",
-      "description": "View the world map, coordinates, and active areas directly inside the site."
-    },
     "actions": {
       "openExternal": "Open map in new window"
     },
@@ -294,11 +212,6 @@
       "loading": "Loading...",
       "empty": "No ban records"
     },
-    "status": {
-      "permanent": "Permanent",
-      "temporary": "Temporary",
-      "expired": "Expired"
-    },
     "fields": {
       "reason": "Reason",
       "bannedBy": "Banned By",
@@ -309,10 +222,6 @@
   "footer": {
     "navigation": "Site Navigation",
     "siteInfo": "Site Info",
-    "source": {
-      "licensedUnder": "Licensed under Apache 2.0. Source code:",
-      "code": "Encinet/MikWeb"
-    },
     "links": {
       "pcl2Homepage": "PCL2 Homepage"
     },
