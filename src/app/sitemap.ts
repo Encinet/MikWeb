@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { getLocalizedText, isBuildingArray } from '@/modules/building/model/building-types';
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { routing } from '@/shared/i18n/routing';
 import { SITE_URL } from '@/site/config/site-config';
@@ -27,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch buildings for dynamic pages
   const result = await fetchValidatedJson({
-    url: `${SITE_URL}/api/buildings`,
+    url: dataApiUrl('/buildings'),
     validate: isBuildingArray,
     timeoutMs: 15_000,
     fallbackErrorMessage: 'Failed to load buildings for sitemap',

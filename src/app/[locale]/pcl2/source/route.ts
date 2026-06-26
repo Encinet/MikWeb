@@ -6,15 +6,9 @@ import type { Building } from '@/modules/building/model/building-types';
 import { isBuildingArray } from '@/modules/building/model/building-types';
 import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
 import { buildPcl2HomepageXml } from '@/modules/pcl2/lib/pcl2-homepage-xml';
-import type {
-  PlayerOnlinePayload,
-  PlayersHistoryPayload,
-  PlayersHistorySummary,
-} from '@/modules/player/model/player-types';
-import {
-  isPlayerOnlinePayload,
-  isPlayersHistoryPayload,
-} from '@/modules/player/model/player-types';
+import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 import { getRequestOriginFromRequest } from '@/shared/url/request-url';
@@ -26,7 +20,6 @@ interface Pcl2HomepageApiData {
   bans: BanItem[] | null;
   buildingCount: number | null;
   buildings: Building[] | null;
-  historySummary: PlayersHistorySummary | null;
   onlinePlayers: PlayerOnlinePayload;
 }
 
@@ -39,18 +32,13 @@ const FALLBACK_ONLINE_PLAYERS: PlayerOnlinePayload = {
   players: [],
 };
 
-function apiUrl(request: Request, pathname: string): string {
-  return new URL(pathname, request.url).href;
-}
-
 async function loadJson<TData>(
-  request: Request,
   pathname: string,
   validate: (value: unknown) => value is TData,
   fallbackErrorMessage: string,
 ) {
   const result = await fetchValidatedJson({
-    url: apiUrl(request, pathname),
+    url: dataApiUrl(pathname),
     validate,
     timeoutMs: 8_000,
     cache: 'no-store',
@@ -70,28 +58,12 @@ async function loadJson<TData>(
   return null;
 }
 
-async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiData> {
-  const [onlinePlayers, announcements, history, buildings, bans] = await Promise.all([
-    loadJson(
-      request,
-      '/api/players/online',
-      isPlayerOnlinePayload,
-      'Failed to load online players',
-    ),
-    loadJson(
-      request,
-      '/api/announcements',
-      isAnnouncementItemArray,
-      'Failed to load announcements',
-    ),
-    loadJson(
-      request,
-      '/api/players/history',
-      isPlayersHistoryPayload,
-      'Failed to load player history',
-    ),
-    loadJson(request, '/api/buildings', isBuildingArray, 'Failed to load buildings'),
-    loadJson(request, '/api/bans', isBanItemArray, 'Failed to load bans'),
+async function loadPcl2HomepageData(): Promise<Pcl2HomepageApiData> {
+  const [onlinePlayers, announcements, buildings, bans] = await Promise.all([
+    loadJson('/players', isPlayerOnlinePayload, 'Failed to load online players'),
+    loadJson('/announcements', isAnnouncementItemArray, 'Failed to load announcements'),
+    loadJson('/buildings', isBuildingArray, 'Failed to load buildings'),
+    loadJson('/bans', isBanItemArray, 'Failed to load bans'),
   ]);
 
   return {
@@ -99,7 +71,6 @@ async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiDa
     bans: bans as BanItem[] | null,
     buildingCount: buildings?.length ?? null,
     buildings: buildings as Building[] | null,
-    historySummary: (history as PlayersHistoryPayload | null)?.summary ?? null,
     onlinePlayers: onlinePlayers ?? FALLBACK_ONLINE_PLAYERS,
   };
 }
@@ -111,14 +82,14 @@ export async function GET(request: Request, context: RouteContext) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const serverAddress = process.env.MINECRAFT_SERVER_ADDRESS || 'mcmik.top';
-  const data = await loadPcl2HomepageData(request);
+  const serverAddress = 'mcmik.top';
+  const data = await loadPcl2HomepageData();
   const siteOrigin = getRequestOriginFromRequest(request);
 
   return new Response(
     buildPcl2HomepageXml({
       ...data,
-      displayAddress: process.env.MINECRAFT_DISPLAY_ADDRESS || 'mcmik.top',
+      displayAddress: 'mcmik.top',
       echoQuotes,
       locale: rawLocale,
       serverAddress,
