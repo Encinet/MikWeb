@@ -82,14 +82,14 @@ export async function GET(request: Request, context: RouteContext) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const serverAddress = process.env.MINECRAFT_SERVER_ADDRESS || 'mcmik.top';
+  const serverAddress = 'mcmik.top';
   const data = await loadPcl2HomepageData();
   const siteOrigin = getRequestOriginFromRequest(request);
 
   return new Response(
     buildPcl2HomepageXml({
       ...data,
-      displayAddress: process.env.MINECRAFT_DISPLAY_ADDRESS || 'mcmik.top',
+      displayAddress: 'mcmik.top',
       echoQuotes,
       locale: rawLocale,
       serverAddress,
