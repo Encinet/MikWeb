@@ -6,15 +6,8 @@ import type { Building } from '@/modules/building/model/building-types';
 import { isBuildingArray } from '@/modules/building/model/building-types';
 import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
 import { buildPcl2HomepageXml } from '@/modules/pcl2/lib/pcl2-homepage-xml';
-import type {
-  PlayerOnlinePayload,
-  PlayersHistoryPayload,
-  PlayersHistorySummary,
-} from '@/modules/player/model/player-types';
-import {
-  isPlayerOnlinePayload,
-  isPlayersHistoryPayload,
-} from '@/modules/player/model/player-types';
+import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 import { getRequestOriginFromRequest } from '@/shared/url/request-url';
@@ -26,7 +19,6 @@ interface Pcl2HomepageApiData {
   bans: BanItem[] | null;
   buildingCount: number | null;
   buildings: Building[] | null;
-  historySummary: PlayersHistorySummary | null;
   onlinePlayers: PlayerOnlinePayload;
 }
 
@@ -71,24 +63,13 @@ async function loadJson<TData>(
 }
 
 async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiData> {
-  const [onlinePlayers, announcements, history, buildings, bans] = await Promise.all([
-    loadJson(
-      request,
-      '/api/players/online',
-      isPlayerOnlinePayload,
-      'Failed to load online players',
-    ),
+  const [onlinePlayers, announcements, buildings, bans] = await Promise.all([
+    loadJson(request, '/api/players', isPlayerOnlinePayload, 'Failed to load online players'),
     loadJson(
       request,
       '/api/announcements',
       isAnnouncementItemArray,
       'Failed to load announcements',
-    ),
-    loadJson(
-      request,
-      '/api/players/history',
-      isPlayersHistoryPayload,
-      'Failed to load player history',
     ),
     loadJson(request, '/api/buildings', isBuildingArray, 'Failed to load buildings'),
     loadJson(request, '/api/bans', isBanItemArray, 'Failed to load bans'),
@@ -99,7 +80,6 @@ async function loadPcl2HomepageData(request: Request): Promise<Pcl2HomepageApiDa
     bans: bans as BanItem[] | null,
     buildingCount: buildings?.length ?? null,
     buildings: buildings as Building[] | null,
-    historySummary: (history as PlayersHistoryPayload | null)?.summary ?? null,
     onlinePlayers: onlinePlayers ?? FALLBACK_ONLINE_PLAYERS,
   };
 }

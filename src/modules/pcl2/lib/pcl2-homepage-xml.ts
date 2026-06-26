@@ -3,10 +3,7 @@ import type { BanItem } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
 import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
 import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
-import type {
-  PlayerOnlinePayload,
-  PlayersHistorySummary,
-} from '@/modules/player/model/player-types';
+import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
 import { getPcl2HomepagePath, SITE_NAME } from '@/site/config/site-config';
@@ -24,17 +21,11 @@ interface Pcl2HomepageData {
   buildingCount: number | null;
   buildings: Building[] | null;
   echoQuotes: EchoQuote[];
-  historySummary: PlayersHistorySummary | null;
   locale: AppLocale;
   onlinePlayers: PlayerOnlinePayload;
   siteOrigin: string;
   serverAddress: string;
   displayAddress: string;
-}
-
-interface StatItem {
-  label: string;
-  value: string;
 }
 
 const PCL2_COPY = {
@@ -258,10 +249,6 @@ function getStatus(data: Pcl2HomepageData) {
   return { color: '#2ECC40', text: copy.online(online) };
 }
 
-function fmtPlayerCount(count: number, locale: AppLocale): string {
-  return locale === 'zh-CN' ? `${count} 人` : `${count} players`;
-}
-
 // ── Card builders ──────────────────────────────────────
 
 function buildStatusCard(data: Pcl2HomepageData): XamlNode {
@@ -454,94 +441,6 @@ function buildBanCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildSummaryCard(data: Pcl2HomepageData): XamlNode {
-  const copy = PCL2_COPY[data.locale].stats;
-  const items: StatItem[] = [];
-  if (data.historySummary) {
-    items.push({
-      label: copy.peakOnline,
-      value: fmtPlayerCount(data.historySummary.peak_online, data.locale),
-    });
-    items.push({
-      label: copy.averageOnline,
-      value: fmtPlayerCount(Number(data.historySummary.avg_online.toFixed(1)), data.locale),
-    });
-    items.push({
-      label: copy.totalPlayers,
-      value: fmtPlayerCount(data.historySummary.total_unique_players, data.locale),
-    });
-  }
-  if (data.buildingCount !== null)
-    items.push({
-      label: copy.buildings,
-      value: data.locale === 'zh-CN' ? `${data.buildingCount} 个` : String(data.buildingCount),
-    });
-  if (items.length === 0) return card(copy.title, [tb(copy.empty)]);
-
-  const rowCount = Math.ceil(items.length / 2);
-  return card(
-    copy.title,
-    [
-      xaml(
-        'Grid',
-        [],
-        [
-          xaml(
-            'Grid.ColumnDefinitions',
-            [],
-            [
-              xaml('ColumnDefinition', [attr('Width', '*')]),
-              xaml('ColumnDefinition', [attr('Width', '*')]),
-            ],
-          ),
-          xaml(
-            'Grid.RowDefinitions',
-            [],
-            Array.from({ length: rowCount }, () => xaml('RowDefinition', [attr('Height', 'Auto')])),
-          ),
-          ...items.map((item, idx) => {
-            const row = Math.floor(idx / 2);
-            const col = idx % 2;
-            return xaml(
-              'Border',
-              [
-                attr('Background', '#0DFFFFFF'),
-                attr('CornerRadius', 4),
-                attr('Grid.Column', col),
-                attr('Grid.Row', row),
-                attr(
-                  'Margin',
-                  `${col === 1 ? 6 : 0},0,${col === 0 ? 6 : 0},${row < rowCount - 1 ? 10 : 0}`,
-                ),
-                attr('Padding', '12,8,12,10'),
-              ],
-              [
-                sp(
-                  [],
-                  [
-                    tb(item.label, [
-                      attr('FontSize', 11),
-                      attr('Foreground', '#888888'),
-                      attr('Margin', '0,0,0,3'),
-                      attr('TextWrapping', null),
-                    ]),
-                    tb(item.value, [
-                      attr('FontSize', 18),
-                      attr('FontWeight', 'Bold'),
-                      attr('TextWrapping', null),
-                    ]),
-                  ],
-                ),
-              ],
-            );
-          }),
-        ],
-      ),
-    ],
-    { isSwapped: false },
-  );
-}
-
 function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
   const copy = PCL2_COPY[data.locale].buildings;
   if (!data.buildings || data.buildings.length === 0) return card(copy.title, [tb(copy.empty)]);
@@ -638,7 +537,6 @@ export function buildPcl2HomepageXml(data: Pcl2HomepageData): string {
     buildPlayerCard(data),
     buildAnnouncementCard(data),
     buildBanCard(data),
-    buildSummaryCard(data),
     buildBuildingCard(data),
     buildLinksCard(data.locale, data.siteOrigin),
     buildAboutCard(data.locale, data.siteOrigin),
