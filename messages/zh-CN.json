@@ -126,6 +126,7 @@
     "stats": {
       "activePlayers": "在线玩家",
       "totalBuildings": "建筑作品",
+      "peakPlayers": "峰值玩家",
       "uptime": "运行时长",
       "days": "天"
     },

@@ -3,11 +3,11 @@
 import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import type { OnlinePlayer } from '@/modules/player/model/player-types';
+import type { Player } from '@/modules/player/model/player-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 interface HomePlayerListProps {
-  players: OnlinePlayer[];
+  players: Player[];
   playerCount: number;
   isOnline: boolean;
   isLoading: boolean;

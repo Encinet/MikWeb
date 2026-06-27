@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Building2, Clock, Server } from 'lucide-react';
+import { ArrowRight, Building2, Clock, Server, Trophy } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -25,6 +25,7 @@ export default function HomeLiveOverview() {
   const {
     players,
     playerCount,
+    peakPlayerCount,
     isLoading: isLoadingPlayers,
     isOnline,
     networkError: hasPlayerNetworkError,
@@ -66,48 +67,58 @@ export default function HomeLiveOverview() {
         ? t('home.live.status.online')
         : t('home.live.status.offline');
   const onlinePlayersValue = isLoadingPlayers || hasPlayerNetworkError ? '-' : `${playerCount}`;
+  const peakPlayersValue =
+    isLoadingPlayers || hasPlayerNetworkError || peakPlayerCount === null
+      ? '-'
+      : `${peakPlayerCount}`;
   const uptimeValue = mounted && uptime > 0 ? `${uptime}` : '-';
-  const showPlayerList = !isLoadingPlayers && isOnline && !hasPlayerNetworkError && players.length > 0;
+  const showPlayerList =
+    !isLoadingPlayers && isOnline && !hasPlayerNetworkError && players.length > 0;
   const announcementPreview = announcements.slice(0, 2);
 
   return (
     <>
       <div className={`home-live-grid${showPlayerList ? ' home-live-grid--has-players' : ''}`}>
         <section className="home-live-status-panel" aria-label={t('home.live.statusTitle')}>
-        <div className="home-live-status-panel__main">
-          <div className="home-live-status-panel__label">
-            <span
-              className={`home-live-status-panel__dot ${isOnline && !hasPlayerNetworkError ? 'is-online' : ''}`}
-            />
-            <span>{statusLabel}</span>
+          <div className="home-live-status-panel__main">
+            <div className="home-live-status-panel__label">
+              <span
+                className={`home-live-status-panel__dot ${isOnline && !hasPlayerNetworkError ? 'is-online' : ''}`}
+              />
+              <span>{statusLabel}</span>
+            </div>
+            <div className="home-live-status-panel__headline">
+              <strong>{onlinePlayersValue}</strong>
+              <span>{t('home.live.playersOnline')}</span>
+            </div>
+            <div className="home-live-status-panel__address">
+              <Server className="h-4 w-4" />
+              <code>mcmik.top</code>
+              <CopyButton className="home-live-status-panel__copy" value="mcmik.top" />
+            </div>
           </div>
-          <div className="home-live-status-panel__headline">
-            <strong>{onlinePlayersValue}</strong>
-            <span>{t('home.live.playersOnline')}</span>
-          </div>
-          <div className="home-live-status-panel__address">
-            <Server className="h-4 w-4" />
-            <code>mcmik.top</code>
-            <CopyButton className="home-live-status-panel__copy" value="mcmik.top" />
-          </div>
-        </div>
 
-        <fieldset className="home-live-status-panel__metrics">
-          <legend className="sr-only">{t('home.live.metricsLabel')}</legend>
-          <div>
-            <Building2 className="h-4 w-4" />
-            <span>{t('home.stats.totalBuildings')}</span>
-            <strong>{lastUpdatedAt === null ? '-' : buildingCount}</strong>
-          </div>
-          <div>
-            <Clock className="h-4 w-4" />
-            <span>{t('home.stats.uptime')}</span>
-            <strong>
-              {uptimeValue}
-              <small>{t('home.stats.days')}</small>
-            </strong>
-          </div>
-        </fieldset>
+          <fieldset className="home-live-status-panel__metrics">
+            <legend className="sr-only">{t('home.live.metricsLabel')}</legend>
+            <div>
+              <Building2 className="h-4 w-4" />
+              <span>{t('home.stats.totalBuildings')}</span>
+              <strong>{lastUpdatedAt === null ? '-' : buildingCount}</strong>
+            </div>
+            <div>
+              <Trophy className="h-4 w-4" />
+              <span>{t('home.stats.peakPlayers')}</span>
+              <strong>{peakPlayersValue}</strong>
+            </div>
+            <div>
+              <Clock className="h-4 w-4" />
+              <span>{t('home.stats.uptime')}</span>
+              <strong>
+                {uptimeValue}
+                <small>{t('home.stats.days')}</small>
+              </strong>
+            </div>
+          </fieldset>
         </section>
 
         {showPlayerList ? (

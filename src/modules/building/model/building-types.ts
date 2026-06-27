@@ -1,9 +1,9 @@
-import type { Player } from '@/modules/player/model/player-types';
-import { isPlayer } from '@/modules/player/model/player-types';
+import type { PlayerIdentity } from '@/modules/player/model/player-types';
+import { isPlayerIdentity } from '@/modules/player/model/player-types';
 
 export type BuildType = 'original' | 'derivative' | 'replica';
 
-export interface Builder extends Player {
+export interface Builder extends PlayerIdentity {
   weight: number;
 }
 
@@ -59,7 +59,7 @@ export function isLocalizedText(value: unknown): value is LocalizedText {
 }
 
 export function isBuilder(value: unknown): value is Builder {
-  return isPlayer(value) && isObjectRecord(value) && typeof value.weight === 'number';
+  return isPlayerIdentity(value) && isObjectRecord(value) && typeof value.weight === 'number';
 }
 
 export function isCoordinates(value: unknown): value is Coordinates {

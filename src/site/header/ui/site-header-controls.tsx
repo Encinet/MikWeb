@@ -4,7 +4,7 @@ import { Globe, Menu, Monitor, Moon, Sun, Users, X } from 'lucide-react';
 import type { CSSProperties, RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
-import type { OnlinePlayer } from '@/modules/player/model/player-types';
+import type { Player } from '@/modules/player/model/player-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 interface SiteHeaderControlsProps {
@@ -24,7 +24,7 @@ interface SiteHeaderControlsProps {
   playerDropdownAnchorRef: RefObject<HTMLDivElement | null>;
   playerDropdownRect: DOMRect | null;
   playerDropdownVisible: boolean;
-  players: OnlinePlayer[];
+  players: Player[];
   statusNetworkErrorLabel: string;
   statusOfflineLabel: string;
   statusOnlineLabel: string;
@@ -175,7 +175,7 @@ function PlayerDropdownPortal({
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   playerDropdownRect: DOMRect | null;
-  players: OnlinePlayer[];
+  players: Player[];
   statusOnlineLabel: string;
 }) {
   if (!isOpen || !playerDropdownRect || players.length === 0) {

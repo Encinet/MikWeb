@@ -7,7 +7,7 @@ import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 
 import { PlayerStatusContext } from './player-status-state-context';
-import type { OnlinePlayer } from './player-types';
+import type { Player } from './player-types';
 import { isPlayerOnlinePayload } from './player-types';
 
 const PLAYER_REQUEST_TIMEOUT_MS = 10_000;
@@ -15,8 +15,9 @@ const BASE_POLL_DELAY_MS = 10_000;
 const MAX_RETRIES = 3;
 
 export function PlayerStatusProvider({ children }: { children: ReactNode }) {
-  const [players, setPlayers] = useState<OnlinePlayer[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [playerCount, setPlayerCount] = useState(0);
+  const [peakPlayerCount, setPeakPlayerCount] = useState<number | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [networkError, setNetworkError] = useState(false);
@@ -30,6 +31,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
   const resetPlayersState = useCallback(() => {
     setPlayers([]);
     setPlayerCount(0);
+    setPeakPlayerCount(null);
   }, []);
 
   const getNextInterval = useCallback(() => {
@@ -67,6 +69,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
       setNetworkError(false);
       setPlayers(result.data.players);
       setPlayerCount(result.data.online);
+      setPeakPlayerCount(result.data.peak_online ?? null);
       lastUpdatedAtRef.current = Date.now();
       retryCountRef.current = 0;
     } else if (result.status === 'api-error' || result.status === 'http-error') {
@@ -138,7 +141,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
 
   return (
     <PlayerStatusContext.Provider
-      value={{ players, playerCount, isOnline, isLoading, networkError }}
+      value={{ players, playerCount, peakPlayerCount, isOnline, isLoading, networkError }}
     >
       {children}
     </PlayerStatusContext.Provider>

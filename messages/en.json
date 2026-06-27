@@ -126,6 +126,7 @@
     "stats": {
       "activePlayers": "Online Players",
       "totalBuildings": "Buildings",
+      "peakPlayers": "Peak Players",
       "uptime": "Uptime",
       "days": "Days"
     },

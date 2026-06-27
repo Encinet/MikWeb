@@ -5,6 +5,7 @@ import type { PlayerContextValue } from '@/modules/player/model/player-types';
 const defaultPlayerContextValue: PlayerContextValue = {
   players: [],
   playerCount: 0,
+  peakPlayerCount: null,
   isOnline: true,
   isLoading: true,
   networkError: false,
