@@ -14,6 +14,7 @@ export interface PlayerOnlinePayload {
   // biome-ignore lint/style/useNamingConvention: API returns snake_case
   peak_online?: number;
   players: OnlinePlayer[];
+}
 
 export interface PlayerContextValue {
   players: OnlinePlayer[];
