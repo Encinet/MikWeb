@@ -15,7 +15,7 @@ const MAX_PCL2_ANNOUNCEMENTS = 5;
 const MAX_PCL2_BUILDINGS = 6;
 const MAX_BUILDING_IMAGES = 3;
 
-interface Pcl2HomepageData {
+export interface Pcl2HomepageData {
   announcements: AnnouncementItem[];
   bans: BanItem[] | null;
   buildingCount: number | null;
@@ -231,20 +231,15 @@ function getStatus(data: Pcl2HomepageData) {
   return { color: '#2ECC40', text: copy.online(online) };
 }
 
-// ── Card builders ──────────────────────────────────────
+// Card builders
 
 function buildStatusCard(data: Pcl2HomepageData): XamlNode {
   const copy = PCL2_COPY[data.locale];
   const status = getStatus(data);
-  const quote =
-    data.echoQuotes.length > 0
-      ? getEchoText(
-          data.echoQuotes[Math.floor(Math.random() * data.echoQuotes.length)],
-          data.locale,
-        )
-      : data.locale === 'zh-CN'
-        ? '今天也是方块人的一天！'
-        : 'Today is a blocky day!';
+  const quote = getEchoText(
+    data.echoQuotes[Math.floor(Math.random() * data.echoQuotes.length)],
+    data.locale,
+  );
 
   return card(
     copy.server.statusTitle,
