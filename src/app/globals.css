@@ -1478,8 +1478,8 @@ body {
   z-index: 0;
   top: var(--viewport-top-inset);
   right: 0;
-  bottom: -2.75rem;
   left: 0;
+  height: 5.5rem;
   pointer-events: none;
   content: "";
   opacity: var(--project-navbar-glass-opacity);
@@ -1799,8 +1799,17 @@ body {
   border-color: rgba(255, 255, 255, 0.18);
 }
 
+.mobile-menu-frame {
+  position: fixed;
+  z-index: 60;
+  top: calc(var(--viewport-top-inset) + 3.5rem);
+  right: max(1rem, var(--viewport-right-inset));
+  left: max(1rem, var(--viewport-left-inset));
+  overflow: hidden;
+  pointer-events: auto;
+}
+
 .mobile-menu-panel {
-  margin-top: 1rem;
   border: 1px solid var(--theme-border-glass);
   border-radius: 1.5rem;
   background: var(--theme-bg-base);
@@ -2449,7 +2458,8 @@ body {
   overflow: hidden;
   border: 1px solid rgba(243, 239, 231, 0.1);
   border-radius: 1.55rem;
-  background: linear-gradient(135deg, rgba(243, 239, 231, 0.055), rgba(243, 239, 231, 0.02)), #101816;
+  background:
+    linear-gradient(135deg, rgba(243, 239, 231, 0.055), rgba(243, 239, 231, 0.02)), #101816;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2524,7 +2534,7 @@ body {
   margin: 0;
   padding: 0.5rem;
   overflow-y: auto;
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -3066,7 +3076,6 @@ select option {
   margin: 0 auto;
 }
 
-
 /* ── Controls — normal flow at page top ── */
 .building-archive-controls {
   width: min(96rem, 100%);
@@ -3299,6 +3308,10 @@ select option {
   position: absolute;
   inset: 0;
   z-index: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
 /* Close button — top-right, clean circle */
@@ -3317,7 +3330,9 @@ select option {
   background: var(--theme-overlay-control-bg);
   color: var(--theme-overlay-control-color);
   cursor: pointer;
-  transition: background 180ms ease, border-color 180ms ease;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
 }
 
 .building-archive-close:hover {
@@ -3378,7 +3393,9 @@ select option {
   background: var(--theme-overlay-nav-bg);
   color: var(--theme-overlay-nav-color);
   cursor: pointer;
-  transition: background 180ms ease, border-color 180ms ease;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
 }
 
 .building-archive-nav:hover {
@@ -3402,9 +3419,7 @@ select option {
   bottom: 0;
   left: 0;
   background: var(--theme-overlay-info-bar-bg);
-  padding:
-    max(1rem, var(--safe-area-bottom))
-    max(1rem, var(--safe-area-right))
+  padding: max(1rem, var(--safe-area-bottom)) max(1rem, var(--safe-area-right))
     max(1.5rem, var(--safe-area-bottom));
 }
 
@@ -3487,7 +3502,9 @@ select option {
   background: var(--theme-overlay-dot-inactive);
   padding: 0;
   cursor: pointer;
-  transition: background 180ms ease, width 180ms ease;
+  transition:
+    background 180ms ease,
+    width 180ms ease;
 }
 
 .building-archive-dots button.is-active {
@@ -3507,7 +3524,9 @@ select option {
   background: var(--theme-overlay-nav-bg);
   color: var(--theme-overlay-expand-color);
   cursor: pointer;
-  transition: transform 200ms ease, background 180ms ease;
+  transition:
+    transform 200ms ease,
+    background 180ms ease;
 }
 
 .building-archive-info-bar__expand.is-expanded {

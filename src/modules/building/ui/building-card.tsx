@@ -58,18 +58,29 @@ export function BuildingCard({
         )}
 
         {/* Type — corner badge */}
-        <span className={`building-archive-card__type-badge building-archive-card__type-badge--${building.buildType}`}>
+        <span
+          className={`building-archive-card__type-badge building-archive-card__type-badge--${building.buildType}`}
+        >
           <BuildingTypeBadge buildType={building.buildType} compact t={t} />
         </span>
 
         {/* Image count — dot indicator */}
         {buildingImages.length > 1 ? (
           <span className="building-archive-card__dot-indicator" aria-hidden="true">
-            {dotImages.map((_, index) => (
-              <span key={index} className={index === 0 ? 'is-active' : ''} />
+            {dotImages.map((imageUrl, index) => (
+              <span key={imageUrl} className={index === 0 ? 'is-active' : ''} />
             ))}
             {buildingImages.length > maxVisibleDots ? (
-              <span style={{ background: 'transparent', boxShadow: 'none', color: 'rgba(255,250,240,0.55)', fontSize: '8px', lineHeight: '5px', fontWeight: 700 }}>
+              <span
+                style={{
+                  background: 'transparent',
+                  boxShadow: 'none',
+                  color: 'rgba(255,250,240,0.55)',
+                  fontSize: '8px',
+                  lineHeight: '5px',
+                  fontWeight: 700,
+                }}
+              >
                 +{buildingImages.length - maxVisibleDots + 1}
               </span>
             ) : null}

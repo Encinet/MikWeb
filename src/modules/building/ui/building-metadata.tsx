@@ -284,7 +284,9 @@ export function BuildingCardFacts({ building, formatDate, locale, t }: BuildingC
       <div className="flex items-center gap-2 text-sm">
         <Bell className="h-4 w-4 shrink-0" style={{ color: 'var(--theme-text-muted-strong)' }} />
         <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.buildDate')}</span>
-        <span style={{ color: 'var(--theme-text-muted-strong)' }}>{formatDate(building.buildDate)}</span>
+        <span style={{ color: 'var(--theme-text-muted-strong)' }}>
+          {formatDate(building.buildDate)}
+        </span>
       </div>
 
       <BuildingSourceDetails building={building} locale={locale} compact t={t} />
@@ -351,7 +353,10 @@ export function BuildingDetailFacts({
       </div>
 
       <div className="flex items-start gap-3">
-        <Bell className="mt-0.5 h-5 w-5 shrink-0" style={{ color: 'var(--theme-text-muted-strong)' }} />
+        <Bell
+          className="mt-0.5 h-5 w-5 shrink-0"
+          style={{ color: 'var(--theme-text-muted-strong)' }}
+        />
         <div className="flex-1">
           <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
             {t('fields.buildDate')}

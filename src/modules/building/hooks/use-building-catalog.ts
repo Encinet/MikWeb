@@ -46,11 +46,7 @@ export function useBuildingCatalog(
   const [count, setCount] = useState(BUILDINGS_PAGE_SIZE);
 
   const filtered = useMemo(() => {
-    return sortBuildings(
-      filterBuildings(buildings, filter, query, locale),
-      sort,
-      locale,
-    );
+    return sortBuildings(filterBuildings(buildings, filter, query, locale), sort, locale);
   }, [buildings, filter, query, sort, locale]);
 
   const displayed = useMemo(() => filtered.slice(0, count), [filtered, count]);

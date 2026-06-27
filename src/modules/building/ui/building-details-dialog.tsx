@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -13,10 +13,7 @@ import {
 } from '@/modules/building/lib/building-view-helpers';
 import type { Building, LocalizedText } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
-import {
-  BuildingTags,
-  BuildingTypeBadge,
-} from '@/modules/building/ui/building-metadata';
+import { BuildingTags, BuildingTypeBadge } from '@/modules/building/ui/building-metadata';
 
 interface BuildingDetailsDialogProps {
   activeImage: string | undefined;
@@ -60,12 +57,14 @@ export function BuildingDetailsDialog({
   t,
 }: BuildingDetailsDialogProps) {
   const titleId = useId();
-  const [expanded, setExpanded] = useState(false);
-
-  // Reset expanded state when building changes
-  useEffect(() => {
-    setExpanded(false);
-  }, [building]);
+  const buildingKey = building
+    ? `${building.coordinates.x}:${building.coordinates.y}:${building.coordinates.z}:${building.buildDate}`
+    : null;
+  const [expandedState, setExpandedState] = useState<{
+    buildingKey: string | null;
+    expanded: boolean;
+  }>({ buildingKey: null, expanded: false });
+  const expanded = expandedState.buildingKey === buildingKey && expandedState.expanded;
 
   // Keyboard navigation
   useEffect(() => {
@@ -214,7 +213,10 @@ export function BuildingDetailsDialog({
                       key={url}
                       type="button"
                       onClick={() => onSelectImage(i, imageUrls)}
-                      aria-label={t('dialog.currentImage', { current: i + 1, total: imageUrls.length })}
+                      aria-label={t('dialog.currentImage', {
+                        current: i + 1,
+                        total: imageUrls.length,
+                      })}
                       className={i === currentImageIndex ? 'is-active' : ''}
                     />
                   ))}
@@ -224,7 +226,13 @@ export function BuildingDetailsDialog({
               {/* Expand toggle */}
               <button
                 type="button"
-                onClick={() => setExpanded((prev) => !prev)}
+                onClick={() =>
+                  setExpandedState((previousState) => ({
+                    buildingKey,
+                    expanded:
+                      previousState.buildingKey === buildingKey ? !previousState.expanded : true,
+                  }))
+                }
                 aria-label={expanded ? '收起详情' : '展开详情'}
                 className={`building-archive-info-bar__expand ${expanded ? 'is-expanded' : ''}`}
               >
@@ -259,7 +267,12 @@ export function BuildingDetailsDialog({
         </div>
 
         {/* Click overlay background to close */}
-        <div className="building-archive-overlay-bg" onClick={onClose} />
+        <button
+          type="button"
+          className="building-archive-overlay-bg"
+          aria-label={t('dialog.close')}
+          onClick={onClose}
+        />
       </motion.div>
     </AnimatePresence>,
     document.body,

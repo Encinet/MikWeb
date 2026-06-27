@@ -10,8 +10,10 @@ import {
 } from '@/modules/building/lib/building-catalog';
 import type { Building } from '@/modules/building/model/building-types';
 import { BuildingCard } from '@/modules/building/ui/building-card';
-import { BuildingsLoadingState } from '@/modules/building/ui/buildings-status-states';
-import { BuildingsStatusMessage } from '@/modules/building/ui/buildings-status-states';
+import {
+  BuildingsLoadingState,
+  BuildingsStatusMessage,
+} from '@/modules/building/ui/buildings-status-states';
 
 type BuildingsTranslator = ReturnType<typeof useTranslations<'buildings'>>;
 
@@ -65,12 +67,7 @@ export function BuildingsContentArea({
   }
 
   if (filteredCount === 0) {
-    return (
-      <BuildingsStatusMessage
-        bodyText={emptyMessage}
-        iconColor="var(--theme-text-faint)"
-      />
-    );
+    return <BuildingsStatusMessage bodyText={emptyMessage} iconColor="var(--theme-text-faint)" />;
   }
 
   return (

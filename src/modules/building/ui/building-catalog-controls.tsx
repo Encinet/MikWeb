@@ -104,15 +104,9 @@ export function BuildingCatalogControls({
               key={filterOption.id}
               onClick={() => onFilterChange(filterOption.id)}
               style={{
-                color: isActive
-                  ? 'var(--theme-accent-green-strong)'
-                  : 'var(--theme-text-muted)',
-                background: isActive
-                  ? 'rgba(121, 184, 111, 0.1)'
-                  : 'transparent',
-                border: isActive
-                  ? '1px solid rgba(121, 184, 111, 0.2)'
-                  : '1px solid transparent',
+                color: isActive ? 'var(--theme-accent-green-strong)' : 'var(--theme-text-muted)',
+                background: isActive ? 'rgba(121, 184, 111, 0.1)' : 'transparent',
+                border: isActive ? '1px solid rgba(121, 184, 111, 0.2)' : '1px solid transparent',
               }}
             >
               {filterOption.label}

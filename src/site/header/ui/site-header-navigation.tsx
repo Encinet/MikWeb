@@ -1,7 +1,8 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-
+import { createPortal } from 'react-dom';
+import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { Link } from '@/shared/i18n/routing';
 import type { SiteHeaderNavItem } from '@/site/header/lib/site-header-nav-item';
 
@@ -98,7 +99,9 @@ export function MobileSiteHeaderMenu({
   items,
   onClose,
 }: MobileSiteHeaderMenuProps) {
-  return (
+  const mounted = useHasMounted();
+
+  const menu = (
     <AnimatePresence>
       {isOpen ? (
         <motion.div
@@ -106,7 +109,7 @@ export function MobileSiteHeaderMenu({
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.28, ease: 'easeInOut' }}
-          className="overflow-hidden xl:hidden"
+          className="mobile-menu-frame xl:hidden"
         >
           <div className="mobile-menu-panel">
             <div className="flex flex-col">
@@ -146,4 +149,10 @@ export function MobileSiteHeaderMenu({
       ) : null}
     </AnimatePresence>
   );
+
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(menu, document.body);
 }

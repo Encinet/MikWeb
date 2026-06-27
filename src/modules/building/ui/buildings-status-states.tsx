@@ -22,6 +22,10 @@ interface BuildingsStatusMessageProps {
   title?: string;
 }
 
-export function BuildingsStatusMessage({ bodyText, iconColor, title }: BuildingsStatusMessageProps) {
+export function BuildingsStatusMessage({
+  bodyText,
+  iconColor,
+  title,
+}: BuildingsStatusMessageProps) {
   return <SectionMessage body={bodyText} icon={Building2} iconColor={iconColor} title={title} />;
 }
