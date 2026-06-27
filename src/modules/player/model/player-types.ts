@@ -11,8 +11,9 @@ export type OnlinePlayer = Player & ApiField<'joined_at', string>;
 
 export interface PlayerOnlinePayload {
   online: number;
+  // biome-ignore lint/style/useNamingConvention: API returns snake_case
+  peak_online?: number;
   players: OnlinePlayer[];
-}
 
 export interface PlayerContextValue {
   players: OnlinePlayer[];
