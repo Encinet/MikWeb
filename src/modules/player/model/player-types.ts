@@ -11,7 +11,6 @@ export type OnlinePlayer = Player & ApiField<'joined_at', string>;
 
 export interface PlayerOnlinePayload {
   online: number;
-  peak_online?: number;
   players: OnlinePlayer[];
 }
 
