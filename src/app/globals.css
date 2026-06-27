@@ -444,7 +444,7 @@ body {
 .art-guide-page {
   --art-guide-page-bg: #101816;
   --art-guide-hero-transition-depth: clamp(8rem, 16vw, 14rem);
-  min-height: var(--viewport-height-large);
+  min-height: var(--viewport-height-dynamic);
   overflow: hidden;
   background: var(--art-guide-page-bg);
   color: #f3efe7;
@@ -458,7 +458,7 @@ body {
 .art-guide-hero {
   position: relative;
   display: grid;
-  min-height: var(--viewport-height-large);
+  min-height: var(--viewport-height-dynamic);
   padding: calc(clamp(7rem, 13vw, 9.5rem) + var(--viewport-top-inset)) 0 clamp(5rem, 11vw, 8rem);
   background:
     linear-gradient(180deg, rgba(6, 9, 8, 0.18) 0%, rgba(6, 9, 8, 0.7) 100%),
@@ -747,7 +747,7 @@ body {
   --not-found-page-bg: #101816;
   position: relative;
   display: grid;
-  min-height: var(--viewport-height-large);
+  min-height: var(--viewport-height-dynamic);
   overflow: hidden;
   place-items: center;
   background:
@@ -1854,7 +1854,7 @@ body {
   --home-project-page-bg: #101816;
   --home-hero-scroll-buffer: clamp(7rem, 14vw, 12rem);
   --home-hero-transition-depth: clamp(9rem, 18vw, 16rem);
-  min-height: var(--viewport-height-large);
+  min-height: var(--viewport-height-dynamic);
   overflow: hidden;
   background: var(--home-project-page-bg);
   color: #f3efe7;
@@ -1868,7 +1868,7 @@ body {
 .home-project-hero {
   position: relative;
   display: grid;
-  min-height: calc(var(--viewport-height-large) + var(--home-hero-scroll-buffer));
+  min-height: calc(var(--viewport-height-dynamic) + var(--home-hero-scroll-buffer));
   place-items: center;
   padding: calc(clamp(7rem, 14vw, 10rem) + var(--viewport-top-inset)) 0
     calc(clamp(4rem, 10vw, 7rem) + var(--viewport-bottom-inset));
@@ -2912,7 +2912,7 @@ body:has(.map-page),
   }
 
   .art-guide-hero {
-    min-height: max(92svh, calc(var(--viewport-height-large) - 4rem));
+    min-height: max(92svh, calc(var(--viewport-height-dynamic) - 4rem));
     padding-top: calc(clamp(6.5rem, 22vw, 8rem) + var(--viewport-top-inset));
   }
 
@@ -2967,7 +2967,7 @@ body:has(.map-page),
   }
 
   .home-project-hero {
-    min-height: max(92svh, calc(var(--viewport-height-large) - 4rem));
+    min-height: max(92svh, calc(var(--viewport-height-dynamic) - 4rem));
     text-align: left;
   }
 
