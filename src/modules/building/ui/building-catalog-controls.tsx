@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowUpDown, Search } from 'lucide-react';
 
 import type { BuildingFilterId, BuildingSortKey } from '@/modules/building/lib/building-catalog';
 import { isBuildingSortKey } from '@/modules/building/lib/building-catalog';
@@ -34,33 +34,34 @@ export function BuildingCatalogControls({
   sortOptions,
 }: BuildingCatalogControlsProps) {
   return (
-    <>
-      <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:gap-4">
-        <div className="relative flex-1">
+    <div className="building-catalog-controls">
+      {/* Search + Sort row — clean, minimal */}
+      <div className="building-catalog-controls__bar">
+        <div className="flex-1 relative">
           <Search
-            className="pointer-events-none absolute top-1/2 left-4 z-10 h-5 w-5 -translate-y-1/2"
-            style={{ color: 'var(--theme-text-muted)' }}
+            className="pointer-events-none absolute top-1/2 left-0 -translate-y-1/2 h-4 w-4"
+            style={{ color: 'var(--theme-text-dim)' }}
           />
           <input
             type="text"
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
-            className="relative z-0 w-full rounded-lg border px-4 py-3 pr-4 pl-12 transition-colors focus:border-purple-400/50 focus:outline-none"
+            className="w-full bg-transparent border-0 border-b py-2.5 pl-7 pr-2 text-sm outline-none transition-colors"
             style={{
               color: 'var(--theme-text-primary)',
-              fontSize: '0.875rem',
-              background: 'var(--theme-surface-modal)',
               borderColor: 'var(--theme-border-glass)',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--theme-accent-green-strong)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--theme-border-glass)';
             }}
           />
         </div>
 
-        <div className="relative sm:w-64">
-          <SlidersHorizontal
-            className="pointer-events-none absolute top-1/2 left-4 z-10 h-5 w-5 -translate-y-1/2"
-            style={{ color: 'var(--theme-text-muted)' }}
-          />
+        <div className="shrink-0 relative">
           <select
             value={sortBy}
             onChange={(event) => {
@@ -68,12 +69,16 @@ export function BuildingCatalogControls({
                 onSortChange(event.target.value);
               }
             }}
-            className="relative z-0 w-full cursor-pointer appearance-none rounded-lg border px-4 py-3 pr-10 pl-12 transition-colors focus:border-purple-400/50 focus:outline-none"
+            className="cursor-pointer appearance-none bg-transparent border-0 border-b py-2.5 pl-1 pr-6 text-sm outline-none transition-colors"
             style={{
-              color: 'var(--theme-text-primary)',
-              fontSize: '0.875rem',
-              background: 'var(--theme-surface-modal)',
+              color: 'var(--theme-text-muted-soft)',
               borderColor: 'var(--theme-border-glass)',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--theme-accent-green-strong)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--theme-border-glass)';
             }}
           >
             {sortOptions.map((sortOption) => (
@@ -82,39 +87,39 @@ export function BuildingCatalogControls({
               </option>
             ))}
           </select>
+          <ArrowUpDown
+            className="pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 h-3.5 w-3.5"
+            style={{ color: 'var(--theme-text-dim)' }}
+          />
         </div>
       </div>
 
-      <div className="mb-8 flex flex-wrap justify-center gap-2 px-2 sm:mb-12 sm:gap-3">
-        {filterOptions.map((filterOption) => (
-          <button
-            type="button"
-            key={filterOption.id}
-            onClick={() => onFilterChange(filterOption.id)}
-            className="rounded-lg px-4 py-2.5 text-xs font-medium transition-colors duration-200 sm:px-6 sm:text-sm"
-            style={{
-              color:
-                activeFilter === filterOption.id
-                  ? 'var(--theme-text-filter-active)'
-                  : 'var(--theme-text-muted-soft)',
-              background:
-                activeFilter === filterOption.id
-                  ? 'var(--theme-surface-filter-active)'
-                  : 'var(--theme-surface-modal-badge)',
-              border:
-                activeFilter === filterOption.id
-                  ? '1px solid var(--theme-border-filter-active)'
-                  : '1px solid var(--theme-border-glass)',
-              boxShadow:
-                activeFilter === filterOption.id
-                  ? '0 1px 2px var(--theme-shadow-filter-active)'
-                  : 'none',
-            }}
-          >
-            {filterOption.label}
-          </button>
-        ))}
+      {/* Filter tags */}
+      <div className="building-catalog-controls__filters">
+        {filterOptions.map((filterOption) => {
+          const isActive = activeFilter === filterOption.id;
+          return (
+            <button
+              type="button"
+              key={filterOption.id}
+              onClick={() => onFilterChange(filterOption.id)}
+              style={{
+                color: isActive
+                  ? 'var(--theme-accent-green-strong)'
+                  : 'var(--theme-text-muted)',
+                background: isActive
+                  ? 'rgba(121, 184, 111, 0.1)'
+                  : 'transparent',
+                border: isActive
+                  ? '1px solid rgba(121, 184, 111, 0.2)'
+                  : '1px solid transparent',
+              }}
+            >
+              {filterOption.label}
+            </button>
+          );
+        })}
       </div>
-    </>
+    </div>
   );
 }

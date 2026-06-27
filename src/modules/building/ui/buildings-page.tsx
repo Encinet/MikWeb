@@ -1,86 +1,42 @@
 'use client';
 
-import { Building2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import Masonry from 'react-masonry-css';
+import { useEffect } from 'react';
 
-import type { BuildingFilterId, BuildingSortKey } from '@/modules/building/lib/building-catalog';
-import {
-  BUILDING_MASONRY_BREAKPOINT_COLUMNS,
-  BUILDINGS_PAGE_SIZE,
-  filterBuildings,
-  getBuildingId,
-  getBuildingImages,
-  sortBuildings,
-} from '@/modules/building/lib/building-catalog';
+import { useBuildingCatalog } from '@/modules/building/hooks/use-building-catalog';
+import { useBuildingDialog } from '@/modules/building/hooks/use-building-dialog';
 import type { Building, LocalizedText } from '@/modules/building/model/building-types';
 import { getLocalizedText } from '@/modules/building/model/building-types';
 import { useBuildings } from '@/modules/building/model/use-buildings';
-import { BuildingCard } from '@/modules/building/ui/building-card';
 import { BuildingCatalogControls } from '@/modules/building/ui/building-catalog-controls';
 import { BuildingDetailsDialog } from '@/modules/building/ui/building-details-dialog';
+import { BuildingsContentArea } from '@/modules/building/ui/buildings-content-area';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
-import { SectionMessage } from '@/shared/ui/feedback/async-state';
-
-function BuildingsLoadingState({ message }: { message: string }) {
-  return (
-    <div className="py-20 text-center">
-      <div
-        className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-t-transparent"
-        style={{ borderColor: 'var(--theme-accent-purple)', borderTopColor: 'transparent' }}
-      />
-      <p className="mt-6 text-lg" style={{ color: 'var(--theme-text-muted)' }}>
-        {message}
-      </p>
-    </div>
-  );
-}
-
-interface BuildingsStatusMessageProps {
-  bodyText: string;
-  iconColor: string;
-  title?: string;
-}
-
-function BuildingsStatusMessage({ bodyText, iconColor, title }: BuildingsStatusMessageProps) {
-  return <SectionMessage body={bodyText} icon={Building2} iconColor={iconColor} title={title} />;
-}
 
 export default function BuildingsPage() {
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const { buildings, isLoading, error, fetchBuildings } = useBuildings();
-  const [buildingFilter, setBuildingFilter] = useState<BuildingFilterId>('all');
-  const [displayedCount, setDisplayedCount] = useState(12);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<BuildingSortKey>('random');
-  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [imageTransitionDirection, setImageTransitionDirection] = useState<-1 | 1>(1);
-  const [imageLoading, setImageLoading] = useState(false);
-  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-
   const mounted = useHasMounted();
-  const selectedBuildingImages = useMemo(() => {
-    return selectedBuilding ? getBuildingImages(selectedBuilding) : [];
-  }, [selectedBuilding]);
-  const activeSelectedImage = selectedBuildingImages[currentImageIndex];
+  const { buildings, isLoading, error, fetchBuildings } = useBuildings();
+
+  const catalog = useBuildingCatalog(buildings, locale, {
+    all: t('filters.options.all'),
+    original: t('filters.options.original'),
+    derivative: t('filters.options.derivative'),
+    replica: t('filters.options.replica'),
+    dateDesc: t('sort.options.dateDesc'),
+    dateAsc: t('sort.options.dateAsc'),
+    nameAsc: t('sort.options.nameAsc'),
+    nameDesc: t('sort.options.nameDesc'),
+    random: t('sort.options.random'),
+  });
+
+  const dialog = useBuildingDialog();
 
   useEffect(() => {
     fetchBuildings();
   }, [fetchBuildings]);
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = selectedBuilding ? 'hidden' : 'unset';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [selectedBuilding]);
 
   const formatDate = (timestamp: number | string) => {
     const date = new Date(typeof timestamp === 'number' ? timestamp * 1000 : timestamp);
@@ -91,213 +47,66 @@ export default function BuildingsPage() {
     });
   };
 
-  const filteredBuildings = useMemo(() => {
-    return sortBuildings(
-      filterBuildings(buildings, buildingFilter, searchQuery, locale),
-      sortBy,
-      locale,
-    );
-  }, [buildings, buildingFilter, searchQuery, sortBy, locale]);
-
-  const displayedBuildings = filteredBuildings.slice(0, displayedCount);
-  const hasMore = displayedCount < filteredBuildings.length;
-
-  const loadMore = () => {
-    setDisplayedCount((previousCount) =>
-      Math.min(previousCount + BUILDINGS_PAGE_SIZE, filteredBuildings.length),
-    );
-  };
-
-  const handleFilterChange = (filterId: BuildingFilterId) => {
-    setBuildingFilter(filterId);
-    setDisplayedCount(BUILDINGS_PAGE_SIZE);
-  };
-
-  const handleSearchQueryChange = (nextSearchQuery: string) => {
-    setSearchQuery(nextSearchQuery);
-    setDisplayedCount(BUILDINGS_PAGE_SIZE);
-  };
-
-  const handleSortChange = (nextSortKey: BuildingSortKey) => {
-    setSortBy(nextSortKey);
-    setDisplayedCount(BUILDINGS_PAGE_SIZE);
-  };
-
-  const filterOptions: { id: BuildingFilterId; label: string }[] = [
-    { id: 'all', label: t('filters.options.all') },
-    { id: 'original', label: t('filters.options.original') },
-    { id: 'derivative', label: t('filters.options.derivative') },
-    { id: 'replica', label: t('filters.options.replica') },
-  ];
-
-  const sortOptions: { id: BuildingSortKey; label: string }[] = [
-    { id: 'date-desc', label: t('sort.options.dateDesc') },
-    { id: 'date-asc', label: t('sort.options.dateAsc') },
-    { id: 'name-asc', label: t('sort.options.nameAsc') },
-    { id: 'name-desc', label: t('sort.options.nameDesc') },
-    { id: 'random', label: t('sort.options.random') },
-  ];
-
   const getTagKey = (building: Building, tag: LocalizedText) => {
     return `${building.buildDate}-${getLocalizedText(tag, locale)}`;
   };
 
-  const handleImageError = (imageUrl: string) => {
-    setImageErrors((prev) => new Set(prev).add(imageUrl));
-  };
-
-  const isImageError = (imageUrl: string) => {
-    return imageErrors.has(imageUrl);
-  };
-
-  const syncImageLoadingState = (imageUrl: string | undefined) => {
-    if (!imageUrl || imageErrors.has(imageUrl)) {
-      setImageLoading(false);
-      return;
-    }
-
-    const image = new globalThis.Image();
-    image.src = imageUrl;
-    setImageLoading(!image.complete);
-  };
-
-  const setActiveImageIndex = (
-    imageIndex: number,
-    imageUrls: string[],
-    direction: -1 | 1 = imageIndex >= currentImageIndex ? 1 : -1,
-  ) => {
-    const nextImageUrl = imageUrls[imageIndex];
-    syncImageLoadingState(nextImageUrl);
-    setImageTransitionDirection(direction);
-    setCurrentImageIndex(imageIndex);
-  };
-
-  const openBuildingDetail = (building: Building) => {
-    syncImageLoadingState(getBuildingImages(building)[0]);
-    setSelectedBuilding(building);
-    setImageTransitionDirection(1);
-    setCurrentImageIndex(0);
-  };
-
-  const closeBuildingDetail = () => {
-    setSelectedBuilding(null);
-    setImageLoading(false);
-    setImageTransitionDirection(1);
-    setCurrentImageIndex(0);
-  };
-
-  const nextImage = () => {
-    if (selectedBuilding) {
-      const nextIndex = (currentImageIndex + 1) % selectedBuildingImages.length;
-      setActiveImageIndex(nextIndex, selectedBuildingImages, 1);
-    }
-  };
-
-  const prevImage = () => {
-    if (selectedBuilding) {
-      const previousIndex =
-        (currentImageIndex - 1 + selectedBuildingImages.length) % selectedBuildingImages.length;
-      setActiveImageIndex(previousIndex, selectedBuildingImages, -1);
-    }
-  };
-
   return (
-    <div className="page-shell page-shell-stable">
-      <div className="page-shell-content max-w-7xl mx-auto">
+    <div className="building-archive-page page-shell page-shell-stable">
+      <div className="building-archive-controls">
         <BuildingCatalogControls
-          activeFilter={buildingFilter}
-          filterOptions={filterOptions}
-          onFilterChange={handleFilterChange}
-          onSearchQueryChange={handleSearchQueryChange}
-          onSortChange={handleSortChange}
+          activeFilter={catalog.filter}
+          filterOptions={catalog.filterOptions}
+          onFilterChange={catalog.handleFilterChange}
+          onSearchQueryChange={catalog.handleSearchChange}
+          onSortChange={catalog.handleSortChange}
           searchPlaceholder={t('search.placeholder')}
-          searchQuery={searchQuery}
-          sortBy={sortBy}
-          sortOptions={sortOptions}
+          searchQuery={catalog.query}
+          sortBy={catalog.sort}
+          sortOptions={catalog.sortOptions}
         />
+      </div>
 
+      <div className="building-archive-shell page-shell-content">
         <div className="page-state-region">
-          {isLoading ? (
-            <BuildingsLoadingState message={t('states.loading')} />
-          ) : error ? (
-            <BuildingsStatusMessage
-              bodyText={error}
-              iconColor="var(--theme-accent-purple)"
-              title={commonT('states.error')}
-            />
-          ) : filteredBuildings.length === 0 ? (
-            <BuildingsStatusMessage
-              bodyText={t('states.empty')}
-              iconColor="var(--theme-text-faint)"
-            />
-          ) : (
-            <InfiniteScroll
-              dataLength={displayedBuildings.length}
-              next={loadMore}
-              hasMore={hasMore}
-              loader={
-                <div className="py-8 text-center">
-                  <div
-                    className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"
-                    style={{
-                      borderColor: 'var(--theme-accent-purple)',
-                      borderTopColor: 'transparent',
-                    }}
-                  />
-                </div>
-              }
-              endMessage={
-                <div className="py-8 text-center">
-                  <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-                    {t('states.end')}
-                  </p>
-                </div>
-              }
-              style={{ overflow: 'visible' }}
-              className="infinite-scroll-component"
-            >
-              <Masonry
-                breakpointCols={BUILDING_MASONRY_BREAKPOINT_COLUMNS}
-                className="flex -ml-6 w-auto"
-                columnClassName="pl-6 bg-clip-padding"
-              >
-                {displayedBuildings.map((building) => (
-                  <BuildingCard
-                    key={getBuildingId(building)}
-                    building={building}
-                    formatDate={formatDate}
-                    getTagKey={getTagKey}
-                    isImageError={isImageError}
-                    locale={locale}
-                    onImageError={handleImageError}
-                    onOpen={openBuildingDetail}
-                    t={t}
-                  />
-                ))}
-              </Masonry>
-            </InfiniteScroll>
-          )}
+          <BuildingsContentArea
+            buildings={catalog.displayed}
+            hasMore={catalog.hasMore}
+            isLoading={isLoading}
+            error={error}
+            filteredCount={catalog.filtered.length}
+            isImageError={dialog.isImageError}
+            onImageError={dialog.handleImageError}
+            onOpenBuilding={dialog.open}
+            loadMore={catalog.loadMore}
+            locale={locale}
+            t={t}
+            loadingMessage={t('states.loading')}
+            errorTitle={commonT('states.error')}
+            emptyMessage={t('states.empty')}
+            endMessage={t('states.end')}
+          />
         </div>
       </div>
 
       <BuildingDetailsDialog
-        activeImage={activeSelectedImage}
-        building={selectedBuilding}
-        currentImageIndex={currentImageIndex}
+        activeImage={dialog.activeImage}
+        building={dialog.building}
+        currentImageIndex={dialog.imageIndex}
         formatDate={formatDate}
         getTagKey={getTagKey}
-        imageLoading={imageLoading}
-        imageTransitionDirection={imageTransitionDirection}
-        imageUrls={selectedBuildingImages}
-        isImageError={isImageError}
+        imageLoading={dialog.loading}
+        imageTransitionDirection={dialog.direction}
+        imageUrls={dialog.images}
+        isImageError={dialog.isImageError}
         locale={locale}
         mounted={mounted}
-        onClose={closeBuildingDetail}
-        onImageError={handleImageError}
-        onImageLoad={() => setImageLoading(false)}
-        onNextImage={nextImage}
-        onPreviousImage={prevImage}
-        onSelectImage={setActiveImageIndex}
+        onClose={dialog.close}
+        onImageError={dialog.handleImageError}
+        onImageLoad={dialog.handleImageLoad}
+        onNextImage={dialog.next}
+        onPreviousImage={dialog.prev}
+        onSelectImage={dialog.handleSelectImage}
         t={t}
       />
     </div>

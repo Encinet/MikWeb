@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Building2, Clock, Server, Users } from 'lucide-react';
+import { ArrowRight, Building2, Clock, Server } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
@@ -11,6 +11,7 @@ import {
 import { useAnnouncementsFeed } from '@/modules/announcement/model/use-announcements-feed';
 import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-feed-dialog';
 import { useBuildings } from '@/modules/building/model/use-buildings';
+import HomePlayerList from '@/modules/home/ui/home-player-list';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { CopyButton } from '@/shared/ui/action/copy-button';
@@ -22,6 +23,7 @@ export default function HomeLiveOverview() {
   const locale = useLocale();
   const t = useTranslations();
   const {
+    players,
     playerCount,
     isLoading: isLoadingPlayers,
     isOnline,
@@ -63,23 +65,19 @@ export default function HomeLiveOverview() {
       : isOnline
         ? t('home.live.status.online')
         : t('home.live.status.offline');
-  const onlinePlayersValue = isLoadingPlayers || hasPlayerNetworkError ? '-' : `${playerCount}`;
   const uptimeValue = mounted && uptime > 0 ? `${uptime}` : '-';
   const announcementPreview = announcements.slice(0, 2);
 
   return (
     <>
-      <section className="home-live-status-panel" aria-label={t('home.live.statusTitle')}>
+      <div className="home-live-grid">
+        <section className="home-live-status-panel" aria-label={t('home.live.statusTitle')}>
         <div className="home-live-status-panel__main">
           <div className="home-live-status-panel__label">
             <span
               className={`home-live-status-panel__dot ${isOnline && !hasPlayerNetworkError ? 'is-online' : ''}`}
             />
             <span>{statusLabel}</span>
-          </div>
-          <div className="home-live-status-panel__headline">
-            <strong>{onlinePlayersValue}</strong>
-            <span>{t('home.live.playersOnline')}</span>
           </div>
           <div className="home-live-status-panel__address">
             <Server className="h-4 w-4" />
@@ -90,11 +88,6 @@ export default function HomeLiveOverview() {
 
         <fieldset className="home-live-status-panel__metrics">
           <legend className="sr-only">{t('home.live.metricsLabel')}</legend>
-          <div>
-            <Users className="h-4 w-4" />
-            <span>{t('home.stats.activePlayers')}</span>
-            <strong>{onlinePlayersValue}</strong>
-          </div>
           <div>
             <Building2 className="h-4 w-4" />
             <span>{t('home.stats.totalBuildings')}</span>
@@ -109,7 +102,16 @@ export default function HomeLiveOverview() {
             </strong>
           </div>
         </fieldset>
-      </section>
+        </section>
+
+        <HomePlayerList
+          players={players}
+          playerCount={playerCount}
+          isOnline={isOnline}
+          isLoading={isLoadingPlayers}
+          networkError={hasPlayerNetworkError}
+        />
+      </div>
 
       <section className="home-live-announcements">
         <div className="home-live-announcements__head">

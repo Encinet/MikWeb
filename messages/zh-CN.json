@@ -113,6 +113,8 @@
     "live": {
       "statusTitle": "Mik 当前状态",
       "playersOnline": "名玩家在线",
+      "playerListTitle": "在线玩家",
+      "noPlayersOnline": "暂无玩家在线",
       "metricsLabel": "服务器指标",
       "status": {
         "loading": "正在获取状态",

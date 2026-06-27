@@ -1,27 +1,19 @@
 'use client';
 
-import { Building2 } from 'lucide-react';
+import { Building2, MapPin, UserRound } from 'lucide-react';
 import Image from 'next/image';
-import type React from 'react';
 
 import { getBuildingImages } from '@/modules/building/lib/building-catalog';
 import {
-  getBuildingDescription,
   getBuildingName,
   passthroughImageLoader,
 } from '@/modules/building/lib/building-view-helpers';
-import type { Building, LocalizedText } from '@/modules/building/model/building-types';
+import type { Building } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
-import {
-  BuildingCardFacts,
-  BuildingTags,
-  BuildingTypeBadge,
-} from '@/modules/building/ui/building-metadata';
+import { BuilderNames, BuildingTypeBadge } from '@/modules/building/ui/building-metadata';
 
 interface BuildingCardProps {
   building: Building;
-  formatDate: (timestamp: number | string) => string;
-  getTagKey: (building: Building, tag: LocalizedText) => string;
   isImageError: (imageUrl: string) => boolean;
   locale: string;
   onImageError: (imageUrl: string) => void;
@@ -31,8 +23,6 @@ interface BuildingCardProps {
 
 export function BuildingCard({
   building,
-  formatDate,
-  getTagKey,
   isImageError,
   locale,
   onImageError,
@@ -40,68 +30,64 @@ export function BuildingCard({
   t,
 }: BuildingCardProps) {
   const buildingImages = getBuildingImages(building);
-  const coverImage = buildingImages[0];
+  const coverImage = buildingImages.find((imageUrl) => !isImageError(imageUrl));
+  const buildingName = getBuildingName(building, locale);
+
+  const maxVisibleDots = 4;
+  const dotImages = buildingImages.slice(0, maxVisibleDots);
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(building)}
-      className="ui-card-surface ui-card-interactive group mb-6 w-full cursor-pointer overflow-hidden rounded-2xl text-left"
-    >
-      <div className="relative h-56 overflow-hidden bg-linear-to-br from-purple-900/20 to-blue-900/20">
-        {coverImage && !isImageError(coverImage) ? (
-          <>
-            <Image
-              loader={passthroughImageLoader}
-              src={coverImage}
-              alt={getBuildingName(building, locale)}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-              className="object-cover"
-              unoptimized
-              loading="lazy"
-              onError={() => onImageError(coverImage)}
-            />
-            {buildingImages.length > 1 ? (
-              <div className="absolute right-3 bottom-3 rounded-full border border-white/20 bg-black/70 px-2.5 py-1">
-                <span className="text-xs font-medium text-white">+{buildingImages.length - 1}</span>
-              </div>
-            ) : null}
-          </>
+    <button type="button" onClick={() => onOpen(building)} className="building-archive-card">
+      <div className="building-archive-card__media">
+        {coverImage ? (
+          <Image
+            loader={passthroughImageLoader}
+            src={coverImage}
+            alt={buildingName}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            className="object-cover"
+            unoptimized
+            loading="lazy"
+            onError={() => onImageError(coverImage)}
+          />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Building2 className="h-20 w-20" style={{ color: 'var(--theme-text-faint)' }} />
+          <div className="building-archive-card__fallback">
+            <Building2 className="h-14 w-14" aria-hidden="true" />
           </div>
         )}
-        <div className="ui-building-card-badge-surface absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5">
+
+        {/* Type — corner badge */}
+        <span className={`building-archive-card__type-badge building-archive-card__type-badge--${building.buildType}`}>
           <BuildingTypeBadge buildType={building.buildType} compact t={t} />
-        </div>
+        </span>
+
+        {/* Image count — dot indicator */}
+        {buildingImages.length > 1 ? (
+          <span className="building-archive-card__dot-indicator" aria-hidden="true">
+            {dotImages.map((_, index) => (
+              <span key={index} className={index === 0 ? 'is-active' : ''} />
+            ))}
+            {buildingImages.length > maxVisibleDots ? (
+              <span style={{ background: 'transparent', boxShadow: 'none', color: 'rgba(255,250,240,0.55)', fontSize: '8px', lineHeight: '5px', fontWeight: 700 }}>
+                +{buildingImages.length - maxVisibleDots + 1}
+              </span>
+            ) : null}
+          </span>
+        ) : null}
       </div>
 
-      <div className="p-6">
-        <h3
-          className="mb-3 text-xl font-bold transition-colors"
-          style={{ color: 'var(--theme-text-heading)' }}
-        >
-          {getBuildingName(building, locale)}
-        </h3>
-
-        <BuildingTags building={building} getTagKey={getTagKey} locale={locale} compact />
-
-        <p
-          className="mb-4 text-sm leading-relaxed whitespace-pre-line"
-          style={{
-            color: 'var(--theme-text-muted-soft)',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical' as React.CSSProperties['WebkitBoxOrient'],
-            overflow: 'hidden',
-          }}
-        >
-          {getBuildingDescription(building, locale)}
-        </p>
-
-        <BuildingCardFacts building={building} formatDate={formatDate} locale={locale} t={t} />
+      {/* Info band — always visible */}
+      <div className="building-archive-card__info">
+        <h3>{buildingName}</h3>
+        <span className="coords">
+          <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+          {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}
+        </span>
+        <span className="builders">
+          <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
+          <BuilderNames builders={building.builders} compact />
+        </span>
       </div>
     </button>
   );

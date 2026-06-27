@@ -113,6 +113,8 @@
     "live": {
       "statusTitle": "Mik current status",
       "playersOnline": "players online",
+      "playerListTitle": "Online Players",
+      "noPlayersOnline": "No players online",
       "metricsLabel": "Server metrics",
       "status": {
         "loading": "Fetching status",

@@ -80,6 +80,7 @@ export default function MinecraftAvatar({
         imageRendering: 'pixelated',
         ...style,
       }}
+      unoptimized
       onError={handleError}
     />
   );
