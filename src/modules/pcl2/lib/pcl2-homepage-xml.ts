@@ -354,7 +354,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
       ),
       tb(copy.description, [
         attr('FontSize', 12),
-        attr('Foreground', '#888888'),
+        attr('Foreground', '#CCAA55'),
         attr('Margin', '0,14,0,0'),
         attr('TextAlignment', 'Center'),
       ]),
