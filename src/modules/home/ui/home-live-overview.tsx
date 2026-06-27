@@ -72,7 +72,7 @@ export default function HomeLiveOverview() {
 
   return (
     <>
-      <div className="home-live-grid">
+      <div className={`home-live-grid${showPlayerList ? ' home-live-grid--has-players' : ''}`}>
         <section className="home-live-status-panel" aria-label={t('home.live.statusTitle')}>
         <div className="home-live-status-panel__main">
           <div className="home-live-status-panel__label">

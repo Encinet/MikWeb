@@ -2439,7 +2439,7 @@ body {
 }
 
 @media (min-width: 768px) {
-  .home-live-grid {
+  .home-live-grid--has-players {
     grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
   }
 }
@@ -3108,11 +3108,11 @@ select option {
 .building-archive-masonry {
   display: flex;
   width: auto;
-  margin-left: -0.9rem;
+  margin-left: -0.65rem;
 }
 
 .building-archive-masonry__column {
-  padding-left: 0.9rem;
+  padding-left: 0.65rem;
   background-clip: padding-box;
 }
 
@@ -3120,7 +3120,7 @@ select option {
 .building-archive-card {
   display: block;
   width: 100%;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.65rem;
   overflow: hidden;
   border: 1px solid rgba(243, 239, 231, 0.075);
   border-radius: 12px;
@@ -3145,8 +3145,7 @@ select option {
 
 .building-archive-card__media {
   position: relative;
-  aspect-ratio: 3 / 4;
-  min-height: 16rem;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--theme-bg-base);
 }
@@ -3155,14 +3154,12 @@ select option {
   .building-archive-card:nth-child(odd)
   .building-archive-card__media {
   aspect-ratio: 4 / 3;
-  min-height: 12rem;
 }
 
 .building-archive-masonry__column:nth-child(3n)
   .building-archive-card:nth-child(3n)
   .building-archive-card__media {
-  aspect-ratio: 1 / 1;
-  min-height: 14rem;
+  aspect-ratio: 3 / 2;
 }
 
 .building-archive-card__media img {
@@ -3553,10 +3550,6 @@ select option {
 }
 
 @media (max-width: 640px) {
-  .building-archive-card__media {
-    min-height: 14rem;
-  }
-
   .building-archive-close {
     width: 2.5rem;
     height: 2.5rem;
