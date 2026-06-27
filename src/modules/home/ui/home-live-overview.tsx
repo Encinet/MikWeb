@@ -65,7 +65,9 @@ export default function HomeLiveOverview() {
       : isOnline
         ? t('home.live.status.online')
         : t('home.live.status.offline');
+  const onlinePlayersValue = isLoadingPlayers || hasPlayerNetworkError ? '-' : `${playerCount}`;
   const uptimeValue = mounted && uptime > 0 ? `${uptime}` : '-';
+  const showPlayerList = !isLoadingPlayers && isOnline && !hasPlayerNetworkError && players.length > 0;
   const announcementPreview = announcements.slice(0, 2);
 
   return (
@@ -78,6 +80,10 @@ export default function HomeLiveOverview() {
               className={`home-live-status-panel__dot ${isOnline && !hasPlayerNetworkError ? 'is-online' : ''}`}
             />
             <span>{statusLabel}</span>
+          </div>
+          <div className="home-live-status-panel__headline">
+            <strong>{onlinePlayersValue}</strong>
+            <span>{t('home.live.playersOnline')}</span>
           </div>
           <div className="home-live-status-panel__address">
             <Server className="h-4 w-4" />
@@ -104,13 +110,15 @@ export default function HomeLiveOverview() {
         </fieldset>
         </section>
 
-        <HomePlayerList
-          players={players}
-          playerCount={playerCount}
-          isOnline={isOnline}
-          isLoading={isLoadingPlayers}
-          networkError={hasPlayerNetworkError}
-        />
+        {showPlayerList ? (
+          <HomePlayerList
+            players={players}
+            playerCount={playerCount}
+            isOnline={isOnline}
+            isLoading={isLoadingPlayers}
+            networkError={hasPlayerNetworkError}
+          />
+        ) : null}
       </div>
 
       <section className="home-live-announcements">
