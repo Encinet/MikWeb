@@ -290,7 +290,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
             attr('TextWrapping', null),
             attr('VerticalAlignment', 'Center'),
           ]),
-          ...data.onlinePlayers.peak_online != null
+          ...(data.onlinePlayers.peak_online != null
             ? [
                 tb(`  ·  历史峰值 ${data.onlinePlayers.peak_online} 人`, [
                   attr('FontSize', 13),
@@ -300,7 +300,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
                   attr('VerticalAlignment', 'Center'),
                 ]),
               ]
-            : [],
+            : []),
         ],
       ),
       xaml('local:MyHint', [
