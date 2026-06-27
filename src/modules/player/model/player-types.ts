@@ -3,14 +3,15 @@ export interface Player {
   uuid: string;
 }
 
-type ApiField<TKey extends string, TValue> = {
-  [Key in TKey]: TValue;
-};
-
-export type OnlinePlayer = Player & ApiField<'joined_at', string>;
+export interface OnlinePlayer extends Player {
+  // biome-ignore lint/style/useNamingConvention: External player API uses snake_case.
+  joined_at: string;
+}
 
 export interface PlayerOnlinePayload {
   online: number;
+  // biome-ignore lint/style/useNamingConvention: External player API uses snake_case.
+  peak_online?: number;
   players: OnlinePlayer[];
 }
 

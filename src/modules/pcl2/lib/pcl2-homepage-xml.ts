@@ -272,6 +272,17 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
             attr('TextWrapping', null),
             attr('VerticalAlignment', 'Center'),
           ]),
+          ...(data.onlinePlayers.peak_online != null
+            ? [
+                tb(`  ·  历史峰值 ${data.onlinePlayers.peak_online} 人`, [
+                  attr('FontSize', 13),
+                  attr('Foreground', '#888888'),
+                  attr('Margin', '4,0,0,0'),
+                  attr('TextWrapping', null),
+                  attr('VerticalAlignment', 'Center'),
+                ]),
+              ]
+            : []),
         ],
       ),
       xaml('local:MyHint', [
@@ -336,7 +347,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
       ),
       tb(copy.description, [
         attr('FontSize', 12),
-        attr('Foreground', '#888888'),
+        attr('Foreground', '#CCAA55'),
         attr('Margin', '0,14,0,0'),
         attr('TextAlignment', 'Center'),
       ]),
