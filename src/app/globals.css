@@ -3069,6 +3069,8 @@ select option {
 
 /* ── Controls — normal flow at page top ── */
 .building-archive-controls {
+  width: min(96rem, 100%);
+  margin: 0 auto;
   padding: 0.5rem var(--page-shell-inline) 0.75rem;
 }
 
