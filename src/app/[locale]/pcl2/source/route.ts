@@ -98,7 +98,9 @@ export async function GET(request: Request, context: RouteContext) {
     {
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
         'Content-Type': 'application/xml; charset=utf-8',
       },
     },
