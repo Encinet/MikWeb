@@ -31,8 +31,8 @@
   { "zh-CN": "今天也要元气满满地下矿！", "en": "Hit the mines with full energy today!" },
   { "zh-CN": "做一个快乐的小方块人。", "en": "Be a happy little block person." },
   {
-    "zh-CN": "服务器经常会炸，但腐竹永远在修。",
-    "en": "The server may crash, but the admin is always fixing it."
+    "zh-CN": "服务器经常会炸，但Ob永远在修。",
+    "en": "The server may crash, but Ob is always fixing it."
   },
   {
     "zh-CN": "你的小屋，是这个世界最温暖的角落。",
@@ -40,11 +40,11 @@
   },
   {
     "zh-CN": "腐竹辛苦了，所有熬过的夜都值得一句\u201c恭喜你撑过来了\u201d。",
-    "en": "To the admin: every sleepless night deserves a 'congrats, you made it.'"
+    "en": "To the owner: every sleepless night deserves a 'congrats, you made it.'"
   },
   {
-    "zh-CN": "问君能有几多愁？恰似一缸Ob向东流。",
-    "en": "How much sorrow? Like a tank of Ob flowing east."
+    "zh-CN": "问君能有几多愁？恰似一缸腐竹向东流。",
+    "en": "How much sorrow? Like a tank of fuzhu flowing east."
   },
   {
     "zh-CN": "一定不要贪小便宜去非微软平台购买MC账号，95%是黑卡账户！",
@@ -55,8 +55,8 @@
     "en": "You open the group files looking for something useful, but it's all error reports..."
   },
   {
-    "zh-CN": "我的化学老师说没有 PCL2 这种化学物质！",
-    "en": "My chemistry teacher says PCL2 is not a real chemical!"
+    "zh-CN": "我的化学老师说没有 Mik 这种化学物质！",
+    "en": "My chemistry teacher says Mik is not a real chemical!"
   },
   {
     "zh-CN": "Minecraft Mik Casual > Mik Casual > Mik",
@@ -83,5 +83,38 @@
   {
     "zh-CN": "Deepseek量大，管饱，优质吧？",
     "en": "Deepseek — generous portions, filling, quality... right?"
+  },
+  {
+    "zh-CN": "当你看到这条回声洞，你就看到了这条回声洞。",
+    "en": "When you see this echo cave, you have seen this echo cave."
+  },
+  {
+    "zh-CN": "再次点击查看下一位沙雕网友乱七八槽的留言！",
+    "en": "Click again to see the next random message from a fellow blockhead!"
+  },
+  {
+    "zh-CN": "别戳了，这里没有你想找的东西！",
+    "en": "Stop poking — there's nothing you're looking for here!"
+  },
+  {
+    "zh-CN": "吃水不忘挖井人，不要忘记这超赞的 Mik 是Encinet在支撑......",
+    "en": "Don't forget who dug the well — this awesome Mik server is powered by Encinet..."
+  },
+  {
+    "zh-CN": "Mik 的代码只有Encinet和上帝知道，然而Encinet忘记了。",
+    "en": "Only Encinet and God know Mik's code — and Encinet forgot."
+  },
+  {
+    "zh-CN": "今天也努力当咸鱼了呢（难）",
+    "en": "Tried my best to be a salted fish today too (oof)"
+  },
+  { "zh-CN": "我的评价是：我不予评价。", "en": "My review is: I decline to review." },
+  {
+    "zh-CN": "你这什么游戏啊？手机能玩吗？要不要钱啊？",
+    "en": "What game is this? Can I play on mobile? Is it free?"
+  },
+  {
+    "zh-CN": "烧烤炉制作教程：机械动力+瓦尔基里+我的世界+低配电脑",
+    "en": "BBQ grill tutorial: Create Mod + Valkyrien + Minecraft + potato PC"
   }
 ]
