@@ -3,10 +3,10 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
-import { useBuildingCatalog } from '@/modules/building/hooks/use-building-catalog';
-import { useBuildingDialog } from '@/modules/building/hooks/use-building-dialog';
 import type { Building, LocalizedText } from '@/modules/building/model/building-types';
 import { getLocalizedText } from '@/modules/building/model/building-types';
+import { useBuildingCatalog } from '@/modules/building/model/use-building-catalog';
+import { useBuildingDialog } from '@/modules/building/model/use-building-dialog';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { BuildingCatalogControls } from '@/modules/building/ui/building-catalog-controls';
 import { BuildingDetailsDialog } from '@/modules/building/ui/building-details-dialog';

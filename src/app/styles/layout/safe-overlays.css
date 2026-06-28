@@ -1,0 +1,24 @@
+.safe-fixed-overlay {
+  min-height: var(--viewport-height-dynamic);
+  padding: calc(1rem + var(--viewport-top-inset)) calc(1rem + var(--viewport-right-inset))
+    calc(1rem + var(--viewport-bottom-inset)) calc(1rem + var(--viewport-left-inset));
+}
+
+@media (min-width: 640px) {
+  .safe-fixed-overlay {
+    padding: calc(1.5rem + var(--viewport-top-inset)) calc(1.5rem + var(--viewport-right-inset))
+      calc(1.5rem + var(--viewport-bottom-inset)) calc(1.5rem + var(--viewport-left-inset));
+  }
+}
+
+@media (min-width: 768px) {
+  .safe-fixed-overlay {
+    padding: calc(2rem + var(--viewport-top-inset)) calc(2rem + var(--viewport-right-inset))
+      calc(2rem + var(--viewport-bottom-inset)) calc(2rem + var(--viewport-left-inset));
+  }
+}
+
+.safe-floating-bottom-right {
+  right: calc(1.5rem + var(--viewport-right-inset));
+  bottom: calc(1.5rem + var(--viewport-bottom-inset));
+}

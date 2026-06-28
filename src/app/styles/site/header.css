@@ -1,0 +1,570 @@
+/* BuildTheEarth-inspired project homepage v0 */
+.project-navbar-shell {
+  --project-navbar-glass-top: rgba(16, 24, 22, 0.74);
+  --project-navbar-glass-mid: rgba(16, 24, 22, 0.46);
+  --project-navbar-glass-bottom: rgba(16, 24, 22, 0.08);
+  --project-navbar-glass-blur: 18px;
+  --project-navbar-glass-saturation: 165%;
+  --project-navbar-glass-line: rgba(255, 255, 255, 0.08);
+  --project-navbar-glass-opacity: 1;
+  --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
+  --project-navbar-scroll-progress: 0;
+  position: fixed;
+  z-index: var(--z-sticky);
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  padding: calc(0.75rem + var(--viewport-top-inset)) var(--viewport-right-inset) 0
+    var(--viewport-left-inset);
+  pointer-events: none;
+  background: transparent;
+  isolation: isolate;
+  transition:
+    --project-navbar-glass-top 0.35s ease,
+    --project-navbar-glass-mid 0.35s ease,
+    --project-navbar-glass-bottom 0.35s ease,
+    --project-navbar-glass-blur 0.35s ease;
+}
+
+.project-navbar-shell::before {
+  position: absolute;
+  z-index: 0;
+  top: var(--viewport-top-inset);
+  right: 0;
+  left: 0;
+  height: 5.5rem;
+  pointer-events: none;
+  content: "";
+  opacity: var(--project-navbar-glass-opacity);
+  background: linear-gradient(
+    to bottom,
+    var(--project-navbar-glass-top) 0%,
+    var(--project-navbar-glass-mid) 48%,
+    var(--project-navbar-glass-bottom) 74%,
+    transparent 100%
+  );
+  box-shadow:
+    inset 0 1px 0 var(--project-navbar-glass-line),
+    0 20px 42px var(--project-navbar-glass-shadow);
+  -webkit-backdrop-filter: blur(var(--project-navbar-glass-blur))
+    saturate(var(--project-navbar-glass-saturation));
+  backdrop-filter: blur(var(--project-navbar-glass-blur))
+    saturate(var(--project-navbar-glass-saturation));
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 52%,
+    rgba(0, 0, 0, 0.78) 70%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 52%,
+    rgba(0, 0, 0, 0.78) 70%,
+    transparent 100%
+  );
+}
+
+@supports (-webkit-touch-callout: none) {
+  .project-navbar-shell {
+    top: var(--viewport-top-inset);
+    padding-top: 0.75rem;
+  }
+
+  .project-navbar-shell::before {
+    top: 0;
+  }
+}
+
+.project-navbar-shell.is-scrolled {
+  --project-navbar-glass-top: rgba(16, 24, 22, 0.74);
+  --project-navbar-glass-mid: rgba(16, 24, 22, 0.46);
+  --project-navbar-glass-bottom: rgba(16, 24, 22, 0.08);
+  --project-navbar-glass-blur: 18px;
+  --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
+}
+
+[data-theme="light"] .project-navbar-shell {
+  --project-navbar-glass-top: rgba(255, 255, 255, 0.74);
+  --project-navbar-glass-mid: rgba(255, 255, 255, 0.48);
+  --project-navbar-glass-bottom: rgba(255, 255, 255, 0.1);
+  --project-navbar-glass-line: rgba(255, 255, 255, 0.65);
+  --project-navbar-glass-shadow: rgba(46, 34, 14, 0.08);
+}
+
+[data-theme="light"] .project-navbar-shell.is-scrolled {
+  --project-navbar-glass-top: rgba(255, 255, 255, 0.74);
+  --project-navbar-glass-mid: rgba(255, 255, 255, 0.48);
+  --project-navbar-glass-bottom: rgba(255, 255, 255, 0.1);
+  --project-navbar-glass-shadow: rgba(46, 34, 14, 0.08);
+}
+
+:root:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled) {
+  --project-navbar-glass-opacity: var(--project-navbar-scroll-progress);
+  --project-navbar-glass-blur: calc(18px * var(--project-navbar-scroll-progress));
+}
+
+.project-navbar-card {
+  position: relative;
+  z-index: 1;
+  width: min(calc(100% - 2rem), 1540px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+.project-navbar-card > div {
+  max-width: none;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.project-navbar-brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.6rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 800;
+  font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.38);
+  transition:
+    color 220ms ease,
+    text-shadow 220ms ease;
+}
+
+[data-theme="light"] .project-navbar-brand {
+  color: rgba(31, 46, 37, 0.88);
+  text-shadow: none;
+}
+
+.project-navbar-brand__logo {
+  height: 2rem;
+  width: 2rem;
+  border-radius: 0.4rem;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+}
+
+.project-navbar-links {
+  margin-left: auto;
+  margin-right: clamp(1rem, 2.2vw, 2.5rem);
+  gap: clamp(1rem, 2vw, 2rem);
+}
+
+@media (max-width: 1400px) {
+  .project-navbar-links {
+    margin-right: clamp(0.85rem, 1.5vw, 1.5rem);
+    gap: clamp(0.75rem, 1.25vw, 1.25rem);
+  }
+}
+
+.project-navbar-links .ui-nav-link,
+.project-navbar-links .ui-nav-chip {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(0.8rem, 0.95vw, 0.9rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.32);
+  transition:
+    color 220ms ease,
+    text-shadow 220ms ease;
+}
+
+[data-theme="light"] .project-navbar-links .ui-nav-link,
+[data-theme="light"] .project-navbar-links .ui-nav-chip:not(.ui-nav-chip--highlight) {
+  color: rgba(31, 46, 37, 0.88);
+  text-shadow: none;
+}
+
+:where(.project-navbar-links) :where(.ui-nav-link) svg,
+:where(.project-navbar-links) :where(.ui-nav-chip):not(:where(.ui-nav-chip--highlight)) svg {
+  display: none;
+}
+
+.project-navbar-links .ui-nav-link:hover,
+.project-navbar-links .ui-nav-link--active,
+.project-navbar-links .ui-nav-chip:hover {
+  color: #fff;
+}
+
+[data-theme="light"] .project-navbar-links .ui-nav-link:hover,
+[data-theme="light"] .project-navbar-links .ui-nav-link--active,
+[data-theme="light"] .project-navbar-links .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
+  color: #111c16;
+}
+
+.project-navbar-links .ui-nav-chip--highlight:hover {
+  background: #36c44d;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(47, 179, 68, 0.26);
+}
+
+.project-navbar-links .ui-nav-chip--highlight {
+  margin-left: clamp(0.05rem, 0.7vw, 0.45rem);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: #2fb344;
+  color: #fff;
+  padding: 0.35rem 0.6rem;
+  font-weight: 800;
+  font-size: clamp(0.75rem, 0.9vw, 0.85rem);
+  line-height: 1;
+  text-shadow: none;
+  box-shadow: 0 8px 20px rgba(47, 179, 68, 0.2);
+}
+
+.project-player-control {
+  display: none;
+}
+
+.project-navbar-control-cluster {
+  display: inline-flex;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  align-items: center;
+  border: 1px solid rgba(243, 239, 231, 0.16);
+  border-radius: 999px;
+  background: rgba(16, 24, 22, 0.68);
+  color: #f3efe7;
+}
+
+.project-navbar-controls .project-theme-toggle,
+.project-navbar-controls .project-locale-toggle {
+  display: inline-flex;
+  min-width: 1.8rem;
+  height: 1.8rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.project-navbar-controls .project-theme-toggle {
+  width: 1.8rem;
+}
+
+.project-navbar-controls .project-locale-toggle {
+  border-left: 1px solid rgba(243, 239, 231, 0.12);
+  padding: 0 0.6rem;
+  font-weight: 760;
+  font-size: 0.82rem;
+}
+
+.project-navbar-controls .project-theme-toggle:hover,
+.project-navbar-controls .project-locale-toggle:hover {
+  background: rgba(121, 184, 111, 0.16);
+}
+
+[data-theme="light"] .project-navbar-control-cluster {
+  border-color: rgba(31, 46, 37, 0.14);
+  background: rgba(255, 255, 255, 0.86);
+  color: #1f2e25;
+}
+
+[data-theme="light"] .project-navbar-controls .project-locale-toggle {
+  border-left-color: rgba(31, 46, 37, 0.1);
+}
+
+.project-account-link {
+  display: inline-flex;
+  min-width: 1.8rem;
+  height: 1.8rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 0.62rem;
+  border: 1px solid rgba(243, 239, 231, 0.16);
+  border-radius: 999px;
+  background: rgba(16, 24, 22, 0.68);
+  color: #f3efe7;
+  text-decoration: none;
+  line-height: 1;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.project-account-link:hover {
+  background: rgba(121, 184, 111, 0.16);
+}
+
+.project-account-link--signed-out {
+  padding: 0 0.72rem 0 0.34rem;
+}
+
+.project-account-login-icon {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: currentColor;
+}
+
+.project-account-link--signed-in {
+  position: relative;
+  width: 2rem;
+  height: 1.8rem;
+  padding: 0 0.42rem 0 0.5rem;
+  overflow: visible;
+  border-color: rgba(243, 239, 231, 0.16);
+  border-left-color: transparent;
+  box-shadow: none;
+}
+
+.project-account-link--signed-in:hover {
+  background: rgba(121, 184, 111, 0.16);
+}
+
+.project-account-avatar-frame {
+  position: relative;
+  display: inline-flex;
+  width: 1.84rem;
+  height: 1.84rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-left: -0.9rem;
+  overflow: visible;
+}
+
+.project-account-avatar {
+  display: block;
+  width: 1.84rem;
+  height: 1.84rem;
+  border-radius: 0.42rem;
+  border: 1px solid rgba(243, 239, 231, 0.24);
+  background: rgba(16, 24, 22, 0.82);
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.project-account-name,
+.project-account-login-label {
+  display: none;
+  max-width: 8rem;
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-account-link--signed-out .project-account-login-label {
+  display: inline-block;
+}
+
+[data-theme="light"] .project-account-link {
+  border-color: rgba(31, 46, 37, 0.14);
+  background: rgba(255, 255, 255, 0.86);
+  color: #1f2e25;
+}
+
+[data-theme="light"] .project-account-link:hover {
+  background: rgba(121, 184, 111, 0.16);
+}
+
+[data-theme="light"] .project-account-login-icon {
+  background: rgba(31, 46, 37, 0.08);
+}
+
+[data-theme="light"] .project-account-avatar {
+  border-color: rgba(31, 46, 37, 0.16);
+  box-shadow: 0 3px 10px rgba(46, 34, 14, 0.12);
+}
+
+[data-theme="light"] .project-account-link--signed-in:hover {
+  background: rgba(121, 184, 111, 0.16);
+}
+
+@media (min-width: 1024px) {
+  .project-account-link--signed-in {
+    width: auto;
+    min-width: 5.5rem;
+    justify-content: flex-start;
+    padding: 0 0.62rem 0 0.56rem;
+    gap: 0.48rem;
+  }
+
+  .project-account-name,
+  .project-account-link--signed-in .project-account-login-label {
+    display: inline-block;
+  }
+}
+
+@media (max-width: 420px) {
+  .project-account-link--signed-out {
+    width: 2.1rem;
+    padding: 0;
+  }
+
+  .project-account-link--signed-out .project-account-login-label {
+    display: none;
+  }
+}
+
+/* Homepage transparent state: white text on dark hero */
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-brand,
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-links
+  .ui-nav-link,
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-links
+  .ui-nav-chip:not(.ui-nav-chip--highlight) {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
+}
+
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-links
+  .ui-nav-link:hover,
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-links
+  .ui-nav-link--active,
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-links
+  .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
+  color: #fff;
+}
+
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-control-cluster {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.26);
+  color: #fff;
+}
+
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-account-link {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.26);
+  color: #fff;
+}
+
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-account-login-icon {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-controls
+  .project-locale-toggle {
+  border-left-color: rgba(255, 255, 255, 0.14);
+}
+
+.project-navbar-controls > button:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+
+[data-theme="light"] .project-navbar-controls > button:first-child {
+  color: #1f2e25;
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(31, 46, 37, 0.14);
+}
+
+@media (min-width: 1280px) {
+  .project-navbar-controls > button:first-child {
+    display: none;
+  }
+}
+
+[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+  .project-navbar-shell:not(.is-scrolled)
+  .project-navbar-controls
+  > button:first-child {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.32);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.mobile-menu-frame {
+  position: fixed;
+  z-index: 60;
+  top: calc(var(--viewport-top-inset) + 3.5rem);
+  right: max(1rem, var(--viewport-right-inset));
+  left: max(1rem, var(--viewport-left-inset));
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.mobile-menu-panel {
+  border: 1px solid var(--theme-border-glass);
+  border-radius: 1.5rem;
+  background: var(--theme-bg-base);
+  padding: 0.75rem;
+}
+
+[data-theme="light"] .mobile-menu-panel {
+  background: #ffffff;
+  border-color: rgba(31, 46, 37, 0.12);
+}
+
+.mobile-menu-panel .ui-nav-link,
+.mobile-menu-panel .ui-nav-chip {
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mobile-menu-panel .ui-nav-link:hover {
+  background: var(--theme-surface-hover);
+}
+
+.mobile-menu-panel .ui-nav-chip--highlight {
+  margin: 0.15rem 0;
+  padding: 0.6rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: #2fb344;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.875rem;
+  box-shadow: 0 8px 20px rgba(47, 179, 68, 0.2);
+}
+
+.mobile-menu-panel .ui-nav-chip--highlight:hover {
+  background: #36c44d;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(47, 179, 68, 0.26);
+}

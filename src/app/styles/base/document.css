@@ -1,0 +1,110 @@
+body {
+  font-family: var(--font-base);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--theme-text-primary);
+  background: var(--theme-bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  min-height: max(var(--viewport-height-small), var(--viewport-height-dynamic));
+  position: relative;
+}
+
+.site-background {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 0;
+  min-height: 100%;
+  height: var(--viewport-height-large);
+  pointer-events: none;
+  background: #101816;
+  transition: background 0.24s ease;
+}
+
+[data-theme="light"] .site-background {
+  background: #ffffff;
+}
+
+/* 动画关键帧 */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 自定义滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(121, 184, 111, 0.72) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(121, 184, 111, 0.72);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(121, 184, 111, 0.9);
+}
+
+/* 平滑滚动 */
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  width: 100%;
+  min-height: var(--viewport-height-small);
+  background: var(--theme-bg-base);
+}
+
+html,
+body {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.app-body {
+  display: flex;
+  flex-direction: column;
+  min-height: max(var(--viewport-height-small), var(--viewport-height-dynamic));
+}
+
+.page-shell {
+  box-sizing: border-box;
+  padding-top: calc(var(--app-header-offset) + var(--viewport-top-inset));
+  padding-right: calc(var(--page-shell-inline) + var(--viewport-right-inset));
+  padding-bottom: calc(var(--page-shell-block-end) + var(--viewport-bottom-inset));
+  padding-left: calc(var(--page-shell-inline) + var(--viewport-left-inset));
+}
+
+.page-shell-stable {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.page-shell-content {
+  width: 100%;
+  flex: 1 0 auto;
+}
+
+.page-state-region {
+  min-height: clamp(22rem, 48vh, 34rem);
+}

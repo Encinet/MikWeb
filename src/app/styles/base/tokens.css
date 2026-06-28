@@ -1,0 +1,292 @@
+:root {
+  /* Typography */
+  --font-latin-ui:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+  --font-cjk-ui:
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Source Han Sans SC";
+  --font-base:
+    var(--font-latin-ui), var(--font-cjk-ui), "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  --font-display-serif: Georgia, "Times New Roman", ui-serif, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  /* Safe Area */
+  --safe-area-top: 0px;
+  --safe-area-right: 0px;
+  --safe-area-bottom: 0px;
+  --safe-area-left: 0px;
+
+  /* Viewport Units */
+  --viewport-height-small: 100vh;
+  --viewport-height-dynamic: 100vh;
+  --viewport-height-large: 100vh;
+  --viewport-top-inset: var(--safe-area-top);
+  --viewport-right-inset: var(--safe-area-right);
+  --viewport-bottom-inset: var(--safe-area-bottom);
+  --viewport-left-inset: var(--safe-area-left);
+
+  /* Layout */
+  --floating-gap: 1rem;
+  --app-header-offset: 6rem;
+  --page-shell-inline: 1rem;
+  --page-shell-block-end: 3rem;
+
+  /* Layering */
+  --z-sticky: 50;
+  --z-dropdown: 100;
+  --z-view-transition: 900;
+  --z-modal: 1000;
+
+  /* Card System */
+  --ui-card-radius: 18px;
+  --ui-card-blur: 0px;
+  --ui-card-saturation: 100%;
+  --ui-card-transition-duration: 300ms;
+  --ui-card-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --ui-card-shadow-hover: 0 12px 28px var(--theme-shadow-glass);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --app-header-offset: 8rem;
+    --page-shell-inline: 1.5rem;
+    --page-shell-block-end: 5rem;
+  }
+}
+
+@supports (top: env(safe-area-inset-top)) {
+  :root {
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-right: env(safe-area-inset-right);
+    --safe-area-bottom: env(safe-area-inset-bottom);
+    --safe-area-left: env(safe-area-inset-left);
+  }
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height-dynamic: 100dvh;
+  }
+}
+
+@supports (height: 100svh) {
+  :root {
+    --viewport-height-small: 100svh;
+  }
+}
+
+@supports (height: 100lvh) {
+  :root {
+    --viewport-height-large: 100lvh;
+  }
+}
+
+/* Theme Tokens: Dark */
+:root,
+[data-theme="dark"] {
+  /* Background */
+  --theme-bg-base: #101816;
+
+  /* Surface */
+  --theme-surface-glass: #17211f;
+  --theme-surface-glass-light: #1a2522;
+  --theme-surface-hover: rgba(255, 255, 255, 0.075);
+  --theme-border-glass: rgba(255, 255, 255, 0.105);
+  --theme-border-glass-light: rgba(255, 255, 255, 0.08);
+  --theme-surface-icon: #1d2926;
+  --theme-surface-badge: rgba(12, 16, 15, 0.9);
+  --theme-surface-code: rgba(255, 255, 255, 0.06);
+  --theme-surface-code-block: #111917;
+  --theme-surface-modal: #151e1b;
+  --theme-surface-modal-badge: #1c2824;
+  --theme-surface-tag: rgba(168, 85, 247, 0.13);
+  --theme-surface-filter-active: rgba(168, 85, 247, 0.15);
+  --theme-surface-blue-accent: rgba(59, 130, 246, 0.13);
+  --theme-surface-building-card-badge: rgba(16, 22, 20, 0.94);
+
+  /* Border */
+  --theme-border-card: 1px solid var(--theme-border-glass);
+  --theme-border-modal: rgba(255, 255, 255, 0.12);
+  --theme-border-modal-badge: rgba(255, 255, 255, 0.1);
+  --theme-border-tag: rgba(168, 85, 247, 0.3);
+  --theme-border-filter-active: rgba(168, 85, 247, 0.5);
+  --theme-border-blue-accent: rgba(96, 165, 250, 0.3);
+  --theme-border-nav-hover: rgba(255, 255, 255, 0.3);
+  --theme-border-light: rgba(255, 255, 255, 0.05);
+  --theme-border-building-card-badge: rgba(255, 255, 255, 0.16);
+
+  /* Text */
+  --theme-text-primary: rgba(255, 255, 255, 0.92);
+  --theme-text-heading: #ffffff;
+  --theme-text-muted: rgba(255, 255, 255, 0.48);
+  --theme-text-muted-soft: rgba(255, 255, 255, 0.6);
+  --theme-text-muted-strong: rgba(255, 255, 255, 0.7);
+  --theme-text-dim: rgba(255, 255, 255, 0.3);
+  --theme-text-faint: rgba(255, 255, 255, 0.2);
+  --theme-text-nav: rgba(255, 255, 255, 0.7);
+  --theme-text-nav-hover: rgba(255, 255, 255, 1);
+  --theme-text-nav-active: rgba(255, 255, 255, 1);
+  --theme-text-player-count: #ffffff;
+  --theme-text-button: #0e0e10;
+  --theme-text-modal-badge: rgba(255, 255, 255, 0.92);
+  --theme-text-tag: rgb(216, 180, 254);
+  --theme-text-filter-active: #a78bfa;
+
+  /* Accent */
+  --theme-accent-blue: #93c5fd;
+  --theme-accent-blue-strong: #bfdbfe;
+  --theme-accent-purple: #c084fc;
+  --theme-accent-red: #f87171;
+  --theme-accent-green: #4ade80;
+  --theme-accent-green-strong: #86efac;
+  --theme-accent-amber: #fbbf24;
+  --theme-accent-amber-strong: #fcd34d;
+
+  /* Status */
+  --theme-status-online: #55ff55;
+  --theme-status-online-glow: rgba(85, 255, 85, 0.5);
+  --theme-status-offline: #ff5555;
+  --theme-status-offline-glow: rgba(255, 85, 85, 0.5);
+
+  /* Shadow */
+  --theme-shadow-glass: rgba(0, 0, 0, 0.18);
+  --theme-shadow-glass-inset: rgba(255, 255, 255, 0.08);
+  --theme-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.14), 0 10px 24px rgba(0, 0, 0, 0.1);
+  --theme-shadow-modal: rgba(0, 0, 0, 0.34);
+  --theme-shadow-modal-soft: rgba(0, 0, 0, 0.16);
+  --theme-shadow-modal-inset: rgba(255, 255, 255, 0.08);
+  --theme-shadow-filter-active: rgba(168, 85, 247, 0.16);
+
+  /* Immersive building overlay */
+  --theme-overlay-bg: rgba(2, 6, 5, 0.94);
+  --theme-overlay-control-bg: rgba(0, 0, 0, 0.35);
+  --theme-overlay-control-border: rgba(255, 255, 255, 0.12);
+  --theme-overlay-control-color: rgba(255, 255, 255, 0.82);
+  --theme-overlay-control-hover-bg: rgba(0, 0, 0, 0.55);
+  --theme-overlay-control-hover-border: rgba(255, 255, 255, 0.22);
+  --theme-overlay-nav-bg: rgba(0, 0, 0, 0.3);
+  --theme-overlay-nav-border: rgba(255, 255, 255, 0.08);
+  --theme-overlay-nav-color: rgba(255, 255, 255, 0.75);
+  --theme-overlay-nav-hover-bg: rgba(0, 0, 0, 0.5);
+  --theme-overlay-nav-hover-border: rgba(255, 255, 255, 0.18);
+  --theme-overlay-info-bar-bg: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.65) 30%);
+  --theme-overlay-title-color: #ffffff;
+  --theme-overlay-meta-color: rgba(255, 255, 255, 0.55);
+  --theme-overlay-meta-sep-color: rgba(255, 255, 255, 0.25);
+  --theme-overlay-dot-inactive: rgba(255, 255, 255, 0.3);
+  --theme-overlay-expand-border: rgba(255, 255, 255, 0.15);
+  --theme-overlay-expand-color: rgba(255, 255, 255, 0.65);
+  --theme-overlay-expanded-text: rgba(255, 255, 255, 0.72);
+  --theme-overlay-loader-bg: rgba(0, 0, 0, 0.4);
+  --theme-overlay-loader-border: rgba(255, 255, 255, 0.15);
+
+  /* Card image overlays */
+  --theme-card-image-badge-bg: rgba(9, 14, 13, 0.84);
+  --theme-card-image-dot: rgba(255, 250, 240, 0.55);
+  --theme-card-image-dot-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Theme Tokens: Light */
+[data-theme="light"] {
+  /* Background */
+  --theme-bg-base: #ffffff;
+
+  /* Surface */
+  --theme-surface-glass: #fffaf3;
+  --theme-surface-glass-light: #f7f0e6;
+  --theme-surface-hover: rgba(53, 64, 59, 0.06);
+  --theme-border-glass: rgba(65, 58, 45, 0.14);
+  --theme-border-glass-light: rgba(65, 58, 45, 0.1);
+  --theme-surface-icon: #f3eadf;
+  --theme-surface-badge: rgba(72, 56, 24, 0.1);
+  --theme-surface-code: rgba(67, 52, 23, 0.075);
+  --theme-surface-code-block: #f4eadf;
+  --theme-surface-modal: #fffaf4;
+  --theme-surface-modal-badge: #f4ecdf;
+  --theme-surface-tag: rgba(126, 92, 203, 0.11);
+  --theme-surface-filter-active: rgba(126, 92, 203, 0.13);
+  --theme-surface-blue-accent: rgba(47, 98, 200, 0.1);
+  --theme-surface-building-card-badge: rgba(255, 250, 244, 0.96);
+
+  /* Border */
+  --theme-border-card: 1px solid var(--theme-border-glass);
+  --theme-border-modal: rgba(94, 74, 35, 0.2);
+  --theme-border-modal-badge: rgba(94, 74, 35, 0.18);
+  --theme-border-tag: rgba(126, 92, 203, 0.32);
+  --theme-border-filter-active: rgba(126, 92, 203, 0.36);
+  --theme-border-blue-accent: rgba(47, 98, 200, 0.32);
+  --theme-border-nav-hover: rgba(95, 74, 37, 0.35);
+  --theme-border-light: rgba(95, 74, 37, 0.1);
+  --theme-border-building-card-badge: rgba(94, 74, 35, 0.18);
+
+  /* Text */
+  --theme-text-primary: rgba(32, 25, 12, 0.9);
+  --theme-text-heading: #241a08;
+  --theme-text-muted: rgba(54, 42, 20, 0.62);
+  --theme-text-muted-soft: rgba(54, 42, 20, 0.72);
+  --theme-text-muted-strong: rgba(54, 42, 20, 0.78);
+  --theme-text-dim: rgba(54, 42, 20, 0.45);
+  --theme-text-faint: rgba(54, 42, 20, 0.3);
+  --theme-text-nav: rgba(36, 27, 12, 0.74);
+  --theme-text-nav-hover: rgba(36, 27, 12, 0.95);
+  --theme-text-nav-active: rgba(36, 27, 12, 0.95);
+  --theme-text-player-count: #2a1f0d;
+  --theme-text-button: #2a1f0d;
+  --theme-text-modal-badge: rgba(40, 31, 14, 0.9);
+  --theme-text-tag: rgb(79, 53, 126);
+  --theme-text-filter-active: rgb(79, 53, 126);
+
+  /* Accent */
+  --theme-accent-blue: #2f62c8;
+  --theme-accent-blue-strong: #1f4fa8;
+  --theme-accent-purple: #6d46c4;
+  --theme-accent-red: #b64545;
+  --theme-accent-green: #2f8a52;
+  --theme-accent-green-strong: #1f6b3d;
+  --theme-accent-amber: #b87a17;
+  --theme-accent-amber-strong: #8c5a0d;
+
+  /* Status */
+  --theme-status-online: #2f8a52;
+  --theme-status-online-glow: rgba(47, 138, 82, 0.4);
+  --theme-status-offline: #b84a4a;
+  --theme-status-offline-glow: rgba(184, 74, 74, 0.35);
+
+  /* Shadow */
+  --theme-shadow-glass: rgba(38, 29, 12, 0.08);
+  --theme-shadow-glass-inset: rgba(255, 255, 255, 0.65);
+  --theme-shadow-card: 0 1px 2px rgba(46, 34, 14, 0.05), 0 8px 20px rgba(46, 34, 14, 0.055);
+  --theme-shadow-modal: rgba(28, 36, 52, 0.14);
+  --theme-shadow-modal-soft: rgba(28, 36, 52, 0.07);
+  --theme-shadow-modal-inset: rgba(255, 255, 255, 0.72);
+  --theme-shadow-filter-active: rgba(126, 92, 203, 0.12);
+
+  /* Immersive building overlay */
+  --theme-overlay-bg: rgba(242, 237, 230, 0.94);
+  --theme-overlay-control-bg: rgba(255, 255, 255, 0.55);
+  --theme-overlay-control-border: rgba(0, 0, 0, 0.1);
+  --theme-overlay-control-color: rgba(0, 0, 0, 0.7);
+  --theme-overlay-control-hover-bg: rgba(255, 255, 255, 0.75);
+  --theme-overlay-control-hover-border: rgba(0, 0, 0, 0.16);
+  --theme-overlay-nav-bg: rgba(255, 255, 255, 0.45);
+  --theme-overlay-nav-border: rgba(0, 0, 0, 0.07);
+  --theme-overlay-nav-color: rgba(0, 0, 0, 0.55);
+  --theme-overlay-nav-hover-bg: rgba(255, 255, 255, 0.65);
+  --theme-overlay-nav-hover-border: rgba(0, 0, 0, 0.13);
+  --theme-overlay-info-bar-bg: linear-gradient(180deg, transparent, rgba(255, 250, 244, 0.82) 30%);
+  --theme-overlay-title-color: #1a1508;
+  --theme-overlay-meta-color: rgba(0, 0, 0, 0.48);
+  --theme-overlay-meta-sep-color: rgba(0, 0, 0, 0.2);
+  --theme-overlay-dot-inactive: rgba(0, 0, 0, 0.18);
+  --theme-overlay-expand-border: rgba(0, 0, 0, 0.13);
+  --theme-overlay-expand-color: rgba(0, 0, 0, 0.5);
+  --theme-overlay-expanded-text: rgba(0, 0, 0, 0.65);
+  --theme-overlay-loader-bg: rgba(255, 255, 255, 0.5);
+  --theme-overlay-loader-border: rgba(0, 0, 0, 0.12);
+
+  /* Card image overlays */
+  --theme-card-image-badge-bg: rgba(255, 250, 244, 0.88);
+  --theme-card-image-dot: rgba(40, 30, 15, 0.4);
+  --theme-card-image-dot-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}

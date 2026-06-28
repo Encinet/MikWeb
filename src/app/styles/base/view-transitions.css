@@ -1,0 +1,31 @@
+/* View Transitions API support */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: var(--z-view-transition);
+  animation: circle-expand 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes circle-expand {
+  from {
+    clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
+  }
+  to {
+    clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
+  }
+}
+
+/* 确保页面切换后重置所有 transform */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    view-transition-name: none;
+  }
+}
