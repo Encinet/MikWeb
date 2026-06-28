@@ -30,6 +30,10 @@ export default function proxy(request: NextRequest) {
     return response;
   }
 
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
   return intlMiddleware(request);
 }
 

@@ -1,11 +1,14 @@
 'use client';
 
-import { Globe, Menu, Monitor, Moon, Sun, Users, X } from 'lucide-react';
+import { Globe, Menu, Monitor, Moon, Sun, UserRound, Users, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { CSSProperties, RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useAuth } from '@/modules/auth/model/use-auth';
 import type { Player } from '@/modules/player/model/player-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { Link } from '@/shared/i18n/routing';
 
 interface SiteHeaderControlsProps {
   isLoadingPlayers: boolean;
@@ -56,6 +59,9 @@ export function SiteHeaderControls({
   theme,
   themeTooltip,
 }: SiteHeaderControlsProps) {
+  const accountT = useTranslations('nav.account');
+  const { account, authenticated, isLoading: isLoadingAuth } = useAuth();
+
   return (
     <>
       <div className="project-navbar-controls flex shrink-0 items-center gap-3 sm:gap-4">
@@ -99,6 +105,40 @@ export function SiteHeaderControls({
             <span className="hidden sm:inline">{localeLabel}</span>
           </button>
         </fieldset>
+
+        {isLoadingAuth ? null : (
+          <Link
+            href={authenticated ? '/account' : '/login'}
+            className={`project-account-link${
+              authenticated && account
+                ? ' project-account-link--signed-in'
+                : ' project-account-link--signed-out'
+            }`}
+            title={authenticated && account ? account.currentName : accountT('login')}
+            aria-label={authenticated && account ? account.currentName : accountT('login')}
+          >
+            {authenticated && account ? (
+              <>
+                <span className="project-account-avatar-frame">
+                  <MinecraftAvatar
+                    uuid={account.playerUuid}
+                    name={account.currentName}
+                    size={28}
+                    className="project-account-avatar"
+                  />
+                </span>
+                <span className="project-account-name">{account.currentName}</span>
+              </>
+            ) : (
+              <>
+                <span className="project-account-login-icon">
+                  <UserRound className="h-4 w-4" />
+                </span>
+                <span className="project-account-login-label">{accountT('login')}</span>
+              </>
+            )}
+          </Link>
+        )}
 
         <div ref={playerDropdownAnchorRef} className="project-player-control relative">
           <button

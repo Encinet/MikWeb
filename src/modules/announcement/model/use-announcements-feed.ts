@@ -11,6 +11,8 @@ interface UseAnnouncementsFeedOptions {
   fallbackErrorMessage: string;
 }
 
+const ANNOUNCEMENTS_BROWSER_CACHE_TTL_MS = 300_000;
+
 export function useAnnouncementsFeed({ fallbackErrorMessage }: UseAnnouncementsFeedOptions) {
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -24,6 +26,9 @@ export function useAnnouncementsFeed({ fallbackErrorMessage }: UseAnnouncementsF
         url: dataApiUrl('/announcements'),
         validate: isAnnouncementItemArray,
         timeoutMs: 15_000,
+        browserCache: {
+          ttlMs: ANNOUNCEMENTS_BROWSER_CACHE_TTL_MS,
+        },
         fallbackErrorMessage,
       });
 

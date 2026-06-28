@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useAuth } from '@/modules/auth/model/use-auth';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { usePathname, useRouter } from '@/shared/i18n/routing';
@@ -23,6 +24,7 @@ export default function SiteHeader() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const { theme, setTheme } = useTheme();
+  const { authenticated, isLoading: isLoadingAuth } = useAuth();
   const {
     players,
     playerCount,
@@ -60,23 +62,27 @@ export default function SiteHeader() {
     }
   };
 
-  const navItems = useMemo<SiteHeaderNavItem[]>(
-    () => [
+  const navItems = useMemo<SiteHeaderNavItem[]>(() => {
+    const items: SiteHeaderNavItem[] = [
       { id: 'home', icon: Home, label: t('items.home'), path: '/' },
       { id: 'buildings', icon: Building2, label: t('items.buildings'), path: '/buildings' },
       { id: 'wiki', icon: BookOpen, label: t('items.wiki'), path: '/wiki' },
       { id: 'map', icon: MapIcon, label: t('items.map'), path: '/map' },
       { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
-      {
+    ];
+
+    if (!authenticated && !isLoadingAuth) {
+      items.push({
         id: 'apply',
         icon: Play,
         label: t('items.join'),
         link: 'https://apply.mcmik.top',
         highlight: true,
-      },
-    ],
-    [t],
-  );
+      });
+    }
+
+    return items;
+  }, [authenticated, isLoadingAuth, t]);
   const activeDesktopNavIndex = navItems.findIndex((item) => item.path === pathname);
   const previousActiveDesktopNavIndex = previousActiveNavIndexRef.current;
   const desktopUnderlineDirection =

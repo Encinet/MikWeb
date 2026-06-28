@@ -24,6 +24,10 @@
       "light": "浅色模式",
       "dark": "深色模式",
       "system": "跟随系统"
+    },
+    "account": {
+      "login": "登录",
+      "account": "个人"
     }
   },
   "pcl2Page": {
@@ -84,6 +88,7 @@
       "title": "Mik Causual",
       "description": "一个 Minecraft 公益创造休闲向服务器，在这里留下属于你的杰作。",
       "joinButton": "申请加入服务器",
+      "accountButton": "进入个人界面",
       "wikiButton": "查看 Wiki",
       "notice": "服务器地址",
       "serverAddress": "mcmik.top"
@@ -267,6 +272,206 @@
       "bannedBy": "执行者",
       "bannedAt": "封禁时间",
       "expiresAt": "解封时间"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "玩家登录",
+      "subtitle": "仅正式成员可使用网页功能，登录方式支持游戏内验证码和 Passkey",
+      "minecraft": {
+        "title": "游戏内验证码",
+        "description": "生成一次性数字码，在服务器内执行 /weblogin 确认"
+      },
+      "passkey": {
+        "title": "Passkey",
+        "description": "使用已绑定的设备、系统账号或安全密钥登录"
+      },
+      "codePanel": {
+        "title": "验证码",
+        "empty": "先生成验证码，然后回到游戏内确认",
+        "copyLabel": "复制网页登录命令",
+        "remaining": "有效期剩余 {time}"
+      },
+      "actions": {
+        "account": "进入个人页"
+      },
+      "states": {
+        "loading": "正在处理",
+        "completing": "正在完成登录",
+        "copied": "已复制",
+        "copyFailed": "复制失败",
+        "expired": "验证码已过期，请重新生成",
+        "unavailable": "暂时无法生成验证码",
+        "memberRequired": "此网页系统仅向正式成员开放",
+        "loginSuccess": "登录成功",
+        "passkeyStarting": "正在启动 Passkey 登录",
+        "passkeyUnavailable": "暂时无法开始 Passkey 登录",
+        "passkeyFailed": "Passkey 验证失败",
+        "passkeyCancelled": "Passkey 登录已取消",
+        "passkeyDomainMismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
+        "passkeyBrowserUnsupported": "当前浏览器不支持 Passkey"
+      }
+    },
+    "account": {
+      "title": "个人界面",
+      "subtitle": "个人概览",
+      "loading": "加载中",
+      "navigation": {
+        "label": "个人中心导航",
+        "overview": "个人概览",
+        "buildingSubmission": "建筑收入申请",
+        "security": "登录与安全"
+      },
+      "overview": {
+        "description": "账号状态与功能入口"
+      },
+      "signedOut": {
+        "title": "尚未登录",
+        "description": "请先通过游戏内验证码或 Passkey 登录"
+      },
+      "fields": {
+        "passkeys": "Passkey 数量",
+        "uuid": "玩家 UUID"
+      },
+      "actions": {
+        "login": "前往登录",
+        "buildingSubmission": "建筑收入申请",
+        "security": "登录与安全",
+        "logout": "退出登录"
+      }
+    },
+    "security": {
+      "title": "登录与安全",
+      "subtitle": "管理当前网页会话和可用于登录的 Passkey",
+      "signedOut": {
+        "title": "请先登录"
+      },
+      "actions": {
+        "login": "前往登录",
+        "addPasskey": "添加 Passkey",
+        "delete": "删除",
+        "revokeSession": "注销"
+      },
+      "sections": {
+        "sessions": "浏览器会话",
+        "passkeys": "Passkey"
+      },
+      "session": {
+        "description": "查看当前登录状态，并注销不再使用的浏览器",
+        "current": "当前",
+        "lastSeenAt": "上次活动 {time}",
+        "expiresAt": "闲置到期 {time}",
+        "method": {
+          "minecraft-challenge": "游戏内验证码登录",
+          "passkey": "Passkey 登录"
+        }
+      },
+      "passkey": {
+        "description": "管理可用于网页登录的设备、系统账号或安全密钥",
+        "defaultName": "Mik Passkey",
+        "createdAt": "创建于 {time}",
+        "empty": "当前账号还没有绑定 Passkey"
+      },
+      "states": {
+        "unavailable": "暂时无法开始 Passkey 注册",
+        "registerFailed": "Passkey 注册失败",
+        "registered": "Passkey 已添加",
+        "cancelled": "Passkey 操作已取消",
+        "domainMismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
+        "alreadyRegistered": "这个 Passkey 已经绑定过",
+        "unsupportedAuthenticator": "当前设备不支持可用于登录的 Passkey",
+        "browserUnsupported": "当前浏览器不支持 Passkey",
+        "deleteFailed": "删除失败",
+        "deleted": "Passkey 已删除",
+        "revokeSessionFailed": "注销会话失败",
+        "sessionRevoked": "会话已注销"
+      }
+    }
+  },
+  "buildingSubmission": {
+    "eyebrow": "Member Submission",
+    "title": "建筑收入申请",
+    "subtitle": "提交你希望收入建筑展示的作品，管理员审核通过后会进入公开建筑列表",
+    "quota": "待审核 / {max}",
+    "signedOut": {
+      "title": "请先登录",
+      "description": "建筑收入申请仅正式成员可使用"
+    },
+    "sections": {
+      "basic": "基本信息",
+      "location": "建筑坐标",
+      "builders": "参与成员",
+      "images": "图片",
+      "tags": "标签",
+      "source": "来源"
+    },
+    "fields": {
+      "nameZh": "中文名称",
+      "nameEn": "英文名称",
+      "descriptionZh": "中文描述",
+      "descriptionEn": "英文描述",
+      "buildType": "建筑类型",
+      "buildDate": "建造日期",
+      "playerPlaceholder": "输入玩家名后按空格或 Enter",
+      "weight": "权重",
+      "totalWeight": "总权重 {total}",
+      "tagZh": "中文标签",
+      "tagEn": "英文标签",
+      "sourceAuthor": "原作者",
+      "sourceLink": "原作链接",
+      "sourceNoteZh": "中文来源备注",
+      "sourceNoteEn": "英文来源备注"
+    },
+    "types": {
+      "original": "原创",
+      "derivative": "二创",
+      "replica": "复刻"
+    },
+    "actions": {
+      "login": "前往登录",
+      "submit": "提交申请",
+      "reset": "清空",
+      "refresh": "刷新",
+      "remove": "移除",
+      "addTag": "添加标签",
+      "uploadImages": "选择图片",
+      "increaseWeight": "增加权重",
+      "decreaseWeight": "减少权重",
+      "equalizeWeights": "平均分配",
+      "normalizeWeights": "归一化",
+      "clearBuilders": "清空其他"
+    },
+    "states": {
+      "loadFailed": "申请加载失败",
+      "playerNotFound": "没有找到该玩家",
+      "tagRequired": "标签需要同时填写中文和英文",
+      "imageLimit": "最多上传 15 张图片",
+      "selected": "图片已选择",
+      "imageSelectFailed": "图片读取失败",
+      "uploading": "正在上传图片",
+      "uploadFailed": "图片上传失败",
+      "imageTooSmall": "图片清晰度不足，至少需要 960x540",
+      "submitting": "正在提交",
+      "submitted": "申请已提交",
+      "submitFailed": "提交失败",
+      "pendingLimit": "待审核申请已达到 10 个",
+      "required": "中文和英文内容都需要填写",
+      "buildersRequired": "至少需要一个建造者",
+      "imagesRequired": "至少需要一张图片",
+      "coordinatesRequired": "坐标需要填写数字",
+      "sourceRequired": "二创和复刻需要填写完整来源",
+      "invalid": "表单内容有误"
+    },
+    "status": {
+      "pending": "待审核",
+      "approved": "已收入",
+      "rejected": "已拒绝"
+    },
+    "history": {
+      "title": "我的申请",
+      "empty": "还没有提交记录",
+      "rejectionReason": "拒绝原因：{reason}",
+      "expiresAt": "保留至 {time}"
     }
   },
   "footer": {

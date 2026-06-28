@@ -11,6 +11,8 @@ import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { SectionMessage } from '@/shared/ui/feedback/async-state';
 
+const BANS_BROWSER_CACHE_TTL_MS = 300_000;
+
 function BansLoadingState({ message }: { message: string }) {
   return (
     <div className="py-20 text-center">
@@ -36,6 +38,9 @@ export default function BansPage() {
         url: dataApiUrl('/bans'),
         validate: isBanItemArray,
         timeoutMs: 15_000,
+        browserCache: {
+          ttlMs: BANS_BROWSER_CACHE_TTL_MS,
+        },
         fallbackErrorMessage: commonT('states.error'),
       });
 

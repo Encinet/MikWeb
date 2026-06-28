@@ -42,7 +42,7 @@ export interface BuildingsContextValue {
   buildingCount: number;
   isLoading: boolean;
   error: string | null;
-  fetchBuildings: () => Promise<void>;
+  fetchBuildings: (options?: { force?: boolean }) => Promise<void>;
   lastUpdatedAt: number | null;
 }
 

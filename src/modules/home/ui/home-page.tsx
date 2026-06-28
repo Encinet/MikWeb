@@ -1,6 +1,7 @@
 import { ArrowRight, BookOpen, Building2, MapIcon, Play, Shield } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
+import { HomeHeroActions } from '@/modules/home/ui/home-hero-actions';
 import HomeLiveOverview from '@/modules/home/ui/home-live-overview';
 import { Link } from '@/shared/i18n/routing';
 
@@ -63,21 +64,7 @@ export default async function HomePage() {
           <h1>{t('home.hero.title')}</h1>
           <p className="home-project-hero__description">{t('home.hero.description')}</p>
 
-          <div className="home-project-hero__actions">
-            <a
-              href={APPLY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="home-project-button"
-            >
-              <Play className="h-5 w-5" />
-              <span>{t('home.hero.joinButton')}</span>
-            </a>
-            <Link href="/wiki" className="home-project-button home-project-button--secondary">
-              <BookOpen className="h-5 w-5" />
-              <span>{t('home.hero.wikiButton')}</span>
-            </Link>
-          </div>
+          <HomeHeroActions />
 
           <div className="home-project-hero__server">
             <span>{t('home.hero.notice')}</span>

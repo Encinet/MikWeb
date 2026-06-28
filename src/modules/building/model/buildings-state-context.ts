@@ -7,7 +7,7 @@ const defaultBuildingsContextValue: BuildingsContextValue = {
   buildingCount: 0,
   isLoading: false,
   error: null,
-  fetchBuildings: async () => {},
+  fetchBuildings: async () => undefined,
   lastUpdatedAt: null,
 };
 

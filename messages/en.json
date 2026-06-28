@@ -24,6 +24,10 @@
       "light": "Light Mode",
       "dark": "Dark Mode",
       "system": "System"
+    },
+    "account": {
+      "login": "Log in",
+      "account": "Account"
     }
   },
   "pcl2Page": {
@@ -84,6 +88,7 @@
       "title": "Mik Causual",
       "description": "A Minecraft non-profit, casual creation server where you can leave your masterpieces.",
       "joinButton": "Apply to Join Server",
+      "accountButton": "Open Account",
       "wikiButton": "View Wiki",
       "notice": "Server address",
       "serverAddress": "mcmik.top"
@@ -267,6 +272,206 @@
       "bannedBy": "Banned By",
       "bannedAt": "Banned At",
       "expiresAt": "Expires At"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Player Login",
+      "subtitle": "Web features are limited to formal members and support in-game codes and Passkeys.",
+      "minecraft": {
+        "title": "In-game Code",
+        "description": "Generate a one-time numeric code, then confirm it in game with /weblogin."
+      },
+      "passkey": {
+        "title": "Passkey",
+        "description": "Sign in with a bound device, platform account, or security key."
+      },
+      "codePanel": {
+        "title": "Code",
+        "empty": "Generate a code first, then confirm it in game.",
+        "copyLabel": "Copy web login command",
+        "remaining": "Expires in {time}"
+      },
+      "actions": {
+        "account": "Open account"
+      },
+      "states": {
+        "loading": "Processing",
+        "completing": "Completing login",
+        "copied": "Copied",
+        "copyFailed": "Copy failed",
+        "expired": "The code expired. Generate a new one.",
+        "unavailable": "Code login is temporarily unavailable.",
+        "memberRequired": "This web system is only available to formal members.",
+        "loginSuccess": "Signed in",
+        "passkeyStarting": "Starting Passkey login",
+        "passkeyUnavailable": "Passkey login is temporarily unavailable.",
+        "passkeyFailed": "Passkey verification failed.",
+        "passkeyCancelled": "Passkey login was cancelled.",
+        "passkeyDomainMismatch": "This domain does not support Passkeys. Use mcmik.top.",
+        "passkeyBrowserUnsupported": "This browser does not support Passkeys."
+      }
+    },
+    "account": {
+      "title": "Account",
+      "subtitle": "Overview",
+      "loading": "Loading",
+      "navigation": {
+        "label": "Account navigation",
+        "overview": "Overview",
+        "buildingSubmission": "Building submission",
+        "security": "Login and security"
+      },
+      "overview": {
+        "description": "Account status and tools."
+      },
+      "signedOut": {
+        "title": "Not signed in",
+        "description": "Sign in with an in-game code or Passkey first."
+      },
+      "fields": {
+        "passkeys": "Passkeys",
+        "uuid": "Player UUID"
+      },
+      "actions": {
+        "login": "Go to login",
+        "buildingSubmission": "Building submission",
+        "security": "Login and security",
+        "logout": "Log out"
+      }
+    },
+    "security": {
+      "title": "Login and Security",
+      "subtitle": "Manage the current web session and Passkeys that can sign in.",
+      "signedOut": {
+        "title": "Please sign in first"
+      },
+      "actions": {
+        "login": "Go to login",
+        "addPasskey": "Add Passkey",
+        "delete": "Delete",
+        "revokeSession": "Revoke"
+      },
+      "sections": {
+        "sessions": "Browser Sessions",
+        "passkeys": "Passkeys"
+      },
+      "session": {
+        "description": "Review active browser sign-ins and revoke browsers you no longer use.",
+        "current": "Current",
+        "lastSeenAt": "Last active {time}",
+        "expiresAt": "Idle expiry {time}",
+        "method": {
+          "minecraft-challenge": "In-game code sign-in",
+          "passkey": "Passkey sign-in"
+        }
+      },
+      "passkey": {
+        "description": "Manage devices, platform accounts, and security keys that can sign in.",
+        "defaultName": "Mik Passkey",
+        "createdAt": "Created at {time}",
+        "empty": "This account has no Passkeys yet."
+      },
+      "states": {
+        "unavailable": "Passkey registration is temporarily unavailable.",
+        "registerFailed": "Passkey registration failed.",
+        "registered": "Passkey added.",
+        "cancelled": "Passkey operation was cancelled.",
+        "domainMismatch": "This domain does not support Passkeys. Use mcmik.top.",
+        "alreadyRegistered": "This Passkey is already bound.",
+        "unsupportedAuthenticator": "This device does not support a sign-in Passkey.",
+        "browserUnsupported": "This browser does not support Passkeys.",
+        "deleteFailed": "Delete failed.",
+        "deleted": "Passkey deleted.",
+        "revokeSessionFailed": "Failed to revoke session.",
+        "sessionRevoked": "Session revoked."
+      }
+    }
+  },
+  "buildingSubmission": {
+    "eyebrow": "Member Submission",
+    "title": "Building Submission",
+    "subtitle": "Submit a build you want added to the public showcase. It appears after admin review.",
+    "quota": "pending / {max}",
+    "signedOut": {
+      "title": "Please sign in first",
+      "description": "Building submissions are available to formal members only."
+    },
+    "sections": {
+      "basic": "Basic Info",
+      "location": "Location",
+      "builders": "Builders",
+      "images": "Images",
+      "tags": "Tags",
+      "source": "Source"
+    },
+    "fields": {
+      "nameZh": "Chinese name",
+      "nameEn": "English name",
+      "descriptionZh": "Chinese description",
+      "descriptionEn": "English description",
+      "buildType": "Build type",
+      "buildDate": "Build date",
+      "playerPlaceholder": "Type a player name, then press Space or Enter",
+      "weight": "Weight",
+      "totalWeight": "Total weight {total}",
+      "tagZh": "Chinese tag",
+      "tagEn": "English tag",
+      "sourceAuthor": "Original author",
+      "sourceLink": "Original link",
+      "sourceNoteZh": "Chinese source note",
+      "sourceNoteEn": "English source note"
+    },
+    "types": {
+      "original": "Original",
+      "derivative": "Derivative",
+      "replica": "Replica"
+    },
+    "actions": {
+      "login": "Go to login",
+      "submit": "Submit",
+      "reset": "Reset",
+      "refresh": "Refresh",
+      "remove": "Remove",
+      "addTag": "Add tag",
+      "uploadImages": "Select images",
+      "increaseWeight": "Increase weight",
+      "decreaseWeight": "Decrease weight",
+      "equalizeWeights": "Split evenly",
+      "normalizeWeights": "Normalize",
+      "clearBuilders": "Clear others"
+    },
+    "states": {
+      "loadFailed": "Failed to load submissions.",
+      "playerNotFound": "No player found.",
+      "tagRequired": "Tags require both Chinese and English.",
+      "imageLimit": "You can upload at most 15 images.",
+      "selected": "Images selected",
+      "imageSelectFailed": "Failed to read images.",
+      "uploading": "Uploading images",
+      "uploadFailed": "Image upload failed.",
+      "imageTooSmall": "Image clarity is too low. Minimum size is 960x540.",
+      "submitting": "Submitting",
+      "submitted": "Submission created",
+      "submitFailed": "Submit failed.",
+      "pendingLimit": "You already have 10 pending submissions.",
+      "required": "Chinese and English fields are required.",
+      "buildersRequired": "At least one builder is required.",
+      "imagesRequired": "At least one image is required.",
+      "coordinatesRequired": "Coordinates must be numbers.",
+      "sourceRequired": "Derivative and replica builds require complete source information.",
+      "invalid": "The form is invalid."
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "history": {
+      "title": "My Submissions",
+      "empty": "No submissions yet.",
+      "rejectionReason": "Rejection reason: {reason}",
+      "expiresAt": "Kept until {time}"
     }
   },
   "footer": {
