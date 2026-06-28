@@ -59,10 +59,12 @@ icon: Wrench
 <tr><td><code>/msg</code></td><td>已经在任意私聊频道时，直接执行会回到公共频道</td></tr>
 <tr><td>临时私信</td><td><code>/msg &lt;玩家&gt; &lt;消息&gt;</code></td><td>发送一条私信但不改变当前聊天频道；<code>/tell</code>、<code>/w</code>、<code>/whisper</code> 也可使用同样写法</td></tr>
 <tr><td>快速回复</td><td><code>/r &lt;消息&gt;</code> 或 <code>/reply &lt;消息&gt;</code></td><td>回复最近私聊过的玩家，同样不会改变当前聊天频道</td></tr>
-<tr><td rowspan="3">聊天增强</td><td><code>@玩家名</code> 或直接输入玩家名</td><td>提及当前频道可见的玩家；大小写不敏感，例如 <code>@steve</code> 或 <code>steve</code> 会显示为 <code>@Steve</code></td></tr>
+<tr><td rowspan="4">聊天增强</td><td><code>@玩家名</code> 或直接输入玩家名</td><td>提及当前频道可见的玩家；大小写不敏感，例如 <code>@steve</code> 或 <code>steve</code> 会显示为 <code>@Steve</code></td></tr>
 <tr><td><code>[item]</code> 或 <code>[i]</code></td><td>在聊天中展示手中物品</td></tr>
 <tr><td>链接、<code>av</code> / <code>BV</code> 号</td><td>网址和 Bilibili 视频号会自动显示为可点击文本</td></tr>
-<tr><td>提及提醒</td><td><code>/menu</code> → 提及提醒</td><td>可设置被提及时是否播放声音、显示屏幕提示，以及挂机时是否静音</td></tr>
+<tr><td>MiniMessage 样式</td><td>正式成员可在聊天中使用颜色、粗体/斜体等装饰、渐变、彩虹与 reset；不支持点击事件、选择器、换行等标签</td></tr>
+<tr><td rowspan="2">聊天设置</td><td><code>/menu</code> → 聊天设置</td><td>设置提及提醒和聊天延迟；延迟可选 <code>off</code>、<code>3s</code>、<code>5s</code>、<code>7s</code>，启用后所有聊天频道都会在指定时间后发送</td></tr>
+<tr><td><code>/cancel</code> 或 <code>/c</code></td><td>取消自己尚未发送的延迟消息</td></tr>
 </tbody>
 </table>
 

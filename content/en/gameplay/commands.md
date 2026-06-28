@@ -59,10 +59,12 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><td><code>/msg</code></td><td>When you are already in any private chat channel, return to public chat</td></tr>
 <tr><td>One-time private message</td><td><code>/msg &lt;player&gt; &lt;message&gt;</code></td><td>Send one private message without changing your current chat channel. <code>/tell</code>, <code>/w</code>, and <code>/whisper</code> use the same format</td></tr>
 <tr><td>Quick reply</td><td><code>/r &lt;message&gt;</code> or <code>/reply &lt;message&gt;</code></td><td>Reply to the player you most recently messaged, without changing your current chat channel</td></tr>
-<tr><td rowspan="3">Chat enhancements</td><td><code>@player</code> or the player name directly</td><td>Mention a player visible in the current channel. Mentions are case-insensitive; for example, <code>@steve</code> or <code>steve</code> displays as <code>@Steve</code></td></tr>
+<tr><td rowspan="4">Chat enhancements</td><td><code>@player</code> or the player name directly</td><td>Mention a player visible in the current channel. Mentions are case-insensitive; for example, <code>@steve</code> or <code>steve</code> displays as <code>@Steve</code></td></tr>
 <tr><td><code>[item]</code> or <code>[i]</code></td><td>Show the item in your hand in chat</td></tr>
 <tr><td>Links, <code>av</code> / <code>BV</code> IDs</td><td>URLs and Bilibili video IDs are automatically displayed as clickable text</td></tr>
-<tr><td>Mention alerts</td><td><code>/menu</code> → Mention Alerts</td><td>Choose whether mentions play a sound, show an action bar prompt, or mute while you are AFK</td></tr>
+<tr><td>MiniMessage styling</td><td>Full members can use colors, text decorations, gradients, rainbow text, and reset in chat. Click events, selectors, newline tags, and similar unsafe tags are not supported</td></tr>
+<tr><td rowspan="2">Chat settings</td><td><code>/menu</code> → Chat Settings</td><td>Configure mention alerts and chat delay. Delay options are <code>off</code>, <code>3s</code>, <code>5s</code>, and <code>7s</code>; when enabled, all chat channels are sent after the selected delay</td></tr>
+<tr><td><code>/cancel</code> or <code>/c</code></td><td>Cancel your own pending delayed messages</td></tr>
 </tbody>
 </table>
 
