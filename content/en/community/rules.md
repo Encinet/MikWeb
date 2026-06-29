@@ -51,6 +51,7 @@ Client mods are allowed, including utility features that many servers would clas
 3. **Do not spam public spaces** with repetitive or meaningless content, whether in chat, signs, books, or other text-based tools.
 4. **Do not post unrelated advertising, promotional content, or traffic-farming messages.**
 5. **Do not spread false information or malicious rumors**, especially about staff or other players.
+6. Do not build inappropriate or malicious structures. Any structure that may have a negative impact, is offensive, or is built with malicious intent is strictly prohibited. For example, building a grave for another player without a valid reason is not permitted.
 
 ## Copyright & Licensing
 
