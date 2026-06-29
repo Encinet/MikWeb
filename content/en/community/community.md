@@ -40,4 +40,4 @@ Collaborative builds can be credited to multiple people together.
 
 ### Submission Method
 
-Once you become an official member, log in to the server's official website and navigate to Overview → Building Income Application to complete and submit the application form.
+Once you become an official member, log in to the server's official website and navigate to `Overview` → `Building submission` to complete and submit the application form.
