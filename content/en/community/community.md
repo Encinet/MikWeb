@@ -40,40 +40,4 @@ Collaborative builds can be credited to multiple people together.
 
 ### Submission Template
 
-Copy the template below, fill it in, and send it to an admin:
-
-```template
-[Build Feature Application]
-
-Build Name:
-Build Description (optional):
-
-Coordinates:
-  X:
-  Y:
-  Z:
-
-Builders:
-  - Name:    UUID:
-  - Name:    UUID: (if there are collaborators)
-
-Contribution Ratio (optional, if there are multiple builders):
-  - Name:    Ratio: %
-
-Build Type: Original / Replica / Derivative
-
-Original Work Info (for replicas or derivatives):
-  Original Creator:
-  Original Link:
-  Notes (optional):
-
-Build Date: YYYY-MM-DD
-
-Tags (optional, for website categorization):
-  - Chinese Tag:
-  - English Tag:
-
-Image Links (at least one):
-  1.
-  2. (optional)
-```
+Once you become an official member, log in to the server's official website and navigate to Overview → Building Income Application to complete and submit the application form.
