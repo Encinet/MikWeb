@@ -44,13 +44,12 @@ next-env.d.ts
 # todo
 todo/
 
-
 # Claude Code internals
 .claude/worktrees/
 .claude/scheduled_tasks.json
 .playwright-mcp/
 
-#Ignore vscode AI rules
+# Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 
 # ai
@@ -59,3 +58,7 @@ todo/
 .agents
 .impeccable
 PRODUCT.md
+
+# Reasonix (do not commit)
+.reasonix/
+AGENTS.md

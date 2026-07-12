@@ -1,8 +1,10 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { Globe, Menu, Monitor, Moon, Sun, UserRound, Users, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties, RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useAuth } from '@/modules/auth/model/use-auth';
@@ -14,11 +16,10 @@ interface SiteHeaderControlsProps {
   isLoadingPlayers: boolean;
   isMobileMenuOpen: boolean;
   isOnline: boolean;
-  localeLabel: string;
-  localeTooltip: string;
+  locale: string;
   mounted: boolean;
   networkError: boolean;
-  onLocaleSwitch: () => void;
+  onLocaleSwitch: (locale: string) => void;
   onMobileMenuToggle: () => void;
   onPlayerDropdownClose: () => void;
   onPlayerDropdownOpen: () => void;
@@ -35,12 +36,30 @@ interface SiteHeaderControlsProps {
   themeTooltip: string;
 }
 
+const LOCALE_OPTIONS = [
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'zh-TW', label: '繁體中文（台灣）' },
+  { value: 'zh-HK', label: '繁體中文（香港）' },
+  { value: 'lzh', label: '文言' },
+  { value: 'en', label: 'English' },
+] as const;
+
+function getLocaleShortLabel(locale: string): string {
+  const map: Record<string, string> = {
+    'zh-CN': '简',
+    'zh-TW': '繁',
+    'zh-HK': '港',
+    lzh: '文',
+    en: 'EN',
+  };
+  return map[locale] ?? locale;
+}
+
 export function SiteHeaderControls({
   isLoadingPlayers,
   isMobileMenuOpen,
   isOnline,
-  localeLabel,
-  localeTooltip,
+  locale,
   mounted,
   networkError,
   onLocaleSwitch,
@@ -61,6 +80,91 @@ export function SiteHeaderControls({
 }: SiteHeaderControlsProps) {
   const accountT = useTranslations('nav.account');
   const { account, authenticated, isLoading: isLoadingAuth } = useAuth();
+
+  const [isLocaleDropdownOpen, setIsLocaleDropdownOpen] = useState(false);
+  const [isLocaleDropdownVisible, setIsLocaleDropdownVisible] = useState(false);
+  const [localeDropdownRect, setLocaleDropdownRect] = useState<DOMRect | null>(null);
+  const localeAnchorRef = useRef<HTMLButtonElement | null>(null);
+  const localeAnimFrameRef = useRef<number | null>(null);
+  const localeCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [isHoverDevice, setIsHoverDevice] = useState(false);
+  useEffect(() => {
+    setIsHoverDevice(window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+  }, []);
+
+  const updateLocaleRect = useCallback(() => {
+    if (localeAnchorRef.current) {
+      setLocaleDropdownRect(localeAnchorRef.current.getBoundingClientRect());
+    }
+  }, []);
+
+  const openLocaleDropdown = () => {
+    if (localeCloseTimerRef.current !== null) {
+      clearTimeout(localeCloseTimerRef.current);
+      localeCloseTimerRef.current = null;
+    }
+    if (!isLocaleDropdownOpen) {
+      updateLocaleRect();
+      setIsLocaleDropdownOpen(true);
+    }
+  };
+
+  const closeLocaleDropdown = () => {
+    localeCloseTimerRef.current = setTimeout(() => {
+      localeCloseTimerRef.current = null;
+      setIsLocaleDropdownOpen(false);
+    }, 150);
+  };
+
+  const toggleLocaleDropdown = () => {
+    if (isLocaleDropdownOpen) {
+      if (localeCloseTimerRef.current !== null) {
+        clearTimeout(localeCloseTimerRef.current);
+        localeCloseTimerRef.current = null;
+      }
+      setIsLocaleDropdownOpen(false);
+    } else {
+      openLocaleDropdown();
+    }
+  };
+
+  useEffect(() => {
+    if (!isLocaleDropdownOpen) {
+      if (localeAnimFrameRef.current !== null) {
+        cancelAnimationFrame(localeAnimFrameRef.current);
+        localeAnimFrameRef.current = null;
+      }
+      return;
+    }
+
+    updateLocaleRect();
+    localeAnimFrameRef.current = requestAnimationFrame(() => {
+      localeAnimFrameRef.current = requestAnimationFrame(() => {
+        setIsLocaleDropdownVisible(true);
+      });
+    });
+    window.addEventListener('resize', updateLocaleRect);
+    window.addEventListener('scroll', updateLocaleRect, true);
+
+    return () => {
+      if (localeAnimFrameRef.current !== null) {
+        cancelAnimationFrame(localeAnimFrameRef.current);
+        localeAnimFrameRef.current = null;
+      }
+      window.removeEventListener('resize', updateLocaleRect);
+      window.removeEventListener('scroll', updateLocaleRect, true);
+    };
+  }, [isLocaleDropdownOpen, updateLocaleRect]);
+
+  const hoverProps = isHoverDevice
+    ? {
+        onMouseEnter: openLocaleDropdown,
+        onMouseLeave: closeLocaleDropdown,
+        onFocus: openLocaleDropdown,
+        onBlur: closeLocaleDropdown,
+      }
+    : {};
 
   return (
     <>
@@ -96,13 +200,15 @@ export function SiteHeaderControls({
           </button>
 
           <button
+            ref={localeAnchorRef}
             type="button"
-            onClick={onLocaleSwitch}
+            {...hoverProps}
+            onClick={toggleLocaleDropdown}
             className="project-locale-toggle ui-nav-link inline-flex items-center gap-1.5 py-2"
-            title={localeTooltip}
+            title={LOCALE_OPTIONS.find((o) => o.value === locale)?.label ?? ''}
           >
             <Globe className="h-4 w-4" />
-            <span className="hidden sm:inline">{localeLabel}</span>
+            <span className="hidden sm:inline">{getLocaleShortLabel(locale)}</span>
           </button>
         </fieldset>
 
@@ -199,7 +305,126 @@ export function SiteHeaderControls({
         onMouseEnter={onPlayerDropdownOpen}
         onMouseLeave={onPlayerDropdownClose}
       />
+
+      <LocaleDropdownPortal
+        isOpen={mounted && isLocaleDropdownOpen && isLocaleDropdownVisible}
+        locale={locale}
+        localeDropdownRect={localeDropdownRect}
+        onSelect={onLocaleSwitch}
+        onMouseEnter={openLocaleDropdown}
+        onMouseLeave={closeLocaleDropdown}
+      />
     </>
+  );
+}
+
+function LocaleDropdownPortal({
+  isOpen,
+  locale,
+  localeDropdownRect,
+  onSelect,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  isOpen: boolean;
+  locale: string;
+  localeDropdownRect: DOMRect | null;
+  onSelect: (locale: string) => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
+  if (!localeDropdownRect) return null;
+
+  const menuWidth = 188;
+
+  return createPortal(
+    <AnimatePresence>
+      {isOpen ? (
+        <motion.div
+          role="menu"
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.28, ease: 'easeInOut' }}
+          style={
+            {
+              position: 'fixed',
+              top: localeDropdownRect.bottom + 8,
+              left: Math.max(8, localeDropdownRect.right - menuWidth),
+              width: menuWidth,
+              zIndex: 110,
+              overflow: 'hidden',
+              pointerEvents: 'auto',
+            } as CSSProperties
+          }
+        >
+          <div
+            style={{
+              borderRadius: '1.5rem',
+              background: 'var(--theme-bg-base)',
+              border: '0.5px solid var(--theme-border-glass)',
+              padding: '0.5rem',
+            }}
+          >
+            {LOCALE_OPTIONS.map((option, i) => {
+              const active = option.value === locale;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => onSelect(option.value)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.5rem 0.75rem',
+                    width: '100%',
+                    cursor: 'pointer',
+                    border: 'none',
+                    borderRadius: '1rem',
+                    fontSize: '0.938rem',
+                    fontWeight: active ? 700 : 600,
+                    color: active ? 'var(--theme-text-heading)' : 'var(--theme-text-muted)',
+                    background: active ? 'var(--theme-surface-hover)' : 'transparent',
+                    transition: 'background 0.12s, color 0.12s',
+                    marginBottom: i === LOCALE_OPTIONS.length - 1 ? 0 : '1px',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'var(--theme-surface-hover)';
+                      e.currentTarget.style.color = 'var(--theme-text-heading)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'var(--theme-text-muted)';
+                    }
+                  }}
+                >
+                  <span style={{ textAlign: 'left' }}>{option.label}</span>
+                  {active ? (
+                    <span
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: '50%',
+                        background: 'var(--theme-accent-green-strong)',
+                        flexShrink: 0,
+                      }}
+                    />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>,
+    document.body,
   );
 }
 

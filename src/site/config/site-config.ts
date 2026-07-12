@@ -26,6 +26,21 @@ export const SITE_SOCIAL_PREVIEW_COPY = {
     headline: '创造休闲 Minecraft 服务器',
     summary: '允许任意 Mod，专注于建筑创作与社区交流',
   },
+  'zh-TW': {
+    brand: 'Mik 米客伺服器',
+    headline: '創造休閒 Minecraft 伺服器',
+    summary: '允許任意 Mod，專注於建築創作與社群交流',
+  },
+  'zh-HK': {
+    brand: 'Mik 米客伺服器',
+    headline: '創造休閒 Minecraft 伺服器',
+    summary: '允許任意 Mod，專注於建築創作與社群交流',
+  },
+  lzh: {
+    brand: 'Mik 米客',
+    headline: '創造休閒 Minecraft 伺服',
+    summary: '容納諸模，專心營造，社羣往來',
+  },
   en: {
     brand: 'Mik Casual',
     headline: 'Creative Casual Minecraft Server',

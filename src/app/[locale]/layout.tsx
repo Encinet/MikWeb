@@ -59,7 +59,7 @@ export async function generateMetadata({
       'Community',
       'Builds',
       'Wiki',
-      locale === 'zh-CN' ? '我的世界' : 'Minecraft',
+      locale === 'en' ? 'Minecraft' : '我的世界',
     ],
   };
 }

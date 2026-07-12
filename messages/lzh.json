@@ -1,0 +1,489 @@
+{
+  "metadata": {
+    "title": "Mik 米客 �?創造休閒之伺服",
+    "description": "一創造休閒之 Minecraft 伺服也，諸模皆允，專心營�?
+  },
+  "nav": {
+    "brand": {
+      "subtitle": "創造休閒之伺服"
+    },
+    "items": {
+      "home": "首頁",
+      "buildings": "營造之�?,
+      "map": "輿圖",
+      "bans": "禁錮之冊",
+      "wiki": "指南",
+      "join": "呈請入服"
+    },
+    "status": {
+      "online": "在線",
+      "offline": "離線",
+      "networkError": "網路有誤"
+    },
+    "theme": {
+      "light": "晝色",
+      "dark": "夜色",
+      "system": "隨系"
+    },
+    "account": {
+      "login": "登入",
+      "account": "�?
+    }
+  },
+  "pcl2Page": {
+    "badge": "PCL2 自訂首頁",
+    "title": "PCL2 首頁",
+    "subtitle": "�?Mik 伺服之態、佈告、營造之錄及捷徑，置諸啟動器之首頁�?,
+    "description": "設之 -> 個性化 -> 自訂首頁，取「聯網更新」，於「下載地址」欄書上址，返啟動頁即成�?,
+    "addressLabel": "首頁之址",
+    "stepsTitle": "操作之要",
+    "steps": {
+      "settings": {
+        "title": "入個性化",
+        "description": "�?PCL2 設定中之個性化頁�?
+      },
+      "update": {
+        "title": "取聯網更�?,
+        "description": "遷至自訂首頁之聯網更新式�?
+      },
+      "address": {
+        "title": "貼諸址",
+        "description": "以頁中之首頁址，入下載址欄�?
+      },
+      "done": {
+        "title": "返啟動頁",
+        "description": "復啟啟動頁，即可�?Mik 之首頁�?
+      }
+    }
+  },
+  "mcpPage": {
+    "badge": "MCP 伺服",
+    "title": "MCP 之設",
+    "subtitle": "�?Mik 之伺服態、營造錄、禁錮記、佈告及 Wiki 之搜，接入可�?MCP 之端�?,
+    "description": "Mik MCP 之伺服，供玩家在線態、營造錄、禁錮記、佈告及 Wiki 搜尋之具�?,
+    "configTitle": "設定之文",
+    "stepsTitle": "操作之要",
+    "steps": {
+      "copy": {
+        "title": "鈔設�?,
+        "description": "鈔左 JSON 至可�?MCP 之端�?
+      },
+      "client": {
+        "title": "啟端之設�?,
+        "description": "入可�?MCP 之端設頁�?
+      },
+      "connect": {
+        "title": "�?HTTP 之伺�?,
+        "description": "�?Mik 為遠�?MCP 之伺服�?
+      },
+      "done": {
+        "title": "試其�?,
+        "description": "連畢可詢在線玩家、營造、佈告及 Wiki�?
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "MINECRAFT 社羣",
+      "title": "Mik Casual",
+      "description": "一 Minecraft 公益創造休閒之伺服，於此遺汝之傑作�?,
+      "joinButton": "呈請入服",
+      "accountButton": "入吾之介�?,
+      "wikiButton": "觀 Wiki",
+      "notice": "伺服之址",
+      "serverAddress": "mcmik.top"
+    },
+    "showcase": {
+      "builds": {
+        "title": "玩家之佳�?,
+        "description": "自主城至私作，每作皆可為伺服存檔之一部�?
+      },
+      "map": {
+        "title": "即時輿圖",
+        "description": "啟線上輿圖，觀世界、座標及行者之域�?
+      },
+      "wiki": {
+        "title": "Wiki 與規",
+        "description": "觀伺服之令、規、助，諸般資訊於此覓之�?
+      },
+      "apply": {
+        "title": "呈請而入",
+        "description": "鑄一優質玩家之境�?
+      },
+      "records": {
+        "title": "公示之錄",
+        "description": "懲戒禁錮之錄公示可稽�?
+      }
+    },
+    "live": {
+      "statusTitle": "Mik 即時之態",
+      "playersOnline": "人於�?,
+      "playerListTitle": "在線玩家",
+      "noPlayersOnline": "尚無玩家在線",
+      "metricsLabel": "伺服之度",
+      "status": {
+        "loading": "方取狀�?,
+        "online": "伺服在線",
+        "offline": "伺服離線",
+        "networkError": "狀態取之不�?
+      }
+    },
+    "stats": {
+      "activePlayers": "在線玩家",
+      "totalBuildings": "營造之�?,
+      "peakPlayers": "峯�?,
+      "uptime": "行之�?,
+      "days": "�?
+    },
+    "announcements": {
+      "section": {
+        "title": "伺服佈告"
+      },
+      "states": {
+        "loading": "載入�?..",
+        "empty": "尚無佈告"
+      },
+      "actions": {
+        "viewAll": "點此觀全佈�?
+      }
+    }
+  },
+  "buildings": {
+    "meta": {
+      "title": "營造之�?,
+      "description": "展伺服內玩家之精彩營�?
+    },
+    "hero": {
+      "title": "營造之�?,
+      "description": "展伺服內玩家之精彩營�?
+    },
+    "search": {
+      "placeholder": "尋營造之名、造者、籤..."
+    },
+    "filters": {
+      "options": {
+        "all": "全數營�?,
+        "original": "原創",
+        "derivative": "再創",
+        "replica": "移搬"
+      }
+    },
+    "sort": {
+      "options": {
+        "dateDesc": "新者先",
+        "dateAsc": "舊者先",
+        "nameAsc": "�?A-Z",
+        "nameDesc": "�?Z-A",
+        "random": "隨機"
+      }
+    },
+    "types": {
+      "original": "原創",
+      "derivative": "再創",
+      "replica": "移搬"
+    },
+    "fields": {
+      "coordinates": "座標",
+      "builder": "造�?,
+      "builders": "造�?,
+      "buildDate": "造日",
+      "originalAuthor": "原作�?,
+      "source": "來源"
+    },
+    "dialog": {
+      "close": "閉營造之�?,
+      "previousImage": "前圖",
+      "nextImage": "後圖",
+      "currentImage": "今圖 {current} / {total}"
+    },
+    "states": {
+      "loading": "載入�?..",
+      "empty": "尚無營造之�?,
+      "end": "無復有矣"
+    }
+  },
+  "common": {
+    "states": {
+      "loading": "載入�?..",
+      "error": "載入�?
+    }
+  },
+  "notFound": {
+    "hero": {
+      "title": "頁之不存",
+      "description": "汝所求之頁或已遷、已刪，或址有誤焉�?
+    },
+    "actions": {
+      "returnHome": "返首�?
+    }
+  },
+  "wiki": {
+    "meta": {
+      "title": "遊戲指南",
+      "description": "知伺服之規、令及遊技"
+    },
+    "hero": {
+      "title": "遊戲指南",
+      "description": "知伺服之規、令及遊技"
+    },
+    "navigation": {
+      "title": "導覽",
+      "onThisPage": "本頁之目"
+    },
+    "search": {
+      "placeholder": "�?wiki 之文、令、鍵�?..",
+      "resultsTitle": "搜果",
+      "resultsCount": "{count} 筆合�?,
+      "empty": {
+        "title": "未得合�?,
+        "description": "試以更短之鍵字、令之別名，或易一中英文之辭�?
+      },
+      "actions": {
+        "clear": "清搜"
+      }
+    }
+  },
+  "map": {
+    "meta": {
+      "title": "伺服輿圖",
+      "description": "於站內觀 Mik 伺服即時輿圖、世界座標及玩家之動區"
+    },
+    "actions": {
+      "openExternal": "新牖啟圖"
+    },
+    "frameLabel": "Mik 伺服即時輿圖",
+    "frameTitle": "Mik Live Map"
+  },
+  "bans": {
+    "meta": {
+      "title": "禁錮之冊",
+      "description": "觀伺服禁錮之錄"
+    },
+    "hero": {
+      "title": "禁錮之冊",
+      "description": "觀伺服禁錮之錄"
+    },
+    "states": {
+      "loading": "載入�?..",
+      "empty": "尚無禁錮之錄"
+    },
+    "fields": {
+      "reason": "禁錮之由",
+      "bannedBy": "行�?,
+      "bannedAt": "禁錮之時",
+      "expiresAt": "解錮之時"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "玩家登入",
+      "subtitle": "唯正員可用網頁之能，登入之法有遊戲內驗證碼及 Passkey",
+      "minecraft": {
+        "title": "遊戲內驗證碼",
+        "description": "生一次性數碼，於伺服內�?/weblogin 以確"
+      },
+      "passkey": {
+        "title": "Passkey",
+        "description": "以所繫之器、系帳或密鑰登入"
+      },
+      "codePanel": {
+        "title": "驗證�?,
+        "empty": "先生驗證碼，乃返遊戲內確�?,
+        "copyLabel": "鈔網頁登入之�?,
+        "remaining": "效餘 {time}"
+      },
+      "actions": {
+        "account": "入吾�?
+      },
+      "states": {
+        "loading": "處理�?,
+        "completing": "方竟登入",
+        "copied": "已鈔",
+        "copyFailed": "鈔敗",
+        "expired": "驗證碼已逾期，請復生�?,
+        "unavailable": "暫不得生驗證�?,
+        "memberRequired": "此網頁系統唯向正員開�?,
+        "loginSuccess": "登入�?,
+        "passkeyStarting": "方啟 Passkey 登入",
+        "passkeyUnavailable": "暫不得啟 Passkey 登入",
+        "passkeyFailed": "Passkey 驗敗",
+        "passkeyCancelled": "Passkey 登入已輟",
+        "passkeyDomainMismatch": "今之所訪域不支 Passkey，請�?mcmik.top",
+        "passkeyBrowserUnsupported": "今之瀏覽器不�?Passkey"
+      }
+    },
+    "account": {
+      "title": "吾之介面",
+      "subtitle": "概覽",
+      "loading": "載入�?,
+      "navigation": {
+        "label": "吾之導覽",
+        "overview": "概覽",
+        "buildingSubmission": "營造收入呈�?,
+        "security": "登入與安"
+      },
+      "overview": {
+        "description": "帳態與能之入�?
+      },
+      "signedOut": {
+        "title": "尚未登入",
+        "description": "請先以遊戲內驗證碼或 Passkey 登入"
+      },
+      "fields": {
+        "passkeys": "Passkey 之數",
+        "uuid": "玩家 UUID"
+      },
+      "actions": {
+        "login": "往登入",
+        "buildingSubmission": "營造收入呈�?,
+        "security": "登入與安",
+        "logout": "登出"
+      }
+    },
+    "security": {
+      "title": "登入與安",
+      "subtitle": "理今之網頁會話與可登入之 Passkey",
+      "signedOut": {
+        "title": "請先登入"
+      },
+      "actions": {
+        "login": "往登入",
+        "addPasskey": "�?Passkey",
+        "delete": "�?,
+        "revokeSession": "�?
+      },
+      "sections": {
+        "sessions": "瀏覽器會�?,
+        "passkeys": "Passkey"
+      },
+      "session": {
+        "description": "觀今之登入態，銷不復用之瀏覽�?,
+        "current": "�?,
+        "lastSeenAt": "末動 {time}",
+        "expiresAt": "閒致�?{time}",
+        "method": {
+          "minecraft-challenge": "遊戲內驗證碼登入",
+          "passkey": "Passkey 登入"
+        }
+      },
+      "passkey": {
+        "description": "理可用於網頁登入之器、系帳或密鑰",
+        "defaultName": "Mik Passkey",
+        "createdAt": "建於 {time}",
+        "empty": "今帳尚未�?Passkey"
+      },
+      "states": {
+        "unavailable": "暫不得啟 Passkey 註冊",
+        "registerFailed": "Passkey 註冊�?,
+        "registered": "Passkey 已增",
+        "cancelled": "Passkey 操作已輟",
+        "domainMismatch": "今之所訪域不支 Passkey，請�?mcmik.top",
+        "alreadyRegistered": "�?Passkey 已繫�?,
+        "unsupportedAuthenticator": "今器不支可登入之 Passkey",
+        "browserUnsupported": "今之瀏覽器不�?Passkey",
+        "deleteFailed": "刪敗",
+        "deleted": "Passkey 已刪",
+        "revokeSessionFailed": "銷會話敗",
+        "sessionRevoked": "會話已銷"
+      }
+    }
+  },
+  "buildingSubmission": {
+    "eyebrow": "Member Submission",
+    "title": "營造收入呈�?,
+    "subtitle": "呈汝望入展示之作，管理員審畢即入公示營造之�?,
+    "quota": "待審 / {max}",
+    "signedOut": {
+      "title": "請先登入",
+      "description": "營造收入呈請唯正員可用"
+    },
+    "sections": {
+      "basic": "基本",
+      "location": "營造座�?,
+      "builders": "與�?,
+      "images": "�?,
+      "tags": "�?,
+      "source": "來源"
+    },
+    "fields": {
+      "nameZh": "中文�?,
+      "nameEn": "英文�?,
+      "descriptionZh": "中文�?,
+      "descriptionEn": "英文�?,
+      "buildType": "營造之�?,
+      "buildDate": "造日",
+      "playerPlaceholder": "書玩家名後按空格�?Enter",
+      "weight": "權重",
+      "totalWeight": "總權�?{total}",
+      "tagZh": "中文�?,
+      "tagEn": "英文�?,
+      "sourceAuthor": "原作�?,
+      "sourceLink": "原作之鏈",
+      "sourceNoteZh": "中文來源備註",
+      "sourceNoteEn": "英文來源備註"
+    },
+    "types": {
+      "original": "原創",
+      "derivative": "再創",
+      "replica": "摹刻"
+    },
+    "actions": {
+      "login": "往登入",
+      "submit": "呈請",
+      "reset": "清空",
+      "refresh": "復新",
+      "remove": "除之",
+      "addTag": "增籤",
+      "uploadImages": "擇圖",
+      "increaseWeight": "增權�?,
+      "decreaseWeight": "減權�?,
+      "equalizeWeights": "均分",
+      "normalizeWeights": "歸一",
+      "clearBuilders": "清餘�?
+    },
+    "states": {
+      "loadFailed": "呈請載入�?,
+      "playerNotFound": "未得此玩�?,
+      "tagRequired": "籤需同填中文與英�?,
+      "imageLimit": "至多上傳十五�?,
+      "selected": "圖已�?,
+      "imageSelectFailed": "圖取�?,
+      "uploading": "方上傳圖",
+      "uploadFailed": "圖上傳敗",
+      "imageTooSmall": "圖之清不足，至少需 960x540",
+      "submitting": "方呈",
+      "submitted": "呈請已遞",
+      "submitFailed": "呈遞�?,
+      "pendingLimit": "待審之請已至十數",
+      "required": "中文與英文皆需填之",
+      "buildersRequired": "至少需一造�?,
+      "imagesRequired": "至少需一�?,
+      "coordinatesRequired": "座標需填數",
+      "sourceRequired": "再創與摹刻需填完備之來源",
+      "invalid": "表單有誤"
+    },
+    "status": {
+      "pending": "待審",
+      "approved": "已錄",
+      "rejected": "已拒"
+    },
+    "history": {
+      "title": "吾之呈請",
+      "empty": "尚未有呈請之�?,
+      "rejectionReason": "拒因：{reason}",
+      "expiresAt": "存至 {time}"
+    }
+  },
+  "footer": {
+    "navigation": "站內導覽",
+    "siteInfo": "本站之訊",
+    "links": {
+      "pcl2Homepage": "PCL2 首頁",
+      "mcpConfig": "MCP 設定"
+    },
+    "legal": {
+      "minecraftTrademark": "Minecraft 者，Mojang AB 之商標也。{organizationName} �?Mojang AB 無涉。用本站之服即表汝允",
+      "eula": "Mojang �?EULA"
+    }
+  }
+}

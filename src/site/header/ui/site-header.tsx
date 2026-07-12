@@ -50,7 +50,6 @@ export default function SiteHeader() {
   const nextThemeLabel =
     theme === 'dark' ? t('theme.light') : theme === 'light' ? t('theme.system') : t('theme.dark');
   const themeTooltip = mounted ? nextThemeLabel : '';
-  const localeTooltip = locale === 'zh-CN' ? 'English' : '中文 (简体)';
 
   const handleThemeToggle = () => {
     if (theme === 'dark') {
@@ -105,9 +104,8 @@ export default function SiteHeader() {
     | 'left'
     | 'right';
 
-  const switchLocale = () => {
-    const newLocale = locale === 'zh-CN' ? 'en' : 'zh-CN';
-    router.replace(pathname, { locale: newLocale });
+  const switchLocale = (target: string) => {
+    router.replace(pathname, { locale: target });
   };
 
   const updatePlayerDropdownRect = useCallback(() => {
@@ -242,8 +240,7 @@ export default function SiteHeader() {
               isLoadingPlayers={isLoadingPlayers}
               isMobileMenuOpen={isMobileMenuOpen}
               isOnline={isOnline}
-              localeLabel={locale === 'zh-CN' ? 'EN' : '中文'}
-              localeTooltip={localeTooltip}
+              locale={locale}
               mounted={mounted}
               networkError={networkError}
               onLocaleSwitch={switchLocale}
