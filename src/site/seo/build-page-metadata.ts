@@ -4,6 +4,9 @@ import { SITE_NAME } from '@/site/config/site-config';
 
 const OPEN_GRAPH_LOCALE_BY_APP_LOCALE: Record<AppLocale, string> = {
   'zh-CN': 'zh_CN',
+  'zh-TW': 'zh_TW',
+  'zh-HK': 'zh_HK',
+  lzh: 'zh_Hant',
   en: 'en_US',
 };
 
@@ -36,8 +39,11 @@ export function buildPageMetadata({
       canonical,
       languages: {
         'zh-CN': getLocalePath('zh-CN', pathname),
+        'zh-TW': getLocalePath('zh-TW', pathname),
+        'zh-HK': getLocalePath('zh-HK', pathname),
+        lzh: getLocalePath('lzh', pathname),
         en: getLocalePath('en', pathname),
-      },
+      } as Record<string, string>,
     },
     openGraph: {
       type: 'website',

@@ -5,7 +5,13 @@ import type {
   WikiSectionGroupId,
 } from '@/modules/wiki/model/wiki-section-types';
 
-export const WIKI_LOCALES = ['zh-CN', 'en'] as const satisfies readonly WikiLocale[];
+export const WIKI_LOCALES = [
+  'zh-CN',
+  'zh-TW',
+  'zh-HK',
+  'lzh',
+  'en',
+] as const satisfies readonly WikiLocale[];
 
 export function isWikiLocale(value: string): value is WikiLocale {
   return WIKI_LOCALES.some((locale) => locale === value);

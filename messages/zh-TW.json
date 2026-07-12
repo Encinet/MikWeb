@@ -1,0 +1,489 @@
+{
+  "metadata": {
+    "title": "Mik 米客伺服器 - 創造休閒伺服器",
+    "description": "一個創造休閒向 Minecraft 伺服器，允許任意 Mod，專注於建築創作"
+  },
+  "nav": {
+    "brand": {
+      "subtitle": "創造休閒伺服器"
+    },
+    "items": {
+      "home": "首頁",
+      "buildings": "建築收錄",
+      "map": "伺服器地圖",
+      "bans": "封禁列表",
+      "wiki": "遊戲指南",
+      "join": "申請加入"
+    },
+    "status": {
+      "online": "線上",
+      "offline": "離線",
+      "networkError": "網路錯誤"
+    },
+    "theme": {
+      "light": "淺色模式",
+      "dark": "深色模式",
+      "system": "跟隨系統"
+    },
+    "account": {
+      "login": "登入",
+      "account": "個人"
+    }
+  },
+  "pcl2Page": {
+    "badge": "PCL2 CUSTOM HOME",
+    "title": "PCL2 首頁",
+    "subtitle": "把 Mik 的伺服器狀態、公告、建築收錄和快捷入口放進啟動器首頁。",
+    "description": "設定 -> 個性化 -> 自訂首頁，點選「聯網更新」，在「下載位址」欄輸入上方位址，然後返回啟動頁即可完成。",
+    "addressLabel": "首頁位址",
+    "stepsTitle": "操作指南",
+    "steps": {
+      "settings": {
+        "title": "進入個性化",
+        "description": "開啟 PCL2 設定裡的個性化頁面。"
+      },
+      "update": {
+        "title": "選擇聯網更新",
+        "description": "切換到自訂首頁的聯網更新模式。"
+      },
+      "address": {
+        "title": "貼上位址",
+        "description": "把頁面中的首頁位址填入下載位址欄。"
+      },
+      "done": {
+        "title": "返回啟動頁",
+        "description": "重新開啟啟動頁後即可看到 Mik 首頁。"
+      }
+    }
+  },
+  "mcpPage": {
+    "badge": "MCP SERVER",
+    "title": "MCP 設定",
+    "subtitle": "把 Mik 的伺服器狀態、建築收錄、封禁記錄、公告和 Wiki 搜尋接入支援 MCP 的客戶端。",
+    "description": "Mik MCP 服務提供玩家線上狀態、建築收錄、封禁記錄、公告和 Wiki 搜尋工具。",
+    "configTitle": "設定文字",
+    "stepsTitle": "操作指南",
+    "steps": {
+      "copy": {
+        "title": "複製設定",
+        "description": "複製左側 JSON 到支援 MCP 的客戶端。"
+      },
+      "client": {
+        "title": "開啟客戶端設定",
+        "description": "進入支援 MCP 的客戶端設定頁面。"
+      },
+      "connect": {
+        "title": "新增 HTTP 服務",
+        "description": "將 Mik 新增為遠端 MCP 服務。"
+      },
+      "done": {
+        "title": "測試工具",
+        "description": "連線後可查詢線上玩家、建築、公告和 Wiki。"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "MINECRAFT COMMUNITY",
+      "title": "Mik Causual",
+      "description": "一個 Minecraft 公益創造休閒向伺服器，在這裡留下屬於你的傑作。",
+      "joinButton": "申請加入伺服器",
+      "accountButton": "進入個人介面",
+      "wikiButton": "檢視 Wiki",
+      "notice": "伺服器位址",
+      "serverAddress": "mcmik.top"
+    },
+    "showcase": {
+      "builds": {
+        "title": "高品質玩家作品",
+        "description": "從主城到個人工程，每個作品都能成為伺服器存檔的一部分。"
+      },
+      "map": {
+        "title": "即時地圖",
+        "description": "開啟線上地圖，檢視世界、座標和正在活動的區域。"
+      },
+      "wiki": {
+        "title": "Wiki 與規則",
+        "description": "檢視伺服器指令、規則、幫助，各種各樣的資訊可以嘗試在這裡尋找。"
+      },
+      "apply": {
+        "title": "申請制加入",
+        "description": "打造一個優質的玩家環境。"
+      },
+      "records": {
+        "title": "公開記錄",
+        "description": "處罰與封禁記錄公開可查。"
+      }
+    },
+    "live": {
+      "statusTitle": "Mik 目前狀態",
+      "playersOnline": "名玩家線上",
+      "playerListTitle": "線上玩家",
+      "noPlayersOnline": "暫無玩家線上",
+      "metricsLabel": "伺服器指標",
+      "status": {
+        "loading": "正在獲取狀態",
+        "online": "伺服器線上",
+        "offline": "伺服器離線",
+        "networkError": "狀態獲取失敗"
+      }
+    },
+    "stats": {
+      "activePlayers": "線上玩家",
+      "totalBuildings": "建築作品",
+      "peakPlayers": "峰值玩家",
+      "uptime": "執行時長",
+      "days": "天"
+    },
+    "announcements": {
+      "section": {
+        "title": "伺服器公告"
+      },
+      "states": {
+        "loading": "載入中...",
+        "empty": "暫無公告"
+      },
+      "actions": {
+        "viewAll": "點選檢視全部公告"
+      }
+    }
+  },
+  "buildings": {
+    "meta": {
+      "title": "建築收錄",
+      "description": "展示伺服器內玩家的精彩建築作品"
+    },
+    "hero": {
+      "title": "建築收錄",
+      "description": "展示伺服器內玩家的精彩建築作品"
+    },
+    "search": {
+      "placeholder": "搜尋建築名稱、建造者、標籤..."
+    },
+    "filters": {
+      "options": {
+        "all": "全部建築",
+        "original": "原創作品",
+        "derivative": "二創作品",
+        "replica": "搬運作品"
+      }
+    },
+    "sort": {
+      "options": {
+        "dateDesc": "最新優先",
+        "dateAsc": "最舊優先",
+        "nameAsc": "名稱 A-Z",
+        "nameDesc": "名稱 Z-A",
+        "random": "隨機排序"
+      }
+    },
+    "types": {
+      "original": "原創",
+      "derivative": "二創",
+      "replica": "搬運"
+    },
+    "fields": {
+      "coordinates": "座標",
+      "builder": "建造者",
+      "builders": "建造者",
+      "buildDate": "建造日期",
+      "originalAuthor": "原作者",
+      "source": "來源"
+    },
+    "dialog": {
+      "close": "關閉建築詳情",
+      "previousImage": "上一張圖片",
+      "nextImage": "下一張圖片",
+      "currentImage": "目前圖片 {current} / {total}"
+    },
+    "states": {
+      "loading": "載入中...",
+      "empty": "暫無建築收錄",
+      "end": "沒有更多建築了"
+    }
+  },
+  "common": {
+    "states": {
+      "loading": "載入中...",
+      "error": "載入失敗"
+    }
+  },
+  "notFound": {
+    "hero": {
+      "title": "頁面不存在",
+      "description": "你訪問的頁面可能已被移動、刪除，或者連結位址有誤。"
+    },
+    "actions": {
+      "returnHome": "返回首頁"
+    }
+  },
+  "wiki": {
+    "meta": {
+      "title": "遊戲指南",
+      "description": "瞭解伺服器規則、指令和遊戲技巧"
+    },
+    "hero": {
+      "title": "遊戲指南",
+      "description": "瞭解伺服器規則、指令和遊戲技巧"
+    },
+    "navigation": {
+      "title": "導航",
+      "onThisPage": "本頁目錄"
+    },
+    "search": {
+      "placeholder": "搜尋 wiki 內容、指令、關鍵詞...",
+      "resultsTitle": "搜尋結果",
+      "resultsCount": "{count} 個符合結果",
+      "empty": {
+        "title": "沒有找到符合內容",
+        "description": "試試更短的關鍵詞、指令別名，或換一種中英文說法。"
+      },
+      "actions": {
+        "clear": "清除搜尋"
+      }
+    }
+  },
+  "map": {
+    "meta": {
+      "title": "伺服器地圖",
+      "description": "在站內檢視 Mik 伺服器即時地圖、世界座標和玩家活動區域"
+    },
+    "actions": {
+      "openExternal": "新視窗開啟地圖"
+    },
+    "frameLabel": "Mik 伺服器即時地圖",
+    "frameTitle": "Mik Live Map"
+  },
+  "bans": {
+    "meta": {
+      "title": "封禁列表",
+      "description": "檢視伺服器封禁記錄"
+    },
+    "hero": {
+      "title": "封禁列表",
+      "description": "檢視伺服器封禁記錄"
+    },
+    "states": {
+      "loading": "載入中...",
+      "empty": "暫無封禁記錄"
+    },
+    "fields": {
+      "reason": "封禁原因",
+      "bannedBy": "執行者",
+      "bannedAt": "封禁時間",
+      "expiresAt": "解封時間"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "玩家登入",
+      "subtitle": "僅正式成員可使用網頁功能，登入方式支援遊戲內驗證碼和 Passkey",
+      "minecraft": {
+        "title": "遊戲內驗證碼",
+        "description": "生成一次性數字碼，在伺服器內執行 /weblogin 確認"
+      },
+      "passkey": {
+        "title": "Passkey",
+        "description": "使用已繫結的裝置、系統帳號或安全金鑰登入"
+      },
+      "codePanel": {
+        "title": "驗證碼",
+        "empty": "先生成驗證碼，然後回到遊戲內確認",
+        "copyLabel": "複製網頁登入指令",
+        "remaining": "有效期限剩餘 {time}"
+      },
+      "actions": {
+        "account": "進入個人頁"
+      },
+      "states": {
+        "loading": "正在處理",
+        "completing": "正在完成登入",
+        "copied": "已複製",
+        "copyFailed": "複製失敗",
+        "expired": "驗證碼已過期，請重新生成",
+        "unavailable": "暫時無法生成驗證碼",
+        "memberRequired": "此網頁系統僅向正式成員開放",
+        "loginSuccess": "登入成功",
+        "passkeyStarting": "正在啟動 Passkey 登入",
+        "passkeyUnavailable": "暫時無法開始 Passkey 登入",
+        "passkeyFailed": "Passkey 驗證失敗",
+        "passkeyCancelled": "Passkey 登入已取消",
+        "passkeyDomainMismatch": "目前訪問網域不支援 Passkey，請使用 mcmik.top",
+        "passkeyBrowserUnsupported": "目前瀏覽器不支援 Passkey"
+      }
+    },
+    "account": {
+      "title": "個人介面",
+      "subtitle": "個人概覽",
+      "loading": "載入中",
+      "navigation": {
+        "label": "個人中心導航",
+        "overview": "個人概覽",
+        "buildingSubmission": "建築收入申請",
+        "security": "登入與安全"
+      },
+      "overview": {
+        "description": "帳號狀態與功能入口"
+      },
+      "signedOut": {
+        "title": "尚未登入",
+        "description": "請先透過遊戲內驗證碼或 Passkey 登入"
+      },
+      "fields": {
+        "passkeys": "Passkey 數量",
+        "uuid": "玩家 UUID"
+      },
+      "actions": {
+        "login": "前往登入",
+        "buildingSubmission": "建築收入申請",
+        "security": "登入與安全",
+        "logout": "登出"
+      }
+    },
+    "security": {
+      "title": "登入與安全",
+      "subtitle": "管理目前網頁工作階段和可用於登入的 Passkey",
+      "signedOut": {
+        "title": "請先登入"
+      },
+      "actions": {
+        "login": "前往登入",
+        "addPasskey": "新增 Passkey",
+        "delete": "刪除",
+        "revokeSession": "登出"
+      },
+      "sections": {
+        "sessions": "瀏覽器工作階段",
+        "passkeys": "Passkey"
+      },
+      "session": {
+        "description": "檢視目前登入狀態，並登出不再使用的瀏覽器",
+        "current": "目前",
+        "lastSeenAt": "上次活動 {time}",
+        "expiresAt": "閒置到期 {time}",
+        "method": {
+          "minecraft-challenge": "遊戲內驗證碼登入",
+          "passkey": "Passkey 登入"
+        }
+      },
+      "passkey": {
+        "description": "管理可用於網頁登入的裝置、系統帳號或安全金鑰",
+        "defaultName": "Mik Passkey",
+        "createdAt": "建立於 {time}",
+        "empty": "目前帳號還沒有繫結 Passkey"
+      },
+      "states": {
+        "unavailable": "暫時無法開始 Passkey 註冊",
+        "registerFailed": "Passkey 註冊失敗",
+        "registered": "Passkey 已新增",
+        "cancelled": "Passkey 操作已取消",
+        "domainMismatch": "目前訪問網域不支援 Passkey，請使用 mcmik.top",
+        "alreadyRegistered": "這個 Passkey 已經繫結過",
+        "unsupportedAuthenticator": "目前裝置不支援可用於登入的 Passkey",
+        "browserUnsupported": "目前瀏覽器不支援 Passkey",
+        "deleteFailed": "刪除失敗",
+        "deleted": "Passkey 已刪除",
+        "revokeSessionFailed": "登出工作階段失敗",
+        "sessionRevoked": "工作階段已登出"
+      }
+    }
+  },
+  "buildingSubmission": {
+    "eyebrow": "Member Submission",
+    "title": "建築收入申請",
+    "subtitle": "提交你希望收入建築展示的作品，管理員審核通過後會進入公開建築列表",
+    "quota": "待審核 / {max}",
+    "signedOut": {
+      "title": "請先登入",
+      "description": "建築收入申請僅正式成員可使用"
+    },
+    "sections": {
+      "basic": "基本資訊",
+      "location": "建築座標",
+      "builders": "參與成員",
+      "images": "圖片",
+      "tags": "標籤",
+      "source": "來源"
+    },
+    "fields": {
+      "nameZh": "中文名稱",
+      "nameEn": "英文名稱",
+      "descriptionZh": "中文描述",
+      "descriptionEn": "英文描述",
+      "buildType": "建築類型",
+      "buildDate": "建造日期",
+      "playerPlaceholder": "輸入玩家名後按空格或 Enter",
+      "weight": "權重",
+      "totalWeight": "總權重 {total}",
+      "tagZh": "中文標籤",
+      "tagEn": "英文標籤",
+      "sourceAuthor": "原作者",
+      "sourceLink": "原作連結",
+      "sourceNoteZh": "中文來源備註",
+      "sourceNoteEn": "英文來源備註"
+    },
+    "types": {
+      "original": "原創",
+      "derivative": "二創",
+      "replica": "復刻"
+    },
+    "actions": {
+      "login": "前往登入",
+      "submit": "提交申請",
+      "reset": "清空",
+      "refresh": "重新整理",
+      "remove": "移除",
+      "addTag": "新增標籤",
+      "uploadImages": "選擇圖片",
+      "increaseWeight": "增加權重",
+      "decreaseWeight": "減少權重",
+      "equalizeWeights": "平均分配",
+      "normalizeWeights": "歸一化",
+      "clearBuilders": "清空其他"
+    },
+    "states": {
+      "loadFailed": "申請載入失敗",
+      "playerNotFound": "沒有找到該玩家",
+      "tagRequired": "標籤需要同時填寫中文和英文",
+      "imageLimit": "最多上傳 15 張圖片",
+      "selected": "圖片已選擇",
+      "imageSelectFailed": "圖片讀取失敗",
+      "uploading": "正在上傳圖片",
+      "uploadFailed": "圖片上傳失敗",
+      "imageTooSmall": "圖片清晰度不足，至少需要 960x540",
+      "submitting": "正在提交",
+      "submitted": "申請已提交",
+      "submitFailed": "提交失敗",
+      "pendingLimit": "待審核申請已達到 10 個",
+      "required": "中文和英文內容都需要填寫",
+      "buildersRequired": "至少需要一個建造者",
+      "imagesRequired": "至少需要一張圖片",
+      "coordinatesRequired": "座標需要填寫數字",
+      "sourceRequired": "二創和復刻需要填寫完整來源",
+      "invalid": "表單內容有誤"
+    },
+    "status": {
+      "pending": "待審核",
+      "approved": "已收入",
+      "rejected": "已拒絕"
+    },
+    "history": {
+      "title": "我的申請",
+      "empty": "還沒有提交記錄",
+      "rejectionReason": "拒絕原因：{reason}",
+      "expiresAt": "保留至 {time}"
+    }
+  },
+  "footer": {
+    "navigation": "站內導航",
+    "siteInfo": "本站資訊",
+    "links": {
+      "pcl2Homepage": "PCL2 首頁",
+      "mcpConfig": "MCP 設定"
+    },
+    "legal": {
+      "minecraftTrademark": "Minecraft 是 Mojang AB 的商標。{organizationName} 與 Mojang AB 無關聯。使用本站服務即表示你同意",
+      "eula": "Mojang 的 EULA"
+    }
+  }
+}

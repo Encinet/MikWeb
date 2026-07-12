@@ -1,7 +1,7 @@
 export type WikiSectionId = string;
 export type WikiSectionGroupId = string;
 
-export type WikiLocale = 'zh-CN' | 'en';
+export type WikiLocale = 'zh-CN' | 'zh-TW' | 'zh-HK' | 'lzh' | 'en';
 
 export type WikiSectionIcon = 'Home' | 'Wrench' | 'Shield' | 'Users' | 'Zap';
 
