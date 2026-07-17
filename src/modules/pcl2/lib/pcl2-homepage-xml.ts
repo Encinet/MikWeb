@@ -62,6 +62,7 @@ const PCL2_COPY = {
       tooltip: '点击弹出随机语录',
     },
     hint: '点击下方按钮即可一键启动游戏并加入服务器。',
+    anniversary: '🎉 Mik 五周年庆典 7.20 - 7.31  ·  定制钥匙扣、马克杯、人物合照徽章等 Mik 周边等你拿！',
     links: {
       buildingsInfo: '查看所有建筑作品详情',
       buildingsTitle: '建筑展示',
@@ -123,6 +124,7 @@ const PCL2_COPY = {
       tooltip: 'Click for a random quote',
     },
     hint: 'Use the button below to launch the game and join the server.',
+    anniversary: '🎉 Mik 5th Anniversary 7.20 - 7.31  ·  Custom keychains, mugs, character photo badges & Mik merch!',
     links: {
       buildingsInfo: 'View all building showcases',
       buildingsTitle: 'Buildings',
@@ -284,6 +286,11 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
         attr('Margin', '0,0,0,12'),
         attr('Text', copy.hint),
         attr('Theme', 'Blue'),
+      ]),
+      xaml('local:MyHint', [
+        attr('Margin', '0,0,0,8'),
+        attr('Text', copy.anniversary),
+        attr('Theme', 'Yellow'),
       ]),
       sp(
         [attr('HorizontalAlignment', 'Center'), attr('Orientation', 'Horizontal')],
