@@ -108,18 +108,19 @@ body:has(.map-page),
 }
 
 [data-theme="light"] .map-page {
-  color: #1f2e25;
+  color: var(--theme-text-heading);
 }
 
 [data-theme="light"] .map-page__external-link,
 [data-theme="light"] .map-page__frame-title {
-  color: #1f2e25;
+  color: var(--theme-text-heading);
 }
 
 [data-theme="light"] .map-page__external-link,
 [data-theme="light"] .map-page__frame-title {
-  border-color: rgba(68, 91, 68, 0.14);
-  background: rgba(255, 255, 255, 0.78);
+  border-color: var(--theme-border-glass);
+  background: color-mix(in srgb, var(--theme-surface-modal) 84%, transparent);
+  box-shadow: 0 10px 28px var(--theme-shadow-glass);
 }
 
 [data-theme="light"] .map-page__external-link:hover {

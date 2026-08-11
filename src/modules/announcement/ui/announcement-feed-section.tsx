@@ -37,7 +37,10 @@ export function AnnouncementFeedSection({
             padding: '8px',
           }}
         >
-          <Bell className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#FFAA00' }} />
+          <Bell
+            className="h-5 w-5 sm:h-6 sm:w-6"
+            style={{ color: 'var(--theme-accent-amber-strong)' }}
+          />
         </div>
         <h3
           style={{

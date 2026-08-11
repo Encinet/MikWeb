@@ -25,7 +25,10 @@ body {
 }
 
 [data-theme="light"] .site-background {
-  background: #ffffff;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(121, 184, 111, 0.17), transparent 31rem),
+    radial-gradient(circle at 90% 15%, rgba(185, 130, 85, 0.1), transparent 27rem),
+    linear-gradient(180deg, #edf2eb 0%, #f2f2ec 52%, #ebf0e9 100%);
 }
 
 /* 动画关键帧 */

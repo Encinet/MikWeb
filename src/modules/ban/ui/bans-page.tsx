@@ -16,7 +16,10 @@ const BANS_BROWSER_CACHE_TTL_MS = 300_000;
 function BansLoadingState({ message }: { message: string }) {
   return (
     <div className="py-20 text-center">
-      <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-red-400 border-t-transparent" />
+      <div
+        className="inline-block h-12 w-12 animate-spin rounded-full border-4"
+        style={{ borderColor: 'var(--theme-accent-red)', borderTopColor: 'transparent' }}
+      />
       <p className="mt-6 text-lg" style={{ color: 'var(--theme-text-muted)' }}>
         {message}
       </p>
@@ -87,7 +90,7 @@ export default function BansPage() {
             <SectionMessage
               body={banEntriesError}
               icon={Shield}
-              iconColor="#f87171"
+              iconColor="var(--theme-accent-red)"
               title={commonT('states.error')}
             />
           ) : banEntries.length === 0 ? (
@@ -115,7 +118,7 @@ export default function BansPage() {
                         name={banEntry.playerName}
                         size={56}
                         className="w-14 h-14 rounded-xl shrink-0"
-                        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.18)' }}
+                        style={{ boxShadow: '0 1px 3px var(--theme-shadow-glass)' }}
                       />
                       <div className="min-w-0">
                         <h3
@@ -138,7 +141,10 @@ export default function BansPage() {
 
                     {/* ── Reason ── */}
                     <div className="flex items-start gap-2 mb-4">
-                      <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                      <AlertTriangle
+                        className="mt-0.5 h-4 w-4 shrink-0"
+                        style={{ color: 'var(--theme-accent-red)' }}
+                      />
                       <div className="text-sm">
                         <span style={{ color: 'var(--theme-text-muted)' }}>
                           {bansT('fields.reason')}:{' '}
@@ -182,11 +188,16 @@ export default function BansPage() {
 
                       {!banEntry.isPermanent && banEntry.expiresAt ? (
                         <div className="flex items-center gap-2 text-sm">
-                          <Clock className="w-4 h-4 shrink-0 text-amber-400" />
+                          <Clock
+                            className="h-4 w-4 shrink-0"
+                            style={{ color: 'var(--theme-accent-amber-strong)' }}
+                          />
                           <span style={{ color: 'var(--theme-text-muted)' }}>
                             {bansT('fields.expiresAt')}:
                           </span>
-                          <span className="text-amber-400">{formatDate(banEntry.expiresAt)}</span>
+                          <span style={{ color: 'var(--theme-accent-amber-strong)' }}>
+                            {formatDate(banEntry.expiresAt)}
+                          </span>
                         </div>
                       ) : null}
                     </div>

@@ -52,6 +52,10 @@
   transition: opacity 0.2s ease;
 }
 
+[data-theme="light"] .site-footer__logo {
+  box-shadow: 0 2px 8px var(--theme-shadow-glass);
+}
+
 .site-footer__brand:hover .site-footer__logo {
   opacity: 1;
 }
@@ -124,6 +128,12 @@
 .site-footer a {
   text-decoration: none;
   transition: color 0.2s ease;
+}
+
+[data-theme="light"] .site-footer__copyright,
+[data-theme="light"] .site-footer__legal,
+[data-theme="light"] .site-footer__legal a {
+  color: var(--theme-text-muted);
 }
 
 @media (max-width: 768px) {

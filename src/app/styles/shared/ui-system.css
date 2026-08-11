@@ -79,6 +79,10 @@
   background: rgba(0, 0, 0, 0.46);
 }
 
+[data-theme="light"] .ui-dialog-overlay {
+  background: rgba(18, 35, 25, 0.32);
+}
+
 .ui-dialog-surface {
   background: var(--theme-surface-modal);
   border: 1px solid var(--theme-border-modal);
@@ -364,6 +368,12 @@
   box-shadow:
     inset 0 1px 0 var(--theme-shadow-glass-inset),
     inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="light"] .player-list-dropdown-surface::before {
+  box-shadow:
+    inset 0 1px 0 var(--theme-shadow-glass-inset),
+    inset 0 -1px 0 var(--theme-border-light);
 }
 
 .player-list-dropdown-scroll {

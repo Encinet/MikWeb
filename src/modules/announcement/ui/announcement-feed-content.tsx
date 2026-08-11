@@ -42,7 +42,7 @@ export function AnnouncementFeedContent({
         className="py-12"
         icon={Bell}
         iconClassName="mx-auto mb-4 h-12 w-12"
-        iconColor="#79B86F"
+        iconColor="var(--theme-accent-green-strong)"
         title={commonT('states.error')}
       />
     );
@@ -129,7 +129,7 @@ function AnnouncementEntryCard({
             width: isDialog ? '10px' : '8px',
             height: isDialog ? '10px' : '8px',
             marginTop: '8px',
-            background: '#79B86F',
+            background: 'var(--theme-accent-green-strong)',
             borderRadius: '50%',
             flexShrink: 0,
           }}
@@ -186,7 +186,7 @@ function AnnouncementSkeletonList({ isDialog }: { isDialog: boolean }) {
                 marginTop: '8px',
                 borderRadius: '50%',
                 flexShrink: 0,
-                background: 'rgba(121, 184, 111, 0.36)',
+                background: 'color-mix(in srgb, var(--theme-accent-green-strong) 36%, transparent)',
               }}
             />
             <div className="min-w-0 flex-1">

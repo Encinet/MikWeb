@@ -147,14 +147,20 @@
 
 [data-theme="light"] .building-catalog-controls__search,
 [data-theme="light"] .building-catalog-controls__sort {
-  border-color: rgba(68, 91, 68, 0.14);
-  background: rgba(255, 255, 255, 0.66);
+  border-color: var(--theme-border-glass);
+  background: color-mix(in srgb, var(--theme-surface-glass) 76%, transparent);
 }
 
 [data-theme="light"] .building-catalog-controls__search:focus-within,
 [data-theme="light"] .building-catalog-controls__sort:focus-within {
   border-color: color-mix(in srgb, var(--theme-accent-green-strong) 28%, transparent);
-  background: rgba(255, 255, 255, 0.82);
+  background: color-mix(in srgb, var(--theme-surface-glass) 92%, transparent);
+}
+
+[data-theme="light"] .building-catalog-controls__search-icon,
+[data-theme="light"] .building-catalog-controls__sort-icon,
+[data-theme="light"] .building-catalog-controls__search-input::placeholder {
+  color: var(--theme-text-muted);
 }
 
 /* ── Masonry grid ── */
@@ -253,6 +259,10 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
+[data-theme="light"] .building-builder-pill {
+  box-shadow: inset 0 1px 0 var(--theme-shadow-glass-inset);
+}
+
 .building-builder-pill--compact {
   gap: 0.34rem;
   font-size: 0.76rem;
@@ -330,7 +340,7 @@
   width: 100%;
   margin-bottom: var(--building-archive-gap);
   overflow: hidden;
-  border: 1px solid rgba(243, 239, 231, 0.075);
+  border: 1px solid var(--theme-border-glass-light);
   border-radius: 8px;
   background: color-mix(in srgb, var(--theme-surface-glass) 82%, transparent);
   color: inherit;
@@ -630,8 +640,8 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--theme-overlay-control-bg) 92%, transparent);
   box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 18px 44px var(--theme-shadow-modal),
+    inset 0 1px 0 var(--theme-shadow-modal-inset);
   padding: 1rem;
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
@@ -646,8 +656,8 @@
 .building-archive-info-bar.is-collapsed {
   background: color-mix(in srgb, var(--theme-overlay-control-bg) 84%, transparent);
   box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 12px 30px var(--theme-shadow-modal-soft),
+    inset 0 1px 0 var(--theme-shadow-modal-inset);
 }
 
 .building-archive-info-bar__main {

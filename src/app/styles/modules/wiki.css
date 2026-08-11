@@ -445,12 +445,23 @@
 }
 
 [data-theme="light"] .wiki-search-box__surface {
-  border-color: rgba(68, 91, 68, 0.14);
-  background: rgba(255, 255, 255, 0.66);
+  border-color: var(--theme-border-glass);
+  background: color-mix(in srgb, var(--theme-surface-glass) 76%, transparent);
 }
 
 [data-theme="light"] .wiki-search-box__surface:focus-within {
-  background: rgba(255, 255, 255, 0.82);
+  background: color-mix(in srgb, var(--theme-surface-glass) 92%, transparent);
+}
+
+[data-theme="light"] .wiki-search-box__icon,
+[data-theme="light"] .wiki-search-box__input::placeholder {
+  color: var(--theme-text-muted);
+}
+
+[data-theme="light"] .wiki-panel-surface {
+  box-shadow:
+    0 14px 34px var(--theme-shadow-glass),
+    inset 0 1px 0 var(--theme-shadow-glass-inset);
 }
 
 @media (max-width: 1024px) {

@@ -7,15 +7,15 @@ icon: Home
 
 Welcome to the Mik server.
 
-Mik is a laid-back creative server built around building, exploring, and sharing ideas with other players. You're free to use any client mods you like, including utility clients, as long as you do not damage builds or interfere with someone else's work.
+Mik is a laid-back creative server built around building, exploring, and sharing ideas. Client mods and utility tools are generally allowed, but their use must still follow the Server Rules: do not damage work, harass players, bypass permissions, use Anti-AFK, or endanger the server.
 
 ## Joining the Server
 
 ### If You Are in Mainland China
 
 1. Join our QQ group.
-2. Ask an admin about whitelist access in the group chat.
-3. Wait for the admin team to review your request.
+2. Submit the whitelist information listed in the group notice.
+3. Wait for the result.
 
 ### If You Are Outside Mainland China
 
@@ -25,9 +25,9 @@ Mik is a laid-back creative server built around building, exploring, and sharing
 
 ### Version Support and Bedrock Notes
 
-The current server version is `26.1.2`.
+The current server version is `26.2`.
 
-- Java Edition supports `1.9 ~ 26.1.2`, but `26.1.2` is recommended
+- Java Edition supports `1.7 ~ 26.2`, but `26.2` is recommended
 - Bedrock Edition only supports the latest few stable releases
 
 If you plan to join the server from Bedrock Edition, link your account first:
@@ -57,7 +57,7 @@ For the full server experience, we also recommend adding the following mods:
 These are also worth installing, even though they are not specific to this server:
 
 - **[Hey Wiki](https://modrinth.com/mod/hey-wiki)** - A convenient in-game wiki lookup tool
-- **[voxy](https://modrinth.com/mod/voxy)** - Extremely fast long-distance chunk rendering for better scenery
+- **[Distant Horizons](https://modrinth.com/mod/distanthorizons)** / **[voxy](https://modrinth.com/mod/voxy)** - Extremely fast long-distance chunk rendering for better scenery
 
 ## Your First Login
 
@@ -79,6 +79,6 @@ Once you have found a good spot:
 3. Use `/sethome [name]` to save the location.
 4. Start your creative journey.
 
-> **World border:** The overworld border is `6144` blocks in diameter, so plan your build within that area.
+> **World border:** The overworld border is `6144` blocks in diameter. Players and builds must remain inside it; do not bypass it using teleportation, vehicles, commands, mods, exploits, or any other method.
 >
 > **Tip**: The server supports both Axiom and WorldEdit, which can save a lot of time when building.

@@ -250,7 +250,7 @@
   margin: 0;
   border: 1px solid var(--account-line);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--account-panel-soft) 82%, var(--theme-surface));
+  background: color-mix(in srgb, var(--account-panel-soft) 82%, var(--theme-surface-glass));
   padding: 0;
 }
 
@@ -527,6 +527,33 @@
 .building-submission-status--rejected {
   background: rgba(239, 68, 68, 0.12);
   color: #fca5a5;
+}
+
+[data-theme="light"] .building-submission-builder-percent {
+  color: color-mix(in srgb, var(--builder-color) 56%, var(--theme-text-heading));
+}
+
+[data-theme="light"] .building-submission-builder-stepper {
+  box-shadow: inset 0 1px 0 var(--theme-shadow-glass-inset);
+}
+
+[data-theme="light"] .building-submission-builder-chip .building-submission-builder-remove:hover {
+  color: var(--theme-accent-red);
+}
+
+[data-theme="light"] .building-submission-status--pending {
+  border-color: color-mix(in srgb, var(--theme-accent-amber) 24%, transparent);
+  color: var(--theme-accent-amber-strong);
+}
+
+[data-theme="light"] .building-submission-status--approved {
+  border-color: color-mix(in srgb, var(--theme-accent-green) 24%, transparent);
+  color: var(--theme-accent-green-strong);
+}
+
+[data-theme="light"] .building-submission-status--rejected {
+  border-color: color-mix(in srgb, var(--theme-accent-red) 24%, transparent);
+  color: var(--theme-accent-red);
 }
 
 @media (max-width: 760px) {

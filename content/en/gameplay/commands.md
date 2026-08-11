@@ -5,7 +5,7 @@ order: 20
 icon: Wrench
 ---
 
-This page lists commands for regular players. New players start with Yellow Name status, and promoted players become White Name full members. Staff/admin commands are not listed here.
+This page lists commands for regular players. New players join as Newcomers and become Members after meeting the automatic promotion requirements. Moderator- and Custodian-only commands are not listed here.
 
 If you need the full syntax for a vanilla command, see the final section, "Vanilla Command Reference."
 
@@ -22,7 +22,7 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><td><code>/home</code> or <code>/home gui</code></td><td>Open the home menu to teleport</td></tr>
 <tr><td><code>/home &lt;name&gt;</code></td><td>Return directly to a saved home</td></tr>
 <tr><td><code>/home icon &lt;material&gt; &lt;name&gt;</code></td><td>Set a custom home icon, for example <code>/home icon diamond_block home</code></td></tr>
-<tr><td><code>/delhome &lt;name&gt;</code></td><td>Delete a saved home. New players can save up to 2 homes; full members can save up to 20</td></tr>
+<tr><td><code>/delhome &lt;name&gt;</code></td><td>Delete a saved home. Newcomers can save up to 2 homes; Members can save up to 20</td></tr>
 <tr><td>Teleport protection</td><td><code>/menu</code> → Teleport Protection</td><td>Choose whether normal players can move you with <code>/tp</code>, and whether teleport attempts are rejected while you are AFK</td></tr>
 <tr><td rowspan="3">Back history</td><td><code>/back</code></td><td>Return to your previous teleport or death location</td></tr>
 <tr><td><code>/back [times]</code></td><td>Go back multiple history entries at once</td></tr>
@@ -37,13 +37,17 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
+<tr><td rowspan="4">Personal flight</td><td><code>/fly</code>, <code>/fly on</code>, or <code>/fly off</code></td><td>Toggle, enable, or disable personal flight. <code>/flight</code> is an alias</td></tr>
+<tr><td><code>/fly status</code></td><td>Show your current flight status and speed</td></tr>
+<tr><td><code>/flyspeed [speed]</code> or <code>/fly speed [speed]</code></td><td>Omit the speed to show the current value, or set it from <code>0.1x</code> to <code>10x</code>. The command output also provides clickable presets</td></tr>
+<tr><td><code>/flyspeed reset</code> or <code>/fly speed reset</code></td><td>Reset flight speed to <code>1x</code>. <code>/flightspeed</code> is an alias for <code>/flyspeed</code></td></tr>
 <tr><td rowspan="2">Idle status</td><td><code>/afk</code> or <code>/away</code></td><td>Toggle idle status. Long inactivity also marks you as AFK automatically</td></tr>
 <tr><td><code>/afk &lt;status&gt;</code></td><td>Go idle and show a custom status above your head and in the tab list, up to 20 characters</td></tr>
 <tr><td>Announcements</td><td><code>/announcements</code></td><td>Open the server announcements menu. Unread announcements are shown when you join, and opening the menu marks them as seen</td></tr>
 <tr><td>Tips</td><td><code>/tip</code></td><td>Show one server tip. The server may also send tips periodically</td></tr>
 <tr><td>Main menu</td><td><code>/menu</code></td><td>Open the main menu</td></tr>
 <tr><td>Language</td><td><code>/lang</code></td><td>Open the language settings menu. You can also open it from the main menu</td></tr>
-<tr><td>Web login</td><td><code>/weblogin &lt;code&gt;</code></td><td>Confirm a website login, usually by copying the full command from the website and running it in-game. Requires full member status</td></tr>
+<tr><td>Web login</td><td><code>/weblogin &lt;code&gt;</code></td><td>Confirm a website login, usually by copying the full command from the website and running it in-game. Requires Member status</td></tr>
 </tbody>
 </table>
 
@@ -54,7 +58,8 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td>Public channel</td><td><code>/chat</code> or <code>/global</code></td><td>Return to public chat</td></tr>
+<tr><td>Public channel</td><td><code>/public</code> or <code>/global</code></td><td>Switch to the public chat channel</td></tr>
+<tr><td>One-time public message</td><td><code>/public &lt;message&gt;</code></td><td>Send one public message without changing your current chat channel. <code>/global</code> uses the same format</td></tr>
 <tr><td rowspan="2">Private channel</td><td><code>/msg &lt;player&gt;</code></td><td>Switch to a private chat channel with that player. If you are already in that private channel, running it again returns you to public chat</td></tr>
 <tr><td><code>/msg</code></td><td>When you are already in any private chat channel, return to public chat</td></tr>
 <tr><td>One-time private message</td><td><code>/msg &lt;player&gt; &lt;message&gt;</code></td><td>Send one private message without changing your current chat channel. <code>/tell</code>, <code>/w</code>, and <code>/whisper</code> use the same format</td></tr>
@@ -63,7 +68,7 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><td><code>%i</code>, <code>[i]</code> or <code>[item]</code></td><td>Show the item in your hand in chat</td></tr>
 <tr><td><code>%num</code>, for example <code>%1</code></td><td>Show the item in the matching inventory slot. <code>%1</code> is the first slot; valid slots are <code>%1</code> through <code>%36</code></td></tr>
 <tr><td>Links, <code>av</code> / <code>BV</code> IDs</td><td>URLs and Bilibili video IDs are automatically displayed as clickable text</td></tr>
-<tr><td>MiniMessage styling</td><td>Full members can use colors, text decorations, gradients, rainbow text, and reset in chat. Click events, selectors, newline tags, and similar unsafe tags are not supported</td></tr>
+<tr><td>MiniMessage styling</td><td>Members can use colors, text decorations, gradients, rainbow text, and reset in chat. Click events, selectors, newline tags, and similar unsafe tags are not supported</td></tr>
 <tr><td rowspan="2">Chat settings</td><td><code>/menu</code> → Chat Settings</td><td>Configure mention alerts and chat delay. Delay options are <code>off</code>, <code>3s</code>, <code>5s</code>, and <code>7s</code>; when enabled, all chat channels are sent after the selected delay</td></tr>
 <tr><td><code>/cancel</code> or <code>/c</code></td><td>Cancel your own pending delayed messages</td></tr>
 </tbody>
@@ -114,7 +119,7 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 
 ### Name Tags
 
-Name tags let full members customize the prefix and suffix shown around their player name in chat. They are best for short titles, color styling, or simple status text rather than long sentences.
+Name tags let Members customize the prefix and suffix shown around their player name in chat. They are best for short titles, color styling, or simple status text rather than long sentences.
 
 <table>
 <thead>
@@ -148,11 +153,11 @@ Limits and formatting:
 <tbody>
 <tr><td rowspan="2">Dropped item cleanup</td><td><code>/rmitems</code> or <code>/removeitems</code></td><td>Remove nearby dropped items with the default 50-block radius</td></tr>
 <tr><td><code>/rmitems &lt;radius&gt;</code></td><td>Remove dropped items within a custom radius, for example <code>/rmitems 20</code>. Radius must be between 1 and 300</td></tr>
-<tr><td>Temporary whitelist</td><td><code>/tempwhitelist &lt;player&gt;</code>, <code>/twl &lt;player&gt;</code>, or <code>/tempwl &lt;player&gt;</code></td><td>Add a 1-hour temporary whitelist entry for a friend. Requires full member status</td></tr>
+<tr><td>Temporary whitelist</td><td><code>/tempwhitelist &lt;player&gt;</code>, <code>/twl &lt;player&gt;</code>, or <code>/tempwl &lt;player&gt;</code></td><td>Add a 1-hour temporary whitelist entry for a friend. Requires Member status</td></tr>
 </tbody>
 </table>
 
-> Players with yellow-name status (the default status for new players) cannot use `/rmitems` or `/tempwhitelist`.
+> Newcomers cannot use `/rmitems` or `/tempwhitelist`.
 
 ## Music & Fun
 

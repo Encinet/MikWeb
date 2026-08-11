@@ -5,7 +5,7 @@ order: 20
 icon: Wrench
 ---
 
-本页整理普通玩家会用到的指令。新玩家默认为黄名身份，考察通过后会成为白名正式成员；管理员命令不在本页列出。
+本页整理普通玩家会用到的指令。新玩家以「新人」身份加入，达到自动晋升条件后成为「成员」；管理和维护者专用指令不在本页列出。
 
 需要查询原版命令完整语法时，请直接查看文末的「原版指令参考」。
 
@@ -22,7 +22,7 @@ icon: Wrench
 <tr><td><code>/home</code> 或 <code>/home gui</code></td><td>打开家菜单</td></tr>
 <tr><td><code>/home &lt;名字&gt;</code></td><td>直接回到指定的家</td></tr>
 <tr><td><code>/home icon &lt;材质&gt; &lt;名字&gt;</code></td><td>把指定材质设置为家的图标，例如 <code>/home icon diamond_block home</code></td></tr>
-<tr><td><code>/delhome &lt;名字&gt;</code></td><td>删除指定的家；新成员最多 2 个家，正式成员最多 20 个家</td></tr>
+<tr><td><code>/delhome &lt;名字&gt;</code></td><td>删除指定的家；新人最多 2 个家，成员最多 20 个家</td></tr>
 <tr><td>传送保护</td><td><code>/menu</code> → 传送保护</td><td>设置普通玩家是否可以用 <code>/tp</code> 移动你，以及是否在挂机时自动拒绝被传送</td></tr>
 <tr><td rowspan="3">返回历史位置</td><td><code>/back</code></td><td>返回上一次传送或死亡前的位置</td></tr>
 <tr><td><code>/back [次数]</code></td><td>一次回退多条历史记录</td></tr>
@@ -37,13 +37,17 @@ icon: Wrench
 <tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
 </thead>
 <tbody>
+<tr><td rowspan="4">个人飞行</td><td><code>/fly</code>、<code>/fly on</code> 或 <code>/fly off</code></td><td>切换、开启或关闭个人飞行；<code>/flight</code> 是同义命令</td></tr>
+<tr><td><code>/fly status</code></td><td>查看当前飞行状态和飞行速度</td></tr>
+<tr><td><code>/flyspeed [速度]</code> 或 <code>/fly speed [速度]</code></td><td>不填写速度时查看当前值；填写时可设置为 <code>0.1x</code> 到 <code>10x</code>，也可点击命令返回的快捷速度</td></tr>
+<tr><td><code>/flyspeed reset</code> 或 <code>/fly speed reset</code></td><td>把飞行速度重置为 <code>1x</code>；<code>/flightspeed</code> 是 <code>/flyspeed</code> 的同义命令</td></tr>
 <tr><td rowspan="2">挂机状态</td><td><code>/afk</code> 或 <code>/away</code></td><td>切换挂机状态；长时间无操作也会自动进入挂机</td></tr>
 <tr><td><code>/afk &lt;状态&gt;</code></td><td>进入挂机并把自定义状态显示在头顶和 Tab 列表，最多 20 个字符</td></tr>
 <tr><td>公告</td><td><code>/announcements</code></td><td>打开服务器公告菜单；上线时会提示未读公告，打开菜单后视为已读</td></tr>
 <tr><td>小提示</td><td><code>/tip</code></td><td>查看一条服务器小提示，服务器也会不定期推送提示</td></tr>
 <tr><td>主菜单</td><td><code>/menu</code></td><td>打开主菜单</td></tr>
 <tr><td>语言</td><td><code>/lang</code></td><td>打开语言设置菜单，也可以从主菜单进入</td></tr>
-<tr><td>网页登录</td><td><code>/weblogin &lt;验证码&gt;</code></td><td>确认网页端登录，通常从网站复制完整命令后在游戏内执行，需要正式成员权限</td></tr>
+<tr><td>网页登录</td><td><code>/weblogin &lt;验证码&gt;</code></td><td>确认网页端登录，通常从网站复制完整命令后在游戏内执行，需要成员权限</td></tr>
 </tbody>
 </table>
 
@@ -54,7 +58,8 @@ icon: Wrench
 <tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
 </thead>
 <tbody>
-<tr><td>公共频道</td><td><code>/chat</code> 或 <code>/global</code></td><td>回到公共聊天频道</td></tr>
+<tr><td>公共频道</td><td><code>/public</code> 或 <code>/global</code></td><td>切换到公共聊天频道</td></tr>
+<tr><td>临时公共消息</td><td><code>/public &lt;消息&gt;</code></td><td>发送一条公共消息但不改变当前聊天频道；<code>/global</code> 也可使用同样写法</td></tr>
 <tr><td rowspan="2">私聊频道</td><td><code>/msg &lt;玩家&gt;</code></td><td>切换到与该玩家的私聊频道；如果当前已经在这个私聊频道，再执行一次会回到公共频道</td></tr>
 <tr><td><code>/msg</code></td><td>已经在任意私聊频道时，直接执行会回到公共频道</td></tr>
 <tr><td>临时私信</td><td><code>/msg &lt;玩家&gt; &lt;消息&gt;</code></td><td>发送一条私信但不改变当前聊天频道；<code>/tell</code>、<code>/w</code>、<code>/whisper</code> 也可使用同样写法</td></tr>
@@ -63,7 +68,7 @@ icon: Wrench
 <tr><td><code>%i</code>、<code>[i]</code> 或 <code>[item]</code></td><td>在聊天中展示手中物品</td></tr>
 <tr><td><code>%num</code>，例如 <code>%1</code></td><td>在聊天中展示对应物品栏格子的物品；<code>%1</code> 是物品栏第一格，支持 <code>%1</code> 到 <code>%36</code></td></tr>
 <tr><td>链接、<code>av</code> / <code>BV</code> 号</td><td>网址和 Bilibili 视频号会自动显示为可点击文本</td></tr>
-<tr><td>MiniMessage 样式</td><td>正式成员可在聊天中使用颜色、粗体/斜体等装饰、渐变、彩虹与 reset；不支持点击事件、选择器、换行等标签</td></tr>
+<tr><td>MiniMessage 样式</td><td>成员可在聊天中使用颜色、粗体/斜体等装饰、渐变、彩虹与 reset；不支持点击事件、选择器、换行等标签</td></tr>
 <tr><td rowspan="2">聊天设置</td><td><code>/menu</code> → 聊天设置</td><td>设置提及提醒和聊天延迟；延迟可选 <code>off</code>、<code>3s</code>、<code>5s</code>、<code>7s</code>，启用后所有聊天频道都会在指定时间后发送</td></tr>
 <tr><td><code>/cancel</code> 或 <code>/c</code></td><td>取消自己尚未发送的延迟消息</td></tr>
 </tbody>
@@ -114,7 +119,7 @@ icon: Wrench
 
 ### 名称标签
 
-名称标签用于自定义聊天中玩家名两侧的前缀和后缀。它需要正式成员权限，适合放短称号、颜色样式或简单状态，不建议写太长的句子。
+名称标签用于自定义聊天中玩家名两侧的前缀和后缀。它需要成员权限，适合放短称号、颜色样式或简单状态，不建议写太长的句子。
 
 <table>
 <thead>
@@ -148,11 +153,11 @@ icon: Wrench
 <tbody>
 <tr><td rowspan="2">清理掉落物</td><td><code>/rmitems</code> 或 <code>/removeitems</code></td><td>按默认 50 格半径清理周围掉落物</td></tr>
 <tr><td><code>/rmitems &lt;半径&gt;</code></td><td>按指定半径清理掉落物，例如 <code>/rmitems 20</code>，半径范围为 1 到 300</td></tr>
-<tr><td>临时白名单</td><td><code>/tempwhitelist &lt;玩家名&gt;</code>、<code>/twl &lt;玩家名&gt;</code> 或 <code>/tempwl &lt;玩家名&gt;</code></td><td>为朋友添加 1 小时临时白名单，需要正式成员权限</td></tr>
+<tr><td>临时白名单</td><td><code>/tempwhitelist &lt;玩家名&gt;</code>、<code>/twl &lt;玩家名&gt;</code> 或 <code>/tempwl &lt;玩家名&gt;</code></td><td>为朋友添加 1 小时临时白名单，需要成员权限</td></tr>
 </tbody>
 </table>
 
-> 黄名玩家（新成员默认身份）无法使用 `/rmitems` 和 `/tempwhitelist`。
+> 新人无法使用 `/rmitems` 和 `/tempwhitelist`。
 
 ## 音乐与娱乐
 
@@ -213,7 +218,7 @@ PVP 设置菜单包含：
 
 服务器支持以下原版指令，点击命令名可跳转至 Minecraft Wiki 查看完整语法与详细说明：
 
-| 指令 | 说明 | 需要正式成员 |
+| 指令 | 说明 | 需要成员 |
 |------|------|:----------:|
 | [`/attribute`](https://zh.minecraft.wiki/w/命令/attribute) | 查询或修改实体的属性值 | ✔ |
 | [`/clear`](https://zh.minecraft.wiki/w/命令/clear) | 清除玩家背包中的物品 | |

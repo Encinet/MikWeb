@@ -28,6 +28,7 @@
 
   /* Layout */
   --floating-gap: 1rem;
+  --navbar-height: 4.25rem;
   --app-header-offset: 6rem;
   --page-shell-inline: 1rem;
   --page-shell-block-end: 3rem;
@@ -85,12 +86,15 @@
 /* Theme Tokens: Dark */
 :root,
 [data-theme="dark"] {
+  color-scheme: dark;
+
   /* Background */
   --theme-bg-base: #101816;
 
   /* Surface */
   --theme-surface-glass: #17211f;
   --theme-surface-glass-light: #1a2522;
+  --theme-surface-highlight: rgba(255, 255, 255, 0.055);
   --theme-surface-hover: rgba(255, 255, 255, 0.075);
   --theme-border-glass: rgba(255, 255, 255, 0.105);
   --theme-border-glass-light: rgba(255, 255, 255, 0.08);
@@ -189,104 +193,107 @@
 
 /* Theme Tokens: Light */
 [data-theme="light"] {
+  color-scheme: light;
+
   /* Background */
-  --theme-bg-base: #ffffff;
+  --theme-bg-base: #edf1eb;
 
   /* Surface */
-  --theme-surface-glass: #fffaf3;
-  --theme-surface-glass-light: #f7f0e6;
-  --theme-surface-hover: rgba(53, 64, 59, 0.06);
-  --theme-border-glass: rgba(65, 58, 45, 0.14);
-  --theme-border-glass-light: rgba(65, 58, 45, 0.1);
-  --theme-surface-icon: #f3eadf;
-  --theme-surface-badge: rgba(72, 56, 24, 0.1);
-  --theme-surface-code: rgba(67, 52, 23, 0.075);
-  --theme-surface-code-block: #f4eadf;
-  --theme-surface-modal: #fffaf4;
-  --theme-surface-modal-badge: #f4ecdf;
-  --theme-surface-tag: rgba(126, 92, 203, 0.11);
-  --theme-surface-filter-active: rgba(126, 92, 203, 0.13);
-  --theme-surface-blue-accent: rgba(47, 98, 200, 0.1);
-  --theme-surface-building-card-badge: rgba(255, 250, 244, 0.96);
+  --theme-surface-glass: #f8f9f4;
+  --theme-surface-glass-light: #e6ece5;
+  --theme-surface-highlight: rgba(255, 255, 255, 0.54);
+  --theme-surface-hover: rgba(37, 64, 49, 0.075);
+  --theme-border-glass: rgba(39, 61, 48, 0.16);
+  --theme-border-glass-light: rgba(39, 61, 48, 0.105);
+  --theme-surface-icon: #e5ece4;
+  --theme-surface-badge: rgba(39, 61, 48, 0.085);
+  --theme-surface-code: rgba(35, 58, 44, 0.075);
+  --theme-surface-code-block: #e5ebe3;
+  --theme-surface-modal: #f8f9f4;
+  --theme-surface-modal-badge: #e9eee7;
+  --theme-surface-tag: rgba(105, 77, 171, 0.1);
+  --theme-surface-filter-active: rgba(105, 77, 171, 0.12);
+  --theme-surface-blue-accent: rgba(53, 100, 182, 0.09);
+  --theme-surface-building-card-badge: rgba(244, 247, 241, 0.94);
 
   /* Border */
   --theme-border-card: 1px solid var(--theme-border-glass);
-  --theme-border-modal: rgba(94, 74, 35, 0.2);
-  --theme-border-modal-badge: rgba(94, 74, 35, 0.18);
-  --theme-border-tag: rgba(126, 92, 203, 0.32);
-  --theme-border-filter-active: rgba(126, 92, 203, 0.36);
-  --theme-border-blue-accent: rgba(47, 98, 200, 0.32);
-  --theme-border-nav-hover: rgba(95, 74, 37, 0.35);
-  --theme-border-light: rgba(95, 74, 37, 0.1);
-  --theme-border-building-card-badge: rgba(94, 74, 35, 0.18);
+  --theme-border-modal: rgba(39, 61, 48, 0.2);
+  --theme-border-modal-badge: rgba(39, 61, 48, 0.16);
+  --theme-border-tag: rgba(105, 77, 171, 0.3);
+  --theme-border-filter-active: rgba(105, 77, 171, 0.34);
+  --theme-border-blue-accent: rgba(53, 100, 182, 0.3);
+  --theme-border-nav-hover: rgba(39, 70, 51, 0.34);
+  --theme-border-light: rgba(39, 61, 48, 0.1);
+  --theme-border-building-card-badge: rgba(39, 61, 48, 0.17);
 
   /* Text */
-  --theme-text-primary: rgba(32, 25, 12, 0.9);
-  --theme-text-heading: #241a08;
-  --theme-text-muted: rgba(54, 42, 20, 0.62);
-  --theme-text-muted-soft: rgba(54, 42, 20, 0.72);
-  --theme-text-muted-strong: rgba(54, 42, 20, 0.78);
-  --theme-text-dim: rgba(54, 42, 20, 0.45);
-  --theme-text-faint: rgba(54, 42, 20, 0.3);
-  --theme-text-nav: rgba(36, 27, 12, 0.74);
-  --theme-text-nav-hover: rgba(36, 27, 12, 0.95);
-  --theme-text-nav-active: rgba(36, 27, 12, 0.95);
-  --theme-text-player-count: #2a1f0d;
-  --theme-text-button: #2a1f0d;
-  --theme-text-modal-badge: rgba(40, 31, 14, 0.9);
-  --theme-text-tag: rgb(79, 53, 126);
-  --theme-text-filter-active: rgb(79, 53, 126);
+  --theme-text-primary: rgba(25, 39, 31, 0.92);
+  --theme-text-heading: #17251d;
+  --theme-text-muted: rgba(37, 53, 44, 0.7);
+  --theme-text-muted-soft: rgba(37, 53, 44, 0.74);
+  --theme-text-muted-strong: rgba(37, 53, 44, 0.82);
+  --theme-text-dim: rgba(37, 53, 44, 0.5);
+  --theme-text-faint: rgba(37, 53, 44, 0.32);
+  --theme-text-nav: rgba(25, 43, 33, 0.74);
+  --theme-text-nav-hover: rgba(18, 35, 25, 0.96);
+  --theme-text-nav-active: rgba(18, 35, 25, 0.96);
+  --theme-text-player-count: #19281f;
+  --theme-text-button: #132019;
+  --theme-text-modal-badge: rgba(25, 39, 31, 0.92);
+  --theme-text-tag: rgb(77, 55, 126);
+  --theme-text-filter-active: rgb(77, 55, 126);
 
   /* Accent */
-  --theme-accent-blue: #2f62c8;
-  --theme-accent-blue-strong: #1f4fa8;
-  --theme-accent-purple: #6d46c4;
-  --theme-accent-red: #b64545;
-  --theme-accent-green: #2f8a52;
-  --theme-accent-green-strong: #1f6b3d;
-  --theme-accent-amber: #b87a17;
-  --theme-accent-amber-strong: #8c5a0d;
+  --theme-accent-blue: #3564b6;
+  --theme-accent-blue-strong: #244f94;
+  --theme-accent-purple: #694dab;
+  --theme-accent-red: #a74444;
+  --theme-accent-green: #387d4b;
+  --theme-accent-green-strong: #28653a;
+  --theme-accent-amber: #a56a12;
+  --theme-accent-amber-strong: #80500b;
 
   /* Status */
-  --theme-status-online: #2f8a52;
-  --theme-status-online-glow: rgba(47, 138, 82, 0.4);
-  --theme-status-offline: #b84a4a;
-  --theme-status-offline-glow: rgba(184, 74, 74, 0.35);
+  --theme-status-online: #357b49;
+  --theme-status-online-glow: rgba(53, 123, 73, 0.32);
+  --theme-status-offline: #ac4848;
+  --theme-status-offline-glow: rgba(172, 72, 72, 0.28);
 
   /* Shadow */
-  --theme-shadow-glass: rgba(38, 29, 12, 0.08);
-  --theme-shadow-glass-inset: rgba(255, 255, 255, 0.65);
-  --theme-shadow-card: 0 1px 2px rgba(46, 34, 14, 0.05), 0 8px 20px rgba(46, 34, 14, 0.055);
-  --theme-shadow-modal: rgba(28, 36, 52, 0.14);
-  --theme-shadow-modal-soft: rgba(28, 36, 52, 0.07);
-  --theme-shadow-modal-inset: rgba(255, 255, 255, 0.72);
-  --theme-shadow-filter-active: rgba(126, 92, 203, 0.12);
+  --theme-shadow-glass: rgba(26, 45, 34, 0.08);
+  --theme-shadow-glass-inset: rgba(255, 255, 255, 0.66);
+  --theme-shadow-card: 0 1px 2px rgba(26, 45, 34, 0.055), 0 12px 32px rgba(26, 45, 34, 0.075);
+  --theme-shadow-modal: rgba(22, 40, 29, 0.16);
+  --theme-shadow-modal-soft: rgba(22, 40, 29, 0.075);
+  --theme-shadow-modal-inset: rgba(255, 255, 255, 0.68);
+  --theme-shadow-filter-active: rgba(105, 77, 171, 0.11);
 
   /* Immersive building overlay */
-  --theme-overlay-bg: rgba(242, 237, 230, 0.94);
-  --theme-overlay-control-bg: rgba(255, 255, 255, 0.55);
+  --theme-overlay-bg: rgba(232, 238, 231, 0.95);
+  --theme-overlay-control-bg: rgba(246, 248, 243, 0.68);
   --theme-overlay-control-border: rgba(0, 0, 0, 0.1);
   --theme-overlay-control-color: rgba(0, 0, 0, 0.7);
-  --theme-overlay-control-hover-bg: rgba(255, 255, 255, 0.75);
+  --theme-overlay-control-hover-bg: rgba(249, 250, 246, 0.86);
   --theme-overlay-control-hover-border: rgba(0, 0, 0, 0.16);
-  --theme-overlay-nav-bg: rgba(255, 255, 255, 0.45);
+  --theme-overlay-nav-bg: rgba(239, 243, 237, 0.64);
   --theme-overlay-nav-border: rgba(0, 0, 0, 0.07);
   --theme-overlay-nav-color: rgba(0, 0, 0, 0.55);
-  --theme-overlay-nav-hover-bg: rgba(255, 255, 255, 0.65);
+  --theme-overlay-nav-hover-bg: rgba(248, 249, 244, 0.82);
   --theme-overlay-nav-hover-border: rgba(0, 0, 0, 0.13);
-  --theme-overlay-info-bar-bg: linear-gradient(180deg, transparent, rgba(255, 250, 244, 0.82) 30%);
-  --theme-overlay-title-color: #1a1508;
+  --theme-overlay-info-bar-bg: linear-gradient(180deg, transparent, rgba(239, 243, 236, 0.88) 30%);
+  --theme-overlay-title-color: #17251d;
   --theme-overlay-meta-color: rgba(0, 0, 0, 0.48);
   --theme-overlay-meta-sep-color: rgba(0, 0, 0, 0.2);
   --theme-overlay-dot-inactive: rgba(0, 0, 0, 0.18);
   --theme-overlay-expand-border: rgba(0, 0, 0, 0.13);
   --theme-overlay-expand-color: rgba(0, 0, 0, 0.5);
   --theme-overlay-expanded-text: rgba(0, 0, 0, 0.65);
-  --theme-overlay-loader-bg: rgba(255, 255, 255, 0.5);
+  --theme-overlay-loader-bg: rgba(240, 244, 238, 0.68);
   --theme-overlay-loader-border: rgba(0, 0, 0, 0.12);
 
   /* Card image overlays */
-  --theme-card-image-badge-bg: rgba(255, 250, 244, 0.88);
-  --theme-card-image-dot: rgba(40, 30, 15, 0.4);
+  --theme-card-image-badge-bg: rgba(244, 247, 241, 0.9);
+  --theme-card-image-dot: rgba(29, 49, 37, 0.42);
   --theme-card-image-dot-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }

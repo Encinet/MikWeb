@@ -88,21 +88,29 @@
 }
 
 [data-theme="light"] .project-navbar-shell {
-  --project-navbar-glass-top: rgba(255, 255, 255, 0.74);
-  --project-navbar-glass-mid: rgba(255, 255, 255, 0.48);
-  --project-navbar-glass-bottom: rgba(255, 255, 255, 0.1);
-  --project-navbar-glass-line: rgba(255, 255, 255, 0.65);
-  --project-navbar-glass-shadow: rgba(46, 34, 14, 0.08);
+  --project-navbar-glass-top: rgba(237, 241, 235, 0.88);
+  --project-navbar-glass-mid: rgba(237, 241, 235, 0.64);
+  --project-navbar-glass-bottom: rgba(237, 241, 235, 0.14);
+  --project-navbar-glass-line: rgba(255, 255, 255, 0.68);
+  --project-navbar-glass-shadow: rgba(26, 45, 34, 0.1);
 }
 
 [data-theme="light"] .project-navbar-shell.is-scrolled {
-  --project-navbar-glass-top: rgba(255, 255, 255, 0.74);
-  --project-navbar-glass-mid: rgba(255, 255, 255, 0.48);
-  --project-navbar-glass-bottom: rgba(255, 255, 255, 0.1);
-  --project-navbar-glass-shadow: rgba(46, 34, 14, 0.08);
+  --project-navbar-glass-top: rgba(237, 241, 235, 0.92);
+  --project-navbar-glass-mid: rgba(237, 241, 235, 0.7);
+  --project-navbar-glass-bottom: rgba(237, 241, 235, 0.16);
+  --project-navbar-glass-shadow: rgba(26, 45, 34, 0.1);
 }
 
-:root:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has(.auth-login-page) .project-navbar-shell {
+  --project-navbar-glass-top: rgba(16, 24, 22, 0.74);
+  --project-navbar-glass-mid: rgba(16, 24, 22, 0.46);
+  --project-navbar-glass-bottom: rgba(16, 24, 22, 0.08);
+  --project-navbar-glass-line: rgba(255, 255, 255, 0.08);
+  --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
+}
+
+:root:has(.home-project-page, .art-guide-page, .not-found-art-page, .auth-login-page)
   .project-navbar-shell:not(.is-scrolled) {
   --project-navbar-glass-opacity: var(--project-navbar-scroll-progress);
   --project-navbar-glass-blur: calc(18px * var(--project-navbar-scroll-progress));
@@ -141,7 +149,7 @@
 }
 
 [data-theme="light"] .project-navbar-brand {
-  color: rgba(31, 46, 37, 0.88);
+  color: var(--theme-text-heading);
   text-shadow: none;
 }
 
@@ -183,7 +191,7 @@
 
 [data-theme="light"] .project-navbar-links .ui-nav-link,
 [data-theme="light"] .project-navbar-links .ui-nav-chip:not(.ui-nav-chip--highlight) {
-  color: rgba(31, 46, 37, 0.88);
+  color: var(--theme-text-nav);
   text-shadow: none;
 }
 
@@ -201,7 +209,7 @@
 [data-theme="light"] .project-navbar-links .ui-nav-link:hover,
 [data-theme="light"] .project-navbar-links .ui-nav-link--active,
 [data-theme="light"] .project-navbar-links .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
-  color: #111c16;
+  color: var(--theme-text-nav-hover);
 }
 
 .project-navbar-links .ui-nav-chip--highlight:hover {
@@ -274,13 +282,13 @@
 }
 
 [data-theme="light"] .project-navbar-control-cluster {
-  border-color: rgba(31, 46, 37, 0.14);
-  background: rgba(255, 255, 255, 0.86);
-  color: #1f2e25;
+  border-color: var(--theme-border-glass);
+  background: color-mix(in srgb, var(--theme-surface-modal) 88%, transparent);
+  color: var(--theme-text-heading);
 }
 
 [data-theme="light"] .project-navbar-controls .project-locale-toggle {
-  border-left-color: rgba(31, 46, 37, 0.1);
+  border-left-color: var(--theme-border-glass-light);
 }
 
 .project-account-link {
@@ -377,9 +385,9 @@
 }
 
 [data-theme="light"] .project-account-link {
-  border-color: rgba(31, 46, 37, 0.14);
-  background: rgba(255, 255, 255, 0.86);
-  color: #1f2e25;
+  border-color: var(--theme-border-glass);
+  background: color-mix(in srgb, var(--theme-surface-modal) 88%, transparent);
+  color: var(--theme-text-heading);
 }
 
 [data-theme="light"] .project-account-link:hover {
@@ -387,12 +395,12 @@
 }
 
 [data-theme="light"] .project-account-login-icon {
-  background: rgba(31, 46, 37, 0.08);
+  background: var(--theme-surface-icon);
 }
 
 [data-theme="light"] .project-account-avatar {
-  border-color: rgba(31, 46, 37, 0.16);
-  box-shadow: 0 3px 10px rgba(46, 34, 14, 0.12);
+  border-color: var(--theme-border-glass);
+  box-shadow: 0 3px 10px var(--theme-shadow-glass);
 }
 
 [data-theme="light"] .project-account-link--signed-in:hover {
@@ -498,9 +506,9 @@
 }
 
 [data-theme="light"] .project-navbar-controls > button:first-child {
-  color: #1f2e25;
-  background: rgba(0, 0, 0, 0.06);
-  border-color: rgba(31, 46, 37, 0.14);
+  color: var(--theme-text-heading);
+  background: var(--theme-surface-icon);
+  border-color: var(--theme-border-glass);
 }
 
 @media (min-width: 1280px) {
@@ -516,6 +524,53 @@
   color: #fff;
   background: rgba(0, 0, 0, 0.32);
   border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Login remains a dark, image-backed scene in either theme. */
+[data-theme="light"]:has(.auth-login-page) .project-navbar-brand,
+[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link,
+[data-theme="light"]:has(.auth-login-page)
+  .project-navbar-links
+  .ui-nav-chip:not(.ui-nav-chip--highlight) {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link:hover,
+[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link--active,
+[data-theme="light"]:has(.auth-login-page)
+  .project-navbar-links
+  .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
+  color: #fff;
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-control-cluster,
+[data-theme="light"]:has(.auth-login-page) .project-account-link {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.26);
+  color: #fff;
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-account-login-icon {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-controls .project-locale-toggle {
+  border-left-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-controls > button:first-child {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.32);
+  color: #fff;
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-account-avatar {
+  border-color: rgba(243, 239, 231, 0.24);
+  background: rgba(16, 24, 22, 0.82);
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .mobile-menu-frame {
@@ -536,8 +591,9 @@
 }
 
 [data-theme="light"] .mobile-menu-panel {
-  background: #ffffff;
-  border-color: rgba(31, 46, 37, 0.12);
+  background: var(--theme-surface-modal);
+  border-color: var(--theme-border-glass);
+  box-shadow: 0 18px 44px var(--theme-shadow-modal);
 }
 
 .mobile-menu-panel .ui-nav-link,

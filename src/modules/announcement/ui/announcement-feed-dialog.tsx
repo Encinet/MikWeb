@@ -76,7 +76,10 @@ export function AnnouncementFeedDialog({
               <div aria-hidden="true" />
 
               <div className="app-dialog-title">
-                <Bell className="h-4 w-4 shrink-0" style={{ color: '#79B86F' }} />
+                <Bell
+                  className="h-4 w-4 shrink-0"
+                  style={{ color: 'var(--theme-accent-green-strong)' }}
+                />
                 <span>{t('home.announcements.section.title')}</span>
               </div>
 

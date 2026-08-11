@@ -276,7 +276,7 @@ function PlayerDropdownPortal({
                   size={28}
                   style={{
                     borderRadius: '6px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    boxShadow: '0 2px 8px var(--theme-shadow-glass)',
                   }}
                 />
                 <span

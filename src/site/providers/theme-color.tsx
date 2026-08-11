@@ -9,7 +9,7 @@ export function ThemeColor() {
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      meta.setAttribute('content', resolvedTheme === 'light' ? '#ffffff' : '#101816');
+      meta.setAttribute('content', resolvedTheme === 'light' ? '#edf1eb' : '#101816');
     }
   }, [resolvedTheme]);
 
