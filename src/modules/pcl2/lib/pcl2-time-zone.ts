@@ -29,9 +29,9 @@ export function getPcl2TimeZoneFromUrl(url: string | URL): string {
 }
 
 export function withPcl2TimeZone(url: string, timeZone: string): string {
-  const parsedUrl = new URL(url);
-  parsedUrl.searchParams.set(PCL2_TIME_ZONE_PARAM, normalizePcl2TimeZone(timeZone));
-  return parsedUrl.href;
+  const normalized = normalizePcl2TimeZone(timeZone);
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}${PCL2_TIME_ZONE_PARAM}=${normalized}`;
 }
 
 export function formatPcl2Time(timestamp: string | null | undefined, timeZone: string): string {

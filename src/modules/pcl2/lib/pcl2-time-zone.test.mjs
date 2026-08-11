@@ -21,7 +21,7 @@ test('normalizes IANA time zones and falls back to UTC', () => {
 test('reads and writes the time-zone query parameter without losing existing parameters', () => {
   const homepageUrl = withPcl2TimeZone('https://mcmik.top/zh-CN/pcl2?raw=1', 'Asia/Singapore');
 
-  expect(homepageUrl).toBe('https://mcmik.top/zh-CN/pcl2?raw=1&timezone=Asia%2FSingapore');
+  expect(homepageUrl).toBe('https://mcmik.top/zh-CN/pcl2?raw=1&timezone=Asia/Singapore');
   expect(getPcl2TimeZoneFromUrl(homepageUrl)).toBe('Asia/Singapore');
   expect(getPcl2TimeZoneFromUrl('https://mcmik.top/zh-CN/pcl2')).toBe(DEFAULT_PCL2_TIME_ZONE);
 });
@@ -73,6 +73,6 @@ test('uses the request time zone throughout generated homepage XML', () => {
   expect(xml).toContain('2026/7/16 07:30');
   expect(xml).toContain('Expires：2026/7/17 07:30');
   expect(xml).toContain(
-    'https://mcmik.top/en/pcl2?timezone=Asia%2FSingapore'.replaceAll('&', '&amp;'),
+    'https://mcmik.top/en/pcl2?timezone=Asia/Singapore'.replaceAll('&', '&amp;'),
   );
 });
