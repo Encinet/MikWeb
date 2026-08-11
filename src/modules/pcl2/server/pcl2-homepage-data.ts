@@ -6,6 +6,7 @@ import type { Building } from '@/modules/building/model/building-types';
 import { isBuildingArray } from '@/modules/building/model/building-types';
 import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
 import type { Pcl2HomepageData } from '@/modules/pcl2/lib/pcl2-homepage-xml';
+import { getPcl2TimeZoneFromUrl } from '@/modules/pcl2/lib/pcl2-time-zone';
 import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { dataApiUrl } from '@/shared/api/data-api-url';
@@ -84,5 +85,6 @@ export async function loadPcl2HomepageData(
     locale,
     serverAddress: PCL2_SERVER_ADDRESS,
     siteOrigin: getRequestOriginFromRequest(request),
+    timeZone: getPcl2TimeZoneFromUrl(request.url),
   };
 }

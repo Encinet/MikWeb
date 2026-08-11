@@ -4,11 +4,11 @@ import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
-import { CopyButton } from '@/shared/ui/action/copy-button';
 import { ArtGuidePage } from '@/shared/ui/page/art-guide-page';
 import { absoluteUrl, getSiteOriginFromHeaders } from '@/shared/url/request-url';
 import { getPcl2HomepagePath, PCL2_HOMEPAGE_ROUTE } from '@/site/config/site-config';
 import { buildPageMetadata } from '@/site/seo/build-page-metadata';
+import { Pcl2HomepageAddress } from './pcl2-homepage-address';
 
 interface Pcl2PageParams {
   params: Promise<{ locale: string }>;
@@ -65,13 +65,11 @@ export default async function Pcl2Page({ params }: Pcl2PageParams) {
       subtitle={t('subtitle')}
       title={t('title')}
     >
-      <div className="art-guide-address">
-        <span>{t('addressLabel')}</span>
-        <div className="art-guide-address__bar">
-          <code>{homepageUrl}</code>
-          <CopyButton className="art-guide-address__copy" value={homepageUrl} />
-        </div>
-      </div>
+      <Pcl2HomepageAddress
+        baseUrl={homepageUrl}
+        detectingLabel={t('detectingTimeZone')}
+        label={t('addressLabel')}
+      />
     </ArtGuidePage>
   );
 }

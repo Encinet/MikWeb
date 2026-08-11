@@ -159,6 +159,11 @@
   color: var(--art-guide-accent-text);
 }
 
+.art-guide-address__copy:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .art-guide-panel {
   position: relative;
   overflow: hidden;

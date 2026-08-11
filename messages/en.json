@@ -36,6 +36,7 @@
     "subtitle": "Bring Mik server status, announcements, building highlights, and quick links into the launcher home page.",
     "description": "Open Settings -> Personalization -> Custom homepage, choose Online update, paste the URL above into the download address field, then return to the launcher home page.",
     "addressLabel": "Homepage URL",
+    "detectingTimeZone": "Detecting browser time zone…",
     "stepsTitle": "Guide",
     "steps": {
       "settings": {

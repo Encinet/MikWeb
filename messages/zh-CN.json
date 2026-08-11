@@ -36,6 +36,7 @@
     "subtitle": "把 Mik 的服务器状态、公告、建筑收录和快捷入口放进启动器首页。",
     "description": "设置 -> 个性化 -> 自定义主页，点击“联网更新”，在“下载地址”栏输入上方地址，然后返回启动页即可完成。",
     "addressLabel": "主页地址",
+    "detectingTimeZone": "正在检测浏览器时区…",
     "stepsTitle": "操作指南",
     "steps": {
       "settings": {

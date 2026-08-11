@@ -3,6 +3,7 @@ import type { BanItem } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
 import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
 import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
+import { formatPcl2Time, withPcl2TimeZone } from '@/modules/pcl2/lib/pcl2-time-zone';
 import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
@@ -26,6 +27,7 @@ export interface Pcl2HomepageData {
   siteOrigin: string;
   serverAddress: string;
   displayAddress: string;
+  timeZone: string;
 }
 
 const PCL2_COPY = {
@@ -62,7 +64,8 @@ const PCL2_COPY = {
       tooltip: '点击弹出随机语录',
     },
     hint: '点击下方按钮即可一键启动游戏并加入服务器。',
-    anniversary: '🎉 Mik 五周年庆典 7.20 - 7.31  ·  定制钥匙扣、马克杯、人物合照徽章等 Mik 周边等你拿！',
+    anniversary:
+      '🎉 Mik 五周年庆典 7.20 - 7.31  ·  定制钥匙扣、马克杯、人物合照徽章等 Mik 周边等你拿！',
     links: {
       buildingsInfo: '查看所有建筑作品详情',
       buildingsTitle: '建筑展示',
@@ -124,7 +127,8 @@ const PCL2_COPY = {
       tooltip: 'Click for a random quote',
     },
     hint: 'Use the button below to launch the game and join the server.',
-    anniversary: '🎉 Mik 5th Anniversary 7.20 - 7.31  ·  Custom keychains, mugs, character photo badges & Mik merch!',
+    anniversary:
+      '🎉 Mik 5th Anniversary 7.20 - 7.31  ·  Custom keychains, mugs, character photo badges & Mik merch!',
     links: {
       buildingsInfo: 'View all building showcases',
       buildingsTitle: 'Buildings',
@@ -155,14 +159,6 @@ const PCL2_COPY = {
     },
   },
 } satisfies Record<AppLocale, Record<string, unknown>>;
-
-function fmtTime(timestamp: string | null | undefined): string {
-  if (!timestamp) return '?';
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return timestamp;
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
 
 function hasAttr(attrs: XamlAttributeList, name: string): boolean {
   return attrs.some(([n]) => n === name);
@@ -373,7 +369,7 @@ function buildPlayerCard(data: Pcl2HomepageData): XamlNode {
         [attr('Margin', '0,0,0,4')],
         [
           tb(p.name, [attr('FontWeight', 'Bold'), attr('TextWrapping', null)]),
-          tb(`${copy.joinedAt} ${fmtTime(p.joined_at)}`, [
+          tb(`${copy.joinedAt} ${formatPcl2Time(p.joined_at, data.timeZone)}`, [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
             attr('Margin', '0,2,0,0'),
@@ -397,7 +393,7 @@ function buildAnnouncementCard(data: Pcl2HomepageData): XamlNode {
         [attr('Margin', `0,${i > 0 ? '14' : '0'},0,0`)],
         [
           tb(a.content),
-          tb(fmtTime(a.timestamp), [
+          tb(formatPcl2Time(a.timestamp, data.timeZone), [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
             attr('Margin', '0,4,0,0'),
@@ -420,15 +416,16 @@ function buildBanCard(data: Pcl2HomepageData): XamlNode {
         [
           tb(b.playerName ?? '?', [attr('FontWeight', 'Bold')]),
           tb(`${copy.reason}：${b.reason || '?'}`, [attr('Margin', '0,2,0,0')]),
-          tb(`${copy.bannedAt}：${b.bannedBy ?? '?'}  ·  ${fmtTime(b.bannedAt)}`, [
-            attr('FontSize', 11),
-            attr('Foreground', '#888888'),
-            attr('Margin', '0,2,0,0'),
-          ]),
-          tb(b.isPermanent ? copy.permanent : `${copy.expired}：${fmtTime(b.expiresAt)}`, [
-            attr('FontSize', 11),
-            attr('Foreground', b.isPermanent ? '#E05555' : '#D4941E'),
-          ]),
+          tb(
+            `${copy.bannedAt}：${b.bannedBy ?? '?'}  ·  ${formatPcl2Time(b.bannedAt, data.timeZone)}`,
+            [attr('FontSize', 11), attr('Foreground', '#888888'), attr('Margin', '0,2,0,0')],
+          ),
+          tb(
+            b.isPermanent
+              ? copy.permanent
+              : `${copy.expired}：${formatPcl2Time(b.expiresAt, data.timeZone)}`,
+            [attr('FontSize', 11), attr('Foreground', b.isPermanent ? '#E05555' : '#D4941E')],
+          ),
         ],
       ),
     ),
@@ -506,21 +503,22 @@ function buildLinksCard(locale: AppLocale, siteOrigin: string): XamlNode {
   );
 }
 
-function buildAboutCard(locale: AppLocale, siteOrigin: string): XamlNode {
+function buildAboutCard(locale: AppLocale, siteOrigin: string, timeZone: string): XamlNode {
   const copy = PCL2_COPY[locale].about;
+  const homepageUrl = withPcl2TimeZone(
+    absoluteUrl(getPcl2HomepagePath(locale), siteOrigin),
+    timeZone,
+  );
   return card(
     copy.title,
     [
       tb(copy.body, [attr('Margin', '0,0,0,6')]),
-      tb(
-        `${copy.updatedAt}: {time}  ·  PCL {pcl_version}  ·  ${absoluteUrl(getPcl2HomepagePath(locale), siteOrigin)}`,
-        [
-          attr('FontSize', 11),
-          attr('Foreground', '#666666'),
-          attr('HorizontalAlignment', 'Center'),
-          attr('Margin', '0,10,0,0'),
-        ],
-      ),
+      tb(`${copy.updatedAt}: {time}  ·  PCL {pcl_version}  ·  ${homepageUrl}`, [
+        attr('FontSize', 11),
+        attr('Foreground', '#666666'),
+        attr('HorizontalAlignment', 'Center'),
+        attr('Margin', '0,10,0,0'),
+      ]),
     ],
     { isSwapped: true },
   );
@@ -534,6 +532,6 @@ export function buildPcl2HomepageXml(data: Pcl2HomepageData): string {
     buildBanCard(data),
     buildBuildingCard(data),
     buildLinksCard(data.locale, data.siteOrigin),
-    buildAboutCard(data.locale, data.siteOrigin),
+    buildAboutCard(data.locale, data.siteOrigin, data.timeZone),
   ]);
 }
