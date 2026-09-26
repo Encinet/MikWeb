@@ -20,7 +20,10 @@ export default async function SiteFooter() {
     { href: '/', label: t('nav.items.home') },
     { href: '/buildings', label: t('nav.items.buildings') },
     { href: '/wiki', label: t('nav.items.wiki') },
+    { href: '/community/notices', label: t('nav.items.notices') },
     { href: '/map', label: t('nav.items.map') },
+    // Donation page is temporarily hidden.
+    // { href: '/donate', label: t('nav.items.donate') },
     { href: '/bans', label: t('nav.items.bans') },
     { href: '/pcl2', label: t('footer.links.pcl2Homepage') },
     { href: '/mcp', label: t('footer.links.mcpConfig') },

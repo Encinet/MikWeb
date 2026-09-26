@@ -73,7 +73,7 @@ export function BuildingSubmissionPage() {
 
   const loadSubmissions = useCallback(
     async (options: { force?: boolean } = {}) => {
-      if (!account) {
+      if (!account || account.role === 'default') {
         setSubmissions([]);
         return;
       }
@@ -142,7 +142,11 @@ export function BuildingSubmissionPage() {
     [builders],
   );
   const canSubmit =
-    authenticated && pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS && !submitting && !uploading;
+    authenticated &&
+    account?.role !== 'default' &&
+    pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS &&
+    !submitting &&
+    !uploading;
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -377,6 +381,16 @@ export function BuildingSubmissionPage() {
       return current.filter((image) => image.id !== id);
     });
   };
+
+  if (account?.role === 'default') {
+    return (
+      <AccountLayout>
+        <section className="account-detail-panel">
+          <p>{t('states.memberRequired')}</p>
+        </section>
+      </AccountLayout>
+    );
+  }
 
   return (
     <AccountLayout>

@@ -11,6 +11,7 @@ import { ToastProvider } from '@/shared/ui/feedback/toast-provider';
 import SiteBackground from '@/site/background/ui/site-background';
 import SiteFooter from '@/site/footer/ui/site-footer';
 import SiteHeader from '@/site/header/ui/site-header';
+import { PrintFooter, PrintHeader } from '@/site/print/ui/print-chrome';
 import { ThemeColor } from '@/site/providers/theme-color';
 import { ThemeProvider } from '@/site/providers/theme-provider';
 import { buildPageMetadata } from '@/site/seo/build-page-metadata';
@@ -89,7 +90,9 @@ export default async function LocaleLayout({
                 <StructuredData />
                 <SiteBackground />
                 <SiteHeader />
+                <PrintHeader locale={locale} />
                 <main className="relative z-10 flex min-h-0 flex-1 flex-col">{children}</main>
+                <PrintFooter />
                 <SiteFooter />
               </BuildingsProvider>
             </AuthProvider>

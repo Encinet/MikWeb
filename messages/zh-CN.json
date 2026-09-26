@@ -12,8 +12,10 @@
       "buildings": "建筑收录",
       "map": "服务器地图",
       "bans": "封禁列表",
+      "donate": "捐赠",
       "wiki": "游戏指南",
-      "join": "申请加入"
+      "join": "申请加入",
+      "notices": "社区公示"
     },
     "status": {
       "online": "在线",
@@ -275,10 +277,62 @@
       "expiresAt": "解封时间"
     }
   },
+  "donation": {
+    "meta": {
+      "title": "支持 Mik",
+      "description": "查看 Mik 服务器捐赠选项与社区捐赠鸣谢列表"
+    },
+    "currency": {
+      "code": "CNY"
+    },
+    "hero": {
+      "eyebrow": "捐赠支持",
+      "title": "支持 Mik",
+      "description": "你的支持将用于服务器的日常运行与维护。"
+    },
+    "goal": {
+      "title": "年度运行目标"
+    },
+    "options": {
+      "title": "捐赠选项",
+      "description": "选择捐赠金额",
+      "customAmount": "自定义金额",
+      "customInputLabel": "输入金额",
+      "customAmountRange": "请输入 {minimum} 至 {maximum} 之间的整数",
+      "selectionLabel": "捐赠金额",
+      "selectAmount": "请选择金额",
+      "enterAmount": "请输入金额",
+      "action": "捐赠 {amount}"
+    },
+    "form": {
+      "message": "留言",
+      "optional": "可选",
+      "identityLoading": "正在确认登录状态…",
+      "publicNoticeAuthenticated": "捐赠将自动使用当前玩家身份；金额和留言会公开显示。",
+      "publicNoticeAnonymous": "未登录捐赠将显示为匿名；金额和留言会公开显示。"
+    },
+    "records": {
+      "title": "捐赠记录",
+      "description": "公开的捐赠信息",
+      "descriptionWithTimeZone": "公开的捐赠信息 · 时间按 {timeZone} 显示",
+      "count": "共 {count} 条",
+      "empty": "暂无捐赠记录",
+      "loadMore": "查看更多 {count} 条",
+      "collapse": "收起记录",
+      "shownCount": "已显示 {shown} / {total}",
+      "anonymous": "匿名",
+      "columns": {
+        "donor": "捐赠者",
+        "message": "留言",
+        "date": "时间",
+        "amount": "金额"
+      }
+    }
+  },
   "auth": {
     "login": {
       "title": "玩家登录",
-      "subtitle": "仅正式成员可使用网页功能，登录方式支持游戏内验证码和 Passkey",
+      "subtitle": "仅正式成员可使用网页账号功能，支持游戏内验证码和 Passkey。",
       "minecraft": {
         "title": "游戏内验证码",
         "description": "生成一次性数字码，在服务器内执行 /weblogin 确认"
@@ -339,6 +393,12 @@
         "buildingSubmission": "建筑收入申请",
         "security": "登录与安全",
         "logout": "退出登录"
+      },
+      "roles": {
+        "default": "新人",
+        "member": "成员",
+        "helper": "协管",
+        "manager": "管理者"
       }
     },
     "security": {
@@ -461,7 +521,8 @@
       "imagesRequired": "至少需要一张图片",
       "coordinatesRequired": "坐标需要填写数字",
       "sourceRequired": "二创和复刻需要填写完整来源",
-      "invalid": "表单内容有误"
+      "invalid": "表单内容有误",
+      "memberRequired": "建筑投稿仅向正式成员开放。"
     },
     "status": {
       "pending": "待审核",
@@ -485,6 +546,52 @@
     "legal": {
       "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",
       "eula": "Mojang 的 EULA"
+    }
+  },
+  "communityBoard": {
+    "meta": {
+      "title": "社区公示",
+      "description": "查看施工告知、影响反馈和处理结果。"
+    },
+    "hero": {
+      "title": "社区公示",
+      "rules": "阅读服务器规则"
+    },
+    "records": {
+      "title": "最近记录",
+      "loading": "正在加载记录…",
+      "latestLimit": "这里显示最近 300 条；更早的记录可通过直达链接查看。",
+      "error": "暂时无法加载公示记录。",
+      "retry": "重试",
+      "empty": "暂无公示记录。",
+      "by": "{author}",
+      "noticeUntil": "告知期至 {time}（UTC+8）",
+      "relatedNotice": "关联告知",
+      "permalink": "链接",
+      "permalinkLabel": "「{subject}」的记录链接",
+      "expand": "查看详情",
+      "collapse": "收起详情",
+      "showMore": "显示更多"
+    },
+    "kind": {
+      "notice": "施工告知",
+      "objection": "影响反馈"
+    },
+    "status": {
+      "ruled": "已裁决",
+      "elapsed": "告知期已满",
+      "withdrawn": "反馈已撤回",
+      "noticeOpen": "告知期内",
+      "objectionOpen": "待沟通"
+    },
+    "detailLabels": {
+      "contact": "联系对象",
+      "scope": "范围",
+      "impact": "影响",
+      "proposal": "方案"
+    },
+    "ruling": {
+      "title": "处理结果"
     }
   }
 }

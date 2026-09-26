@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Building2, Home, MapIcon, Play, Shield } from 'lucide-react';
+import { BookOpen, Building2, ClipboardList, Home, MapIcon, Play, Shield } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import type { CSSProperties } from 'react';
@@ -67,7 +67,10 @@ export default function SiteHeader() {
       { id: 'home', icon: Home, label: t('items.home'), path: '/' },
       { id: 'buildings', icon: Building2, label: t('items.buildings'), path: '/buildings' },
       { id: 'wiki', icon: BookOpen, label: t('items.wiki'), path: '/wiki' },
+      { id: 'notices', icon: ClipboardList, label: t('items.notices'), path: '/community/notices' },
       { id: 'map', icon: MapIcon, label: t('items.map'), path: '/map' },
+      // Donation page is temporarily hidden.
+      // { id: 'donate', icon: HeartHandshake, label: t('items.donate'), path: '/donate' },
       { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
     ];
 

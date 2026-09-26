@@ -25,18 +25,7 @@ icon: Users
 
 If you want your build to appear on the official server website, submit it through the website. Submission does not guarantee featuring; author consent, contributor credits, and rights information are checked first.
 
-**Requirements**
-
-- The build must be original, or you must have permission from the original creator
-- You need to provide the coordinates so the build can be verified
-- You need to provide at least one screenshot
-
-**Accepted submission types**
-
-- Original builds
-- Replicas or recreations, as long as the original creator is credited
-
-Collaborative builds can be credited to multiple people together.
+Please complete any missing submission details before submitting.
 
 ### Submission Method
 

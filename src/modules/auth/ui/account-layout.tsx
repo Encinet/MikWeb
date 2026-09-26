@@ -18,26 +18,28 @@ export function AccountLayout({ children }: AccountLayoutProps) {
   const router = useRouter();
   const { account, authenticated, isLoading, logout } = useAuth();
 
-  const navItems = useMemo(
-    () => [
+  const navItems = useMemo(() => {
+    const items = [
       {
         href: '/account',
         icon: <LayoutDashboard className="h-4 w-4" />,
         label: t('navigation.overview'),
       },
-      {
+    ];
+    if (account?.role !== 'default') {
+      items.push({
         href: '/account/building-submissions',
         icon: <Landmark className="h-4 w-4" />,
         label: t('navigation.buildingSubmission'),
-      },
-      {
-        href: '/account/security',
-        icon: <KeyRound className="h-4 w-4" />,
-        label: t('navigation.security'),
-      },
-    ],
-    [t],
-  );
+      });
+    }
+    items.push({
+      href: '/account/security',
+      icon: <KeyRound className="h-4 w-4" />,
+      label: t('navigation.security'),
+    });
+    return items;
+  }, [account?.role, t]);
 
   const handleLogout = async () => {
     await logout();
@@ -75,7 +77,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
             <div>
               <p>{t('title')}</p>
               <h1>{account?.currentName ?? t('loading')}</h1>
-              {account?.role ? <span>{account.role}</span> : null}
+              {account?.role ? <span>{t(`roles.${account.role}` as 'roles.default')}</span> : null}
             </div>
           </div>
 

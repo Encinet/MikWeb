@@ -1,77 +1,205 @@
 ---
 title: Server Rules
-description: The boundaries for gameplay, building, moderation, licensing, and featured builds.
+description: The boundaries for gameplay, plots and building, governance, and licensing
 order: 40
 icon: Shield
 ---
 
-## What Kind of Server This Is
+> Publication date: **Sep 27, 2026**
+>
+> Time standard: **UTC+8**
 
-Mik is a casual creative server focused on building and community. Client-side mods are allowed, but everything you do in-game must respect other players, their work, and the server as a whole.
+## Server Purpose
 
-## Player Status & Probation
+Mik is a casual creative server centered on building and community. The server provides bounded protection based on actual construction: collaboration is encouraged, while private work and reasonable building space are still respected.
 
-New players join with **Yellow Name** status and begin in a probation period. During that time, admins keep an eye on player behavior.
+1. Players may build freely, use utility tools, express opinions, and contribute to public projects, but may not harm other people's work, normal play, dignity, or server safety.
+2. These rules cover the game and community spaces operated by the server. Off-platform conduct is in scope only when it directly concerns the server or creates a credible risk to a Member's safety.
+3. Conduct not prohibited by these rules is generally allowed. If an uncovered act could cause immediate serious harm, a Moderator or Custodian may impose a necessary protective measure for no more than **72 hours** and leave a publishable explanation. Private or security-sensitive details may be redacted.
+4. A new rule cannot punish conduct completed before it took effect, but it may require a player to stop an impact that continues afterward or repair harm that still exists within a reasonable time.
 
-There is no fixed probation length. Promotion to full member status (**White Name / Member**) is handled automatically based on player activity, and the exact formula is not public. If a player breaks rules or behaves inappropriately during probation, admins may extend it.
+## How These Rules Apply
 
-- **Yellow Name**: Default status for new players. The following restrictions apply:
-  - Limited access to Axiom
-  - No formatted text in chat
-  - No access to the decorative head command `/headdb` (or `/hdb`)
-  - No access to server status commands `/mspt` and `/tps`
-  - No access to `/rmitems`
-  - No access to `/tempwhitelist`
-  - No access to `/nametag` for setting prefixes and suffixes
-  - No access to vanilla commands `/attribute`, `/damage`, `/effect`, `/fill`, `/item`, `/ride`, `/save-all`, `/setblock`, `/summon`
-- **White Name / Member**: Full member status. These restrictions are removed after automatic promotion.
+1. A **calendar day** runs from 00:00 to the next 00:00 in UTC+8. A period stated in days means consecutive 24-hour periods unless it expressly says “calendar days.”
+2. **Active play** is non-AFK play time recorded by the system; Anti-AFK periods do not count.
+3. A **temporary review panel** is used only when too few disinterested Moderators or Custodians are available. Up to 3 willing, disinterested active Members are selected by public random draw. If none qualify, ordinary disputes wait for review and only necessary protection remains.
+4. One natural person may designate only one Member account for Moderator registration and voting. Alternate accounts, linked cross-platform accounts, and shared accounts do not provide additional governance votes.
 
-## Building Standards
+## Roles and Community Governance
 
-1. **Do not damage other players' builds**, and do not reshape terrain unless your own build actually requires it. Random holes in the wilderness or unfinished terrain scars are not acceptable.
-2. **Builds should fit their surroundings.** Avoid awkward placement, harsh transitions, or structures that clash badly with nearby builds. Admins have final say on whether a build suits its location.
-3. **Light redstone is fine.** Large contraptions or anything likely to cause lag is not. Try to avoid unnecessary high-frequency logic. Hoppers are especially expensive, so use them sparingly and never in large stacks unless an admin has approved it.
-4. **Every build should identify the builder, and the original creator if the build is based on someone else's work.**
+Moderators and Custodians follow the same enforcement and appeal rules. One person counts once in a matter; complaints about them are handled by other disinterested people.
 
-## Mods & Utility Clients
+| Governance role | Chinese name | Responsibility |
+| --- | --- | --- |
+| `Newcomer` | 新人 | Build and chat normally, with some high-impact permissions withheld |
+| `Member` | 成员 | Use standard Member permissions and join public maintenance; registration and voting require active-Member eligibility |
+| `Moderator` | 管理 | Mediate disputes, enforce rules, and handle urgent incidents |
+| `Custodian` | 维护者 | Keep the host, accounts, data, and server operation safe, and exercise Moderator authority under these rules |
 
-Client mods are allowed, including utility features that many servers would classify as hacks. That said, the following behavior is **strictly forbidden**, regardless of how you do it:
+Rules on Moderator appointment, departure, and inactivity do not apply to Custodians.
 
-1. **Attacking other players, forcing movement, or teleporting them without consent**
-2. **Destroying, moving, covering, or altering another player's build or the terrain it depends on**
-3. **Circumventing server permissions**, including using commands you should not have or forcing changes to another player's game mode
-4. **Hurting server performance**, including mass entity spawning, large item dumps, aggressive chunk loading, or repeatedly running heavy operations
+### Newcomers and Members
 
-> Short version: use whatever mods you want, as long as they do not affect other players or harm the server. If you are unsure, ask an admin first.
+1. A Newcomer is promoted automatically after **3 days** from first joining and **8 hours** of active play across at least **2 calendar days**, unless an active ban or a promotion hold with a written reason, end time, and appeal route applies.
+2. Newcomers may build normally. Large-scale editing, formatted chat, and some high-impact commands unlock after promotion.
 
-## Community Conduct
+### Active Members
 
-1. **Be respectful.** Public harassment, insults, or hostile behavior toward other players are not allowed.
-2. **No personal attacks or malicious provocation**, including hostile comments about someone's builds, taste, or identity.
-3. **Do not spam public spaces** with repetitive or meaningless content, whether in chat, signs, books, or other text-based tools.
-4. **Do not post unrelated advertising, promotional content, or traffic-farming messages.**
-5. **Do not spread false information or malicious rumors**, especially about staff or other players.
-6. Do not build inappropriate or malicious structures. Any structure that may have a negative impact, is offensive, or is built with malicious intent is strictly prohibited. For example, building a grave for another player without a valid reason is not permitted.
+The system calculates **active Member** eligibility for Moderator registration and governance votes. A Member must meet all of these conditions:
 
-## Copyright & Licensing
+- Have held Member status for at least **30 days**;
+- Have at least **6 hours** of active play during the past **60 days**, spread across at least **6 qualifying participation days**;
+- Have at least **2 qualifying participation days** during the past **30 days**; and
+- Have no active ban.
 
-1. Builds created on the server remain the intellectual property of their creators.
-2. By building on the server, you agree that your work is published under **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)** by default.
-3. Other people may copy or adapt your work for non-commercial purposes, as long as they credit both the original creator and the Mik server.
-4. Commercial use is not allowed, including paid servers, premium content, and map sales.
-5. Derivative works must remain under the same CC BY-NC-SA 4.0 license.
-6. Redistributing the server world save, or bulk-exporting large amounts of server content, is not allowed without permission. This is an additional restriction beyond the CC license and takes priority.
-7. The server reserves the right to display, promote, and feature builds for community and publicity purposes.
+A calendar day qualifies after **30 minutes** of active play. Candidate eligibility is checked at registration; the voter roll and quorum are locked before voting begins.
+
+### Registering, Appointing, and Recalling Moderators
+
+1. An active Member may register in game as a Moderator candidate. Candidates register and are voted on separately. Withdrawal or loss of eligibility before voting closes ends that appointment.
+2. Once eligibility is confirmed, the registration immediately opens a **3-day** secret vote. With at least 4 active Members, turnout must reach **25% of active Members, rounded up**, and at least 3 participants. With 2 or 3 active Members, quorum is 2. An appointment or recall cannot begin when there is only 1 active Member.
+3. An appointment or recall passes only if yes votes are at least **two thirds** of non-abstaining ballots, more than **one half of all participating ballots**, and total at least 3 yes votes when there are at least 4 active Members or 2 yes votes when there are fewer. Abstentions count toward turnout and the second threshold. An appointment or recall that misses quorum fails and may be started again after **3 days**.
+4. A recall must be started jointly by at least 3 active Members other than the recall subject. If only 2 eligible active Members exist, both must start it; fewer than 2 cannot start one. Recall uses a **3-day** secret vote.
+5. A candidate or recall subject may vote but may not administer that vote. If no disinterested Moderator or Custodian is available, the temporary review panel administers it and publishes totals without revealing individual choices.
+6. A Moderator may resign at any time. After **180 consecutive days** without a login, the system removes the longest-absent Moderators until 4 remain. Those still offline do not count as available to handle cases.
+7. A Moderator or Custodian must recuse themselves from matters involving themselves, their work, or close collaborations. They may not use authority or non-public information gained through their duties for private benefit, to suppress disagreement, or to evade the rules.
+
+### Custodian Responsibilities
+
+Custodians are responsible for the host, critical accounts, costs, and data and may exercise Moderator authority. They leave when they lose control or complete a handover. Personnel changes are announced.
+
+## Plots and Building
+
+Ordinary building may proceed directly. To protect work, build first and create a plot in game.
+
+### Builds, Terrain, and Collaboration
+
+**Substantive progress** advances a project's structure, function, or completion. Marker blocks and repeatedly undone changes do not count.
+
+1. **Do not alter another person's work without permission.** This includes destroying, moving, covering, or editing a build or the natural terrain on which its design depends. Maintenance authorized by these rules, treatment of an idle project, and emergency damage control may touch only what is necessary; an emergency change must be recorded and reported to the creator afterward.
+2. **Protect natural terrain.** Do not dig random holes, cut through mountains, drain bodies of water, leave floating trees, or create large construction scars unless a build genuinely requires the change. Terrain work must be proportionate to the project and be restored or finished with a transition that fits the build.
+3. **Choose sites carefully and finish the edges.** Avoid abrupt terrain cuts and unfinished faces. A different architectural style is not a violation by itself.
+4. **Credit builders and sources.** Every build must identify its main builders somewhere reasonable. A build based on, recreating, or adapting someone else's work must also identify the original creator or source when known. Do not claim another person's work, remove credit, or conceal a collaborator's major contribution.
+5. **Collaboration permits agreed editing.** Clearly inviting someone into a joint project gives them permission to edit the shared work area for the agreed plan. Permission may be withdrawn for future work but cannot erase credit for completed contributions. A major change to finished design or work outside the agreed scope still requires discussion.
+6. **Do not use builds as a means of attack.** Graves, statues, text, and other structures intended to humiliate, threaten, discriminate against, or harass a particular player—or producing the same unmistakable effect—are prohibited. Calling something a joke is not an automatic exception.
+7. **Stay inside the world border.** Do not use teleportation, vehicles, commands, mods, or exploits to cross it, or build, act, or leave entities outside it. Return immediately after an accidental crossing; necessary border maintenance by a Custodian is exempt.
+
+### Construction Plots and Temporary Reservations
+
+**Creation and ownership.** A plot protects actual construction, not surrounding empty land. After at least **8** real placements in one **4×4×4** construction cell, a Member can create protection beside the build from the game's Plots menu. Registration does not establish ownership; disputes are decided from credits, construction records, and both parties' accounts.
+
+**Growth and limits.** Protection expands only along connected construction. Each private project is capped at **4,096 blocks²** of built horizontal area, and each public project at **8,192 blocks²**.
+
+**Members and access.** Owners may invite collaborators and configure interaction, container, and entity access separately. Declaring a public project does not allow arbitrary edits.
+
+**Temporary reservations.** The project menu allows reservations beside built work. Total reserved area may be up to **50%** of built horizontal area, with a **16-block²** minimum for small projects; a selection is at most **16 blocks** long and wide and extends no more than **16 blocks** above or below the structure. Unbuilt space is released after **14 days** and cannot overlap another plot.
+
+### Siting and Conflicting Impacts
+
+A **directly affected player** is someone who faces a verifiable impact on their work, main entrance, daylight, routine access, or a project already started or publicly scheduled to start within 30 days. A plot grants no control over surrounding empty land or every view.
+
+Notices required by these rules are posted on the in-game Community Board and mirrored on the [website](/community/notices). The system attempts to alert relevant nearby plot owners.
+
+1. **Contact neighbors.** **64 blocks** prompts an impact check; it is not a no-build zone. If planned work is within that distance of an existing build boundary and there is a concrete reason to expect an impact on work, daylight, or access, contact the identifiable main builders. Work may begin if they all agree and no mandatory notice applies; otherwise use the notice and discussion process below.
+2. **Post a notice without agreement.** If there is a concrete impact and the relevant builders have not agreed, describe the location, scope, purpose, and impact on the Community Board for at least **72 hours**. Prior management approval is not required.
+3. **High-impact work.** Any of the following requires **72 hours** of notice before construction, regardless of distance:
+   - a contiguous horizontal projection of at least **6,400 blocks in area** that materially reduces daylight below it;
+   - material obstruction of an established road, primary entrance, or necessary route;
+   - material interference with an existing use of public space or a principal sightline intentionally framed by a build.
+4. **Feedback and starting work.** A directly affected player may describe a specific impact during the notice period, including in a standalone response when no original notice exists. The author summarizes earlier objections that still apply. Work may begin when the period ends without a supported objection, except where express consent is required.
+5. **Objections and work.** If necessary facts are missing, identify them in one request; the objector has **48 hours** to supply them or the objection expires. Pending details pause only the affected work and only when existing information shows a concrete, credible risk of immediate harm. A valid objection also pauses only the disputed part. The parties may adjust the plan; work resumes once they agree and the objection is withdrawn.
+6. **If discussion fails.** Either party may request a ruling when a valid objection remains unresolved after **3 days**. A disinterested Moderator or Custodian should act within **72 hours**; unavailable key evidence permits one explained extension of up to **72 hours**. The ruling considers safety, public access, measurable obstruction and daylight, specific work already started or publicly announced, build order, each party's investment, and transitions to the surroundings. It makes only the smallest change needed to resolve the impact.
+7. **Continuing impacts.** Work in progress and completed builds that cause a continuing concrete impact follow the same contact, discussion, and ruling process. Completion alone neither exempts a build nor requires its removal.
+8. **Placeholders and stalled projects.** If an unfinished private project makes no substantive progress for **90 days**, notify its author and post **72 hours** of notice. An author offering a workable plan must start within **7 days** or agree on another date with the affected player. Otherwise a Moderator or Custodian may record the site and address only the obstructive part. A finished build is not abandoned merely because its creator is offline.
+
+### Cross-Area Routes
+
+1. **Notice threshold.** If a railway, road, or other continuous route comes within **64 blocks** of at least **2** independent existing build boundaries, post its full route and impacts for **72 hours** before construction and notify identifiable main builders. Splitting one route into segments does not avoid this requirement.
+2. **Entering a private boundary.** A route entering an existing private build boundary or altering private work or its supporting terrain needs the clear agreement of every identifiable main builder of the affected part. Silence or an unidentified builder is not agreement; without consent, take another route. Crossings with public facilities must preserve access, function, and safety and follow the substantial-change notice rule.
+3. **Work begun without notice or agreement.** Stop work on the affected section. Record the site and restore any part that enters a private boundary or alters private work without consent unless its builders later agree. Other parts may resume after notice and any required discussion. Building first creates no priority.
+
+### Public Facilities and Project Continuity
+
+A facility's **necessary functional layer** includes track, road, platforms, entrances, lighting, controls, and safety structures needed for its use, but not independent architectural or landscape work.
+
+**What counts as a public facility.** Its necessary functional layer is public when its creator declares a public project, or a ruling confirms that it mainly serves multiple players continuously and they already depend on it. Multiple users alone do not turn a private build public; public status does not waive siting, notice, or consent.
+
+**Public status and the higher plot cap.** A project may self-declare as public. To use the higher cap, it must state its accessible use and scope. Space used only privately follows the private cap, and a declaration cannot claim someone else's area.
+
+1. **Routine maintenance.** Members may repair damage, add necessary lighting, and clear obstructions with the smallest change that restores the original function, route, style, and credit. Record and publish a plan first if the prior state is unclear.
+2. **Substantial changes.** Rerouting, demolition, a change of theme, or expansion needs a plan and **72 hours** of notice; objections follow the siting rules.
+3. **Continuing a project.** After **30 days** without substantive progress on an unfinished public project, or **30 days** without action on a clear maintenance need, another Member may continue the necessary part after **72 hours** of notice. This does not open a finished facility to expansion.
+4. **An original contributor's response.** The contributor must offer a workable plan and start within **7 days** or agree on another date. A deadlock is decided by a disinterested reviewer using public function and the smallest necessary change.
+5. **Scope of continuation.** Work is limited to the necessary functional layer. It does not transfer authorship, erase credit, or allow independent creative work to be changed without permission.
+6. **Later public dependency.** A private facility does not become public automatically. If a public facility has no reasonable alternative passage, a Moderator or Custodian may authorize the minimum temporary access work after contacting the creator and giving **72 hours** of notice.
+
+## Redstone, Mods, and Server Safety
+
+1. Lightweight redstone is allowed. Large stacks of components with no building purpose and purposeless high-frequency loops are prohibited; continuously ticking components such as hoppers should be used sparingly. A useful device must still be disabled or reduced if it causes a reproducible material performance problem. Enforcement considers monitoring, actual impact, duration, and whether the player cooperated in stopping it.
+2. Do not bypass both players' PVP settings to attack someone or forcibly move, teleport, or make another person act without consent.
+3. Do not bypass permissions, execute unauthorized commands, change another player's game mode, or exploit a vulnerability to gain an ability you were not given. Stop using and privately report a vulnerability that may affect safety.
+4. Do not mass-spawn entities or items, keep large areas loaded, repeatedly run heavy bulk operations, or otherwise cause material lag, crashes, or data loss. An accidental impact followed by an immediate stop and repair is treated differently from knowingly continuing it.
+5. During an incident, a Moderator or Custodian may disable the responsible mechanism first, but should preserve the scene, notify its owner, and record the basis and restoration conditions within **24 hours**. The measure lasts only until the risk ends or a formal ruling is completed.
+6. Do not use Anti-AFK features, macros, scripts, automated input, or in-game loops to fake movement, camera activity, chat, or interaction while unattended and evade AFK detection. Being AFK is not itself a violation. Accessibility or building assistance used while the player is present is not punished merely for being automated.
+7. Anti-AFK periods confirmed by records do not count toward active play or event rewards. Only eligibility or rewards directly gained from them may be corrected with an explanation of the calculation and an appeal route.
+
+## Player Interaction and Environmental Disruption
+
+Persistent, targeted disruption or conduct continued after refusal may be treated as harassment; one serious act may also be addressed. Passing by, a brief accidental obstruction, or one reasonable playback is allowed.
+
+1. Do not stand on top of someone, block their view or crosshair, occupy a block position they are placing or removing, follow them to obstruct construction, or use collisions, vehicles, entities, or similar mechanics to interfere with movement or controls.
+2. Do not persistently start, switch, restart, rapidly toggle, or add jukeboxes, note blocks, voice, or other sound sources around someone who is building, talking, or taking a break, especially after being asked to stop or move. A single playback may also be stopped when its duration creates a material impact.
+3. Do not repeatedly send teleport requests, mentions, invitations, direct messages, or other interactions after the recipient has refused them in order to disrupt or force a response.
+4. Music is not a violation merely because someone dislikes it. Public events and community music areas must keep to their announced scope and avoid disrupting existing neighbors.
+
+## Expression, Content, and Protection of Minors
+
+1. Players may express political positions, social views, criticism, and disagreement. An unpopular viewpoint alone is not grounds for enforcement. Criticism of a build or aesthetic choice may not become a sustained or severe attack on its creator.
+2. Sustained or severe insults, personal attacks, and malicious provocation are prohibited. Any credible threat, targeted harassment, discriminatory degradation, or incitement of harm based on race, ethnicity, nationality, region, sex, sexual orientation, disability, religion, or a comparable identity is prohibited. Quotation and discussion are assessed from context and actual target.
+3. Do not flood public spaces or send repetitive or meaningless content in bulk. Repeated or unsolicited unrelated advertising, commercial promotion, and malicious traffic diversion are prohibited. Relevant, non-repetitive project sharing is allowed.
+4. Do not knowingly spread a false factual allegation likely to harm a player or the community. Good-faith mistakes, reasonable suspicions, and good-faith reports are not malicious rumors. Correct a false public allegation to a comparable audience.
+5. Sexual content, explicit sexual anatomy or acts, and other R18 material primarily intended for sexual arousal are entirely prohibited. R18G displays centered on dismemberment, exposed organs, torture, or similarly extreme gore are also prohibited, whether realistic, pixelated, or cartoon-styled. Distance, concealment, private areas, and warning signs are not exceptions.
+6. Do not request from, send to, or induce sexual content involving someone known or reasonably believed to be a minor. Moving the interaction into direct messages or another platform is not an exception. Players do not have to disclose their age; when age is unknown, act on the possibility that a minor is present.
+7. Do not disclose another person's non-public real name, home address, school or workplace, contact details, network address, account credentials, or other information that could identify or endanger them. Privately providing necessary evidence to a designated reviewer for a safety case is not public disclosure.
+8. Do not impersonate another player or the server to deceive people, and do not send phishing, malicious downloads, or content known to endanger accounts or devices.
+
+## Disputes, Enforcement, and Appeals
+
+1. Parties may discuss an ordinary dispute or seek mediation from a Moderator or Custodian; discussion is not required before reporting. Keep coordinates, times, screenshots, or logs where possible.
+2. A disinterested Moderator or Custodian issues a formal ruling and gives parties a chance to respond, except for urgent protection. Ordinary facts must be more likely than not on the available evidence; severe measures need clear logs, scene records, or corroborating evidence. A ruling states the evidence, rule, remedy, duration, and appeal route.
+3. A temporary review panel decides or reviews the matter when there are not enough Moderators or Custodians. Evidence involving minors, privacy, or security is shared only with people necessary to the case, and the result uses a publishable summary.
+4. Remedies should stop and repair the impact first and may include a warning, restoration, public correction, mute, or relevant feature restriction. Restrictions have an end time; those longer than **72 hours** require a formal ruling and an appeal route.
+5. When a player must be prevented from logging in, use one of the ban module's five fixed levels. Select the lowest level sufficient to control the risk, considering actual impact, intent, repetition, and whether the player stopped and repaired the harm afterward:
+
+| Module severity | Duration | Typical use |
+| --- | --- | --- |
+| `warning` Warning ban | 3 days | A first or low-impact violation that still requires short separation |
+| `excusable` Excusable | 30 days | Actual harm with clear mitigating circumstances and active cooperation in repair |
+| `minor` Minor violation | 150 days | Deliberate disruption, repeated violations, or clear but repairable damage |
+| `severe` Severe violation | 360 days | Serious intentional destruction, a credible threat, targeted harassment, or major impact on server operation |
+| `extreme` Extreme violation | 1500 days | Large-scale or coordinated destruction; grave harm to a person, minor, privacy, account, or data safety; or another severe violation within the past 24 months |
+
+6. Formal bans use only the listed terms. One Moderator or Custodian may impose a Warning ban; a higher level needs confirmation by another disinterested person or at least 2 votes from a temporary review panel when staffing is insufficient. An emergency may begin with a Warning ban. The term starts at the first denial of login and does not restart.
+7. Record the conduct, rule, acting person, expiry, and reason for lifting a ban. Store private or security-sensitive evidence separately and retain the history.
+8. A banned person may not evade the restriction with another account. A network or device link triggers review only and is not proof of wrongdoing; mistaken links must be correctable. Automated links use only the last **90 days** of address records, with a review route provided within **24 hours**.
+9. A party may appeal within **14 days** of a ruling, or later if new evidence could change it or a material procedural error appears. Two Moderators or Custodians uninvolved in the original ruling review it; use a temporary panel if too few are available. Necessary safety measures with a written reason may remain during review.
+10. Appointments, recalls, rulings, and appeals publish the information needed to understand them. Ordinary enforcement records are anonymized **90 days** after the measure ends; information about minors, privacy, and security is redacted from the start.
+11. Uncovered cases follow the closest written rule, verifiable impact, and published comparable decisions. New standards apply to future conduct only after they are written into the rules.
+
+## Copyright and Licensing
+
+1. Copyright and other lawful rights that arise in a work remain with the relevant creators.
+2. From the publication of this provision, original material newly created on the server by a player who has the legal authority to license it is released by default under **[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)** unless its author declared rights reserved beforehand under item 3. No separate confirmation is required. For a minor or anyone else unable to grant the license independently, the default applies only to material they may lawfully license or for which the necessary consent has been obtained. Earlier valid licenses remain in effect; older material without a valid license is not licensed retroactively.
+3. Before substantive creation begins, an author may declare rights reserved on the Community Board, identifying the work, coordinates, scope, and author. The declaration applies only to later versions of that work, cannot withdraw an existing CC license, and does not affect the server-operation license in item 7.
+4. When sharing CC work, credit the creator, identify the source, link the license, and note any changes. Publish adaptations under the same, later, or compatible license permitted by the CC terms, and obtain separate permission for commercial use. Do not impose additional terms or technical measures that restrict CC rights. Mik may be named as the source but is not an extra required credit unless lawfully designated by the creator.
+5. Recreations, third-party IP, external assets, and material a builder cannot license do not gain a CC license through these rules. A collaborative work is covered only where each creator has authority and the licenses are compatible; mark differing or unclear licenses as mixed rights.
+6. A license on one work does not extend to the whole world save or collection or authorize editing the original build on the server. Unauthorized access to or export of a non-public world save remains a server-security matter; lawfully obtained copies of CC-licensed work may still be used under that license.
+7. To the extent permitted by law, creators grant the server a non-exclusive, royalty-free operational license to store, render, back up, restore, and migrate a work while it remains on the server or in reasonable backups, and to maintain the necessary functional layer of a public facility. This permission survives departure but does not include selling the work externally or licensing its creative portion to third parties.
 
 ## Featuring Builds on the Website
 
-The official website may occasionally showcase high-quality builds from the server. The following rules apply:
-
-1. **The build must be reasonably complete and comply with the rules above.** Incomplete or non-compliant builds will not be featured.
-2. **The build must belong to the creator submitting it.** If multiple people worked on it, all major contributors must be credited.
-3. **The original creator must give clear permission before a build is featured.** Creators may also request removal later, and admins should handle those requests within a reasonable timeframe. If multiple creators disagree, admins will coordinate the final outcome.
-4. **Featured builds must include the builder's ID and the creation date.** Collaborative works must list all major contributors.
-5. **Builds that contain infringing content cannot be featured**, including unauthorized recreations of copyrighted characters, structures, or other protected material.
-6. **Featured works are still governed by CC BY-NC-SA 4.0.** Showing them on the website counts as non-commercial use within that license.
-
-> Admins retain final interpretation of these rules and may make case-by-case decisions when necessary.
+1. The website features only reasonably complete works that follow these rules and have clear rights information. Missing submission details must be completed first.
+2. The website obtains the author's clear permission before featuring a work and identifies major contributors to group works. A work with an unresolved dispute about featuring is not shown.
+3. A feature identifies the builders, major contributors, creation date, source, stated license status, and whether the displayed material was modified. A recreation or adaptation may not be presented as original work.
+4. An author may ask for a feature to be removed, and the server must process the request within **14 days**. Removing the website page does not revoke a CC license already obtained lawfully.
+5. Material reasonably suspected of infringement, lacking a known source, or missing display permission is not featured. A disputed feature may be hidden pending review.

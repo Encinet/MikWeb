@@ -52,7 +52,10 @@ export default function BuildingsPage() {
   };
 
   return (
-    <div className="building-archive-page page-shell page-shell-stable">
+    <div
+      className="building-archive-page page-shell page-shell-stable print-page-title"
+      data-print-title={t('meta.title')}
+    >
       <div className="building-archive-controls">
         <BuildingCatalogControls
           activeFilter={catalog.filter}

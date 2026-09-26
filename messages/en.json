@@ -12,8 +12,10 @@
       "buildings": "Buildings",
       "map": "Server Map",
       "bans": "Ban List",
+      "donate": "Donate",
       "wiki": "Wiki",
-      "join": "Apply to Join"
+      "join": "Apply to Join",
+      "notices": "Notices"
     },
     "status": {
       "online": "Online",
@@ -275,10 +277,62 @@
       "expiresAt": "Expires At"
     }
   },
+  "donation": {
+    "meta": {
+      "title": "Support Mik",
+      "description": "View donation options and the community supporter list for the Mik server"
+    },
+    "currency": {
+      "code": "CNY"
+    },
+    "hero": {
+      "eyebrow": "Donation",
+      "title": "Support Mik",
+      "description": "Your support helps cover the server’s daily operation and maintenance."
+    },
+    "goal": {
+      "title": "Annual operating goal"
+    },
+    "options": {
+      "title": "Donation options",
+      "description": "Select a donation amount",
+      "customAmount": "Custom amount",
+      "customInputLabel": "Enter amount",
+      "customAmountRange": "Enter a whole amount between {minimum} and {maximum}",
+      "selectionLabel": "Donation amount",
+      "selectAmount": "Select an amount",
+      "enterAmount": "Enter an amount",
+      "action": "Donate {amount}"
+    },
+    "form": {
+      "message": "Message",
+      "optional": "Optional",
+      "identityLoading": "Checking sign-in status…",
+      "publicNoticeAuthenticated": "Your current player identity will be used automatically; the amount and message will be public.",
+      "publicNoticeAnonymous": "Signed-out donations appear as Anonymous; the amount and message will be public."
+    },
+    "records": {
+      "title": "Donation records",
+      "description": "Public donation information",
+      "descriptionWithTimeZone": "Public donation information · Times shown in {timeZone}",
+      "count": "{count, plural, one {# record} other {# records}}",
+      "empty": "No donation records",
+      "loadMore": "Show {count} more",
+      "collapse": "Collapse records",
+      "shownCount": "Showing {shown} / {total}",
+      "anonymous": "Anonymous",
+      "columns": {
+        "donor": "Supporter",
+        "message": "Message",
+        "date": "Time",
+        "amount": "Amount"
+      }
+    }
+  },
   "auth": {
     "login": {
       "title": "Player Login",
-      "subtitle": "Web features are limited to formal members and support in-game codes and Passkeys.",
+      "subtitle": "Web account features are for Members. Sign in with an in-game code or Passkey.",
       "minecraft": {
         "title": "In-game Code",
         "description": "Generate a one-time numeric code, then confirm it in game with /weblogin."
@@ -339,6 +393,12 @@
         "buildingSubmission": "Building submission",
         "security": "Login and security",
         "logout": "Log out"
+      },
+      "roles": {
+        "default": "Newcomer",
+        "member": "Member",
+        "helper": "Helper",
+        "manager": "Manager"
       }
     },
     "security": {
@@ -461,7 +521,8 @@
       "imagesRequired": "At least one image is required.",
       "coordinatesRequired": "Coordinates must be numbers.",
       "sourceRequired": "Derivative and replica builds require complete source information.",
-      "invalid": "The form is invalid."
+      "invalid": "The form is invalid.",
+      "memberRequired": "Building submissions are for Members."
     },
     "status": {
       "pending": "Pending",
@@ -485,6 +546,52 @@
     "legal": {
       "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
       "eula": "Mojang's EULA"
+    }
+  },
+  "communityBoard": {
+    "meta": {
+      "title": "Community Notices",
+      "description": "Read build notices, impact feedback and outcomes."
+    },
+    "hero": {
+      "title": "Community notices",
+      "rules": "Read server rules"
+    },
+    "records": {
+      "title": "Recent records",
+      "loading": "Loading records…",
+      "latestLimit": "Showing the latest 300 records. Older records remain available through direct links.",
+      "error": "Could not load the notice board.",
+      "retry": "Retry",
+      "empty": "No community records yet.",
+      "by": "{author}",
+      "noticeUntil": "Notice period ends {time} (UTC+8)",
+      "relatedNotice": "Related notice",
+      "permalink": "Link",
+      "permalinkLabel": "Link to {subject}",
+      "expand": "View details",
+      "collapse": "Hide details",
+      "showMore": "Show more"
+    },
+    "kind": {
+      "notice": "Build notice",
+      "objection": "Impact feedback"
+    },
+    "status": {
+      "ruled": "Ruled",
+      "elapsed": "Notice period ended",
+      "withdrawn": "Feedback withdrawn",
+      "noticeOpen": "Notice period open",
+      "objectionOpen": "Awaiting discussion"
+    },
+    "detailLabels": {
+      "contact": "Contact",
+      "scope": "Scope",
+      "impact": "Impact",
+      "proposal": "Proposal"
+    },
+    "ruling": {
+      "title": "Outcome"
     }
   }
 }

@@ -18,3 +18,6 @@
 @import "./styles/base/forms.css";
 @import "./styles/modules/wiki.css";
 @import "./styles/modules/building-archive.css";
+/* @import "./styles/modules/donation.css"; Temporarily hidden. */
+@import "./styles/modules/community-board.css";
+@import "./styles/base/print.css";

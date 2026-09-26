@@ -80,7 +80,10 @@ export default function BansPage() {
   };
 
   return (
-    <div className="page-shell page-shell-stable">
+    <div
+      className="page-shell page-shell-stable bans-page print-page-title"
+      data-print-title={bansT('meta.title')}
+    >
       <div className="page-shell-content max-w-7xl mx-auto">
         {/* ── States ── */}
         <div className="page-state-region">

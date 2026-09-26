@@ -1,0 +1,636 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: Print rules override screen styles and inline values. */
+.print-site-header,
+.print-site-footer {
+  display: none;
+}
+
+@page {
+  margin: 14mm;
+}
+
+@media print {
+  img {
+    max-width: 100% !important;
+  }
+
+  .print-site-header,
+  .print-site-footer {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 2.5mm;
+    font-size: 8pt;
+  }
+
+  .print-site-header {
+    min-height: 9mm;
+    margin-bottom: 6mm;
+    border-bottom: 1px solid #c9cec9;
+    padding-bottom: 1.5mm;
+    break-after: avoid-page;
+  }
+
+  .print-site-header img {
+    width: 7mm;
+    height: 7mm;
+    flex: 0 0 auto;
+  }
+
+  .print-site-header__brand {
+    font-size: 10pt;
+    white-space: nowrap;
+  }
+
+  .print-site-header__description {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .print-site-footer {
+    justify-content: space-between;
+    margin-top: 8mm;
+    border-top: 1px solid #c9cec9;
+    padding-top: 1.5mm;
+    break-before: avoid-page;
+    break-inside: avoid-page;
+  }
+
+  :root {
+    color-scheme: light !important;
+  }
+
+  :where(body, body *, body *::before, body *::after) {
+    animation: none !important;
+    transition: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #c9cec9 !important;
+    box-shadow: none !important;
+    color: #1b211d !important;
+    filter: none !important;
+    text-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html,
+  body {
+    width: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+    scrollbar-gutter: auto;
+  }
+
+  body {
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  .app-body,
+  .app-body > main,
+  .page-shell-stable,
+  .page-shell-content,
+  .page-state-region {
+    display: block;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .page-shell {
+    padding: 0 !important;
+  }
+
+  .page-shell-content {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid-page;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  pre,
+  pre code {
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere;
+  }
+
+  a[href] {
+    text-decoration: underline !important;
+    text-underline-offset: 0.15em;
+  }
+
+  .site-background,
+  .project-navbar-shell,
+  .mobile-menu-frame,
+  .player-list-dropdown,
+  .safe-floating-bottom-right,
+  .site-footer,
+  .toast-viewport,
+  .safe-fixed-overlay,
+  .building-archive-overlay,
+  .auth-login-code-overlay,
+  .copy-button,
+  button[aria-expanded],
+  button[aria-haspopup] {
+    display: none !important;
+  }
+
+  .print-page-title::before {
+    display: block;
+    margin-bottom: 0.8rem;
+    content: attr(data-print-title);
+    break-after: avoid-page;
+    font-family: var(--font-display-serif);
+    font-size: 22pt;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  /* Long-form pages: print the open article, not the browser controls. */
+  .wiki-page__search,
+  .wiki-navigation,
+  .wiki-mobile-nav,
+  .wiki-outline-links {
+    display: none !important;
+  }
+
+  .wiki-page__inner,
+  .wiki-page__content-column {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .wiki-page__layout {
+    display: block;
+  }
+
+  .wiki-panel-surface {
+    border: 0 !important;
+  }
+
+  .wiki-page__content-panel {
+    padding: 0 !important;
+  }
+
+  .wiki-markdown__h1 {
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.4rem;
+    font-size: 22pt;
+  }
+
+  .wiki-markdown__h2 {
+    margin-top: 1.15rem;
+    padding-top: 0.6rem;
+    font-size: 14pt;
+  }
+
+  .wiki-markdown__h3 {
+    margin-top: 0.9rem;
+    font-size: 11pt;
+  }
+
+  .wiki-markdown__p,
+  .wiki-markdown__list {
+    margin-bottom: 0.6rem;
+    line-height: 1.5;
+  }
+
+  .wiki-markdown__blockquote {
+    margin: 0.7rem 0;
+  }
+
+  .wiki-markdown__table-wrap {
+    overflow: visible !important;
+  }
+
+  .wiki-markdown__table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .wiki-markdown__table th,
+  .wiki-markdown__table td,
+  .wiki-markdown__table code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .wiki-markdown__table thead {
+    display: table-header-group;
+  }
+
+  .wiki-markdown__table tr {
+    break-inside: avoid-page;
+  }
+
+  /* Records keep their text, including content collapsed on screen. */
+  .community-board__rules-link,
+  .community-board__entry-footer,
+  .community-board__show-more {
+    display: none !important;
+  }
+
+  .community-board__entry {
+    border-bottom: 1px solid #c9cec9 !important;
+    border-radius: 0;
+    padding: 0.7rem 0;
+  }
+
+  .community-board__entry::before {
+    display: none !important;
+  }
+
+  .community-board__entry-content[hidden] {
+    display: block !important;
+  }
+
+  .community-board__entry-content {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .building-archive-controls,
+  .building-archive-scroll-loader,
+  .building-archive-card__dot-indicator {
+    display: none !important;
+  }
+
+  .building-archive-masonry {
+    display: block;
+    margin: 0;
+  }
+
+  .building-archive-masonry__column {
+    width: 100% !important;
+    padding: 0;
+  }
+
+  .building-archive-card {
+    display: grid;
+    grid-template-columns: minmax(0, 36%) minmax(0, 1fr);
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+    border-radius: 0;
+    break-inside: avoid-page;
+  }
+
+  .building-archive-card__media {
+    height: 3.8cm;
+    aspect-ratio: auto !important;
+  }
+
+  .building-archive-card__info {
+    justify-content: center;
+    padding: 0.4rem;
+  }
+
+  .building-archive-card__type-badge {
+    border: 1px solid #c9cec9 !important;
+    border-radius: 0;
+  }
+
+  .bans-page .columns-1 {
+    columns: 1 !important;
+  }
+
+  .bans-page .ui-card-surface {
+    break-inside: avoid-page;
+  }
+
+  .donation-page__content {
+    display: block;
+  }
+
+  .donation-form,
+  .donation-load-more {
+    display: none !important;
+  }
+
+  .donation-section {
+    padding: 0.7rem;
+  }
+
+  .donation-record-list {
+    overflow: visible !important;
+    border-radius: 0;
+    container-type: normal;
+  }
+
+  .donation-record-list__labels,
+  .donation-record {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 0.8fr) auto;
+    gap: 0.4rem;
+  }
+
+  .donation-record {
+    break-inside: avoid-page;
+  }
+
+  .donation-record__donor strong {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .donation-records__empty {
+    min-height: 0;
+  }
+
+  /* Immersive pages become short, text-first documents. */
+  .home-project-page,
+  .art-guide-page,
+  .auth-login-page,
+  .not-found-art-page {
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .home-project-container,
+  .art-guide-container {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .home-project-hero,
+  .art-guide-hero,
+  .not-found-art-page {
+    min-height: 0 !important;
+    padding: 0 0 1rem !important;
+  }
+
+  .home-project-hero::after,
+  .home-project-hero__backdrop,
+  .home-project-bento-card::before,
+  .home-project-bento-card__shade,
+  .art-guide-hero::after,
+  .art-guide-hero__backdrop,
+  .art-guide-panel::before,
+  .art-guide-panel__chrome,
+  .not-found-art-page::after,
+  .not-found-art-page__backdrop,
+  .not-found-art-page__watermark,
+  .auth-login-backdrop {
+    display: none !important;
+  }
+
+  .home-project-hero__content {
+    transform: none !important;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .home-project-hero h1,
+  .art-guide-hero h1,
+  .not-found-art-page__copy h1,
+  .auth-login-copy h1 {
+    margin: 0.3rem 0;
+    font-size: 24pt !important;
+    line-height: 1.1;
+  }
+
+  .home-project-hero__description,
+  .art-guide-hero__description,
+  .not-found-art-page__copy p,
+  .auth-login-copy p {
+    margin: 0.35rem 0;
+    font-size: 10pt !important;
+    line-height: 1.5;
+  }
+
+  .home-project-hero__actions,
+  .home-project-bento-card__icon,
+  .home-project-bento-card__arrow,
+  .home-live-status-panel__copy,
+  .home-live-announcements__head button,
+  .art-guide-address__copy,
+  .mcp-config-code__copy,
+  .auth-login-account-link {
+    display: none !important;
+  }
+
+  .home-project-hero__server {
+    margin-top: 0.5rem;
+  }
+
+  .home-project-flow {
+    gap: 0.8rem;
+    padding: 0;
+  }
+
+  .home-project-bento-grid {
+    grid-template-areas: none !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: auto !important;
+    gap: 0.5rem;
+  }
+
+  .home-project-bento-grid > a:nth-child(n) {
+    grid-area: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .home-project-bento-card {
+    min-height: 0 !important;
+    height: auto !important;
+    border-radius: 0;
+    break-inside: avoid-page;
+  }
+
+  .home-project-bento-card__content {
+    gap: 0.35rem;
+    padding: 0.6rem;
+  }
+
+  .home-project-bento-card__copy strong {
+    font-size: 11pt;
+  }
+
+  .home-project-bento-card__copy span {
+    font-size: 9pt;
+  }
+
+  .home-project-live {
+    padding-top: 0.8rem;
+  }
+
+  .home-live-grid {
+    display: block;
+  }
+
+  .home-live-status-panel {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: 0.7rem;
+  }
+
+  .home-live-status-panel__main {
+    min-height: 0;
+    gap: 0.4rem;
+  }
+
+  .home-live-status-panel__headline strong {
+    font-size: 22pt;
+  }
+
+  .home-player-list,
+  .home-player-list__list {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .home-live-announcements__list span,
+  .home-player-list__name {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .art-guide-hero__content {
+    display: block;
+  }
+
+  .art-guide-hero__copy,
+  .art-guide-panel {
+    max-width: none;
+  }
+
+  .art-guide-panel {
+    margin-top: 0.8rem;
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  .art-guide-panel__steps {
+    padding: 0.5rem;
+  }
+
+  .art-guide-step {
+    border-radius: 0;
+    break-inside: avoid-page;
+  }
+
+  .art-guide-address__bar,
+  .mcp-config-code {
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  .art-guide-address__bar code {
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mcp-config-code pre {
+    padding: 0.7rem;
+  }
+
+  .not-found-art-page__layout,
+  .auth-login-stage {
+    min-height: 0 !important;
+  }
+
+  .auth-login-stage {
+    width: 100%;
+    padding: 0;
+  }
+
+  .auth-login-copy {
+    text-align: left;
+  }
+
+  .auth-login-methods {
+    margin: 0.9rem 0 0;
+  }
+
+  .auth-login-method {
+    border-radius: 0;
+    break-inside: avoid-page;
+  }
+
+  /* The embedded map cannot be printed reliably; retain its title and URL. */
+  html:has(.map-page),
+  body:has(.map-page),
+  .app-body:has(.map-page) {
+    overflow: visible !important;
+  }
+
+  .map-page,
+  .map-page__frame-shell,
+  .map-page__overlay {
+    position: static !important;
+    width: 100%;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .map-page__frame {
+    display: none !important;
+  }
+
+  .map-page__overlay {
+    display: block;
+  }
+
+  .map-page__frame-title,
+  .map-page__external-link {
+    display: block;
+    width: fit-content;
+    padding: 0;
+    border: 0 !important;
+  }
+
+  .map-page__frame-title {
+    margin-bottom: 0.4rem;
+    font-size: 22pt;
+  }
+
+  .map-page__external-link::after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    overflow-wrap: anywhere;
+  }
+
+  .map-page__frame-dot,
+  .map-page__overlay svg {
+    display: none;
+  }
+
+  .account-workspace__inner,
+  .account-main {
+    display: block;
+  }
+
+  .account-sidebar,
+  .account-profile-panel {
+    position: static !important;
+    margin-bottom: 0.8rem;
+  }
+
+  .account-sidebar__nav,
+  .account-sidebar__logout,
+  .account-detail-panel__actions,
+  .account-action-button {
+    display: none !important;
+  }
+}

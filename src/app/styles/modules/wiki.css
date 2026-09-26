@@ -352,12 +352,15 @@
 }
 
 .wiki-markdown__blockquote {
-  margin: 1rem 0;
-  border: 1px solid var(--theme-border-glass-light);
-  border-left: 4px solid var(--theme-accent-green-strong);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--theme-surface-glass-light) 54%, transparent);
-  padding: 0.75rem 1rem;
+  margin: 1.25rem 0;
+  border-inline-start: 1px solid var(--theme-text-dim);
+  padding-block: 0.1rem;
+  padding-inline-start: 0.9rem;
+}
+
+.wiki-markdown__blockquote > .wiki-markdown__p,
+.wiki-markdown__blockquote > .wiki-markdown__list {
+  margin-bottom: 0.6rem;
 }
 
 .wiki-markdown__blockquote > :last-child {
