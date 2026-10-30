@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { Link } from '@/shared/i18n/routing';

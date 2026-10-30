@@ -24,20 +24,16 @@ const DEFAULT_WIKI_SECTION_ICON: WikiSectionIcon = 'Home';
 const DEFAULT_WIKI_ORDER_STEP = 10;
 const DEFAULT_WIKI_ORDER_FALLBACK = 999;
 const WIKI_GROUP_METADATA_FILENAME = '_group.md';
-const wikiGroupFrontMatterSchema = z
-  .object({
-    label: z.string().trim().min(1),
-    order: z.number().int().nonnegative(),
-  })
-  .strict();
-const wikiSectionFrontMatterSchema = z
-  .object({
-    title: z.string().trim().min(1),
-    description: z.string().trim().min(1),
-    order: z.number().int().nonnegative(),
-    icon: z.enum(SUPPORTED_WIKI_SECTION_ICONS),
-  })
-  .strict();
+const wikiGroupFrontMatterSchema = z.strictObject({
+  label: z.string().trim().min(1),
+  order: z.number().int().nonnegative(),
+});
+const wikiSectionFrontMatterSchema = z.strictObject({
+  title: z.string().trim().min(1),
+  description: z.string().trim().min(1),
+  order: z.number().int().nonnegative(),
+  icon: z.enum(SUPPORTED_WIKI_SECTION_ICONS),
+});
 
 interface WikiGroupMetadata {
   groupId: WikiSectionGroupId;

@@ -63,7 +63,7 @@ const handler = createMcpHandler(
       {
         title: 'Get Players',
         description: 'Get online players from the Minecraft server.',
-        inputSchema: {},
+        inputSchema: z.object({}),
       },
       async () => {
         const data: PlayerOnlinePayload = await apiFetch(dataApiUrl('/players'));
@@ -95,12 +95,12 @@ const handler = createMcpHandler(
         title: 'Get Buildings',
         description:
           'Get the list of buildings from the Minecraft server. builders format: "name(contribution%)" sorted by contribution desc. pos format: x y z (Minecraft coordinates).',
-        inputSchema: {
+        inputSchema: z.object({
           locale: z
             .string()
             .default('zh-CN')
             .describe('Locale for localized fields (e.g. zh-CN, en).'),
-        },
+        }),
       },
       async ({ locale }) => {
         const data: BuildingsApiResponse = await apiFetch(dataApiUrl('/buildings'));
@@ -169,7 +169,7 @@ const handler = createMcpHandler(
       {
         title: 'Get Bans',
         description: 'Get the list of banned players from the Minecraft server.',
-        inputSchema: {},
+        inputSchema: z.object({}),
       },
       async () => {
         const data: BansApiResponse = await apiFetch(dataApiUrl('/bans'));
@@ -203,14 +203,14 @@ const handler = createMcpHandler(
       {
         title: 'Get Announcements',
         description: 'Get recent announcements from the Minecraft server.',
-        inputSchema: {
+        inputSchema: z.object({
           count: z
             .number()
             .int()
             .positive()
             .default(5)
             .describe('Number of announcements to return.'),
-        },
+        }),
       },
       async ({ count }) => {
         const data: AnnouncementsApiResponse = await apiFetch(dataApiUrl('/announcements'));
@@ -241,7 +241,7 @@ const handler = createMcpHandler(
           'Do not send loosely related keywords or topic expansion. Good: "规则", "规范", "制度". Bad: "建筑 建造 模组 功能", "世界编辑 工具 网页". ' +
           'Supports exact substring, subsequence (e.g. "gmode" matches "/gamemode"), and multi-token matching ' +
           '(e.g. "规则 规范 制度" helps match the server rules page). Returns the full content of matched wiki sections and lets the caller control how many results are returned.',
-        inputSchema: {
+        inputSchema: z.object({
           searchPhrases: z
             .array(z.string())
             .min(1)
@@ -257,7 +257,7 @@ const handler = createMcpHandler(
             .max(20)
             .optional()
             .describe('Maximum number of results (default: 5, max: 20)'),
-        },
+        }),
       },
       async ({ searchPhrases, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
@@ -284,8 +284,7 @@ const handler = createMcpHandler(
       },
     );
   },
-  {},
-  { basePath: '/api', verboseLogs: true },
+  { verboseLogs: true },
 );
 
 export { handler as GET, handler as POST };

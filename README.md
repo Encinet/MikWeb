@@ -4,6 +4,8 @@ Mik Casual 官网与内容站点，支持 `zh-CN` / `en` 双语，包含官网�
 
 ## 快速开始
 
+使用 Bun 安装依赖；构建和运行环境需要 Node.js 22 或更高版本。`@types/node` 保持在 Node 22 系列，与最低支持的运行环境一致。
+
 ```bash
 bun install
 bun dev
@@ -45,7 +47,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 
 本站保留的动态入口：
 
-- `GET /api/mcp`：MCP 工具入口
+- `POST /api/mcp`：MCP 工具入口
 - `GET|POST|DELETE /api/auth/*`：网页登录 BFF，只在服务端转发到 Mik Data
 - `POST /api/account/*`：玩家账号 BFF，只在服务端转发到 Mik Data
 - `POST /api/account/images/upload`：玩家建筑申请图片上传代理，只接受已登录成员上传的 WebP，并在服务端转发到 ImgBB
@@ -66,6 +68,8 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 玩家建筑收入申请使用 `/account/building-submissions`。浏览器会先把图片转换为 WebP 并做最低清晰度检查，然后提交到 `POST /api/account/images/upload`；该路由会再次确认登录状态，再把图片上传到 ImgBB。最终申请提交到 Mik Data 时，Mik Data 会校验正式成员身份、最多 10 个待审核申请、ImgBB 图片 URL、WebP 元数据和建筑 payload。
 
 ## MCP
+
+端点使用 MCP SDK v2，支持 `2026-07-28` 无状态协议，并兼容 2025 版 Streamable HTTP 客户端；不需要 Redis 或服务端会话存储。
 
 `src/app/api/mcp/route.ts` 暴露以下工具：
 

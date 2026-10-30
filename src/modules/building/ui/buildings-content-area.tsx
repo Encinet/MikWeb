@@ -73,6 +73,7 @@ export function BuildingsContentArea({
   return (
     <InfiniteScroll
       dataLength={buildings.length}
+      hasChildren
       next={loadMore}
       hasMore={hasMore}
       loader={

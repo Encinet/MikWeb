@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView } from 'motion/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
 

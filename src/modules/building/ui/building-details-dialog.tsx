@@ -1,8 +1,8 @@
 'use client';
 
-import type { Transition } from 'framer-motion';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, MapPin, X } from 'lucide-react';
+import type { Transition } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';

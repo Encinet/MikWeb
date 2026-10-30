@@ -8,11 +8,11 @@ import { createPortal } from 'react-dom';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import { AnnouncementFeedContent } from '@/modules/announcement/ui/announcement-feed-content';
 
-const MotionDiv = dynamic(() => import('framer-motion').then((m) => ({ default: m.motion.div })), {
+const MotionDiv = dynamic(() => import('motion/react').then((m) => ({ default: m.motion.div })), {
   ssr: false,
 });
 const AnimatePresence = dynamic(
-  () => import('framer-motion').then((m) => ({ default: m.AnimatePresence })),
+  () => import('motion/react').then((m) => ({ default: m.AnimatePresence })),
   { ssr: false },
 );
 

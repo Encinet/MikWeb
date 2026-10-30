@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import type { WikiSearchResult } from '@/modules/wiki/model/wiki-section-types';
 

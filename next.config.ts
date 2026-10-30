@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 864000, // 10 days cache for player avatars
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: ['motion/react'],
   },
 };
 
