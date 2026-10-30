@@ -7,7 +7,7 @@ export default async function MapPage() {
   const t = await getTranslations('map');
 
   return (
-    <main className="map-page">
+    <div className="map-page">
       <section className="map-page__frame-shell" aria-label={t('frameLabel')}>
         <iframe
           src={MAP_URL}
@@ -35,6 +35,6 @@ export default async function MapPage() {
           </a>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -44,10 +44,6 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-export function isResolvedPlayer(value: unknown): value is ResolvedPlayer {
-  return isObjectRecord(value) && typeof value.uuid === 'string' && typeof value.name === 'string';
-}
-
 export function isBuildingSubmissionImage(value: unknown): value is BuildingSubmissionImage {
   return (
     isObjectRecord(value) &&

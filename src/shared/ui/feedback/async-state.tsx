@@ -1,26 +1,33 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 
 function joinClassNames(...classNames: Array<string | undefined>) {
   return classNames.filter(Boolean).join(' ');
 }
 
-interface GlassSkeletonCardProps {
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+export interface InlineFeedbackValue {
+  message: string;
+  kind: 'info' | 'success' | 'error' | 'loading';
 }
 
-export function GlassSkeletonCard({ children, className, style }: GlassSkeletonCardProps) {
+export function InlineFeedback({
+  value,
+  className,
+}: {
+  value?: InlineFeedbackValue | null;
+  className?: string;
+}) {
   return (
     <div
-      aria-hidden="true"
-      className={joinClassNames('glass-card animate-pulse', className)}
-      style={style}
+      className={joinClassNames('inline-feedback', className)}
+      data-kind={value?.kind}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     >
-      {children}
+      {value?.message}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
+import { SITE_SOCIAL_PREVIEW_COPY } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
-import { SITE_SOCIAL_PREVIEW_COPY } from '@/site/config/site-config';
 
 export const SOCIAL_IMAGE_SIZE = {
   width: 1200,

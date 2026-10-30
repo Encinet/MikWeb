@@ -29,11 +29,9 @@ export function WikiSearchResults({
         <motion.div
           key={`search-${resultsCountLabel}`}
           initial={false}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          animate={{ opacity: 1 }}
           exit={{
             opacity: 0,
-            y: -8,
-            filter: 'blur(4px)',
             transition: {
               duration: 0.16,
               ease: [0.4, 0, 1, 1] as [number, number, number, number],

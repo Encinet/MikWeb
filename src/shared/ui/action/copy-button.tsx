@@ -1,73 +1,69 @@
 'use client';
 
-import { Check, Copy } from 'lucide-react';
+import { AlertCircle, Check, Copy } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ButtonHTMLAttributes } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
 
 type CopyButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'onClick'> & {
   value: string;
+  label?: string;
+  showLabel?: boolean;
 };
 
-async function copyText(value: string): Promise<boolean> {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return true;
-  }
-
-  const textarea = document.createElement('textarea');
-  textarea.value = value;
-  textarea.setAttribute('readonly', 'true');
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-
-  const isCopied = document.execCommand('copy');
-  document.body.removeChild(textarea);
-  return isCopied;
-}
-
-export function CopyButton({ className, value, ...buttonProps }: CopyButtonProps) {
-  const [isCopied, setIsCopied] = useState(false);
-  const resetTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (resetTimerRef.current !== null) {
-        window.clearTimeout(resetTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleClick = async () => {
-    const success = await copyText(value);
-    if (!success) {
-      return;
-    }
-
-    setIsCopied(true);
-    if (resetTimerRef.current !== null) {
-      window.clearTimeout(resetTimerRef.current);
-    }
-
-    resetTimerRef.current = window.setTimeout(() => {
-      setIsCopied(false);
-      resetTimerRef.current = null;
-    }, 1500);
-  };
+export function CopyButton({
+  className,
+  value,
+  label,
+  showLabel = false,
+  ...buttonProps
+}: CopyButtonProps) {
+  const t = useTranslations('common');
+  const { status, copying, copy } = useCopyFeedback(value);
+  const defaultLabel = label ?? buttonProps['aria-label'] ?? t('actions.copy');
+  const statusLabel =
+    status === 'copied'
+      ? t('actions.copied')
+      : status === 'error'
+        ? t('actions.copyFailed')
+        : defaultLabel;
 
   return (
-    <button
-      type="button"
-      {...buttonProps}
-      className={['copy-button', isCopied ? 'is-copied' : '', className ?? '']
-        .filter(Boolean)
-        .join(' ')}
-      onClick={handleClick}
-      aria-label={isCopied ? 'Copied' : 'Copy'}
-    >
-      {isCopied ? <Check className="copy-button__icon" /> : <Copy className="copy-button__icon" />}
-    </button>
+    <>
+      <button
+        type="button"
+        {...buttonProps}
+        disabled={buttonProps.disabled || copying}
+        aria-busy={copying || undefined}
+        className={[
+          'copy-button',
+          status === 'copied' ? 'is-copied' : '',
+          status === 'error' ? 'is-error' : '',
+          showLabel ? 'copy-button--label' : '',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        onClick={() => void copy()}
+        aria-label={statusLabel}
+        title={statusLabel}
+      >
+        {status === 'copied' ? (
+          <Check className="copy-button__icon" aria-hidden="true" />
+        ) : status === 'error' ? (
+          <AlertCircle className="copy-button__icon" aria-hidden="true" />
+        ) : (
+          <Copy className="copy-button__icon" aria-hidden="true" />
+        )}
+        {showLabel ? <span>{statusLabel}</span> : null}
+      </button>
+      <span className="sr-only" role="status" aria-live="polite">
+        {status === 'copied'
+          ? t('actions.copied')
+          : status === 'error'
+            ? t('actions.copyHelp')
+            : ''}
+      </span>
+    </>
   );
 }

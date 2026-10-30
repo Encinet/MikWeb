@@ -96,5 +96,67 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/shared/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/app/**", "@/modules/**", "@/site/**"],
+                    "message": "Keep dependencies directed toward shared; compose pages in app and site."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/app/**", "@/site/**"],
+                    "message": "Keep dependencies directed toward shared; compose pages in app and site."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/site/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/app/**"],
+                    "message": "Keep dependencies directed toward shared; compose pages in app and site."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

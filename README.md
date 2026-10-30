@@ -37,7 +37,7 @@ src/
 - `app`：路由入口、layout、metadata、API handlers
 - `modules`：按业务或页面切片组织的功能模块，内部可包含 `model`、`lib`、`server`、`ui`
 - `site`：站点壳层与全局能力，如 header、footer、background、seo、providers
-- `shared`：共享基础能力
+- `shared`：共享基础能力和站点常量（`shared/config/site-config.ts`）
 
 协作规则、命名约定和 Wiki 规范见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
@@ -71,7 +71,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 
 端点使用 MCP SDK v2，支持 `2026-07-28` 无状态协议，并兼容 2025 版 Streamable HTTP 客户端；不需要 Redis 或服务端会话存储。
 
-`src/app/api/mcp/route.ts` 暴露以下工具：
+`src/app/api/mcp/route.ts` 提供 HTTP 入口，工具定义位于 `src/modules/mcp/server/mcp-handler.ts`：
 
 | 工具 | 说明 |
 |------|------|

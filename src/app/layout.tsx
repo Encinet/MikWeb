@@ -3,7 +3,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-
+import type { CSSProperties } from 'react';
 import {
   ORGANIZATION_NAME,
   SITE_DESCRIPTION,
@@ -14,7 +14,12 @@ import {
   SITE_NAME,
   SITE_TITLE,
   SITE_URL,
-} from '@/site/config/site-config';
+} from '@/shared/config/site-config';
+import {
+  getAccentInitializationScript,
+  getAccentProperties,
+  getDailyAccentColor,
+} from '@/site/theme/lib/accent-color';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -74,11 +79,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const defaultPalette = getAccentProperties(getDailyAccentColor());
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} style={defaultPalette as CSSProperties} suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#101816" />
+        <script>{getAccentInitializationScript()}</script>
+        <meta name="theme-color" content={defaultPalette['--palette-dark-bg']} />
         <meta name="color-scheme" content="dark light" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Mik Server" />

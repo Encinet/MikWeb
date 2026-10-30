@@ -323,15 +323,6 @@ function validateUniqueSectionIds(locale: string, wikiSectionSources: WikiSectio
   }
 }
 
-export async function listWikiSectionIds(locale: string): Promise<WikiSectionId[]> {
-  const wikiSectionSources = await discoverWikiSectionSources(locale);
-  validateUniqueSectionIds(locale, wikiSectionSources);
-
-  return wikiSectionSources
-    .map((wikiSectionSource) => wikiSectionSource.id)
-    .sort((left, right) => left.localeCompare(right));
-}
-
 export function parseWikiSectionDocument({
   groupMetadata,
   id,

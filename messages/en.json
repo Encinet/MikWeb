@@ -12,7 +12,6 @@
       "buildings": "Buildings",
       "map": "Server Map",
       "bans": "Ban List",
-      "donate": "Donate",
       "wiki": "Wiki",
       "join": "Apply to Join",
       "notices": "Notices"
@@ -25,7 +24,11 @@
     "theme": {
       "light": "Light Mode",
       "dark": "Dark Mode",
-      "system": "System"
+      "system": "System",
+      "title": "Theme color",
+      "reset": "Use daily color",
+      "invalidColor": "Enter a valid hex color, such as #79b86f.",
+      "hue": "Hue"
     },
     "account": {
       "login": "Log in",
@@ -33,97 +36,64 @@
     }
   },
   "pcl2Page": {
-    "badge": "PCL2 CUSTOM HOME",
     "title": "PCL2 Homepage",
-    "subtitle": "Bring Mik server status, announcements, building highlights, and quick links into the launcher home page.",
+    "subtitle": "View Mik server status, announcements and buildings in your launcher.",
     "description": "Open Settings -> Personalization -> Custom homepage, choose Online update, paste the URL above into the download address field, then return to the launcher home page.",
     "addressLabel": "Homepage URL",
-    "detectingTimeZone": "Detecting browser time zone…",
-    "stepsTitle": "Guide",
+    "detectingTimeZone": "Preparing homepage URL…",
+    "stepsTitle": "Setup",
     "steps": {
       "settings": {
-        "title": "Open personalization",
-        "description": "Go to the personalization page in PCL2 settings."
-      },
-      "update": {
-        "title": "Use online update",
-        "description": "Switch the custom homepage to online update mode."
+        "title": "Open the custom homepage settings",
+        "description": "In PCL2, open Settings, Personalization, then Custom homepage. Choose Online update."
       },
       "address": {
         "title": "Paste the URL",
-        "description": "Put the homepage URL from this page into the download address field."
+        "description": "Copy the homepage URL into the download address field."
       },
       "done": {
         "title": "Return home",
         "description": "Reopen the launcher home page to see the Mik page."
       }
-    }
+    },
+    "copyAddress": "Copy URL"
   },
   "mcpPage": {
-    "badge": "MCP SERVER",
     "title": "MCP Config",
-    "subtitle": "Connect Mik server status, building records, ban records, announcements, and Wiki search to MCP-capable clients.",
+    "subtitle": "Query Mik server information from an MCP-capable client.",
     "description": "The Mik MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
-    "configTitle": "Config Text",
-    "stepsTitle": "Guide",
+    "configTitle": "JSON configuration",
+    "stepsTitle": "Connect your client",
     "steps": {
-      "copy": {
-        "title": "Copy config",
-        "description": "Copy the JSON on the left into an MCP-capable client."
-      },
       "client": {
-        "title": "Open client settings",
-        "description": "Go to the MCP configuration page in your client."
+        "title": "Open MCP settings",
+        "description": "Add a remote MCP server in your client."
       },
       "connect": {
-        "title": "Add HTTP server",
-        "description": "Add Mik as a remote MCP service."
+        "title": "Enter the server URL",
+        "description": "Use the server URL on this page, or add the JSON configuration to your client’s config file."
       },
       "done": {
-        "title": "Test tools",
-        "description": "After connecting, query players, buildings, announcements, and Wiki content."
+        "title": "Connect and query",
+        "description": "Query online players, buildings, announcements and game guides."
       }
-    }
+    },
+    "addressLabel": "Server URL",
+    "copyAddress": "Copy URL",
+    "copyConfig": "Copy JSON"
   },
   "home": {
     "hero": {
-      "badge": "MINECRAFT COMMUNITY",
       "title": "Mik Casual",
-      "description": "A Minecraft non-profit, casual creation server where you can leave your masterpieces.",
-      "joinButton": "Apply to Join Server",
-      "accountButton": "Open Account",
       "wikiButton": "View Wiki",
+      "description": "A Minecraft non-profit, casual creation server where you can leave your masterpieces.",
       "notice": "Server address",
       "serverAddress": "mcmik.top"
     },
-    "showcase": {
-      "builds": {
-        "title": "Long-term builds and player work",
-        "description": "From central areas to personal projects, each build can become part of the server archive."
-      },
-      "map": {
-        "title": "Live map",
-        "description": "Open the online map to view the world, coordinates, and active areas."
-      },
-      "wiki": {
-        "title": "Wiki and rules",
-        "description": "Browse server commands, rules, help, and all kinds of useful information here."
-      },
-      "apply": {
-        "title": "Application-only access",
-        "description": "Build a high-quality player environment."
-      },
-      "records": {
-        "title": "Public records",
-        "description": "Moderation and ban records are publicly available."
-      }
-    },
     "live": {
       "statusTitle": "Mik current status",
-      "playersOnline": "players online",
       "playerListTitle": "Online Players",
       "noPlayersOnline": "No players online",
-      "metricsLabel": "Server metrics",
       "status": {
         "loading": "Fetching status",
         "online": "Server online",
@@ -131,23 +101,43 @@
         "networkError": "Status unavailable"
       }
     },
-    "stats": {
-      "activePlayers": "Online Players",
-      "totalBuildings": "Buildings",
-      "peakPlayers": "Peak Players",
-      "uptime": "Uptime",
-      "days": "Days"
-    },
     "announcements": {
       "section": {
         "title": "Server Announcements"
       },
       "states": {
         "loading": "Loading...",
-        "empty": "No announcements"
+        "empty": "No announcements",
+        "unknownDate": "Date unavailable"
       },
       "actions": {
-        "viewAll": "Click to view all announcements"
+        "viewAll": "All announcements"
+      },
+      "latest": "Latest"
+    },
+    "playerHome": {
+      "map": {
+        "title": "World map"
+      },
+      "tools": {
+        "title": "Everyday essentials"
+      },
+      "shortcuts": {
+        "commands": "Commands",
+        "rules": "Server rules",
+        "notices": "Community notices",
+        "launcher": "Launcher homepage",
+        "gettingStarted": "Getting started",
+        "apply": "Apply to join"
+      },
+      "buildings": {
+        "title": "World and builds",
+        "viewAll": "All builds",
+        "open": "View build: {name}",
+        "empty": "No builds yet",
+        "unavailable": "Could not load builds",
+        "retry": "Retry",
+        "retrying": "Loading"
       }
     }
   },
@@ -161,6 +151,7 @@
       "description": "Showcasing amazing building works by our players"
     },
     "search": {
+      "clear": "Clear search",
       "placeholder": "Search buildings, builders, tags..."
     },
     "filters": {
@@ -172,6 +163,7 @@
       }
     },
     "sort": {
+      "label": "Sort buildings",
       "options": {
         "dateDesc": "Newest First",
         "dateAsc": "Oldest First",
@@ -180,6 +172,7 @@
         "random": "Random"
       }
     },
+    "imagesCount": "{count} images",
     "types": {
       "original": "Original",
       "derivative": "Derivative",
@@ -197,7 +190,9 @@
       "close": "Close building details",
       "previousImage": "Previous image",
       "nextImage": "Next image",
-      "currentImage": "Current image {current} / {total}"
+      "currentImage": "Current image {current} / {total}",
+      "expandDetails": "Show details",
+      "collapseDetails": "Hide details"
     },
     "states": {
       "loading": "Loading...",
@@ -209,6 +204,13 @@
     "states": {
       "loading": "Loading...",
       "error": "Failed to load"
+    },
+    "actions": {
+      "close": "Close",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Copy failed",
+      "copyHelp": "Copy failed. Select the text and copy it manually."
     }
   },
   "notFound": {
@@ -268,66 +270,29 @@
     },
     "states": {
       "loading": "Loading...",
-      "empty": "No ban records"
+      "empty": "No ban records",
+      "error": "Ban records could not be loaded",
+      "noResults": "No matching ban records",
+      "notProvided": "Not provided"
     },
     "fields": {
       "reason": "Reason",
       "bannedBy": "Banned By",
       "bannedAt": "Banned At",
-      "expiresAt": "Expires At"
-    }
-  },
-  "donation": {
-    "meta": {
-      "title": "Support Mik",
-      "description": "View donation options and the community supporter list for the Mik server"
+      "player": "Player",
+      "record": "Time and staff"
     },
-    "currency": {
-      "code": "CNY"
+    "search": {
+      "placeholder": "Search players, UUIDs, reasons or staff",
+      "clear": "Clear search"
     },
-    "hero": {
-      "eyebrow": "Donation",
-      "title": "Support Mik",
-      "description": "Your support helps cover the server’s daily operation and maintenance."
+    "actions": {
+      "retry": "Reload",
+      "loadMore": "Show {count} more"
     },
-    "goal": {
-      "title": "Annual operating goal"
-    },
-    "options": {
-      "title": "Donation options",
-      "description": "Select a donation amount",
-      "customAmount": "Custom amount",
-      "customInputLabel": "Enter amount",
-      "customAmountRange": "Enter a whole amount between {minimum} and {maximum}",
-      "selectionLabel": "Donation amount",
-      "selectAmount": "Select an amount",
-      "enterAmount": "Enter an amount",
-      "action": "Donate {amount}"
-    },
-    "form": {
-      "message": "Message",
-      "optional": "Optional",
-      "identityLoading": "Checking sign-in status…",
-      "publicNoticeAuthenticated": "Your current player identity will be used automatically; the amount and message will be public.",
-      "publicNoticeAnonymous": "Signed-out donations appear as Anonymous; the amount and message will be public."
-    },
-    "records": {
-      "title": "Donation records",
-      "description": "Public donation information",
-      "descriptionWithTimeZone": "Public donation information · Times shown in {timeZone}",
-      "count": "{count, plural, one {# record} other {# records}}",
-      "empty": "No donation records",
-      "loadMore": "Show {count} more",
-      "collapse": "Collapse records",
-      "shownCount": "Showing {shown} / {total}",
-      "anonymous": "Anonymous",
-      "columns": {
-        "donor": "Supporter",
-        "message": "Message",
-        "date": "Time",
-        "amount": "Amount"
-      }
-    }
+    "recordsCount": "{count} records",
+    "resultsCount": "{count} / {total} records",
+    "shownCount": "Showing {count} of {total}"
   },
   "auth": {
     "login": {
@@ -345,7 +310,10 @@
         "title": "Code",
         "empty": "Generate a code first, then confirm it in game.",
         "copyLabel": "Copy web login command",
-        "remaining": "Expires in {time}"
+        "remaining": "Expires in {time}",
+        "instructions": "Run this command on the server. You’ll sign in automatically after confirming.",
+        "copyHint": "Click to copy command",
+        "copyFailed": "Copy failed. Copy the command above manually."
       },
       "actions": {
         "account": "Open account"
@@ -354,7 +322,6 @@
         "loading": "Processing",
         "completing": "Completing login",
         "copied": "Copied",
-        "copyFailed": "Copy failed",
         "expired": "The code expired. Generate a new one.",
         "unavailable": "Code login is temporarily unavailable.",
         "memberRequired": "This web system is only available to formal members.",
@@ -364,7 +331,8 @@
         "passkeyFailed": "Passkey verification failed.",
         "passkeyCancelled": "Passkey login was cancelled.",
         "passkeyDomainMismatch": "This domain does not support Passkeys. Use mcmik.top.",
-        "passkeyBrowserUnsupported": "This browser does not support Passkeys."
+        "passkeyBrowserUnsupported": "This browser does not support Passkeys.",
+        "loginFailed": "Unable to complete sign-in. Please try again."
       }
     },
     "account": {
@@ -507,7 +475,6 @@
       "playerNotFound": "No player found.",
       "tagRequired": "Tags require both Chinese and English.",
       "imageLimit": "You can upload at most 15 images.",
-      "selected": "Images selected",
       "imageSelectFailed": "Failed to read images.",
       "uploading": "Uploading images",
       "uploadFailed": "Image upload failed.",
@@ -571,7 +538,12 @@
       "permalinkLabel": "Link to {subject}",
       "expand": "View details",
       "collapse": "Hide details",
-      "showMore": "Show more"
+      "showMore": "Show more",
+      "count": "{count} records",
+      "resultsCount": "{count} / {total} records",
+      "noResults": "No matching notices",
+      "linkUnavailable": "Could not load the linked notice.",
+      "unknownTime": "Unknown time"
     },
     "kind": {
       "notice": "Build notice",
@@ -592,6 +564,10 @@
     },
     "ruling": {
       "title": "Outcome"
+    },
+    "search": {
+      "placeholder": "Search notices, players or locations",
+      "clear": "Clear search"
     }
   }
 }

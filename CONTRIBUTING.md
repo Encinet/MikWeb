@@ -29,7 +29,7 @@ bun check
 |------|------|------|
 | Wiki / 内容编辑 | `content/<locale>/<group>/` | `bun check:wiki` |
 | 前端开发 | `src/app/` `src/modules/` `src/site/` `src/shared/` | `bun check` |
-| API / MCP 维护 | `src/app/api/mcp/route.ts` `src/shared/api/` | `bun check` |
+| API / MCP 维护 | `src/app/api/` `src/modules/*/server/` `src/shared/api/` | `bun check` |
 | 文档 / 翻译维护 | `README.md` `CONTRIBUTING.md` `messages/` `content/<locale>/<group>/` | 按改动范围执行 |
 
 ## 结构
@@ -56,8 +56,13 @@ src/
 - `app -> modules/site/shared`
 - `site -> modules/shared`
 - `modules -> shared`
+- 模块可复用其他模块的领域类型、公开组件或数据能力，但不能形成循环依赖。例如首页组合公告与建筑模块，建筑模块复用玩家头像。
 
-如果一个模块需要反向依赖更高层，通常说明它放错层了。
+如果一个模块需要反向依赖更高层，通常说明它放错层了。跨层引用使用 `@/` 路径；Biome 会阻止 Shared、Modules、Site 反向引用更高层。
+
+站点常量放在 `src/shared/config/site-config.ts`，功能专属常量留在对应模块。页面 metadata 在 `src/app/` 路由入口装配，UI 模块不依赖站点 SEO 实现。
+
+主题默认使用每日配色，按 UTC+8 日期确定色相，并以固定明度、低色度生成默认色；当天保持一致，跨天重新打开时更新，阅读过程中不自动换色。`src/shared/config/theme-config.ts` 的 `DAILY_ACCENT_CHROMA` 控制每日颜色的色度，`DEFAULT_ACCENT_COLOR` 只用于后备色和 PWA 启动画面。`site/theme/lib/accent-color.ts` 用 OKLCH 派生明暗色板、压缩超出 sRGB 的色度并校正对比度；界面使用 `--theme-accent`、`--theme-accent-strong` 和 `--theme-on-accent` 等语义变量。状态色独立。手动选色会在当前浏览器固定保存，点击“使用今日配色”清除自定义颜色，恢复每日模式。首次绘制前读取当前日期和已保存的自定义色。
 
 ## 命名
 
@@ -71,13 +76,22 @@ src/
 ## 代码规则
 
 - 优先复用现有页面结构、组件职责和共享逻辑
-- 路由层只做页面入口与装配，不堆业务细节
+- 路由层只做页面入口、HTTP 导出、运行配置与装配，不堆业务细节；服务端实现归入模块的 `server/`
 - 业务代码优先归入对应 `modules/<slice>/`
 - 站点级组件优先归入 `site/`
 - 不新增 `any`
 - 优先 `import type`
 - 非必要不要加 `'use client'`
+- `model/` 放状态、领域类型和交互 Hook，`lib/` 放处理逻辑，`ui/` 放组件、渲染器和图标映射；按职责拆分，不要求每个模块凑齐所有子目录
+- 页面由 locale layout 提供唯一的 `<main>`，内部组件不重复添加主内容地标
+- 读取密钥或只应在服务端执行的模块使用 `server-only` 标记；命令行也要使用的内容解析器保留在 `server/`，不引入客户端组件
 - 不在 `src/` 里放 Markdown 文档
+
+## 清理规则
+
+- 删除功能时同步移除路由、组件、样式入口、导航、翻译和静态资源，不保留注释掉的旧实现
+- 删除资源前检查源码、样式和内容引用；Next.js 的约定文件也是入口，不能只按 import 判断是否有用
+- 改动路由、模块边界或构建配置后运行 `bun check` 和 `bun run build`
 
 ## 多语言
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Globe, Menu, Monitor, Moon, Sun, UserRound, Users, X } from 'lucide-react';
+import { Globe, Menu, UserRound, Users, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties, RefObject } from 'react';
 import { createPortal } from 'react-dom';
@@ -9,6 +9,7 @@ import { useAuth } from '@/modules/auth/model/use-auth';
 import type { Player } from '@/modules/player/model/player-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { Link } from '@/shared/i18n/routing';
+import { ThemeSettings } from '@/site/theme/ui/theme-settings';
 
 interface SiteHeaderControlsProps {
   isLoadingPlayers: boolean;
@@ -22,7 +23,6 @@ interface SiteHeaderControlsProps {
   onMobileMenuToggle: () => void;
   onPlayerDropdownClose: () => void;
   onPlayerDropdownOpen: () => void;
-  onThemeToggle: () => void;
   playerCount: number;
   playerDropdownAnchorRef: RefObject<HTMLDivElement | null>;
   playerDropdownRect: DOMRect | null;
@@ -31,8 +31,6 @@ interface SiteHeaderControlsProps {
   statusNetworkErrorLabel: string;
   statusOfflineLabel: string;
   statusOnlineLabel: string;
-  theme: string | undefined;
-  themeTooltip: string;
 }
 
 export function SiteHeaderControls({
@@ -47,7 +45,6 @@ export function SiteHeaderControls({
   onMobileMenuToggle,
   onPlayerDropdownClose,
   onPlayerDropdownOpen,
-  onThemeToggle,
   playerCount,
   playerDropdownAnchorRef,
   playerDropdownRect,
@@ -56,15 +53,13 @@ export function SiteHeaderControls({
   statusNetworkErrorLabel,
   statusOfflineLabel,
   statusOnlineLabel,
-  theme,
-  themeTooltip,
 }: SiteHeaderControlsProps) {
   const accountT = useTranslations('nav.account');
   const { account, authenticated, isLoading: isLoadingAuth } = useAuth();
 
   return (
     <>
-      <div className="project-navbar-controls flex shrink-0 items-center gap-3 sm:gap-4">
+      <div className="project-navbar-controls flex shrink-0 items-center">
         <button
           type="button"
           onClick={onMobileMenuToggle}
@@ -76,24 +71,7 @@ export function SiteHeaderControls({
 
         <fieldset className="project-navbar-control-cluster">
           <legend className="sr-only">Display controls</legend>
-          <button
-            type="button"
-            onClick={onThemeToggle}
-            className="project-theme-toggle ui-nav-link hidden items-center gap-1.5 py-2 sm:inline-flex"
-            title={themeTooltip}
-          >
-            {mounted ? (
-              theme === 'dark' ? (
-                <Moon className="h-4 w-4" />
-              ) : theme === 'light' ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Monitor className="h-4 w-4" />
-              )
-            ) : (
-              <div className="h-4 w-4" />
-            )}
-          </button>
+          <ThemeSettings />
 
           <button
             type="button"

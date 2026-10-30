@@ -4,7 +4,7 @@ import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, MapPin, X } from 
 import type { Transition } from 'motion/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
@@ -20,6 +20,7 @@ import {
   BuildingTags,
   BuildingTypeBadge,
 } from '@/modules/building/ui/building-metadata';
+import { useModalInteraction } from '@/shared/hooks/use-modal-interaction';
 
 interface BuildingDetailsDialogProps {
   activeImage: string | undefined;
@@ -63,6 +64,9 @@ export function BuildingDetailsDialog({
   t,
 }: BuildingDetailsDialogProps) {
   const titleId = useId();
+  const detailsId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useModalInteraction(dialogRef, mounted && Boolean(building), onClose);
   const shouldReduceMotion = useReducedMotion();
   const buildingKey = building
     ? `${building.coordinates.x}:${building.coordinates.y}:${building.coordinates.z}:${building.buildDate}`
@@ -70,11 +74,11 @@ export function BuildingDetailsDialog({
   const [expandedState, setExpandedState] = useState<{
     buildingKey: string | null;
     expanded: boolean;
-  }>({ buildingKey, expanded: Boolean(buildingKey) });
+  }>({ buildingKey, expanded: false });
   const expanded = expandedState.buildingKey === buildingKey && expandedState.expanded;
 
   useEffect(() => {
-    setExpandedState({ buildingKey, expanded: Boolean(buildingKey) });
+    setExpandedState({ buildingKey, expanded: false });
   }, [buildingKey]);
 
   // Keyboard navigation
@@ -82,11 +86,6 @@ export function BuildingDetailsDialog({
     if (!building) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-        return;
-      }
       if (imageUrls.length < 2) return;
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
@@ -100,7 +99,7 @@ export function BuildingDetailsDialog({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [building, imageUrls.length, onClose, onNextImage, onPreviousImage]);
+  }, [building, imageUrls.length, onNextImage, onPreviousImage]);
 
   if (!mounted || !building) return null;
 
@@ -112,12 +111,17 @@ export function BuildingDetailsDialog({
 
   return createPortal(
     <AnimatePresence>
-      <motion.div
+      <motion.dialog
+        ref={dialogRef}
+        open
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         key="overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
         className="building-archive-overlay"
       >
         {/* Close button */}
@@ -125,7 +129,8 @@ export function BuildingDetailsDialog({
           type="button"
           onClick={onClose}
           aria-label={t('dialog.close')}
-          className="building-archive-close"
+          data-dialog-close
+          className="building-archive-close ui-floating-control"
         >
           <X className="h-5 w-5" />
         </button>
@@ -137,10 +142,10 @@ export function BuildingDetailsDialog({
               <motion.div
                 key={activeImage}
                 custom={imageTransitionDirection}
-                initial={{ opacity: 0, x: imageTransitionDirection * 60 }}
+                initial={{ opacity: 0, x: shouldReduceMotion ? 0 : imageTransitionDirection * 40 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: imageTransitionDirection * -60 }}
-                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, x: shouldReduceMotion ? 0 : imageTransitionDirection * -40 }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
                 className="building-archive-stage-image"
               >
                 <Image
@@ -171,29 +176,29 @@ export function BuildingDetailsDialog({
               </span>
             </div>
           ) : null}
-        </div>
 
-        {/* Navigation arrows */}
-        {hasMultipleImages && !imageLoading ? (
-          <>
-            <button
-              type="button"
-              onClick={onPreviousImage}
-              aria-label={t('dialog.previousImage')}
-              className="building-archive-nav building-archive-nav--prev"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button
-              type="button"
-              onClick={onNextImage}
-              aria-label={t('dialog.nextImage')}
-              className="building-archive-nav building-archive-nav--next"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          </>
-        ) : null}
+          {/* Navigation arrows */}
+          {hasMultipleImages && !imageLoading ? (
+            <>
+              <button
+                type="button"
+                onClick={onPreviousImage}
+                aria-label={t('dialog.previousImage')}
+                className="building-archive-nav building-archive-nav--prev"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={onNextImage}
+                aria-label={t('dialog.nextImage')}
+                className="building-archive-nav building-archive-nav--next"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          ) : null}
+        </div>
 
         {/* Bottom info bar */}
         <div className="building-archive-info-bar-frame">
@@ -238,21 +243,45 @@ export function BuildingDetailsDialog({
               </div>
 
               <div className="building-archive-info-bar__right">
-                {/* Image dots */}
                 {hasMultipleImages ? (
-                  <div className="building-archive-dots">
-                    {imageUrls.map((url, i) => (
-                      <button
-                        key={url}
-                        type="button"
-                        onClick={() => onSelectImage(i, imageUrls)}
-                        aria-label={t('dialog.currentImage', {
-                          current: i + 1,
-                          total: imageUrls.length,
-                        })}
-                        className={i === currentImageIndex ? 'is-active' : ''}
-                      />
-                    ))}
+                  <div className="building-archive-image-picker">
+                    <p className="building-archive-image-picker__count" aria-live="polite">
+                      {t('dialog.currentImage', {
+                        current: currentImageIndex + 1,
+                        total: imageUrls.length,
+                      })}
+                    </p>
+                    <div className="building-archive-thumbnails">
+                      {imageUrls.map((url, i) => (
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => onSelectImage(i, imageUrls)}
+                          aria-label={t('dialog.currentImage', {
+                            current: i + 1,
+                            total: imageUrls.length,
+                          })}
+                          aria-pressed={i === currentImageIndex}
+                          className={i === currentImageIndex ? 'is-active' : ''}
+                        >
+                          {isImageError(url) ? (
+                            <span>{i + 1}</span>
+                          ) : (
+                            <Image
+                              loader={passthroughImageLoader}
+                              src={url}
+                              alt=""
+                              fill
+                              sizes="64px"
+                              className="object-cover"
+                              unoptimized
+                              loading="lazy"
+                              onError={() => onImageError(url)}
+                            />
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
 
@@ -266,10 +295,12 @@ export function BuildingDetailsDialog({
                         previousState.buildingKey === buildingKey ? !previousState.expanded : true,
                     }))
                   }
-                  aria-label={expanded ? '收起详情' : '展开详情'}
+                  aria-label={expanded ? t('dialog.collapseDetails') : t('dialog.expandDetails')}
+                  aria-expanded={expanded}
+                  aria-controls={detailsId}
                   className={`building-archive-info-bar__expand ${expanded ? 'is-expanded' : ''}`}
                 >
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="building-archive-expand-icon h-4 w-4" />
                 </button>
               </div>
             </motion.div>
@@ -277,6 +308,8 @@ export function BuildingDetailsDialog({
             {/* Expanded details */}
             <div
               className={`building-archive-info-expanded ${expanded ? 'is-expanded' : 'is-collapsed'}`}
+              id={detailsId}
+              inert={!expanded}
               aria-hidden={!expanded}
             >
               <div className="building-archive-info-expanded__clip">
@@ -285,7 +318,7 @@ export function BuildingDetailsDialog({
                     <p className="building-archive-info-expanded__desc">
                       {getBuildingDescription(building, locale)}
                     </p>
-                    <BuildingSourceDetails building={building} locale={locale} compact t={t} />
+                    <BuildingSourceDetails building={building} locale={locale} t={t} />
                   </div>
                   {building.tags && building.tags.length > 0 ? (
                     <div className="building-archive-info-expanded__tags">
@@ -302,15 +335,7 @@ export function BuildingDetailsDialog({
             </div>
           </motion.div>
         </div>
-
-        {/* Click overlay background to close */}
-        <button
-          type="button"
-          className="building-archive-overlay-bg"
-          aria-label={t('dialog.close')}
-          onClick={onClose}
-        />
-      </motion.div>
+      </motion.dialog>
     </AnimatePresence>,
     document.body,
   );

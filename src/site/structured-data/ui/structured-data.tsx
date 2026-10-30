@@ -1,4 +1,3 @@
-import { routing } from '@/shared/i18n/routing';
 import {
   ORGANIZATION_DESCRIPTION,
   ORGANIZATION_LOGO_URL,
@@ -9,7 +8,8 @@ import {
   SITE_LOGO_PATH,
   SITE_NAME,
   SITE_URL,
-} from '@/site/config/site-config';
+} from '@/shared/config/site-config';
+import { routing } from '@/shared/i18n/routing';
 
 export default function StructuredData() {
   const structuredData = {

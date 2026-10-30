@@ -7,10 +7,6 @@ import type {
 
 export const WIKI_LOCALES = ['zh-CN', 'en'] as const satisfies readonly WikiLocale[];
 
-export function isWikiLocale(value: string): value is WikiLocale {
-  return WIKI_LOCALES.some((locale) => locale === value);
-}
-
 export function sortWikiSections(sections: WikiSectionDefinition[]): WikiSectionDefinition[] {
   return [...sections].sort((left, right) => {
     if (left.order !== right.order) {

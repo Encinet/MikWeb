@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
+import { SITE_NAME } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
-import { SITE_NAME } from '@/site/config/site-config';
 
 const OPEN_GRAPH_LOCALE_BY_APP_LOCALE: Record<AppLocale, string> = {
   'zh-CN': 'zh_CN',

@@ -58,12 +58,15 @@ export default function BuildingsPage() {
     >
       <div className="building-archive-controls">
         <BuildingCatalogControls
+          title={t('hero.title')}
+          clearSearchLabel={t('search.clear')}
           activeFilter={catalog.filter}
           filterOptions={catalog.filterOptions}
           onFilterChange={catalog.handleFilterChange}
           onSearchQueryChange={catalog.handleSearchChange}
           onSortChange={catalog.handleSortChange}
           searchPlaceholder={t('search.placeholder')}
+          sortLabel={t('sort.label')}
           searchQuery={catalog.query}
           sortBy={catalog.sort}
           sortOptions={catalog.sortOptions}

@@ -1,31 +1,13 @@
-import { CheckCircle2, Clipboard, PlugZap, Settings2 } from 'lucide-react';
-import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-
+import { McpConnectionDetails } from '@/modules/mcp/ui/mcp-connection-details';
+import { SITE_URL } from '@/shared/config/site-config';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
-import { CopyButton } from '@/shared/ui/action/copy-button';
 import { ArtGuidePage } from '@/shared/ui/page/art-guide-page';
-import { SITE_URL } from '@/site/config/site-config';
-import { buildPageMetadata } from '@/site/seo/build-page-metadata';
 
-const MCP_ROUTE = '/mcp';
 const MCP_API_ROUTE = '/api/mcp';
 
 interface McpPageParams {
   params: Promise<{ locale: string }>;
-}
-
-export async function generateMetadata({ params }: McpPageParams): Promise<Metadata> {
-  const { locale: rawLocale } = await params;
-  const locale = requireRouteLocale(rawLocale);
-  const t = await getTranslations({ locale, namespace: 'mcpPage' });
-
-  return buildPageMetadata({
-    locale,
-    title: t('title'),
-    description: t('description'),
-    pathname: MCP_ROUTE,
-  });
 }
 
 export default async function McpPage({ params }: McpPageParams) {
@@ -46,22 +28,14 @@ export default async function McpPage({ params }: McpPageParams) {
   );
   const setupSteps = [
     {
-      icon: Clipboard,
-      title: t('steps.copy.title'),
-      description: t('steps.copy.description'),
-    },
-    {
-      icon: Settings2,
       title: t('steps.client.title'),
       description: t('steps.client.description'),
     },
     {
-      icon: PlugZap,
       title: t('steps.connect.title'),
       description: t('steps.connect.description'),
     },
     {
-      icon: CheckCircle2,
       title: t('steps.done.title'),
       description: t('steps.done.description'),
     },
@@ -69,23 +43,20 @@ export default async function McpPage({ params }: McpPageParams) {
 
   return (
     <ArtGuidePage
-      badge={t('badge')}
       guideTitle={t('stepsTitle')}
       pageClassName="mcp-config-page"
-      panelClassName="mcp-config-panel"
       steps={setupSteps}
       subtitle={t('subtitle')}
       title={t('title')}
     >
-      <div className="mcp-config-copy">
-        <span>{t('configTitle')}</span>
-        <div className="mcp-config-code mcp-config-code--hero">
-          <pre>
-            <code>{configJson}</code>
-          </pre>
-          <CopyButton className="mcp-config-code__copy" value={configJson} />
-        </div>
-      </div>
+      <McpConnectionDetails
+        endpoint={mcpUrl}
+        configJson={configJson}
+        addressLabel={t('addressLabel')}
+        configLabel={t('configTitle')}
+        copyAddressLabel={t('copyAddress')}
+        copyConfigLabel={t('copyConfig')}
+      />
     </ArtGuidePage>
   );
 }

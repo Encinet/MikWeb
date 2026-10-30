@@ -2,12 +2,15 @@
 
 import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 import { startAuthentication } from '@simplewebauthn/browser';
-import { ArrowRight, Gamepad2, KeyRound, Loader2, ShieldCheck, X } from 'lucide-react';
+import { ArrowRight, Check, Copy, Gamepad2, KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/modules/auth/model/use-auth';
+import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
 import { Link, useRouter } from '@/shared/i18n/routing';
-import { useToast } from '@/shared/ui/feedback/toast-provider';
+import { AppDialog } from '@/shared/ui/dialog/app-dialog';
+import type { InlineFeedbackValue } from '@/shared/ui/feedback/async-state';
+import { InlineFeedback } from '@/shared/ui/feedback/async-state';
 
 interface LoginChallenge {
   challengeId: string;
@@ -19,8 +22,10 @@ export function LoginPage() {
   const t = useTranslations('auth.login');
   const router = useRouter();
   const { authenticated, refresh } = useAuth();
-  const { showToast, updateToast } = useToast();
+  const [feedback, setFeedback] = useState<InlineFeedbackValue | null>(null);
   const [challenge, setChallenge] = useState<LoginChallenge | null>(null);
+  const command = challenge ? `/weblogin ${challenge.displayCode}` : '';
+  const { status: copyStatus, copying, copy } = useCopyFeedback(command);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
   const [isCompletingChallenge, setIsCompletingChallenge] = useState(false);
@@ -36,9 +41,9 @@ export function LoginPage() {
 
       expiredChallengeRef.current = challengeId;
       setChallenge((current) => (current?.challengeId === challengeId ? null : current));
-      showToast({ title: t('states.expired'), variant: 'error' });
+      setFeedback({ message: t('states.expired'), kind: 'error' });
     },
-    [showToast, t],
+    [t],
   );
 
   const completeChallenge = useCallback(
@@ -49,9 +54,9 @@ export function LoginPage() {
 
       completingChallengeRef.current = true;
       setIsCompletingChallenge(true);
-      const toastId = showToast({
-        title: t('states.completing'),
-        variant: 'loading',
+      setFeedback({
+        message: t('states.completing'),
+        kind: 'loading',
       });
 
       try {
@@ -64,25 +69,27 @@ export function LoginPage() {
         );
 
         if (!response.ok) {
-          updateToast(toastId, {
-            title: t('states.memberRequired'),
-            variant: 'error',
+          setFeedback({
+            message: t('states.memberRequired'),
+            kind: 'error',
           });
           return;
         }
 
         await refresh();
-        updateToast(toastId, {
-          title: t('states.loginSuccess'),
-          variant: 'success',
+        setFeedback({
+          message: t('states.loginSuccess'),
+          kind: 'success',
         });
         router.replace('/account');
+      } catch {
+        setFeedback({ message: t('states.loginFailed'), kind: 'error' });
       } finally {
         setIsCompletingChallenge(false);
         completingChallengeRef.current = false;
       }
     },
-    [refresh, router, showToast, t, updateToast],
+    [refresh, router, t],
   );
 
   useEffect(() => {
@@ -134,18 +141,8 @@ export function LoginPage() {
     return () => window.clearInterval(timer);
   }, [challenge, expireChallenge]);
 
-  const copyLoginCommand = async (code: string) => {
-    try {
-      await navigator.clipboard.writeText(`/weblogin ${code}`);
-    } catch {
-      showToast({ title: t('states.copyFailed'), variant: 'error' });
-      return;
-    }
-
-    showToast({ title: t('states.copied'), variant: 'success' });
-  };
-
   const createChallenge = async () => {
+    setFeedback(null);
     setIsCreatingChallenge(true);
     try {
       const response = await fetch('/api/auth/challenges', {
@@ -155,12 +152,14 @@ export function LoginPage() {
       const payload = (await response.json()) as LoginChallenge;
 
       if (!response.ok) {
-        showToast({ title: t('states.unavailable'), variant: 'error' });
+        setFeedback({ message: t('states.unavailable'), kind: 'error' });
         return;
       }
 
       expiredChallengeRef.current = null;
       setChallenge(payload);
+    } catch {
+      setFeedback({ message: t('states.unavailable'), kind: 'error' });
     } finally {
       setIsCreatingChallenge(false);
     }
@@ -168,9 +167,9 @@ export function LoginPage() {
 
   const loginWithPasskey = async () => {
     setIsPasskeyLoading(true);
-    const toastId = showToast({
-      title: t('states.passkeyStarting'),
-      variant: 'loading',
+    setFeedback({
+      message: t('states.passkeyStarting'),
+      kind: 'loading',
     });
 
     try {
@@ -183,9 +182,9 @@ export function LoginPage() {
       };
 
       if (!optionsResponse.ok || !optionsPayload.options) {
-        updateToast(toastId, {
-          title: t('states.passkeyUnavailable'),
-          variant: 'error',
+        setFeedback({
+          message: t('states.passkeyUnavailable'),
+          kind: 'error',
         });
         return;
       }
@@ -199,23 +198,23 @@ export function LoginPage() {
       });
 
       if (!loginResponse.ok) {
-        updateToast(toastId, {
-          title: t('states.passkeyFailed'),
-          variant: 'error',
+        setFeedback({
+          message: t('states.passkeyFailed'),
+          kind: 'error',
         });
         return;
       }
 
       await refresh();
-      updateToast(toastId, {
-        title: t('states.loginSuccess'),
-        variant: 'success',
+      setFeedback({
+        message: t('states.loginSuccess'),
+        kind: 'success',
       });
       router.replace('/account');
     } catch (error) {
-      updateToast(toastId, {
-        title: t(passkeyAuthenticationErrorMessageKey(error)),
-        variant: 'info',
+      setFeedback({
+        message: t(passkeyAuthenticationErrorMessageKey(error)),
+        kind: 'info',
       });
     } finally {
       setIsPasskeyLoading(false);
@@ -225,7 +224,7 @@ export function LoginPage() {
   return (
     <div className="auth-login-page">
       <div className="auth-login-backdrop" aria-hidden="true" />
-      <main className="auth-login-stage">
+      <div className="auth-login-stage">
         <section className="auth-login-copy">
           <div className="auth-login-mark">
             <ShieldCheck className="h-6 w-6" />
@@ -277,52 +276,67 @@ export function LoginPage() {
           </button>
         </fieldset>
 
+        <InlineFeedback value={challenge ? null : feedback} className="auth-login-feedback" />
+
         {authenticated ? (
           <Link className="auth-login-account-link" href="/account">
             {t('actions.account')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         ) : null}
-      </main>
+      </div>
 
-      {challenge ? (
-        <div className="auth-login-code-overlay" role="presentation">
-          <div
-            className="auth-login-code-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="auth-login-code-title"
-          >
-            <button
-              type="button"
-              className="auth-login-code-close"
-              aria-label="Close"
-              onClick={() => setChallenge(null)}
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="auth-login-code-head">
-              <span>
-                <Gamepad2 className="h-4 w-4" />
-              </span>
-              <strong id="auth-login-code-title">{t('codePanel.title')}</strong>
-            </div>
+      <AppDialog
+        isOpen={Boolean(challenge)}
+        onClose={() => setChallenge(null)}
+        title={t('codePanel.title')}
+        icon={<Gamepad2 className="h-5 w-5" />}
+        className="auth-login-code-dialog"
+        descriptionId="auth-login-code-description"
+      >
+        {challenge ? (
+          <>
+            <p className="auth-login-code-description" id="auth-login-code-description">
+              {t('codePanel.instructions')}
+            </p>
             <button
               type="button"
               className="auth-login-code-value"
               aria-label={t('codePanel.copyLabel')}
-              title={t('codePanel.copyLabel')}
-              onClick={() => void copyLoginCommand(challenge.displayCode)}
+              aria-describedby="auth-login-copy-feedback"
+              aria-busy={copying || undefined}
+              disabled={copying}
+              onClick={() => void copy()}
             >
-              <span className="auth-login-code-command">/weblogin</span>
+              <span className="auth-login-code-command">/weblogin</span>{' '}
               <span className="auth-login-code-number">{challenge.displayCode}</span>
+              {copyStatus === 'copied' ? (
+                <Check className="auth-login-code-copy h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Copy className="auth-login-code-copy h-5 w-5" aria-hidden="true" />
+              )}
             </button>
-            <time dateTime={challenge.expiresAt}>
-              {t('codePanel.remaining', { time: formatRemainingTime(remainingSeconds) })}
-            </time>
-          </div>
-        </div>
-      ) : null}
+            <div className="auth-login-code-footer">
+              <span
+                id="auth-login-copy-feedback"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {copyStatus === 'copied'
+                  ? t('states.copied')
+                  : copyStatus === 'error'
+                    ? t('codePanel.copyFailed')
+                    : t('codePanel.copyHint')}
+              </span>
+              <time dateTime={challenge.expiresAt}>
+                {t('codePanel.remaining', { time: formatRemainingTime(remainingSeconds) })}
+              </time>
+            </div>
+            <InlineFeedback value={feedback} />
+          </>
+        ) : null}
+      </AppDialog>
     </div>
   );
 }

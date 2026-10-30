@@ -1,213 +1,104 @@
 'use client';
 
-import { AlertTriangle, Calendar, Clock, Shield, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-
-import type { BanItem } from '@/modules/ban/model/ban-types';
-import { isBanItemArray } from '@/modules/ban/model/ban-types';
-import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import { dataApiUrl } from '@/shared/api/data-api-url';
-import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
-import { SectionMessage } from '@/shared/ui/feedback/async-state';
-
-const BANS_BROWSER_CACHE_TTL_MS = 300_000;
-
-function BansLoadingState({ message }: { message: string }) {
-  return (
-    <div className="py-20 text-center">
-      <div
-        className="inline-block h-12 w-12 animate-spin rounded-full border-4"
-        style={{ borderColor: 'var(--theme-accent-red)', borderTopColor: 'transparent' }}
-      />
-      <p className="mt-6 text-lg" style={{ color: 'var(--theme-text-muted)' }}>
-        {message}
-      </p>
-    </div>
-  );
-}
+import { useDeferredValue, useMemo, useState } from 'react';
+import { BANS_PAGE_SIZE, filterBanEntries } from '@/modules/ban/lib/ban-catalog';
+import { useBans } from '@/modules/ban/model/use-bans';
+import { BanRecordList } from '@/modules/ban/ui/ban-record-list';
+import { SearchField } from '@/shared/ui/form/search-field';
+import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
 
 export default function BansPage() {
-  const bansT = useTranslations('bans');
-  const commonT = useTranslations('common');
+  const t = useTranslations('bans');
   const locale = useLocale();
-  const [banEntries, setBanEntries] = useState<BanItem[]>([]);
-  const [isLoadingBanEntries, setIsLoadingBanEntries] = useState(true);
-  const [banEntriesError, setBanEntriesError] = useState<string | null>(null);
+  const { entries, isLoading, error, retry } = useBans(t('states.error'));
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
+  const [visibleCount, setVisibleCount] = useState(BANS_PAGE_SIZE);
+  const filtered = useMemo(
+    () => filterBanEntries(entries, deferredQuery),
+    [entries, deferredQuery],
+  );
 
-  useEffect(() => {
-    const fetchBans = async () => {
-      const bansResult = await fetchValidatedJson({
-        url: dataApiUrl('/bans'),
-        validate: isBanItemArray,
-        timeoutMs: 15_000,
-        browserCache: {
-          ttlMs: BANS_BROWSER_CACHE_TTL_MS,
-        },
-        fallbackErrorMessage: commonT('states.error'),
-      });
-
-      if (bansResult.status === 'success') {
-        setBanEntries(
-          [...bansResult.data].sort(
-            (leftBanEntry, rightBanEntry) =>
-              new Date(rightBanEntry.bannedAt).getTime() -
-              new Date(leftBanEntry.bannedAt).getTime(),
-          ),
-        );
-        setBanEntriesError(null);
-      } else {
-        if (bansResult.status === 'network-error') {
-          console.error('Failed to fetch bans:', bansResult.cause);
-        }
-        setBanEntriesError(bansResult.error);
-        setBanEntries([]);
-      }
-      setIsLoadingBanEntries(false);
-    };
-    fetchBans();
-  }, [commonT]);
-
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const updateQuery = (value: string) => {
+    setQuery(value);
+    setVisibleCount(BANS_PAGE_SIZE);
   };
-
   return (
     <div
       className="page-shell page-shell-stable bans-page print-page-title"
-      data-print-title={bansT('meta.title')}
+      data-print-title={t('meta.title')}
     >
-      <div className="page-shell-content max-w-7xl mx-auto">
-        {/* ── States ── */}
-        <div className="page-state-region">
-          {isLoadingBanEntries ? (
-            <BansLoadingState message={bansT('states.loading')} />
-          ) : banEntriesError ? (
-            <SectionMessage
-              body={banEntriesError}
-              icon={Shield}
-              iconColor="var(--theme-accent-red)"
-              title={commonT('states.error')}
+      <div className="bans-page__inner page-shell-content">
+        <ContentBrowserHeader
+          title={t('hero.title')}
+          search={
+            <SearchField
+              label={t('search.placeholder')}
+              placeholder={t('search.placeholder')}
+              clearLabel={t('search.clear')}
+              value={query}
+              onChange={(event) => updateQuery(event.target.value)}
+              onClear={() => updateQuery('')}
             />
-          ) : banEntries.length === 0 ? (
-            <SectionMessage
-              body={bansT('states.empty')}
-              icon={Shield}
-              iconColor="var(--theme-text-faint)"
-            />
-          ) : (
-            /* Masonry: cards flow naturally by content height */
-            <div className="columns-1 sm:columns-2 xl:columns-3 gap-4">
-              {banEntries.map((banEntry, banEntryIndex) => (
-                <div
-                  key={banEntry.playerUuid}
-                  className="ui-card-surface ui-card-interactive animate-card-enter group mb-4 break-inside-avoid overflow-hidden rounded-2xl"
-                  style={{
-                    animationDelay: `${banEntryIndex * 0.04}s`,
-                  }}
-                >
-                  <div className="p-5">
-                    {/* ── Avatar + name + uuid ── */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <MinecraftAvatar
-                        uuid={banEntry.playerUuid}
-                        name={banEntry.playerName}
-                        size={56}
-                        className="w-14 h-14 rounded-xl shrink-0"
-                        style={{ boxShadow: '0 1px 3px var(--theme-shadow-glass)' }}
-                      />
-                      <div className="min-w-0">
-                        <h3
-                          className="text-lg font-bold leading-tight"
-                          style={{ color: 'var(--theme-text-heading)' }}
-                        >
-                          {banEntry.playerName}
-                        </h3>
-                        <p
-                          className="text-xs font-mono mt-0.5 select-all"
-                          style={{ color: 'var(--theme-text-muted)', wordBreak: 'break-all' }}
-                        >
-                          {banEntry.playerUuid}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* ── Divider ── */}
-                    <div className="ui-card-divider mb-3" />
-
-                    {/* ── Reason ── */}
-                    <div className="flex items-start gap-2 mb-4">
-                      <AlertTriangle
-                        className="mt-0.5 h-4 w-4 shrink-0"
-                        style={{ color: 'var(--theme-accent-red)' }}
-                      />
-                      <div className="text-sm">
-                        <span style={{ color: 'var(--theme-text-muted)' }}>
-                          {bansT('fields.reason')}:{' '}
-                        </span>
-                        <span style={{ color: 'var(--theme-text-primary)' }}>
-                          {banEntry.reason}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* ── Meta ── */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <User
-                          className="w-4 h-4 shrink-0"
-                          style={{ color: 'var(--theme-accent-purple)' }}
-                        />
-                        <span style={{ color: 'var(--theme-text-muted)' }}>
-                          {bansT('fields.bannedBy')}:
-                        </span>
-                        <span
-                          className="font-medium"
-                          style={{ color: 'var(--theme-accent-purple)' }}
-                        >
-                          {banEntry.bannedBy}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar
-                          className="w-4 h-4 shrink-0"
-                          style={{ color: 'var(--theme-accent-blue)' }}
-                        />
-                        <span style={{ color: 'var(--theme-text-muted)' }}>
-                          {bansT('fields.bannedAt')}:
-                        </span>
-                        <span style={{ color: 'var(--theme-accent-blue)' }}>
-                          {formatDate(banEntry.bannedAt)}
-                        </span>
-                      </div>
-
-                      {!banEntry.isPermanent && banEntry.expiresAt ? (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock
-                            className="h-4 w-4 shrink-0"
-                            style={{ color: 'var(--theme-accent-amber-strong)' }}
-                          />
-                          <span style={{ color: 'var(--theme-text-muted)' }}>
-                            {bansT('fields.expiresAt')}:
-                          </span>
-                          <span style={{ color: 'var(--theme-accent-amber-strong)' }}>
-                            {formatDate(banEntry.expiresAt)}
-                          </span>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              ))}
+          }
+        />
+        <div className="page-state-region" aria-busy={isLoading}>
+          {isLoading ? (
+            <div className="bans-loading" role="status">
+              <span className="bans-loading__indicator" aria-hidden="true" />
+              <p>{t('states.loading')}</p>
             </div>
+          ) : error ? (
+            <div className="bans-state" role="alert">
+              <h2>{t('states.error')}</h2>
+              {error !== t('states.error') ? <p>{error}</p> : null}
+              <button type="button" className="bans-action" onClick={() => void retry()}>
+                {t('actions.retry')}
+              </button>
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="bans-state">
+              <p>{t('states.empty')}</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="bans-state">
+              <p>{t('states.noResults')}</p>
+              <button type="button" className="bans-action" onClick={() => updateQuery('')}>
+                {t('search.clear')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <BanRecordList
+                entries={filtered.slice(0, visibleCount)}
+                locale={locale}
+                summary={
+                  deferredQuery.trim()
+                    ? t('resultsCount', { count: filtered.length, total: entries.length })
+                    : t('recordsCount', { count: entries.length })
+                }
+              />
+              {visibleCount < filtered.length ? (
+                <div className="bans-load-more">
+                  <p className="bans-visible-count">
+                    {t('shownCount', {
+                      count: Math.min(visibleCount, filtered.length),
+                      total: filtered.length,
+                    })}
+                  </p>
+                  <button
+                    type="button"
+                    className="bans-action"
+                    onClick={() => setVisibleCount((count) => count + BANS_PAGE_SIZE)}
+                  >
+                    {t('actions.loadMore', {
+                      count: Math.min(BANS_PAGE_SIZE, filtered.length - visibleCount),
+                    })}
+                  </button>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, MapPin } from 'lucide-react';
+import { Building2, Images, MapPin } from 'lucide-react';
 import Image from 'next/image';
 
 import { getBuildingImages } from '@/modules/building/lib/building-catalog';
@@ -10,7 +10,7 @@ import {
 } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
-import { BuilderSummary, BuildingTypeBadge } from '@/modules/building/ui/building-metadata';
+import { BuilderSummary } from '@/modules/building/ui/building-metadata';
 
 interface BuildingCardProps {
   building: Building;
@@ -33,9 +33,6 @@ export function BuildingCard({
   const coverImage = buildingImages.find((imageUrl) => !isImageError(imageUrl));
   const buildingName = getBuildingName(building, locale);
 
-  const maxVisibleDots = 4;
-  const dotImages = buildingImages.slice(0, maxVisibleDots);
-
   return (
     <button type="button" onClick={() => onOpen(building)} className="building-archive-card">
       <div className="building-archive-card__media">
@@ -45,7 +42,7 @@ export function BuildingCard({
             src={coverImage}
             alt={buildingName}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1392px) 25vw, 320px"
             className="object-cover"
             unoptimized
             loading="lazy"
@@ -57,40 +54,21 @@ export function BuildingCard({
           </div>
         )}
 
-        {/* Type — corner badge */}
-        <span
-          className={`building-archive-card__type-badge building-archive-card__type-badge--${building.buildType}`}
-        >
-          <BuildingTypeBadge buildType={building.buildType} compact t={t} />
-        </span>
-
-        {/* Image count — dot indicator */}
         {buildingImages.length > 1 ? (
-          <span className="building-archive-card__dot-indicator" aria-hidden="true">
-            {dotImages.map((imageUrl, index) => (
-              <span key={imageUrl} className={index === 0 ? 'is-active' : ''} />
-            ))}
-            {buildingImages.length > maxVisibleDots ? (
-              <span
-                style={{
-                  background: 'transparent',
-                  boxShadow: 'none',
-                  color: 'rgba(255,250,240,0.55)',
-                  fontSize: '8px',
-                  lineHeight: '5px',
-                  fontWeight: 700,
-                }}
-              >
-                +{buildingImages.length - maxVisibleDots + 1}
-              </span>
-            ) : null}
+          <span className="building-archive-card__image-count">
+            <Images className="h-3.5 w-3.5" aria-hidden="true" />
+            <span aria-hidden="true">{buildingImages.length}</span>
+            <span className="sr-only">{t('imagesCount', { count: buildingImages.length })}</span>
           </span>
         ) : null}
       </div>
 
       {/* Info band — always visible */}
       <div className="building-archive-card__info">
-        <h3>{buildingName}</h3>
+        <div className="building-archive-card__heading">
+          <h2>{buildingName}</h2>
+          <span className="building-archive-card__type">{t(`types.${building.buildType}`)}</span>
+        </div>
         <span className="coords">
           <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
           {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}

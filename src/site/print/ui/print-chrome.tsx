@@ -1,12 +1,11 @@
 import Image from 'next/image';
-
-import type { AppLocale } from '@/shared/i18n/routing';
 import {
   ORGANIZATION_NAME,
   SITE_LOGO_PATH,
   SITE_SOCIAL_PREVIEW_COPY,
   SITE_URL,
-} from '@/site/config/site-config';
+} from '@/shared/config/site-config';
+import type { AppLocale } from '@/shared/i18n/routing';
 
 export function PrintHeader({ locale }: { locale: AppLocale }) {
   const brand = SITE_SOCIAL_PREVIEW_COPY[locale];

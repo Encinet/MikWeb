@@ -1,9 +1,8 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
-
+import { getPcl2HomepagePath } from '@/modules/pcl2/lib/pcl2-homepage-path';
 import { loadPcl2HomepageData } from '@/modules/pcl2/server/pcl2-homepage-data';
 import { isRoutingLocale } from '@/shared/i18n/routing';
-import { getPcl2HomepagePath } from '@/site/config/site-config';
 
 export const dynamic = 'force-dynamic';
 

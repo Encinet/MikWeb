@@ -1,38 +1,32 @@
 'use client';
 
 import { Bell } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
-import {
-  formatAnnouncementDate,
-  getAnnouncementDateTimeValue,
-} from '@/modules/announcement/lib/format-announcement-date';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
-import { GlassSkeletonCard, SectionMessage, SkeletonLine } from '@/shared/ui/feedback/async-state';
+import { AnnouncementDialogFeed } from '@/modules/announcement/ui/announcement-dialog-feed';
+import { SectionMessage, SkeletonLine } from '@/shared/ui/feedback/async-state';
 
-const ANNOUNCEMENT_PREVIEW_SKELETON_IDS = ['preview-a', 'preview-b', 'preview-c'] as const;
 const ANNOUNCEMENT_DIALOG_SKELETON_IDS = ['dialog-a', 'dialog-b', 'dialog-c', 'dialog-d'] as const;
 
 interface AnnouncementFeedContentProps {
   announcements: AnnouncementItem[];
   errorMessage: string | null;
   isLoading: boolean;
-  variant: 'preview' | 'dialog';
+  selectedAnnouncementKey?: string | null;
 }
 
 export function AnnouncementFeedContent({
   announcements,
   errorMessage,
   isLoading,
-  variant,
+  selectedAnnouncementKey,
 }: AnnouncementFeedContentProps) {
-  const locale = useLocale();
   const t = useTranslations();
   const commonT = useTranslations('common');
-  const isDialog = variant === 'dialog';
 
   if (isLoading) {
-    return <AnnouncementSkeletonList isDialog={isDialog} />;
+    return <AnnouncementSkeletonList />;
   }
 
   if (errorMessage) {
@@ -42,7 +36,7 @@ export function AnnouncementFeedContent({
         className="py-12"
         icon={Bell}
         iconClassName="mx-auto mb-4 h-12 w-12"
-        iconColor="var(--theme-accent-green-strong)"
+        iconColor="var(--theme-accent-strong)"
         title={commonT('states.error')}
       />
     );
@@ -60,148 +54,25 @@ export function AnnouncementFeedContent({
     );
   }
 
-  const visibleAnnouncements = isDialog ? announcements : announcements.slice(0, 3);
-
   return (
-    <div className={isDialog ? 'space-y-2.5' : 'space-y-3 sm:space-y-4'}>
-      {visibleAnnouncements.map((announcement, announcementIndex) => (
-        <AnnouncementEntryCard
-          key={buildAnnouncementKey(announcement)}
-          animationDelay={isDialog ? undefined : `${announcementIndex * 0.1}s`}
-          announcement={announcement}
-          dateTime={getAnnouncementDateTimeValue(announcement.timestamp)}
-          formattedDate={formatAnnouncementDate(announcement.timestamp, locale)}
-          variant={variant}
-        />
-      ))}
-      {!isDialog && announcements.length > 3 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            color: 'var(--theme-text-muted)',
-            fontSize: 'clamp(0.875rem, 2vw, 1rem)',
-            marginTop: '1rem',
-          }}
-        >
-          {t('home.announcements.actions.viewAll')}
-        </div>
-      ) : null}
-    </div>
+    <AnnouncementDialogFeed
+      announcements={announcements}
+      selectedAnnouncementKey={selectedAnnouncementKey}
+    />
   );
 }
 
-interface AnnouncementEntryCardProps {
-  announcement: AnnouncementItem;
-  dateTime: string;
-  formattedDate: string;
-  variant: 'preview' | 'dialog';
-  animationDelay?: string;
-}
-
-function AnnouncementEntryCard({
-  announcement,
-  dateTime,
-  formattedDate,
-  variant,
-  animationDelay,
-}: AnnouncementEntryCardProps) {
-  const isDialog = variant === 'dialog';
-  const shouldAnimateOnEnter = !isDialog && animationDelay !== undefined;
-
+function AnnouncementSkeletonList() {
   return (
-    <div
-      className={[
-        'ui-card-surface ui-card-surface--soft',
-        isDialog ? 'ui-card-interactive' : '',
-        shouldAnimateOnEnter ? 'animate-card-enter' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      style={{
-        borderRadius: isDialog ? '12px' : '12px',
-        padding: isDialog ? '0.875rem 1rem' : 'clamp(1rem, 3vw, 1.5rem)',
-        animationDelay: shouldAnimateOnEnter ? animationDelay : undefined,
-      }}
-    >
-      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-        <div
-          style={{
-            width: isDialog ? '10px' : '8px',
-            height: isDialog ? '10px' : '8px',
-            marginTop: '8px',
-            background: 'var(--theme-accent-green-strong)',
-            borderRadius: '50%',
-            flexShrink: 0,
-          }}
-        />
-        <div className="min-w-0 flex-1">
-          <time
-            dateTime={dateTime}
-            style={{
-              fontSize: isDialog ? '0.75rem' : 'clamp(0.75rem, 1.5vw, 0.875rem)',
-              color: 'var(--theme-text-muted)',
-              marginBottom: isDialog ? '6px' : '8px',
-              fontWeight: isDialog ? 500 : undefined,
-            }}
-          >
-            {formattedDate}
-          </time>
-          <div
-            style={{
-              color: 'var(--theme-text-primary)',
-              lineHeight: isDialog ? 1.65 : 1.75,
-              whiteSpace: 'pre-line',
-              fontSize: isDialog ? '0.9375rem' : 'clamp(0.875rem, 2vw, 1rem)',
-            }}
-          >
-            {announcement.content}
-          </div>
+    <div className="announcement-dialog-skeleton" aria-hidden="true">
+      {ANNOUNCEMENT_DIALOG_SKELETON_IDS.map((id) => (
+        <div key={id} className="announcement-dialog-skeleton__entry">
+          <SkeletonLine className="mb-4" tone="soft" width="30%" />
+          <SkeletonLine className="mb-3" tone="soft" width="95%" />
+          <SkeletonLine className="mb-3" tone="soft" width="88%" />
+          <SkeletonLine tone="soft" width="65%" />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function AnnouncementSkeletonList({ isDialog }: { isDialog: boolean }) {
-  const skeletonIds = isDialog
-    ? ANNOUNCEMENT_DIALOG_SKELETON_IDS
-    : ANNOUNCEMENT_PREVIEW_SKELETON_IDS;
-
-  return (
-    <div className="space-y-3 sm:space-y-4">
-      {skeletonIds.map((skeletonId) => (
-        <GlassSkeletonCard
-          key={`announcement-skeleton-${skeletonId}`}
-          className="ui-card-surface--soft"
-          style={{
-            borderRadius: isDialog ? '12px' : '12px',
-            padding: isDialog ? '0.875rem 1rem' : 'clamp(1rem, 3vw, 1.5rem)',
-          }}
-        >
-          <div className="flex items-start gap-3 sm:gap-4">
-            <div
-              style={{
-                width: isDialog ? '10px' : '8px',
-                height: isDialog ? '10px' : '8px',
-                marginTop: '8px',
-                borderRadius: '50%',
-                flexShrink: 0,
-                background: 'color-mix(in srgb, var(--theme-accent-green-strong) 36%, transparent)',
-              }}
-            />
-            <div className="min-w-0 flex-1">
-              <SkeletonLine className="mb-3" tone="soft" width="32%" />
-              <SkeletonLine className="mb-2.5" tone="soft" width="95%" />
-              <SkeletonLine className="mb-2.5" tone="soft" width="88%" />
-              <SkeletonLine tone="soft" width={isDialog ? '76%' : '64%'} />
-            </div>
-          </div>
-        </GlassSkeletonCard>
       ))}
     </div>
   );
-}
-
-function buildAnnouncementKey(announcement: AnnouncementItem) {
-  return `${announcement.timestamp}-${announcement.content.slice(0, 24)}`;
 }

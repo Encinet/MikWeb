@@ -1,99 +1,16 @@
 'use client';
 
-import { BookOpen, ChevronRight, Menu, X } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
-import { useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import {
-  iconMap,
-  navContainer,
-  navItem,
-  popupItem,
-  spring,
-  wikiPanelSurfaceClassName,
-} from '@/modules/wiki/lib/wiki-browser-config';
+import { BookOpen, ChevronDown } from 'lucide-react';
+import { useEffect, useId, useRef } from 'react';
+import { getWikiSectionHref } from '@/modules/wiki/lib/wiki-outline';
 import type {
   WikiSectionGroupDefinition,
   WikiSectionId,
 } from '@/modules/wiki/model/wiki-section-types';
-
-interface IndicatorRect {
-  height: number;
-  top: number;
-}
-
-const selectionBackgroundStyle = {
-  background: 'color-mix(in srgb, var(--theme-accent-green-strong) 9%, transparent)',
-  border: '1px solid color-mix(in srgb, var(--theme-accent-green-strong) 18%, transparent)',
-} as const;
-
-function FabIcon({ open }: { open: boolean }) {
-  return (
-    <AnimatePresence mode="popLayout" initial={false}>
-      <motion.span
-        key={open ? 'close' : 'open'}
-        initial={{ rotate: open ? -45 : 45, opacity: 0, scale: 0.6 }}
-        animate={{ rotate: 0, opacity: 1, scale: 1, transition: spring.fab }}
-        exit={{ rotate: open ? 45 : -45, opacity: 0, scale: 0.6, transition: { duration: 0.14 } }}
-        style={{ display: 'flex' }}
-      >
-        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </motion.span>
-    </AnimatePresence>
-  );
-}
-
-function ActivePill({ layoutId }: { layoutId: string }) {
-  return (
-    <motion.span
-      layoutId={layoutId}
-      className="pointer-events-none absolute inset-0 z-0 rounded-lg"
-      style={selectionBackgroundStyle}
-      transition={spring.wobbly}
-    />
-  );
-}
-
-function FloatingActiveIndicator({ rect }: { rect: IndicatorRect | null }) {
-  return (
-    <div className="pointer-events-none absolute inset-0">
-      {rect ? (
-        <motion.div
-          className="absolute right-0 left-0 rounded-lg"
-          initial={false}
-          animate={{
-            height: rect.height,
-            opacity: 1,
-            top: rect.top,
-          }}
-          transition={spring.wobbly}
-          style={selectionBackgroundStyle}
-        />
-      ) : null}
-    </div>
-  );
-}
-
-function measureIndicatorRect(
-  container: HTMLElement | null,
-  element: HTMLElement | null,
-): IndicatorRect | null {
-  if (!container || !element) {
-    return null;
-  }
-
-  const containerRect = container.getBoundingClientRect();
-  const elementRect = element.getBoundingClientRect();
-
-  return {
-    height: elementRect.height,
-    top: elementRect.top - containerRect.top,
-  };
-}
+import { iconMap } from '@/modules/wiki/ui/wiki-icons';
 
 interface WikiNavigationProps {
   activeSection: WikiSectionId;
-  hasMounted: boolean;
   isSearching: boolean;
   isSidebarOpen: boolean;
   navigationLabel: string;
@@ -104,7 +21,6 @@ interface WikiNavigationProps {
 
 export function WikiNavigation({
   activeSection,
-  hasMounted,
   isSearching,
   isSidebarOpen,
   navigationLabel,
@@ -112,246 +28,77 @@ export function WikiNavigation({
   onSidebarOpenChange,
   sectionGroups,
 }: WikiNavigationProps) {
-  const desktopStickyTop =
-    'calc(var(--app-header-offset) + var(--viewport-top-inset) + var(--floating-gap))';
-  const desktopStickyMaxHeight =
-    'calc(var(--viewport-height-dynamic) - var(--app-header-offset) - var(--viewport-top-inset) - var(--viewport-bottom-inset) - 2rem)';
-  const desktopScrollAreaMaxHeight =
-    'calc(var(--viewport-height-dynamic) - var(--app-header-offset) - var(--viewport-top-inset) - var(--viewport-bottom-inset) - 7.5rem)';
-  const desktopScrollViewportRef = useRef<HTMLDivElement | null>(null);
-  const desktopButtonRefs = useRef(new Map<WikiSectionId, HTMLButtonElement>());
-  const [desktopIndicatorRect, setDesktopIndicatorRect] = useState<IndicatorRect | null>(null);
+  const navigationId = useId();
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const activeLabel = sectionGroups
+    .flatMap((group) => group.sections)
+    .find((section) => section.id === activeSection)?.label;
 
-  useLayoutEffect(() => {
-    const updateDesktopIndicator = () => {
-      if (isSearching) {
-        setDesktopIndicatorRect(null);
-        return;
-      }
-
-      setDesktopIndicatorRect(
-        measureIndicatorRect(
-          desktopScrollViewportRef.current,
-          desktopButtonRefs.current.get(activeSection) ?? null,
-        ),
-      );
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      onSidebarOpenChange(false);
+      toggleRef.current?.focus();
     };
-
-    updateDesktopIndicator();
-
-    const resizeObserver =
-      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateDesktopIndicator);
-
-    if (desktopScrollViewportRef.current) {
-      resizeObserver?.observe(desktopScrollViewportRef.current);
-    }
-
-    const activeButton = desktopButtonRefs.current.get(activeSection);
-    if (activeButton) {
-      resizeObserver?.observe(activeButton);
-    }
-
-    const viewportElement = desktopScrollViewportRef.current;
-    viewportElement?.addEventListener('scroll', updateDesktopIndicator, { passive: true });
-    window.addEventListener('resize', updateDesktopIndicator);
-
-    return () => {
-      viewportElement?.removeEventListener('scroll', updateDesktopIndicator);
-      window.removeEventListener('resize', updateDesktopIndicator);
-      resizeObserver?.disconnect();
-    };
-  }, [activeSection, isSearching]);
-
-  const mobileFab = (
-    <div className="safe-floating-bottom-right fixed z-50 flex flex-col items-end gap-2 lg:hidden">
-      <AnimatePresence>
-        {isSidebarOpen ? (
-          <motion.div
-            key="mobile-nav"
-            initial={{ opacity: 0, scale: 0.88, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0, transition: spring.bouncy }}
-            exit={{
-              opacity: 0,
-              scale: 0.88,
-              y: 12,
-              transition: {
-                duration: 0.18,
-                ease: [0.4, 0, 1, 1] as [number, number, number, number],
-              },
-            }}
-            className={`${wikiPanelSurfaceClassName} wiki-mobile-nav`}
-            style={{
-              transformOrigin: 'bottom right',
-            }}
-          >
-            <motion.nav
-              className="space-y-3"
-              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-              initial="hidden"
-              animate="show"
-            >
-              {sectionGroups.map((group) => (
-                <div key={group.id}>
-                  <p className="wiki-navigation__group-label">{group.label}</p>
-                  <div className="space-y-1">
-                    {group.sections.map((section) => {
-                      const Icon = iconMap.get(section.icon) ?? BookOpen;
-                      const isActive = !isSearching && activeSection === section.id;
-
-                      return (
-                        <motion.button
-                          key={section.id}
-                          type="button"
-                          variants={popupItem}
-                          transition={spring.snappy}
-                          onClick={() => onSectionChange(section.id)}
-                          className={`wiki-navigation__item wiki-navigation__item--mobile ${isActive ? 'is-active' : ''}`}
-                          whileHover={{ x: 3, transition: spring.snappy }}
-                          whileTap={{ scale: 0.95, transition: spring.snappy }}
-                        >
-                          {isActive ? <ActivePill layoutId="mobile-pill" /> : null}
-                          <Icon className="relative z-10 h-4 w-4 shrink-0" />
-                          <span className="relative z-10 text-sm font-medium">{section.label}</span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </motion.nav>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-
-      <motion.button
-        onClick={() => onSidebarOpenChange(!isSidebarOpen)}
-        className="wiki-mobile-nav__button"
-        whileHover={{ scale: 1.12, transition: spring.snappy }}
-        whileTap={{ scale: 0.88, transition: spring.fab }}
-      >
-        <FabIcon open={isSidebarOpen} />
-      </motion.button>
-    </div>
-  );
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isSidebarOpen, onSidebarOpenChange]);
 
   return (
-    <>
-      {hasMounted ? createPortal(mobileFab, document.body) : null}
-
-      <aside className="hidden self-start lg:sticky lg:block" style={{ top: desktopStickyTop }}>
-        <div
-          className={`${wikiPanelSurfaceClassName} wiki-navigation`}
-          style={{
-            maxHeight: desktopStickyMaxHeight,
-          }}
-        >
-          <h3 className="wiki-navigation__title">{navigationLabel}</h3>
-
-          <div
-            className="relative"
-            style={{
-              maxHeight: desktopScrollAreaMaxHeight,
-            }}
-          >
-            <div className="pointer-events-none absolute inset-y-0 left-0 right-1">
-              <FloatingActiveIndicator rect={desktopIndicatorRect} />
-            </div>
-
-            <motion.nav
-              className="space-y-5 overflow-x-hidden overflow-y-auto pr-1"
-              variants={navContainer}
-              initial="hidden"
-              animate="show"
-              ref={desktopScrollViewportRef}
-              style={{
-                maxHeight: desktopScrollAreaMaxHeight,
-              }}
-            >
-              {sectionGroups.map((group) => (
-                <div key={group.id}>
-                  <p className="wiki-navigation__group-label">{group.label}</p>
-
-                  <div className="space-y-1">
-                    {group.sections.map((section) => {
-                      const Icon = iconMap.get(section.icon) ?? BookOpen;
-                      const isActive = !isSearching && activeSection === section.id;
-
-                      return (
-                        <motion.button
-                          key={section.id}
-                          type="button"
-                          ref={(element) => {
-                            if (element) {
-                              desktopButtonRefs.current.set(section.id, element);
-                              return;
-                            }
-
-                            desktopButtonRefs.current.delete(section.id);
-                          }}
-                          variants={navItem}
-                          onClick={() => onSectionChange(section.id)}
-                          className={`wiki-navigation__item ${isActive ? 'is-active' : ''}`}
-                          whileHover={{
-                            backgroundColor: 'var(--theme-surface-hover)',
-                            x: isActive ? 0 : 4,
-                            transition: spring.snappy,
-                          }}
-                          whileTap={{ scale: 0.97, transition: spring.fab }}
-                        >
-                          {isActive ? (
-                            <motion.span
-                              key={`${section.id}-${activeSection}`}
-                              className="relative z-10 mt-0.5"
-                              initial={{ rotate: -18, scale: 0.82, x: -6, y: 1 }}
-                              animate={{
-                                rotate: [-18, 10, -6, 0],
-                                scale: [0.82, 1.18, 0.97, 1],
-                                x: [-6, 2, -1, 0],
-                                y: [1, -1, 0, 0],
-                              }}
-                              transition={{
-                                duration: 0.52,
-                                times: [0, 0.42, 0.76, 1],
-                                ease: [0.22, 1, 0.36, 1],
-                              }}
-                            >
-                              <Icon className="h-4 w-4 shrink-0" />
-                            </motion.span>
-                          ) : (
-                            <span className="relative z-10 mt-0.5">
-                              <Icon className="h-4 w-4 shrink-0" />
-                            </span>
-                          )}
-
-                          <span className="relative z-10 min-w-0">
-                            <span className="block text-sm font-medium">{section.label}</span>
-                            <span className="wiki-navigation__item-description">
-                              {section.description}
-                            </span>
-                          </span>
-
-                          <motion.span
-                            className="relative z-10 mt-0.5 ml-auto flex h-4 w-4 shrink-0 items-center justify-center"
-                            initial={false}
-                            animate={{
-                              opacity: isActive ? 1 : 0,
-                              x: isActive ? 0 : -6,
-                              rotate: isActive ? 0 : -20,
-                            }}
-                            transition={isActive ? spring.bouncy : { duration: 0.15 }}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </motion.span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </motion.nav>
+    <aside className="wiki-navigation">
+      <button
+        ref={toggleRef}
+        type="button"
+        className="wiki-navigation__toggle"
+        aria-expanded={isSidebarOpen}
+        aria-controls={navigationId}
+        onClick={() => onSidebarOpenChange(!isSidebarOpen)}
+      >
+        <BookOpen className="h-4 w-4" aria-hidden="true" />
+        <span>{navigationLabel}</span>
+        <span className="wiki-navigation__current">{activeLabel}</span>
+        <ChevronDown className="wiki-navigation__chevron h-4 w-4" aria-hidden="true" />
+      </button>
+      <nav
+        id={navigationId}
+        aria-label={navigationLabel}
+        className={`wiki-navigation__groups ${isSidebarOpen ? 'is-open' : ''}`}
+      >
+        {sectionGroups.map((group) => (
+          <div key={group.id} className="wiki-navigation__group">
+            <p className="wiki-navigation__group-label">{group.label}</p>
+            {group.sections.map((section) => {
+              const Icon = iconMap.get(section.icon) ?? BookOpen;
+              const isActive = !isSearching && activeSection === section.id;
+              return (
+                <a
+                  key={section.id}
+                  href={getWikiSectionHref(section.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={(event) => {
+                    if (
+                      event.button !== 0 ||
+                      event.metaKey ||
+                      event.ctrlKey ||
+                      event.shiftKey ||
+                      event.altKey
+                    )
+                      return;
+                    event.preventDefault();
+                    onSectionChange(section.id);
+                    if (isSidebarOpen) toggleRef.current?.focus({ preventScroll: true });
+                  }}
+                  className={`wiki-navigation__item ${isActive ? 'is-active' : ''}`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>{section.label}</span>
+                </a>
+              );
+            })}
           </div>
-        </div>
-      </aside>
-    </>
+        ))}
+      </nav>
+    </aside>
   );
 }

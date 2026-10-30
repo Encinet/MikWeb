@@ -26,7 +26,7 @@ export function DesktopSiteHeaderNavigation({
   underlineOrigin,
 }: DesktopSiteHeaderNavigationProps) {
   return (
-    <div className="project-navbar-links relative hidden items-center gap-1 whitespace-nowrap xl:flex">
+    <div className="project-navbar-links relative hidden items-center whitespace-nowrap xl:flex">
       {items.map((item) => {
         const isActive = activePathname === item.path;
 
@@ -39,7 +39,7 @@ export function DesktopSiteHeaderNavigation({
               rel="noopener noreferrer"
               className={
                 item.highlight
-                  ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-3 whitespace-nowrap px-4 py-2'
+                  ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-2 whitespace-nowrap px-4 py-2'
                   : 'ui-nav-link inline-flex items-center gap-2 whitespace-nowrap py-2'
               }
               style={{ position: 'relative' }}
@@ -73,8 +73,7 @@ export function DesktopSiteHeaderNavigation({
                   opacity: { duration: Math.min(0.2, underlineDuration), ease: 'easeOut' },
                 }}
                 style={{
-                  backgroundColor: '#FFAA00',
-                  boxShadow: '0 0 12px rgba(255, 170, 0, 0.28)',
+                  backgroundColor: 'var(--theme-accent-strong)',
                   transformOrigin: underlineOrigin,
                 }}
               />

@@ -60,7 +60,7 @@ export function BuildingsContentArea({
     return (
       <BuildingsStatusMessage
         bodyText={error}
-        iconColor="var(--theme-accent-green-strong)"
+        iconColor="var(--theme-accent-strong)"
         title={errorTitle}
       />
     );

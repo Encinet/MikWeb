@@ -1,178 +1,106 @@
 'use client';
 
-import { ArrowRight, Building2, Clock, Server, Trophy } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-
+import type { ReactNode } from 'react';
+import { useState } from 'react';
+import { getAnnouncementKey } from '@/modules/announcement/lib/announcement-feed';
 import {
   formatAnnouncementDate,
   getAnnouncementDateTimeValue,
 } from '@/modules/announcement/lib/format-announcement-date';
 import { useAnnouncementsFeed } from '@/modules/announcement/model/use-announcements-feed';
+import { AnnouncementPreview } from '@/modules/announcement/ui/announcement-body';
 import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-feed-dialog';
-import { useBuildings } from '@/modules/building/model/use-buildings';
 import HomePlayerList from '@/modules/home/ui/home-player-list';
+import { HomeServerStatus } from '@/modules/home/ui/home-server-status';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
-import { CopyButton } from '@/shared/ui/action/copy-button';
+import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
-const SERVER_START_DATE = new Date('2025-07-15');
-
-export default function HomeLiveOverview() {
-  const commonT = useTranslations('common');
+export default function HomeLiveOverview({ children }: { children: ReactNode }) {
   const locale = useLocale();
   const t = useTranslations();
+  const commonT = useTranslations('common');
   const {
     players,
     playerCount,
-    peakPlayerCount,
     isLoading: isLoadingPlayers,
     isOnline,
-    networkError: hasPlayerNetworkError,
+    networkError,
   } = usePlayerStatus();
-  const { buildingCount, fetchBuildings, lastUpdatedAt } = useBuildings();
-  const [isAnnouncementsModalOpen, setIsAnnouncementsModalOpen] = useState(false);
-  const [uptime, setUptime] = useState(0);
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const mounted = useHasMounted();
-  const {
-    announcements,
-    errorMessage: announcementsErrorMessage,
-    isLoading: isLoadingAnnouncements,
-  } = useAnnouncementsFeed({
+  const { announcements, errorMessage, isLoading } = useAnnouncementsFeed({
     fallbackErrorMessage: commonT('states.error'),
   });
-
-  useEffect(() => {
-    const calculateUptime = () => {
-      const currentTimestamp = Date.now();
-      const uptimeDays = Math.floor(
-        (currentTimestamp - SERVER_START_DATE.getTime()) / (1000 * 60 * 60 * 24),
-      );
-      setUptime(uptimeDays);
-    };
-    calculateUptime();
-    const uptimeRefreshInterval = setInterval(calculateUptime, 60000);
-    return () => clearInterval(uptimeRefreshInterval);
-  }, []);
-
-  useEffect(() => {
-    fetchBuildings();
-  }, [fetchBuildings]);
-  const statusLabel = isLoadingPlayers
-    ? t('home.live.status.loading')
-    : hasPlayerNetworkError
-      ? t('home.live.status.networkError')
-      : isOnline
-        ? t('home.live.status.online')
-        : t('home.live.status.offline');
-  const onlinePlayersValue = isLoadingPlayers || hasPlayerNetworkError ? '-' : `${playerCount}`;
-  const peakPlayersValue =
-    isLoadingPlayers || hasPlayerNetworkError || peakPlayerCount === null
-      ? '-'
-      : `${peakPlayerCount}`;
-  const uptimeValue = mounted && uptime > 0 ? `${uptime}` : '-';
-  const showPlayerList =
-    !isLoadingPlayers && isOnline && !hasPlayerNetworkError && players.length > 0;
-  const announcementPreview = announcements.slice(0, 2);
+  const openAnnouncements = (key: string | null = null) => {
+    setSelectedKey(key);
+    setIsOpen(true);
+  };
 
   return (
-    <>
-      <div className={`home-live-grid${showPlayerList ? ' home-live-grid--has-players' : ''}`}>
-        <section className="home-live-status-panel" aria-label={t('home.live.statusTitle')}>
-          <div className="home-live-status-panel__main">
-            <div className="home-live-status-panel__label">
-              <span
-                className={`home-live-status-panel__dot ${isOnline && !hasPlayerNetworkError ? 'is-online' : ''}`}
-              />
-              <span>{statusLabel}</span>
-            </div>
-            <div className="home-live-status-panel__headline">
-              <strong>{onlinePlayersValue}</strong>
-              <span>{t('home.live.playersOnline')}</span>
-            </div>
-            <div className="home-live-status-panel__address">
-              <Server className="h-4 w-4" />
-              <code>mcmik.top</code>
-              <CopyButton className="home-live-status-panel__copy" value="mcmik.top" />
-            </div>
+    <section id="server-updates" className="home-daily" aria-label={t('home.live.statusTitle')}>
+      <HomeServerStatus />
+      {children}
+      <div className="home-daily-columns">
+        <section className="home-live-announcements" aria-labelledby="home-announcements-title">
+          <div className="home-live-announcements__head">
+            <h2 id="home-announcements-title">{t('home.announcements.section.title')}</h2>
+            <button type="button" aria-haspopup="dialog" onClick={() => openAnnouncements()}>
+              {t('home.announcements.actions.viewAll')}
+            </button>
           </div>
-
-          <fieldset className="home-live-status-panel__metrics">
-            <legend className="sr-only">{t('home.live.metricsLabel')}</legend>
-            <div>
-              <Building2 className="h-4 w-4" />
-              <span>{t('home.stats.totalBuildings')}</span>
-              <strong>{lastUpdatedAt === null ? '-' : buildingCount}</strong>
-            </div>
-            <div>
-              <Trophy className="h-4 w-4" />
-              <span>{t('home.stats.peakPlayers')}</span>
-              <strong>{peakPlayersValue}</strong>
-            </div>
-            <div>
-              <Clock className="h-4 w-4" />
-              <span>{t('home.stats.uptime')}</span>
-              <strong>
-                {uptimeValue}
-                <small>{t('home.stats.days')}</small>
-              </strong>
-            </div>
-          </fieldset>
+          <div className="home-live-announcements__list">
+            {isLoading ? (
+              <div className="home-announcements-loading" role="status">
+                <span className="sr-only">{t('home.announcements.states.loading')}</span>
+                <div aria-hidden="true">
+                  <SkeletonLine width="28%" />
+                  <SkeletonLine width="95%" />
+                  <SkeletonLine width="72%" />
+                </div>
+              </div>
+            ) : errorMessage ? (
+              <p className="home-inline-state" role="status">
+                {errorMessage}
+              </p>
+            ) : announcements.length > 0 ? (
+              announcements.slice(0, 2).map((announcement) => (
+                <button
+                  key={getAnnouncementKey(announcement)}
+                  type="button"
+                  aria-haspopup="dialog"
+                  onClick={() => openAnnouncements(getAnnouncementKey(announcement))}
+                >
+                  <time dateTime={getAnnouncementDateTimeValue(announcement.timestamp)}>
+                    {formatAnnouncementDate(announcement.timestamp, locale)}
+                  </time>
+                  <AnnouncementPreview content={announcement.content} />
+                </button>
+              ))
+            ) : (
+              <p className="home-inline-state">{t('home.announcements.states.empty')}</p>
+            )}
+          </div>
         </section>
-
-        {showPlayerList ? (
-          <HomePlayerList
-            players={players}
-            playerCount={playerCount}
-            isOnline={isOnline}
-            isLoading={isLoadingPlayers}
-            networkError={hasPlayerNetworkError}
-          />
-        ) : null}
+        <HomePlayerList
+          players={players}
+          playerCount={playerCount}
+          isOnline={isOnline}
+          isLoading={isLoadingPlayers}
+          networkError={networkError}
+        />
       </div>
-
-      <section className="home-live-announcements">
-        <div className="home-live-announcements__head">
-          <strong>{t('home.announcements.section.title')}</strong>
-          <button type="button" onClick={() => setIsAnnouncementsModalOpen(true)}>
-            {t('home.announcements.actions.viewAll')}
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="home-live-announcements__list">
-          {isLoadingAnnouncements ? (
-            <p>{t('home.announcements.states.loading')}</p>
-          ) : announcementsErrorMessage ? (
-            <p>{announcementsErrorMessage}</p>
-          ) : announcementPreview.length > 0 ? (
-            announcementPreview.map((announcement) => (
-              <button
-                key={`${announcement.timestamp}-${announcement.content}`}
-                type="button"
-                onClick={() => setIsAnnouncementsModalOpen(true)}
-              >
-                <time dateTime={getAnnouncementDateTimeValue(announcement.timestamp)}>
-                  {formatAnnouncementDate(announcement.timestamp, locale)}
-                </time>
-                <span>{announcement.content}</span>
-              </button>
-            ))
-          ) : (
-            <p>{t('home.announcements.states.empty')}</p>
-          )}
-        </div>
-      </section>
-
       <AnnouncementFeedDialog
         announcements={announcements}
-        errorMessage={announcementsErrorMessage}
-        isLoading={isLoadingAnnouncements}
+        errorMessage={errorMessage}
+        isLoading={isLoading}
         isMounted={mounted}
-        isOpen={isAnnouncementsModalOpen}
-        onClose={() => setIsAnnouncementsModalOpen(false)}
+        isOpen={isOpen}
+        selectedAnnouncementKey={selectedKey}
+        onClose={() => setIsOpen(false)}
       />
-    </>
+    </section>
   );
 }

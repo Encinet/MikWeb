@@ -1,14 +1,13 @@
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
-
-import { Link } from '@/shared/i18n/routing';
 import {
   ORGANIZATION_LOGO_PATH,
   ORGANIZATION_NAME,
   ORGANIZATION_URL,
   SITE_LOGO_PATH,
   SOURCE_CODE_URL,
-} from '@/site/config/site-config';
+} from '@/shared/config/site-config';
+import { Link } from '@/shared/i18n/routing';
 
 const COPYRIGHT_START_YEAR = 2021;
 const COPYRIGHT_BUILD_YEAR = new Date().getFullYear();
@@ -22,8 +21,6 @@ export default async function SiteFooter() {
     { href: '/wiki', label: t('nav.items.wiki') },
     { href: '/community/notices', label: t('nav.items.notices') },
     { href: '/map', label: t('nav.items.map') },
-    // Donation page is temporarily hidden.
-    // { href: '/donate', label: t('nav.items.donate') },
     { href: '/bans', label: t('nav.items.bans') },
     { href: '/pcl2', label: t('footer.links.pcl2Homepage') },
     { href: '/mcp', label: t('footer.links.mcpConfig') },

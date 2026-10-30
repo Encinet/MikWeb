@@ -27,9 +27,9 @@ export default function HomePlayerList({
     <section className="home-player-list" aria-label={t('home.live.playerListTitle')}>
       {/* Header */}
       <div className="home-player-list__header">
-        <Users className="h-4 w-4" />
-        <span>{t('home.live.playerListTitle')}</span>
-        {isOnline && !isLoading ? (
+        <Users className="h-4 w-4" aria-hidden="true" />
+        <h2>{t('home.live.playerListTitle')}</h2>
+        {isOnline && !isLoading && !networkError ? (
           <strong className="home-player-list__count">{playerCount}</strong>
         ) : null}
       </div>

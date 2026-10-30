@@ -1,4 +1,4 @@
-import { SITE_URL } from '@/site/config/site-config';
+import { SITE_URL } from '@/shared/config/site-config';
 
 function firstHeaderValue(value: string | null): string | null {
   return value?.split(',')[0]?.trim() || null;

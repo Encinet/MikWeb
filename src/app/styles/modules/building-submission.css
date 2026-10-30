@@ -157,8 +157,8 @@
 .building-submission-field input:focus,
 .building-submission-field textarea:focus,
 .building-submission-builder-input:focus-within {
-  border-color: rgba(121, 184, 111, 0.46);
-  box-shadow: 0 0 0 3px rgba(121, 184, 111, 0.14);
+  border-color: color-mix(in srgb, var(--theme-accent) 46%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 14%, transparent);
 }
 
 .building-submission-segments {
@@ -183,7 +183,7 @@
 }
 
 .building-submission-segments button.is-active {
-  background: rgba(121, 184, 111, 0.18);
+  background: color-mix(in srgb, var(--theme-accent) 18%, transparent);
   color: var(--theme-text-heading);
 }
 
@@ -371,8 +371,8 @@
 }
 
 .building-submission-builder-tools button:hover {
-  border-color: rgba(121, 184, 111, 0.34);
-  background: rgba(121, 184, 111, 0.11);
+  border-color: color-mix(in srgb, var(--theme-accent) 34%, transparent);
+  background: color-mix(in srgb, var(--theme-accent) 11%, transparent);
   color: var(--theme-text-heading);
 }
 
@@ -386,9 +386,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 1px dashed rgba(121, 184, 111, 0.42);
+  border: 1px dashed color-mix(in srgb, var(--theme-accent) 42%, transparent);
   border-radius: 0.82rem;
-  background: rgba(121, 184, 111, 0.08);
+  background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
   color: var(--theme-text-heading);
   font-size: 0.84rem;
   font-weight: 770;
@@ -520,7 +520,7 @@
 }
 
 .building-submission-status--approved {
-  background: rgba(121, 184, 111, 0.13);
+  background: color-mix(in srgb, var(--theme-accent) 13%, transparent);
   color: #a7d89c;
 }
 
@@ -547,8 +547,8 @@
 }
 
 [data-theme="light"] .building-submission-status--approved {
-  border-color: color-mix(in srgb, var(--theme-accent-green) 24%, transparent);
-  color: var(--theme-accent-green-strong);
+  border-color: color-mix(in srgb, var(--theme-status-success) 24%, transparent);
+  color: var(--theme-status-success);
 }
 
 [data-theme="light"] .building-submission-status--rejected {
@@ -605,4 +605,8 @@
   .building-submission-actions .account-action-button {
     flex: 1;
   }
+}
+
+.building-submission-section__grid > .inline-feedback {
+  grid-column: 1 / -1;
 }

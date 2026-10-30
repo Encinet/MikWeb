@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_URL } from '@/site/config/site-config';
+import { SITE_URL } from '@/shared/config/site-config';
 
 export default function robots(): MetadataRoute.Robots {
   return {

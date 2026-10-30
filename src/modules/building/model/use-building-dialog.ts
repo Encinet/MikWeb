@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { getBuildingImages } from '@/modules/building/lib/building-catalog';
 import type { Building } from '@/modules/building/model/building-types';
@@ -35,20 +35,11 @@ export function useBuildingDialog(): BuildingDialogState {
 
   const activeImage = images[imageIndex];
 
-  // Body overflow management
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = building ? 'hidden' : 'unset';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [building]);
-
   const isImageError = (url: string) => errors.has(url);
 
   const handleImageError = (url: string) => {
     setErrors((prev) => new Set(prev).add(url));
+    if (url === activeImage) setLoading(false);
   };
 
   const handleImageLoad = () => {
@@ -81,7 +72,6 @@ export function useBuildingDialog(): BuildingDialogState {
     setBuilding(b);
     setDirection(1);
     setImageIndex(0);
-    setLoading(true);
   };
 
   const close = () => {

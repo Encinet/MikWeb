@@ -2,7 +2,6 @@
 
 import { BookOpen, Building2, ClipboardList, Home, MapIcon, Play, Shield } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useTheme } from 'next-themes';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -23,7 +22,6 @@ export default function SiteHeader() {
   const router = useRouter();
   const t = useTranslations('nav');
   const locale = useLocale();
-  const { theme, setTheme } = useTheme();
   const { authenticated, isLoading: isLoadingAuth } = useAuth();
   const {
     players,
@@ -47,20 +45,7 @@ export default function SiteHeader() {
 
   const mounted = useHasMounted();
 
-  const nextThemeLabel =
-    theme === 'dark' ? t('theme.light') : theme === 'light' ? t('theme.system') : t('theme.dark');
-  const themeTooltip = mounted ? nextThemeLabel : '';
   const localeTooltip = locale === 'zh-CN' ? 'English' : '中文 (简体)';
-
-  const handleThemeToggle = () => {
-    if (theme === 'dark') {
-      setTheme('light');
-    } else if (theme === 'light') {
-      setTheme('system');
-    } else {
-      setTheme('dark');
-    }
-  };
 
   const navItems = useMemo<SiteHeaderNavItem[]>(() => {
     const items: SiteHeaderNavItem[] = [
@@ -69,8 +54,6 @@ export default function SiteHeader() {
       { id: 'wiki', icon: BookOpen, label: t('items.wiki'), path: '/wiki' },
       { id: 'notices', icon: ClipboardList, label: t('items.notices'), path: '/community/notices' },
       { id: 'map', icon: MapIcon, label: t('items.map'), path: '/map' },
-      // Donation page is temporarily hidden.
-      // { id: 'donate', icon: HeartHandshake, label: t('items.donate'), path: '/donate' },
       { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
     ];
 
@@ -228,7 +211,7 @@ export default function SiteHeader() {
     >
       <nav className="project-navbar-card">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
+          <div className="project-navbar-row flex items-center justify-between">
             <SiteHeaderBrand subtitle={t('brand.subtitle')} />
 
             <DesktopSiteHeaderNavigation
@@ -253,7 +236,6 @@ export default function SiteHeader() {
               onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               onPlayerDropdownClose={closePlayerDropdown}
               onPlayerDropdownOpen={openPlayerDropdown}
-              onThemeToggle={handleThemeToggle}
               playerCount={playerCount}
               playerDropdownAnchorRef={playerDropdownAnchorRef}
               playerDropdownRect={playerDropdownRect}
@@ -262,8 +244,6 @@ export default function SiteHeader() {
               statusNetworkErrorLabel={t('status.networkError')}
               statusOfflineLabel={t('status.offline')}
               statusOnlineLabel={t('status.online')}
-              theme={theme}
-              themeTooltip={themeTooltip}
             />
           </div>
 

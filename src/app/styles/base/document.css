@@ -20,33 +20,24 @@ body {
   min-height: 100%;
   height: var(--viewport-height-large);
   pointer-events: none;
-  background: #101816;
+  background: var(--theme-bg-base);
   transition: background 0.24s ease;
 }
 
 [data-theme="light"] .site-background {
   background:
-    radial-gradient(circle at 12% 0%, rgba(121, 184, 111, 0.17), transparent 31rem),
-    radial-gradient(circle at 90% 15%, rgba(185, 130, 85, 0.1), transparent 27rem),
-    linear-gradient(180deg, #edf2eb 0%, #f2f2ec 52%, #ebf0e9 100%);
-}
-
-/* 动画关键帧 */
-@keyframes cardEnter {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    radial-gradient(
+      circle at 12% 0%,
+      color-mix(in srgb, var(--theme-accent) 17%, transparent),
+      transparent 31rem
+    ),
+    var(--theme-bg-base);
 }
 
 /* 自定义滚动条 */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(121, 184, 111, 0.72) transparent;
+  scrollbar-color: color-mix(in srgb, var(--theme-accent) 72%, transparent) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -59,12 +50,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(121, 184, 111, 0.72);
+  background: color-mix(in srgb, var(--theme-accent) 72%, transparent);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(121, 184, 111, 0.9);
+  background: color-mix(in srgb, var(--theme-accent) 90%, transparent);
 }
 
 /* 平滑滚动 */
@@ -110,4 +101,10 @@ body {
 
 .page-state-region {
   min-height: clamp(22rem, 48vh, 34rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

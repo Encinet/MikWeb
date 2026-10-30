@@ -3,8 +3,8 @@ import type { MetadataRoute } from 'next';
 import { getLocalizedText, isBuildingArray } from '@/modules/building/model/building-types';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
+import { SITE_URL } from '@/shared/config/site-config';
 import { routing } from '@/shared/i18n/routing';
-import { SITE_URL } from '@/site/config/site-config';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
@@ -13,7 +13,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/buildings',
     '/wiki',
     '/map',
-    // '/donate', // Donation page is temporarily hidden.
     '/community/notices',
     '/bans',
     '/pcl2',

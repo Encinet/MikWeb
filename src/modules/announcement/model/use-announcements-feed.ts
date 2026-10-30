@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { sortAnnouncements } from '@/modules/announcement/lib/announcement-feed';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
 import { dataApiUrl } from '@/shared/api/data-api-url';
@@ -37,7 +38,7 @@ export function useAnnouncementsFeed({ fallbackErrorMessage }: UseAnnouncementsF
       }
 
       if (announcementsResult.status === 'success') {
-        setAnnouncements(announcementsResult.data);
+        setAnnouncements(sortAnnouncements(announcementsResult.data));
         setErrorMessage(null);
       } else {
         if (announcementsResult.status === 'network-error') {

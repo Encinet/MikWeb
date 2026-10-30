@@ -11,11 +11,17 @@ import { CopyButton } from '@/shared/ui/action/copy-button';
 
 interface Pcl2HomepageAddressProps {
   baseUrl: string;
+  copyLabel: string;
   detectingLabel: string;
   label: string;
 }
 
-export function Pcl2HomepageAddress({ baseUrl, detectingLabel, label }: Pcl2HomepageAddressProps) {
+export function Pcl2HomepageAddress({
+  baseUrl,
+  detectingLabel,
+  label,
+  copyLabel,
+}: Pcl2HomepageAddressProps) {
   const [homepageUrl, setHomepageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,11 +38,13 @@ export function Pcl2HomepageAddress({ baseUrl, detectingLabel, label }: Pcl2Home
 
   return (
     <div className="art-guide-address">
-      <span>{label}</span>
+      <h2>{label}</h2>
       <div className="art-guide-address__bar" aria-busy={homepageUrl === null}>
         <code>{homepageUrl ?? detectingLabel}</code>
         <CopyButton
           className="art-guide-address__copy"
+          label={copyLabel}
+          showLabel
           disabled={homepageUrl === null}
           value={homepageUrl ?? ''}
         />

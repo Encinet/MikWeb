@@ -16,9 +16,8 @@ export const BUILDING_SORT_KEYS = [
 
 export const BUILDING_MASONRY_BREAKPOINT_COLUMNS = {
   default: 4,
-  1536: 4,
   1280: 3,
-  900: 2,
+  1024: 2,
   640: 1,
 } as const;
 

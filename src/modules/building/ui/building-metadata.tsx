@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, CheckCircle, Copy, MapPin, User } from 'lucide-react';
+import { CheckCircle, Copy, MapPin, User } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
 import { getBuildingSourceNotes } from '@/modules/building/lib/building-view-helpers';
 import type { Building, LocalizedText } from '@/modules/building/model/building-types';
@@ -22,11 +22,8 @@ export function BuildingTypeBadge({ buildType, compact = false, t }: BuildingTyp
   if (buildType === 'original') {
     return (
       <>
-        <CheckCircle
-          className={iconClassName}
-          style={{ color: 'var(--theme-accent-green-strong)' }}
-        />
-        <span className={textClassName} style={{ color: 'var(--theme-accent-green-strong)' }}>
+        <CheckCircle className={iconClassName} style={{ color: 'var(--theme-accent-strong)' }} />
+        <span className={textClassName} style={{ color: 'var(--theme-accent-strong)' }}>
           {t('types.original')}
         </span>
       </>
@@ -77,9 +74,9 @@ export function BuildingTags({ building, getTagKey, locale, compact = false }: B
               : 'rounded-full px-3 py-1 text-xs font-medium'
           }
           style={{
-            background: 'rgba(121, 184, 111, 0.08)',
-            color: 'var(--theme-accent-green-strong)',
-            border: '1px solid rgba(121, 184, 111, 0.15)',
+            background: 'color-mix(in srgb, var(--theme-accent) 8%, transparent)',
+            color: 'var(--theme-accent-strong)',
+            border: '1px solid color-mix(in srgb, var(--theme-accent) 15%, transparent)',
           }}
         >
           {getLocalizedText(tag, locale)}
@@ -230,104 +227,46 @@ export function BuilderNames({ builders, compact = false }: BuilderNamesProps) {
 interface BuildingSourceDetailsProps {
   building: Building;
   locale: string;
-  compact?: boolean;
   t: BuildingsTranslator;
 }
 
-export function BuildingSourceDetails({
-  building,
-  locale,
-  compact = false,
-  t,
-}: BuildingSourceDetailsProps) {
+export function BuildingSourceDetails({ building, locale, t }: BuildingSourceDetailsProps) {
   if (!building.source) {
     return null;
   }
 
-  if (compact) {
-    return (
-      <>
-        {building.source.originalAuthor ? (
-          <div
-            className="flex items-start gap-2 border-t pt-2 text-sm"
-            style={{ borderColor: 'var(--theme-border-glass-light)' }}
-          >
-            <User
-              className="mt-0.5 h-4 w-4 shrink-0"
-              style={{ color: 'var(--theme-accent-green-strong)' }}
-            />
-            <div className="min-w-0 flex-1">
-              <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.originalAuthor')}</span>
-              <p className="font-medium" style={{ color: 'var(--theme-text-muted-strong)' }}>
-                {building.source.originalAuthor}
-              </p>
-            </div>
-          </div>
-        ) : null}
-        {building.source.originalLink ? (
-          <div className="flex items-start gap-2 text-sm">
-            <MapPin
-              className="mt-0.5 h-4 w-4 shrink-0"
-              style={{ color: 'var(--theme-text-muted-strong)' }}
-            />
-            <div className="min-w-0 flex-1">
-              <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.source')}</span>
-              <a
-                href={building.source.originalLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ui-content-link ui-content-link--blue block truncate"
-              >
-                {building.source.originalLink}
-              </a>
-            </div>
-          </div>
-        ) : null}
-        {building.source.notes ? (
-          <div className="pt-1 text-xs italic" style={{ color: 'var(--theme-text-muted)' }}>
-            {getBuildingSourceNotes(building, locale)}
-          </div>
-        ) : null}
-      </>
-    );
-  }
-
   return (
-    <div
-      className="space-y-4 border-t pt-4"
-      style={{ borderColor: 'var(--theme-border-glass-light)' }}
-    >
+    <>
       {building.source.originalAuthor ? (
-        <div className="flex items-start gap-3">
+        <div
+          className="flex items-start gap-2 border-t pt-2 text-sm"
+          style={{ borderColor: 'var(--theme-border-glass-light)' }}
+        >
           <User
-            className="mt-0.5 h-5 w-5 shrink-0"
-            style={{ color: 'var(--theme-accent-green-strong)' }}
+            className="mt-0.5 h-4 w-4 shrink-0"
+            style={{ color: 'var(--theme-accent-strong)' }}
           />
-          <div className="flex-1">
-            <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-              {t('fields.originalAuthor')}
-            </span>
-            <p className="mt-1 font-medium" style={{ color: 'var(--theme-text-muted-strong)' }}>
+          <div className="min-w-0 flex-1">
+            <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.originalAuthor')}</span>
+            <p className="font-medium" style={{ color: 'var(--theme-text-muted-strong)' }}>
               {building.source.originalAuthor}
             </p>
           </div>
         </div>
       ) : null}
       {building.source.originalLink ? (
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-2 text-sm">
           <MapPin
-            className="mt-0.5 h-5 w-5 shrink-0"
+            className="mt-0.5 h-4 w-4 shrink-0"
             style={{ color: 'var(--theme-text-muted-strong)' }}
           />
           <div className="min-w-0 flex-1">
-            <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-              {t('fields.source')}
-            </span>
+            <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.source')}</span>
             <a
               href={building.source.originalLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="ui-content-link ui-content-link--blue mt-1 block truncate"
+              className="ui-content-link ui-content-link--accent block truncate"
             >
               {building.source.originalLink}
             </a>
@@ -335,145 +274,10 @@ export function BuildingSourceDetails({
         </div>
       ) : null}
       {building.source.notes ? (
-        <div className="text-sm italic" style={{ color: 'var(--theme-text-muted)' }}>
+        <div className="pt-1 text-xs italic" style={{ color: 'var(--theme-text-muted)' }}>
           {getBuildingSourceNotes(building, locale)}
         </div>
       ) : null}
-    </div>
-  );
-}
-
-interface BuildingCardFactsProps {
-  building: Building;
-  formatDate: (timestamp: number | string) => string;
-  locale: string;
-  t: BuildingsTranslator;
-}
-
-export function BuildingCardFacts({ building, formatDate, locale, t }: BuildingCardFactsProps) {
-  return (
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-2 text-sm">
-        <MapPin
-          className="h-4 w-4 shrink-0"
-          style={{ color: 'var(--theme-accent-green-strong)' }}
-        />
-        <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.coordinates')}</span>
-        <code
-          className="rounded px-2 py-1 font-mono text-xs"
-          style={{
-            background: 'var(--theme-surface-code)',
-            color: 'var(--theme-accent-green-strong)',
-          }}
-        >
-          {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}
-        </code>
-      </div>
-
-      <div className="flex items-start gap-2 text-sm">
-        <User
-          className="mt-0.5 h-4 w-4 shrink-0"
-          style={{ color: 'var(--theme-accent-green-strong)' }}
-        />
-        <div className="flex-1">
-          <span style={{ color: 'var(--theme-text-muted)' }}>
-            {building.builders.length > 1 ? t('fields.builders') : t('fields.builder')}
-          </span>
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            <BuilderNames builders={building.builders} compact />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 text-sm">
-        <Bell className="h-4 w-4 shrink-0" style={{ color: 'var(--theme-text-muted-strong)' }} />
-        <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.buildDate')}</span>
-        <span style={{ color: 'var(--theme-text-muted-strong)' }}>
-          {formatDate(building.buildDate)}
-        </span>
-      </div>
-
-      <BuildingSourceDetails building={building} locale={locale} compact t={t} />
-    </div>
-  );
-}
-
-interface BuildingDetailFactsProps {
-  building: Building;
-  formatDate: (timestamp: number | string) => string;
-  locale: string;
-  separated?: boolean;
-  t: BuildingsTranslator;
-}
-
-export function BuildingDetailFacts({
-  building,
-  formatDate,
-  locale,
-  separated = true,
-  t,
-}: BuildingDetailFactsProps) {
-  return (
-    <div
-      className={separated ? 'space-y-4 border-t pt-4' : 'space-y-4'}
-      style={separated ? { borderColor: 'var(--theme-border-glass-light)' } : undefined}
-    >
-      <div className="flex items-start gap-3">
-        <MapPin
-          className="mt-0.5 h-5 w-5 shrink-0"
-          style={{ color: 'var(--theme-accent-green-strong)' }}
-        />
-        <div className="flex-1">
-          <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-            {t('fields.coordinates')}
-          </span>
-          <div className="mt-1">
-            <code
-              className="rounded px-3 py-1.5 font-mono text-sm"
-              style={{
-                background: 'var(--theme-surface-code)',
-                color: 'var(--theme-accent-green-strong)',
-              }}
-            >
-              {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}
-            </code>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-start gap-3">
-        <User
-          className="mt-0.5 h-5 w-5 shrink-0"
-          style={{ color: 'var(--theme-accent-green-strong)' }}
-        />
-        <div className="flex-1">
-          <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-            {building.builders.length > 1 ? t('fields.builders') : t('fields.builder')}
-          </span>
-          <div className="mt-1 flex flex-wrap gap-2">
-            <BuilderNames builders={building.builders} />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-start gap-3">
-        <Bell
-          className="mt-0.5 h-5 w-5 shrink-0"
-          style={{ color: 'var(--theme-text-muted-strong)' }}
-        />
-        <div className="flex-1">
-          <span className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-            {t('fields.buildDate')}
-          </span>
-          <div className="mt-1">
-            <span className="text-base" style={{ color: 'var(--theme-text-muted-strong)' }}>
-              {formatDate(building.buildDate)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <BuildingSourceDetails building={building} locale={locale} t={t} />
-    </div>
+    </>
   );
 }

@@ -104,7 +104,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
           </button>
         </aside>
 
-        <main className="account-main">{children}</main>
+        <div className="account-main">{children}</div>
       </div>
     </div>
   );

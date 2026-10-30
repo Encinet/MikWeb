@@ -1,231 +1,268 @@
 'use client';
 
-import { ArrowUpRight, Gavel, MapPin } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  COMMUNITY_PAGE_SIZE,
+  filterCommunityNotices,
+  getCommunityNoticeAnchor,
+  getLinkedCommunityNoticeId,
+  mergeCommunityNotices,
+} from '@/modules/community/lib/community-notices';
 import type { CommunityNotice } from '@/modules/community/model/board-types';
 import { isCommunityBoardResponse } from '@/modules/community/model/board-types';
+import { CommunityNoticeEntry } from '@/modules/community/ui/community-notice-entry';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { Link } from '@/shared/i18n/routing';
-
-const PAGE_SIZE = 12;
+import { SearchField } from '@/shared/ui/form/search-field';
+import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
 
 export function CommunityBoardPage() {
   const t = useTranslations('communityBoard');
   const locale = useLocale();
   const [entries, setEntries] = useState<CommunityNotice[]>([]);
+  const entriesRef = useRef<CommunityNotice[]>([]);
+  const requestId = useRef(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [linkedMissing, setLinkedMissing] = useState(false);
+  const [linkedId, setLinkedId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [visibleCount, setVisibleCount] = useState(COMMUNITY_PAGE_SIZE);
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
+  const activeQuery = query.trim() ? deferredQuery : '';
+  const filtered = useMemo(
+    () => filterCommunityNotices(entries, activeQuery),
+    [entries, activeQuery],
+  );
   const focusedRecordId = useRef<string | null>(null);
 
   const load = useCallback(async () => {
+    const currentRequest = ++requestId.current;
+    const targetId = getLinkedCommunityNoticeId(window.location.hash);
+    setLoading(true);
+    setLoadError(false);
+    setLinkedMissing(false);
     try {
-      const response = await fetch(dataApiUrl('/community/notices'), { cache: 'no-store' });
+      const response = await fetch(dataApiUrl('/community/notices'), {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(15_000),
+      });
       const data: unknown = await response.json();
       if (!response.ok || !isCommunityBoardResponse(data)) throw new Error('invalid_response');
-      const linkedId = window.location.hash
-        .match(/^#notice-([0-9a-fA-F-]{36})$/)?.[1]
-        .toLowerCase();
-      let notices = data.notices;
-      if (linkedId && !notices.some((entry) => entry.id === linkedId)) {
+      let notices = mergeCommunityNotices(data.notices);
+      if (targetId && !notices.some((entry) => entry.id.toLowerCase() === targetId)) {
         try {
-          const detailResponse = await fetch(dataApiUrl(`/community/notices/${linkedId}`), {
+          const detailResponse = await fetch(dataApiUrl(`/community/notices/${targetId}`), {
             cache: 'no-store',
+            signal: AbortSignal.timeout(15_000),
           });
           const detail: unknown = await detailResponse.json();
           if (detailResponse.ok && detail && typeof detail === 'object' && 'notice' in detail) {
             const linked = { notices: [detail.notice] };
-            if (isCommunityBoardResponse(linked)) notices = [...linked.notices, ...notices];
+            if (isCommunityBoardResponse(linked) && linked.notices[0].id.toLowerCase() === targetId)
+              notices = mergeCommunityNotices(notices, linked.notices[0]);
           }
         } catch {
-          // Keep the recent board available if an older linked record cannot load.
+          // Keep recent records available when a linked record cannot be fetched.
         }
       }
-      if (linkedId) {
-        setExpandedIds((current) => {
-          if (current.has(linkedId)) return current;
-          const next = new Set(current);
-          next.add(linkedId);
-          return next;
-        });
-      }
+      if (currentRequest !== requestId.current) return;
+      setLinkedMissing(
+        Boolean(
+          targetId &&
+            getLinkedCommunityNoticeId(window.location.hash) === targetId &&
+            !notices.some((entry) => entry.id.toLowerCase() === targetId),
+        ),
+      );
+      entriesRef.current = notices;
       setEntries(notices);
-      setLoadError(false);
     } catch {
-      setLoadError(true);
+      if (currentRequest === requestId.current) setLoadError(true);
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    const refreshLinkedRecord = () => void load();
-    void load();
-    window.addEventListener('hashchange', refreshLinkedRecord);
-    return () => window.removeEventListener('hashchange', refreshLinkedRecord);
-  }, [load]);
+  const revealLinkedRecord = useCallback(
+    (targetId: string | null) => {
+      focusedRecordId.current = null;
+      setLinkedId(targetId);
+      setLinkedMissing(false);
+      if (!targetId) return;
+      setQuery('');
+      setExpandedIds((current) => new Set(current).add(targetId));
+      const knownRecord = entriesRef.current.some((entry) => entry.id.toLowerCase() === targetId);
+      if (!knownRecord) void load();
+      else {
+        requestId.current++;
+        setLoading(false);
+        setLoadError(false);
+      }
+    },
+    [load],
+  );
 
   useEffect(() => {
-    const linkedId = window.location.hash.match(/^#notice-([0-9a-fA-F-]{36})$/)?.[1].toLowerCase();
-    if (!linkedId) focusedRecordId.current = null;
-    const linkedIndex = linkedId ? entries.findIndex((entry) => entry.id === linkedId) : -1;
+    const syncLinkedRecord = () =>
+      revealLinkedRecord(getLinkedCommunityNoticeId(window.location.hash));
+    const initialId = getLinkedCommunityNoticeId(window.location.hash);
+    setLinkedId(initialId);
+    if (initialId) setExpandedIds(new Set([initialId]));
+    void load();
+    window.addEventListener('hashchange', syncLinkedRecord);
+    return () => {
+      requestId.current++;
+      window.removeEventListener('hashchange', syncLinkedRecord);
+    };
+  }, [load, revealLinkedRecord]);
+
+  useEffect(() => {
+    if (
+      loading ||
+      loadError ||
+      activeQuery ||
+      !linkedId ||
+      !expandedIds.has(linkedId) ||
+      linkedId === focusedRecordId.current
+    )
+      return;
+    const linkedIndex = filtered.findIndex((entry) => entry.id.toLowerCase() === linkedId);
+    if (linkedIndex < 0) return;
     if (linkedIndex >= visibleCount) {
       setVisibleCount(linkedIndex + 1);
       return;
     }
-    if (linkedId && linkedId !== focusedRecordId.current && linkedIndex >= 0) {
+    const frame = window.requestAnimationFrame(() => {
+      const record = document.getElementById(getCommunityNoticeAnchor(linkedId));
+      if (!record) return;
       focusedRecordId.current = linkedId;
-      window.requestAnimationFrame(() => {
-        const record = document.getElementById(`notice-${linkedId}`);
-        record?.scrollIntoView({ block: 'start' });
-        record?.focus({ preventScroll: true });
-      });
-    }
-  }, [entries, visibleCount]);
+      record.scrollIntoView({ block: 'start', behavior: 'instant' });
+      record.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeQuery, expandedIds, filtered, linkedId, loadError, loading, visibleCount]);
 
-  const formatTime = (value: number) =>
-    new Intl.DateTimeFormat(locale, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: 'Asia/Singapore',
-    }).format(new Date(value));
+  const updateQuery = (value: string) => {
+    setQuery(value);
+    setVisibleCount(COMMUNITY_PAGE_SIZE);
+  };
 
   return (
-    <div className="page-shell page-shell-stable community-board">
+    <div
+      className="page-shell page-shell-stable community-board print-page-title"
+      data-print-title={t('meta.title')}
+    >
       <div className="page-shell-content community-board__inner">
-        <header className="content-page-hero">
-          <div>
-            <h1>{t('hero.title')}</h1>
-          </div>
+        <ContentBrowserHeader
+          title={t('hero.title')}
+          search={
+            <SearchField
+              label={t('search.placeholder')}
+              placeholder={t('search.placeholder')}
+              clearLabel={t('search.clear')}
+              value={query}
+              onChange={(event) => updateQuery(event.target.value)}
+              onClear={() => updateQuery('')}
+            />
+          }
+        />
+        <div className="community-board__toolbar">
+          <p role="status" className="community-board__count">
+            {!loading && !loadError
+              ? activeQuery.trim()
+                ? t('records.resultsCount', { count: filtered.length, total: entries.length })
+                : t('records.count', { count: entries.length })
+              : null}
+          </p>
           <Link href="/wiki?section=rules" className="community-board__rules-link">
-            {t('hero.rules')} <ArrowUpRight size={16} aria-hidden="true" />
+            {t('hero.rules')}
           </Link>
-        </header>
-
-        <section className="community-board__records" aria-label={t('records.title')}>
-          {loading ? <p role="status">{t('records.loading')}</p> : null}
-          {loadError ? (
+        </div>
+        <section
+          className="community-board__records page-state-region"
+          aria-label={t('records.title')}
+          aria-busy={loading}
+        >
+          {loading ? (
+            <div className="community-board__state" role="status">
+              <span className="community-board__loader" aria-hidden="true" />
+              <p>{t('records.loading')}</p>
+            </div>
+          ) : loadError ? (
             <div role="alert" className="community-board__state">
               <p>{t('records.error')}</p>
               <button type="button" onClick={() => void load()}>
                 {t('records.retry')}
               </button>
             </div>
-          ) : null}
-          {!loading && !loadError && entries.length === 0 ? (
-            <p className="community-board__state">{t('records.empty')}</p>
-          ) : null}
-          <div className="community-board__list">
-            {entries.slice(0, visibleCount).map((entry) => {
-              const expanded = expandedIds.has(entry.id);
-              return (
-                <article
-                  id={`notice-${entry.id}`}
-                  tabIndex={-1}
-                  aria-labelledby={`notice-title-${entry.id}`}
-                  className="ui-card-surface community-board__entry"
-                  key={entry.id}
-                >
-                  <div className="community-board__entry-top">
-                    <span className="community-board__badge">{t(`kind.${entry.kind}`)}</span>
-                    <span className="community-board__status">
-                      {entry.status === 'open'
-                        ? t(entry.kind === 'notice' ? 'status.noticeOpen' : 'status.objectionOpen')
-                        : t(`status.${entry.status}`)}
-                    </span>
-                  </div>
-                  <h3 id={`notice-title-${entry.id}`}>{entry.subject}</h3>
-                  <div className="community-board__entry-meta">
-                    <span>
-                      {t('records.by', { author: entry.authorName })} ·{' '}
-                      {formatTime(entry.createdAt)}
-                    </span>
-                    <span className="community-board__coordinate">
-                      <MapPin size={15} aria-hidden="true" />
-                      {entry.world} · {entry.x}, {entry.y}, {entry.z}
-                    </span>
-                  </div>
-                  <div className="community-board__entry-footer">
-                    <button
-                      type="button"
-                      className="community-board__expand"
-                      aria-expanded={expanded}
-                      aria-controls={`notice-content-${entry.id}`}
-                      onClick={() =>
+          ) : entries.length === 0 ? (
+            <div className="community-board__state">
+              <p>{t(linkedMissing ? 'records.linkUnavailable' : 'records.empty')}</p>
+              {linkedMissing ? (
+                <button type="button" onClick={() => void load()}>
+                  {t('records.retry')}
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <>
+              {linkedMissing ? (
+                <div role="status" className="community-board__hint">
+                  <p>{t('records.linkUnavailable')}</p>
+                  <button
+                    type="button"
+                    className="community-board__expand"
+                    onClick={() => void load()}
+                  >
+                    {t('records.retry')}
+                  </button>
+                </div>
+              ) : null}
+              {filtered.length === 0 ? (
+                <div className="community-board__state">
+                  <p>{t('records.noResults')}</p>
+                  <button type="button" onClick={() => updateQuery('')}>
+                    {t('search.clear')}
+                  </button>
+                </div>
+              ) : (
+                <div className="community-board__list">
+                  {filtered.slice(0, visibleCount).map((entry) => (
+                    <CommunityNoticeEntry
+                      key={entry.id}
+                      entry={entry}
+                      locale={locale}
+                      onOpenRecord={revealLinkedRecord}
+                      expanded={expandedIds.has(entry.id.toLowerCase())}
+                      onToggle={() =>
                         setExpandedIds((current) => {
                           const next = new Set(current);
-                          if (next.has(entry.id)) next.delete(entry.id);
-                          else next.add(entry.id);
+                          const id = entry.id.toLowerCase();
+                          if (next.has(id)) next.delete(id);
+                          else next.add(id);
                           return next;
                         })
                       }
-                    >
-                      {t(expanded ? 'records.collapse' : 'records.expand')}
-                    </button>
-                    <a
-                      href={`#notice-${entry.id}`}
-                      aria-label={t('records.permalinkLabel', { subject: entry.subject })}
-                    >
-                      {t('records.permalink')}
-                    </a>
-                  </div>
-                  <div
-                    id={`notice-content-${entry.id}`}
-                    className="community-board__entry-content"
-                    hidden={!expanded}
-                  >
-                    <p className="community-board__body">{entry.text}</p>
-                    {entry.relatedNoticeId ? (
-                      <p className="community-board__meta">
-                        <a href={`#notice-${entry.relatedNoticeId}`}>
-                          {t('records.relatedNotice')}
-                        </a>
-                      </p>
-                    ) : null}
-                    {entry.kind === 'notice' ? (
-                      <p className="community-board__meta">
-                        {t('records.noticeUntil', { time: formatTime(entry.deadline) })}
-                      </p>
-                    ) : null}
-                    {entry.details ? (
-                      <dl className="community-board__details">
-                        {(['contact', 'scope', 'impact', 'proposal'] as const)
-                          .filter((field) => Boolean(entry.details?.[field]))
-                          .map((field) => (
-                            <div key={field}>
-                              <dt>{t(`detailLabels.${field}`)}</dt>
-                              <dd>{entry.details?.[field]}</dd>
-                            </div>
-                          ))}
-                      </dl>
-                    ) : null}
-                    {entry.ruling ? (
-                      <div className="community-board__ruling">
-                        <strong>
-                          <Gavel size={16} aria-hidden="true" /> {t('ruling.title')}
-                        </strong>
-                        <p>{entry.ruling}</p>
-                      </div>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-          {visibleCount < entries.length ? (
-            <button
-              type="button"
-              className="community-board__show-more"
-              onClick={() => setVisibleCount((current) => current + PAGE_SIZE)}
-            >
-              {t('records.showMore')}
-            </button>
-          ) : null}
-          {!loading && !loadError && entries.length >= 300 ? (
-            <p className="community-board__hint">{t('records.latestLimit')}</p>
-          ) : null}
+                    />
+                  ))}
+                </div>
+              )}
+              {visibleCount < filtered.length ? (
+                <button
+                  type="button"
+                  className="community-board__show-more"
+                  onClick={() => setVisibleCount((current) => current + COMMUNITY_PAGE_SIZE)}
+                >
+                  {t('records.showMore')}
+                </button>
+              ) : null}
+              {entries.length >= 300 ? (
+                <p className="community-board__hint">{t('records.latestLimit')}</p>
+              ) : null}
+            </>
+          )}
         </section>
       </div>
     </div>

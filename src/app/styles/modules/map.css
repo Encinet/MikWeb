@@ -41,8 +41,8 @@ body:has(.map-page),
 }
 
 .map-page__external-link:hover {
-  border-color: rgba(121, 184, 111, 0.32);
-  background: rgba(121, 184, 111, 0.1);
+  border-color: color-mix(in srgb, var(--theme-accent) 32%, transparent);
+  background: color-mix(in srgb, var(--theme-accent) 10%, transparent);
 }
 
 .map-page__frame-shell {
@@ -81,15 +81,15 @@ body:has(.map-page),
 }
 
 .map-page__frame-title svg {
-  color: #79b86f;
+  color: var(--theme-accent-strong);
 }
 
 .map-page__frame-dot {
   width: 0.56rem;
   height: 0.56rem;
   border-radius: 999px;
-  background: #79b86f;
-  box-shadow: 0 0 16px rgba(121, 184, 111, 0.46);
+  background: var(--theme-accent-strong);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--theme-accent) 46%, transparent);
 }
 
 .map-page__external-link,
@@ -124,8 +124,8 @@ body:has(.map-page),
 }
 
 [data-theme="light"] .map-page__external-link:hover {
-  border-color: rgba(89, 143, 80, 0.32);
-  background: rgba(121, 184, 111, 0.14);
+  border-color: color-mix(in srgb, var(--theme-accent-strong) 32%, transparent);
+  background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
 }
 
 @media (max-width: 640px) {

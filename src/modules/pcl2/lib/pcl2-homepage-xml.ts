@@ -3,11 +3,12 @@ import type { BanItem } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
 import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
 import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
+import { getPcl2HomepagePath } from '@/modules/pcl2/lib/pcl2-homepage-path';
 import { formatPcl2Time, withPcl2TimeZone } from '@/modules/pcl2/lib/pcl2-time-zone';
 import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { SITE_NAME } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
-import { getPcl2HomepagePath, SITE_NAME } from '@/site/config/site-config';
 import type { XamlAttributeList, XamlNode } from './xaml-builder';
 import { attr, renderXamlFragment, xaml } from './xaml-builder';
 

@@ -4,39 +4,15 @@ import { ImagePlus, LoaderCircle, Minus, Plus, Send, Trash2, UserPlus, X } from 
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { AuthAccount } from '@/modules/auth/model/auth-types';
-import { useAuth } from '@/modules/auth/model/use-auth';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
-import type { Building, BuildType, LocalizedText } from '@/modules/building/model/building-types';
+import type { BuildType, LocalizedText } from '@/modules/building/model/building-types';
 import {
-  createBuildingSubmissionImageDraft,
-  uploadBuildingSubmissionImageDrafts,
-} from '@/modules/building-submission/lib/building-submission-images';
-import { buildBuildingSubmissionPayload } from '@/modules/building-submission/lib/building-submission-payload';
-import type {
-  BuilderDraft,
-  BuildingSubmissionImageDraft,
-  BuildingSubmissionTagDraft,
-} from '@/modules/building-submission/model/building-submission-form';
-import {
-  createInitialBuildingSubmissionForm,
-  ensureSelfBuilder,
   formatPercent,
-  gcd,
   MAX_BUILDING_SUBMISSION_IMAGES,
   MAX_PENDING_BUILDING_SUBMISSIONS,
-  MIN_BUILDING_SUBMISSION_IMAGE_HEIGHT,
-  MIN_BUILDING_SUBMISSION_IMAGE_WIDTH,
   safeBuilderWeight,
 } from '@/modules/building-submission/model/building-submission-form';
-import type {
-  BuildingSubmission,
-  BuildingSubmissionCreateResponse,
-  BuildingSubmissionListResponse,
-  ResolvedPlayer,
-} from '@/modules/building-submission/model/building-submission-types';
-import { isBuildingSubmissionListResponse } from '@/modules/building-submission/model/building-submission-types';
+import { useBuildingSubmissionForm } from '@/modules/building-submission/model/use-building-submission-form';
 import {
   Section,
   StatusBadge,
@@ -44,342 +20,52 @@ import {
   TextField,
 } from '@/modules/building-submission/ui/building-submission-form-controls';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import {
-  fetchValidatedJson,
-  writeFetchValidatedJsonBrowserCache,
-} from '@/shared/api/fetch-validated-json';
-import { useToast } from '@/shared/ui/feedback/toast-provider';
+import { InlineFeedback } from '@/shared/ui/feedback/async-state';
 
 const BUILDER_COLORS = ['#79b86f', '#55a6d9', '#e0a74f', '#d86b7d', '#9b7bd8', '#4fb6a8'];
-const SUBMISSIONS_CACHE_TTL_MS = 45_000;
 
 export function BuildingSubmissionPage() {
   const t = useTranslations('buildingSubmission');
   const locale = useLocale();
-  const { account, authenticated } = useAuth();
-  const { showToast, updateToast } = useToast();
-  const [submissions, setSubmissions] = useState<BuildingSubmission[]>([]);
-  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [playerInput, setPlayerInput] = useState('');
-  const [resolvingPlayer, setResolvingPlayer] = useState(false);
-  const [tags, setTags] = useState<BuildingSubmissionTagDraft[]>([]);
-  const [tagDraft, setTagDraft] = useState<BuildingSubmissionTagDraft>({ zh: '', en: '' });
-  const [draftImages, setDraftImages] = useState<BuildingSubmissionImageDraft[]>([]);
-  const [builders, setBuilders] = useState<BuilderDraft[]>([]);
-  const draftImagesRef = useRef<BuildingSubmissionImageDraft[]>([]);
-  const [form, setForm] = useState(createInitialBuildingSubmissionForm);
-
-  const loadSubmissions = useCallback(
-    async (options: { force?: boolean } = {}) => {
-      if (!account || account.role === 'default') {
-        setSubmissions([]);
-        return;
-      }
-      setLoadingSubmissions(true);
-      try {
-        const result = await fetchValidatedJson({
-          url: '/api/account/building-submissions/mine',
-          request: { method: 'POST' },
-          cache: 'no-store',
-          validate: isBuildingSubmissionListResponse,
-          timeoutMs: 8000,
-          browserCache: {
-            force: options.force,
-            key: buildingSubmissionsCacheKey(account.playerUuid),
-            ttlMs: SUBMISSIONS_CACHE_TTL_MS,
-          },
-          fallbackErrorMessage: 'Failed to load building submissions',
-        });
-        if (result.status !== 'success') {
-          throw new Error('load_failed');
-        }
-        setSubmissions(result.data.submissions);
-      } catch {
-        showToast({ title: t('states.loadFailed'), variant: 'error' });
-      } finally {
-        setLoadingSubmissions(false);
-      }
-    },
-    [account, showToast, t],
-  );
-
-  useEffect(() => {
-    if (!account) {
-      setBuilders([]);
-      return;
-    }
-    setBuilders((current) => ensureSelfBuilder(current, account));
-  }, [account]);
-
-  useEffect(() => {
-    if (!authenticated) {
-      setSubmissions([]);
-      return;
-    }
-    void loadSubmissions();
-  }, [authenticated, loadSubmissions]);
-
-  useEffect(() => {
-    draftImagesRef.current = draftImages;
-  }, [draftImages]);
-
-  useEffect(() => {
-    return () => {
-      for (const image of draftImagesRef.current) {
-        URL.revokeObjectURL(image.previewUrl);
-      }
-    };
-  }, []);
-
-  const pendingCount = useMemo(
-    () => submissions.filter((submission) => submission.status === 'pending').length,
-    [submissions],
-  );
-  const totalBuilderWeight = useMemo(
-    () => builders.reduce((total, builder) => total + safeBuilderWeight(builder.weight), 0),
-    [builders],
-  );
-  const canSubmit =
-    authenticated &&
-    account?.role !== 'default' &&
-    pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS &&
-    !submitting &&
-    !uploading;
-
-  const updateForm = (key: keyof typeof form, value: string) => {
-    setForm((current) => ({ ...current, [key]: value }));
-  };
-
-  const resolvePlayer = async () => {
-    const name = playerInput.trim();
-    if (!name || resolvingPlayer) return;
-
-    setResolvingPlayer(true);
-    try {
-      const response = await fetch('/api/account/players/resolve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
-      });
-      const payload = (await response.json().catch(() => ({}))) as { player?: ResolvedPlayer };
-      if (!response.ok || !payload.player) {
-        throw new Error('not_found');
-      }
-      const player = payload.player;
-      setBuilders((current) => {
-        if (current.some((builder) => builder.uuid === player.uuid)) {
-          return current;
-        }
-        return [...current, { ...player, weight: 1 }];
-      });
-      setPlayerInput('');
-    } catch {
-      showToast({ title: t('states.playerNotFound'), variant: 'error' });
-    } finally {
-      setResolvingPlayer(false);
-    }
-  };
+  const {
+    feedback,
+    account,
+    submissions,
+    loadingSubmissions,
+    submitting,
+    uploading,
+    playerInput,
+    setPlayerInput,
+    resolvingPlayer,
+    tags,
+    setTags,
+    tagDraft,
+    setTagDraft,
+    draftImages,
+    builders,
+    setBuilders,
+    form,
+    pendingCount,
+    totalBuilderWeight,
+    canSubmit,
+    updateForm,
+    resolvePlayer,
+    adjustBuilderWeight,
+    equalizeBuilderWeights,
+    normalizeBuilderWeights,
+    clearOptionalBuilders,
+    addTag,
+    handleImageFiles,
+    submit,
+    resetForm,
+    removeDraftImage,
+    loadSubmissions,
+  } = useBuildingSubmissionForm();
 
   const handlePlayerKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     void resolvePlayer();
-  };
-
-  const adjustBuilderWeight = (uuid: string, delta: number) => {
-    setBuilders((current) =>
-      current.map((builder) =>
-        builder.uuid === uuid
-          ? { ...builder, weight: safeBuilderWeight(builder.weight + delta) }
-          : builder,
-      ),
-    );
-  };
-
-  const equalizeBuilderWeights = () => {
-    setBuilders((current) => current.map((builder) => ({ ...builder, weight: 1 })));
-  };
-
-  const normalizeBuilderWeights = () => {
-    setBuilders((current) => {
-      const divisor = current.reduce(
-        (currentGcd, builder) => gcd(currentGcd, safeBuilderWeight(builder.weight)),
-        0,
-      );
-      if (divisor <= 1) return current;
-      return current.map((builder) => ({
-        ...builder,
-        weight: safeBuilderWeight(builder.weight / divisor),
-      }));
-    });
-  };
-
-  const clearOptionalBuilders = () => {
-    setBuilders((current) => current.filter((builder) => builder.locked));
-  };
-
-  const addTag = () => {
-    const zh = tagDraft.zh.trim();
-    const en = tagDraft.en.trim();
-    if (!zh || !en) {
-      showToast({ title: t('states.tagRequired'), variant: 'error' });
-      return;
-    }
-    setTags((current) => [...current, { zh, en }]);
-    setTagDraft({ zh: '', en: '' });
-  };
-
-  const handleImageFiles = async (files: FileList | null) => {
-    const selected = Array.from(files ?? []);
-    if (!selected.length) return;
-    if (!account) {
-      showToast({ title: t('states.required'), variant: 'error' });
-      return;
-    }
-    if (draftImages.length + selected.length > MAX_BUILDING_SUBMISSION_IMAGES) {
-      showToast({ title: t('states.imageLimit'), variant: 'error' });
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const drafts: BuildingSubmissionImageDraft[] = [];
-      for (const file of selected) {
-        const draft = await createBuildingSubmissionImageDraft(file);
-        if (
-          draft.width < MIN_BUILDING_SUBMISSION_IMAGE_WIDTH ||
-          draft.height < MIN_BUILDING_SUBMISSION_IMAGE_HEIGHT
-        ) {
-          URL.revokeObjectURL(draft.previewUrl);
-          throw new Error('image_too_small');
-        }
-        drafts.push(draft);
-      }
-      setDraftImages((current) => [...current, ...drafts]);
-      showToast({ title: t('states.selected'), variant: 'success' });
-    } catch (error) {
-      showToast({
-        title:
-          error instanceof Error && error.message === 'image_too_small'
-            ? t('states.imageTooSmall')
-            : t('states.imageSelectFailed'),
-        variant: 'error',
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!canSubmit) return;
-    if (!account) {
-      showToast({ title: t('states.required'), variant: 'error' });
-      return;
-    }
-
-    let payload: Building;
-    try {
-      payload = buildBuildingSubmissionPayload(
-        form,
-        builders,
-        tags,
-        draftImages.map((image) => image.previewUrl),
-      );
-    } catch (error) {
-      showToast({
-        title: error instanceof Error ? t(`states.${error.message}`) : t('states.invalid'),
-        variant: 'error',
-      });
-      return;
-    }
-
-    setSubmitting(true);
-    setUploading(true);
-    const toastId = showToast({ title: t('states.uploading'), variant: 'loading', duration: 0 });
-    try {
-      const uploadedImages = await uploadBuildingSubmissionImageDrafts(
-        draftImages,
-        account,
-        form.nameEn,
-      );
-      payload = {
-        ...payload,
-        images: uploadedImages.map((image) => image.url),
-      };
-      updateToast(toastId, { title: t('states.submitting'), variant: 'loading', duration: 0 });
-      const response = await fetch('/api/account/building-submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          payload,
-          images: uploadedImages.map(({ url, width, height, size, mime }) => ({
-            url,
-            width,
-            height,
-            size,
-            mime,
-          })),
-        }),
-      });
-      const result = (await response
-        .json()
-        .catch(() => ({}))) as BuildingSubmissionCreateResponse & {
-        error?: string;
-      };
-      if (!response.ok) {
-        throw new Error(result.error ?? 'submit_failed');
-      }
-      setSubmissions((current) => {
-        const next = [result.submission, ...current.filter(Boolean)];
-        writeFetchValidatedJsonBrowserCache<BuildingSubmissionListResponse>({
-          data: { submissions: next },
-          key: buildingSubmissionsCacheKey(account.playerUuid),
-          ttlMs: SUBMISSIONS_CACHE_TTL_MS,
-        });
-        return next;
-      });
-      resetForm(account);
-      updateToast(toastId, { title: t('states.submitted'), variant: 'success', duration: 2600 });
-    } catch (error) {
-      updateToast(toastId, {
-        title: t(submitErrorMessageKey(error)),
-        variant: 'error',
-        duration: 3200,
-      });
-    } finally {
-      setUploading(false);
-      setSubmitting(false);
-    }
-  };
-
-  const resetForm = (currentAccount: AuthAccount | null) => {
-    setForm(createInitialBuildingSubmissionForm());
-    setTags([]);
-    setTagDraft({ zh: '', en: '' });
-    clearDraftImages();
-    setBuilders(currentAccount ? ensureSelfBuilder([], currentAccount) : []);
-  };
-
-  const clearDraftImages = () => {
-    setDraftImages((current) => {
-      for (const image of current) {
-        URL.revokeObjectURL(image.previewUrl);
-      }
-      return [];
-    });
-  };
-
-  const removeDraftImage = (id: string) => {
-    setDraftImages((current) => {
-      const target = current.find((image) => image.id === id);
-      if (target) {
-        URL.revokeObjectURL(target.previewUrl);
-      }
-      return current.filter((image) => image.id !== id);
-    });
   };
 
   if (account?.role === 'default') {
@@ -573,6 +259,7 @@ export function BuildingSubmissionPage() {
                   </div>
                 </div>
               ) : null}
+              <InlineFeedback value={feedback.builders} />
             </Section>
 
             <Section title={t('sections.images')}>
@@ -615,6 +302,7 @@ export function BuildingSubmissionPage() {
                   </figure>
                 ))}
               </div>
+              <InlineFeedback value={feedback.images} />
             </Section>
 
             <Section title={t('sections.tags')}>
@@ -652,6 +340,7 @@ export function BuildingSubmissionPage() {
                   </button>
                 ))}
               </div>
+              <InlineFeedback value={feedback.tags} />
             </Section>
 
             {form.buildType !== 'original' ? (
@@ -687,6 +376,7 @@ export function BuildingSubmissionPage() {
               </Section>
             ) : null}
 
+            <InlineFeedback value={feedback.form} />
             <div className="building-submission-actions">
               <button
                 className="account-action-button"
@@ -722,6 +412,7 @@ export function BuildingSubmissionPage() {
                 {t('actions.refresh')}
               </button>
             </div>
+            <InlineFeedback value={feedback.history} />
             <div className="building-submission-history__list">
               {submissions.length === 0 ? (
                 <p>{t('history.empty')}</p>
@@ -759,22 +450,6 @@ export function BuildingSubmissionPage() {
   );
 }
 
-function submitErrorMessageKey(error: unknown): `states.${string}` {
-  if (!(error instanceof Error)) {
-    return 'states.submitFailed';
-  }
-  if (error.message === 'pending_limit_reached') {
-    return 'states.pendingLimit';
-  }
-  if (error.message === 'image_too_small') {
-    return 'states.imageTooSmall';
-  }
-  if (error.message === 'upload_failed') {
-    return 'states.uploadFailed';
-  }
-  return 'states.submitFailed';
-}
-
 function builderColor(index: number): string {
   return BUILDER_COLORS[index % BUILDER_COLORS.length];
 }
@@ -786,8 +461,4 @@ function builderStyle(index: number): CSSProperties & { '--builder-color': strin
 function localized(value: LocalizedText | undefined, locale: string): string {
   if (!value) return '';
   return value[locale] ?? value['zh-CN'] ?? value.en ?? Object.values(value)[0] ?? '';
-}
-
-function buildingSubmissionsCacheKey(playerUuid: string): string {
-  return `account:building-submissions:${playerUuid}`;
 }
