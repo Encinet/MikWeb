@@ -5,13 +5,13 @@ order: 40
 icon: Shield
 ---
 
-> Publication date: **Sep 27, 2026**
+> Publication date: **Oct 2, 2026**
 >
 > Time standard: **UTC+8**
 
 ## Server Purpose
 
-Mik is a casual creative server centered on building and community. The server provides bounded protection based on actual construction: collaboration is encouraged, while private work and reasonable building space are still respected.
+Mik is a casual creative server centered on building and community. The server provides protection for registered plot selections: collaboration is encouraged, while private work and reasonable building space are still respected.
 
 1. Players may build freely, use utility tools, express opinions, and contribute to public projects, but may not harm other people's work, normal play, dignity, or server safety.
 2. These rules cover the game and community spaces operated by the server. Off-platform conduct is in scope only when it directly concerns the server or creates a credible risk to a Member's safety.
@@ -70,7 +70,7 @@ Custodians are responsible for the host, critical accounts, costs, and data and 
 
 ## Plots and Building
 
-Ordinary building may proceed directly. To protect work, build first and create a plot in game.
+Ordinary building may proceed directly. Members may select and register a plot in game without building first. Plot permissions do not replace creators' consent, coordination with neighboring projects, or construction notices required by these rules.
 
 ### Builds, Terrain, and Collaboration
 
@@ -84,21 +84,31 @@ Ordinary building may proceed directly. To protect work, build first and create 
 6. **Do not use builds as a means of attack.** Graves, statues, text, and other structures intended to humiliate, threaten, discriminate against, or harass a particular player—or producing the same unmistakable effect—are prohibited. Calling something a joke is not an automatic exception.
 7. **Stay inside the world border.** Do not use teleportation, vehicles, commands, mods, or exploits to cross it, or build, act, or leave entities outside it. Return immediately after an accidental crossing; necessary border maintenance by a Custodian is exempt.
 
-### Construction Plots and Temporary Reservations
+### Plot Registration and Management
 
-**Creation and ownership.** A plot protects actual construction, not surrounding empty land. After at least **8** real placements in one **4×4×4** construction cell, a Member can create protection beside the build from the game's Plots menu. Registration does not establish ownership; disputes are decided from credits, construction records, and both parties' accounts.
+**Registration and ownership.** Members can open Plots from the game's main menu, select two corners, preview the area, name it, and confirm creation. No minimum number of block placements or construction-record check is required. The area must be proportionate to the project; registration must not claim another person's work or block public access. Unregistered work is also protected by these rules. Registration order does not establish ownership of a work; disputes are decided from credits, construction records, and both parties' accounts.
 
-**Growth and limits.** Protection expands only along connected construction. Each private project is capped at **4,096 blocks²** of built horizontal area, and each public project at **8,192 blocks²**.
+**Boundaries and limits.** New or re-saved boundaries align outward to **4×4×4** cells without extra protection margins; check the preview before confirming. The area must be connected and cannot overlap another plot's effective protected area; parent and child plots follow their containment rules. Each private plot is capped at **4,096 blocks²** of horizontal projection and **1,024 cells**. Any creation or editing selection is capped at **4,096 cells**. Horizontal area counts the ground positions covered by the plot, not the number of blocks already placed.
 
-**Members and access.** Owners may invite collaborators and configure interaction, container, and entity access separately. Declaring a public project does not allow arbitrary edits.
+**Editing and selections.** A basic selection uses two corners. Advanced selections can add, subtract, or replace areas and define child plots inside a parent plot. Boundaries change only after an explicit save; ordinary building and WorldEdit edits do not expand them automatically. You may close the menu, walk around, and view the selection outline while editing. Editing an existing plot does not recreate it or clear its members and permissions. Before shrinking it, handle any child plots that would fall outside it and keep its arrival point inside the area.
 
-**Temporary reservations.** The project menu allows reservations beside built work. Total reserved area may be up to **50%** of built horizontal area, with a **16-block²** minimum for small projects; a selection is at most **16 blocks** long and wide and extends no more than **16 blocks** above or below the structure. Unbuilt space is released after **14 days** and cannot overlap another plot.
+**Members and access.** Owners may assign plot admins, collaborators, or visitors to specific players. Admins may build and manage day-to-day access and regular members; collaborators may build. Block, container, and entity access can be set separately for invited visitors, outside newcomers, and outside members, without granting build rights. Only the owner may appoint or remove admins or transfer the plot; a transfer does not change existing work credit. Declaring a public project does not allow arbitrary edits.
+
+**Deleting a plot.** Owners may confirm deletion of their own plots; child plots must be handled before deleting a parent. Deletion removes only the registration and its permission protection. It does not demolish builds or authorize others to alter them. Re-registration still follows the rules on boundaries, ownership of work, and neighboring impacts.
+
+**Existing plots.** Registered plots retain their previous boundaries, protection margins, and settings. Explicitly re-saving an area replaces those boundaries with the fixed selection and removes the old extra margins. Former construction reservations no longer provide protection or block new registrations; their records remain historical archives only.
+
+> Selection shortcuts: `/plot pos1`, `/plot pos2`, then `/plot create <name>` to create a plot; `/plot edit` returns to the editor panel, and `/plot edit stop` exits editing.
+>
+> Only while actively picking plot corners with the menu closed are argument-free `//pos1` and `//pos2` intercepted for plot selection. They do not modify the WorldEdit selection. In other states, or with arguments, these commands remain with the original plugin.
 
 ### Siting and Conflicting Impacts
 
 A **directly affected player** is someone who faces a verifiable impact on their work, main entrance, daylight, routine access, or a project already started or publicly scheduled to start within 30 days. A plot grants no control over surrounding empty land or every view.
 
-Notices required by these rules are posted on the in-game Community Board and mirrored on the [website](/community/notices). The system attempts to alert relevant nearby plot owners.
+Plot registration automatically creates a notice record and attempts to alert relevant nearby plot owners. That record does not replace the construction-plan notices below or imply staff approval or neighbors' consent. Ordinary plot registration does not carry a blanket **72-hour** waiting period; construction requiring notice or coordination follows the rules below.
+
+Notices required by these rules are posted on the in-game Community Board (`/plot board`) and mirrored on the [website](/community/notices). If boundary changes alter the building plan or its impacts, update the notice as required below; do not assume the system automatically publishes a new plan notice.
 
 1. **Contact neighbors.** **64 blocks** prompts an impact check; it is not a no-build zone. If planned work is within that distance of an existing build boundary and there is a concrete reason to expect an impact on work, daylight, or access, contact the identifiable main builders. Work may begin if they all agree and no mandatory notice applies; otherwise use the notice and discussion process below.
 2. **Post a notice without agreement.** If there is a concrete impact and the relevant builders have not agreed, describe the location, scope, purpose, and impact on the Community Board for at least **72 hours**. Prior management approval is not required.
@@ -106,7 +116,7 @@ Notices required by these rules are posted on the in-game Community Board and mi
    - a contiguous horizontal projection of at least **6,400 blocks in area** that materially reduces daylight below it;
    - material obstruction of an established road, primary entrance, or necessary route;
    - material interference with an existing use of public space or a principal sightline intentionally framed by a build.
-4. **Feedback and starting work.** A directly affected player may describe a specific impact during the notice period, including in a standalone response when no original notice exists. The author summarizes earlier objections that still apply. Work may begin when the period ends without a supported objection, except where express consent is required.
+4. **Feedback and starting work.** A directly affected player may open the relevant notice during its notice period and state a specific objection. If no notice exists, contact the builder first; if discussion fails, ask a Moderator or Custodian to address the concrete impact. The project author summarizes earlier objections that still apply. Work may begin when the period ends without a supported objection, except where express consent is required.
 5. **Objections and work.** If necessary facts are missing, identify them in one request; the objector has **48 hours** to supply them or the objection expires. Pending details pause only the affected work and only when existing information shows a concrete, credible risk of immediate harm. A valid objection also pauses only the disputed part. The parties may adjust the plan; work resumes once they agree and the objection is withdrawn.
 6. **If discussion fails.** Either party may request a ruling when a valid objection remains unresolved after **3 days**. A disinterested Moderator or Custodian should act within **72 hours**; unavailable key evidence permits one explained extension of up to **72 hours**. The ruling considers safety, public access, measurable obstruction and daylight, specific work already started or publicly announced, build order, each party's investment, and transitions to the surroundings. It makes only the smallest change needed to resolve the impact.
 7. **Continuing impacts.** Work in progress and completed builds that cause a continuing concrete impact follow the same contact, discussion, and ruling process. Completion alone neither exempts a build nor requires its removal.
@@ -124,7 +134,7 @@ A facility's **necessary functional layer** includes track, road, platforms, ent
 
 **What counts as a public facility.** Its necessary functional layer is public when its creator declares a public project, or a ruling confirms that it mainly serves multiple players continuously and they already depend on it. Multiple users alone do not turn a private build public; public status does not waive siting, notice, or consent.
 
-**Public status and the higher plot cap.** A project may self-declare as public. To use the higher cap, it must state its accessible use and scope. Space used only privately follows the private cap, and a declaration cannot claim someone else's area.
+**Public status and plot scope.** A project may self-declare as public. To use a public plot's larger allowance, it must state its accessible use and scope and still meet the selection cell limit. Space used only privately follows the private cap. A declaration cannot claim someone else's area or waive construction notices and coordination.
 
 1. **Routine maintenance.** Members may repair damage, add necessary lighting, and clear obstructions with the smallest change that restores the original function, route, style, and credit. Record and publish a plan first if the prior state is unclear.
 2. **Substantial changes.** Rerouting, demolition, a change of theme, or expansion needs a plan and **72 hours** of notice; objections follow the siting rules.
