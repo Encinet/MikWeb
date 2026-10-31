@@ -1,42 +1,127 @@
-.theme-color-popover {
+.appearance-panel {
   position: fixed;
   z-index: calc(var(--z-sticky) + 1);
-  width: min(18.5rem, calc(100vw - 1.5rem));
+  inset: var(--appearance-panel-top, 1rem) auto auto var(--appearance-panel-left, 1rem);
+  width: min(20rem, calc(100% - 1.5rem));
+  max-width: none;
   max-height: calc(var(--viewport-height-dynamic) - 1.5rem);
-  overflow-y: auto;
+  margin: 0;
+  overflow: hidden;
   border: 0;
-  border-radius: 1.25rem;
-  padding: 0.875rem 1.125rem 1.125rem;
-  background: color-mix(in srgb, var(--theme-surface-modal) 88%, transparent);
+  border-radius: 1rem;
+  padding: 0;
+  background: color-mix(in srgb, var(--theme-surface-modal) 94%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(115%);
+  backdrop-filter: blur(24px) saturate(115%);
   color: var(--theme-text-primary);
   box-shadow:
     0 18px 56px var(--theme-shadow-modal-soft),
     0 3px 16px var(--theme-shadow-glass);
-  -webkit-backdrop-filter: blur(32px) saturate(115%);
-  backdrop-filter: blur(32px) saturate(115%);
-  transform-origin: top right;
-  animation: theme-color-enter 160ms var(--ui-transition-easing);
 }
 
-.theme-color-popover__heading {
+.appearance-panel[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.appearance-panel::backdrop {
+  background: color-mix(in srgb, var(--theme-overlay-bg) 56%, transparent);
+}
+
+.appearance-panel__close {
+  position: absolute;
+  top: 0.125rem;
+  right: calc(var(--viewport-right-inset) + 0.25rem);
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--theme-text-muted-strong);
+  cursor: pointer;
+}
+
+.appearance-panel__close:hover {
+  background: var(--theme-surface-hover);
+  color: var(--theme-text-heading);
+}
+
+.appearance-panel__body {
+  display: grid;
+  min-height: 0;
+  gap: 0.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem;
+  scroll-padding-block: 1rem;
+}
+
+.appearance-section {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.appearance-section > legend {
+  margin-bottom: 0.625rem;
+  padding-inline-end: 2rem;
+  color: var(--theme-text-heading);
+  font-size: 0.8125rem;
+  font-weight: 550;
+}
+
+.appearance-mode-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-radius: 0.5rem;
+  padding: 0.1875rem;
+  background: var(--theme-surface-code-block);
+}
+
+.appearance-mode-option > span {
+  display: flex;
+  min-height: 2.25rem;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.25rem;
+  color: var(--theme-text-muted-strong);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: center;
+  cursor: pointer;
+}
+
+.appearance-mode-option:hover > span {
+  background: var(--theme-surface-hover);
+}
+
+.appearance-mode-option input:checked + span {
+  background: var(--theme-surface-modal);
+  box-shadow: 0 1px 4px var(--theme-shadow-glass);
+  color: var(--theme-text-heading);
+  font-weight: 650;
+}
+
+.appearance-colors__label {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 0;
-}
-
-.theme-color-popover__heading h2 {
-  margin: 0;
   color: var(--theme-text-heading);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 550;
 }
 
-.theme-color-reset {
-  min-height: 2.75rem;
+.appearance-color-reset {
+  min-height: 2.25rem;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   padding: 0 0.25rem;
   background: transparent;
   color: var(--theme-text-muted-strong);
@@ -44,11 +129,11 @@
   cursor: pointer;
 }
 
-.theme-color-reset:hover:not(:disabled) {
+.appearance-color-reset:hover:not(:disabled) {
   color: var(--theme-accent-strong);
 }
 
-.theme-color-reset:disabled {
+.appearance-color-reset:disabled {
   color: var(--theme-text-muted);
   cursor: default;
 }
@@ -58,9 +143,8 @@
   display: block;
   width: 100%;
   height: 2.75rem;
-  margin: 0 0 0.5rem;
+  margin: 0;
   border: 0;
-  border-radius: 0.375rem;
   background: transparent;
   cursor: pointer;
 }
@@ -98,72 +182,40 @@
   box-shadow: 0 1px 4px var(--theme-shadow-modal);
 }
 
-.theme-color-hex {
-  display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.625rem;
-  border: 0;
-  border-radius: 0.875rem;
-  padding: 0 0.75rem;
-  background: color-mix(in srgb, var(--theme-surface-code) 70%, transparent);
-}
-
-.theme-color-hex label {
-  color: var(--theme-text-muted-strong);
-  font-size: 0.75rem;
-}
-
-.theme-color-swatch {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex-shrink: 0;
-  border: 1px solid var(--theme-border-glass);
-  border-radius: 0.25rem;
-}
-
-.theme-color-hex input {
-  width: 100%;
-  min-width: 0;
-  min-height: 2.75rem;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--theme-text-primary);
-  font-family: var(--font-mono);
-  font-size: 1rem;
-}
-
-.theme-color-error {
-  margin: 0.625rem 0 0;
-  color: var(--theme-accent-red);
-  font-size: 0.75rem;
-  line-height: 1.6;
-}
-
-.theme-color-popover :focus-visible,
-.theme-color-hex:has(:focus-visible) {
+.appearance-panel :focus-visible,
+.appearance-mode-option input:focus-visible + span {
   outline: 2px solid var(--theme-accent-strong);
   outline-offset: 3px;
 }
 
-.theme-color-hex input:focus-visible {
-  outline: none;
-}
-
-@keyframes theme-color-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-3px) scale(0.985);
+@media (pointer: coarse) {
+  .appearance-panel__close {
+    width: 2.75rem;
+    height: 2.75rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+
+  .appearance-mode-option > span {
+    min-height: 2.75rem;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .theme-color-popover {
-    animation: none;
+@media (max-width: 639px) {
+  .appearance-panel {
+    inset: auto 0 0;
+    width: 100%;
+    max-height: calc(var(--viewport-height-dynamic) - var(--viewport-top-inset) - 1rem);
+    border-bottom: 0;
+    border-radius: 1.25rem 1.25rem 0 0;
+    padding-right: var(--viewport-right-inset);
+    padding-bottom: var(--viewport-bottom-inset);
+    padding-left: var(--viewport-left-inset);
+  }
+}
+
+@media (min-width: 640px) and (max-height: 480px) {
+  .appearance-panel {
+    inset: 0;
+    height: fit-content;
+    margin: auto;
   }
 }

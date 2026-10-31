@@ -30,6 +30,8 @@
   /* Layout */
   --navbar-height: 4.25rem;
   --app-header-offset: 6rem;
+  --site-header-bottom: calc(var(--navbar-height) + 0.75rem + var(--viewport-top-inset));
+  --site-header-dock-gap: 0.5rem;
   --content-browser-max-width: 84rem;
   --page-shell-inline: 1rem;
   --page-shell-block-end: 3rem;

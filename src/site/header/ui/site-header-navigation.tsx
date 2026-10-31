@@ -1,6 +1,8 @@
 'use client';
 
+import { Globe } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { Link } from '@/shared/i18n/routing';
@@ -90,6 +92,9 @@ interface MobileSiteHeaderMenuProps {
   isOpen: boolean;
   items: SiteHeaderNavItem[];
   onClose: () => void;
+  localeLabel: string;
+  localeTarget: string;
+  onLocaleSwitch: () => void;
 }
 
 export function MobileSiteHeaderMenu({
@@ -97,8 +102,12 @@ export function MobileSiteHeaderMenu({
   isOpen,
   items,
   onClose,
+  localeLabel,
+  localeTarget,
+  onLocaleSwitch,
 }: MobileSiteHeaderMenuProps) {
   const mounted = useHasMounted();
+  const controlsT = useTranslations('nav.controls');
 
   const menu = (
     <AnimatePresence>
@@ -142,6 +151,19 @@ export function MobileSiteHeaderMenu({
                   </Link>
                 );
               })}
+              <button
+                type="button"
+                className="mobile-menu-language"
+                aria-label={controlsT('switchLanguage', { language: localeLabel })}
+                onClick={() => {
+                  onClose();
+                  onLocaleSwitch();
+                }}
+              >
+                <Globe className="h-4 w-4" aria-hidden="true" />
+                <span>{controlsT('language')}</span>
+                <span lang={localeTarget}>{localeLabel}</span>
+              </button>
             </div>
           </div>
         </motion.div>

@@ -62,7 +62,7 @@ src/
 
 站点常量放在 `src/shared/config/site-config.ts`，功能专属常量留在对应模块。页面 metadata 在 `src/app/` 路由入口装配，UI 模块不依赖站点 SEO 实现。
 
-主题默认使用每日配色，按 UTC+8 日期确定色相，并以固定明度、低色度生成默认色；当天保持一致，跨天重新打开时更新，阅读过程中不自动换色。`src/shared/config/theme-config.ts` 的 `DAILY_ACCENT_CHROMA` 控制每日颜色的色度，`DEFAULT_ACCENT_COLOR` 只用于后备色和 PWA 启动画面。`site/theme/lib/accent-color.ts` 用 OKLCH 派生明暗色板、压缩超出 sRGB 的色度并校正对比度；界面使用 `--theme-accent`、`--theme-accent-strong` 和 `--theme-on-accent` 等语义变量。状态色独立。手动选色会在当前浏览器固定保存，点击“使用今日配色”清除自定义颜色，恢复每日模式。首次绘制前读取当前日期和已保存的自定义色。
+主题默认使用每日配色，按 UTC+8 日期确定色相，并以固定明度、低色度生成默认色；当天保持一致，跨天重新打开时更新，阅读过程中不自动换色。`src/shared/config/theme-config.ts` 的 `DAILY_ACCENT_CHROMA` 控制每日颜色的色度，`DEFAULT_ACCENT_COLOR` 只用于后备色和 PWA 启动画面。`site/theme/lib/accent-color.ts` 用 OKLCH 派生明暗色板、压缩超出 sRGB 的色度并校正对比度；界面使用 `--theme-accent`、`--theme-accent-strong` 和 `--theme-on-accent` 等语义变量。状态色独立。手动选色会在当前浏览器固定保存，在“外观”中选择“今日配色”会清除自定义颜色，恢复每日模式。首次绘制前读取当前日期和已保存的自定义色。
 
 ## 命名
 

@@ -74,6 +74,11 @@ body {
   text-size-adjust: 100%;
 }
 
+/* Quiet only a pointer-origin focus return; keyboard navigation clears this marker. */
+:root body [data-restored-focus="quiet"]:focus-visible {
+  outline: none;
+}
+
 .app-body {
   display: flex;
   flex-direction: column;

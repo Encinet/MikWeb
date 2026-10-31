@@ -22,17 +22,26 @@
       "networkError": "Network Error"
     },
     "theme": {
-      "light": "Light Mode",
-      "dark": "Dark Mode",
+      "appearance": "Style",
+      "shortLabel": "Style",
+      "displayMode": "Display mode",
+      "light": "Light",
+      "dark": "Dark",
       "system": "System",
       "title": "Theme color",
-      "reset": "Use daily color",
-      "invalidColor": "Enter a valid hex color, such as #79b86f.",
-      "hue": "Hue"
+      "daily": "Daily color",
+      "reset": "Reset to daily color"
     },
     "account": {
       "login": "Log in",
       "account": "Account"
+    },
+    "controls": {
+      "display": "Display and language",
+      "openMenu": "Open navigation",
+      "closeMenu": "Close navigation",
+      "language": "Language",
+      "switchLanguage": "Switch to {language}"
     }
   },
   "pcl2Page": {

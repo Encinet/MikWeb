@@ -17,6 +17,7 @@ interface SiteHeaderControlsProps {
   isOnline: boolean;
   localeLabel: string;
   localeTooltip: string;
+  localeTarget: string;
   mounted: boolean;
   networkError: boolean;
   onLocaleSwitch: () => void;
@@ -39,6 +40,7 @@ export function SiteHeaderControls({
   isOnline,
   localeLabel,
   localeTooltip,
+  localeTarget,
   mounted,
   networkError,
   onLocaleSwitch,
@@ -55,6 +57,7 @@ export function SiteHeaderControls({
   statusOnlineLabel,
 }: SiteHeaderControlsProps) {
   const accountT = useTranslations('nav.account');
+  const controlsT = useTranslations('nav.controls');
   const { account, authenticated, isLoading: isLoadingAuth } = useAuth();
 
   return (
@@ -64,13 +67,18 @@ export function SiteHeaderControls({
           type="button"
           onClick={onMobileMenuToggle}
           className="inline-flex items-center justify-center xl:hidden"
-          aria-label="Toggle menu"
+          aria-label={controlsT(isMobileMenuOpen ? 'closeMenu' : 'openMenu')}
+          aria-expanded={isMobileMenuOpen}
         >
-          {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          {isMobileMenuOpen ? (
+            <X className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Menu className="h-4 w-4" aria-hidden="true" />
+          )}
         </button>
 
         <fieldset className="project-navbar-control-cluster">
-          <legend className="sr-only">Display controls</legend>
+          <legend className="sr-only">{controlsT('display')}</legend>
           <ThemeSettings />
 
           <button
@@ -78,9 +86,10 @@ export function SiteHeaderControls({
             onClick={onLocaleSwitch}
             className="project-locale-toggle ui-nav-link inline-flex items-center gap-1.5 py-2"
             title={localeTooltip}
+            aria-label={controlsT('switchLanguage', { language: localeLabel })}
           >
-            <Globe className="h-4 w-4" />
-            <span className="hidden sm:inline">{localeLabel}</span>
+            <Globe className="h-4 w-4" aria-hidden="true" />
+            <span lang={localeTarget}>{localeLabel}</span>
           </button>
         </fieldset>
 

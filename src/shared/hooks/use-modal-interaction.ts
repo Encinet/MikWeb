@@ -2,6 +2,7 @@
 
 import type { RefObject } from 'react';
 import { useEffect, useEffectEvent } from 'react';
+import { captureFocusReturn } from '@/shared/lib/focus-return';
 
 /** Shared keyboard, focus and background handling for both window and immersive dialogs. */
 export function useModalInteraction(
@@ -16,6 +17,9 @@ export function useModalInteraction(
     if (!isOpen || !dialog) return;
 
     const previousFocus = document.activeElement;
+    const focusReturn = captureFocusReturn(
+      previousFocus instanceof HTMLElement ? previousFocus : null,
+    );
     const previousOverflow = document.documentElement.style.overflow;
     const background = Array.from(document.body.children).filter(
       (element): element is HTMLElement =>
@@ -85,7 +89,7 @@ export function useModalInteraction(
       background.forEach((element, index) => {
         element.inert = previousInert[index];
       });
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+      focusReturn.restore();
     };
   }, [isOpen, ref]);
 }

@@ -162,9 +162,10 @@
 
   /* Long-form pages: print the open article, not the browser controls. */
   .content-browser-header,
-  .wiki-page__mobile-outline,
+  .wiki-reading-toolbar,
+  .appearance-panel,
   .wiki-page__outline,
-  .wiki-navigation,
+  .wiki-page__navigation,
   .wiki-outline-links {
     display: none !important;
   }

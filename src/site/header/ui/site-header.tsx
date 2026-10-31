@@ -10,6 +10,7 @@ import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { usePathname, useRouter } from '@/shared/i18n/routing';
 import type { SiteHeaderNavItem } from '@/site/header/lib/site-header-nav-item';
+import { useSiteHeaderBoundary } from '@/site/header/model/use-site-header-boundary';
 import { SiteHeaderBrand } from '@/site/header/ui/site-header-brand';
 import { SiteHeaderControls } from '@/site/header/ui/site-header-controls';
 import {
@@ -42,6 +43,8 @@ export default function SiteHeader() {
   const navbarProgressTargetRef = useRef(0);
   const navbarProgressCurrentRef = useRef(0);
   const previousActiveNavIndexRef = useRef<number | null>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  useSiteHeaderBoundary(headerRef);
 
   const mounted = useHasMounted();
 
@@ -202,7 +205,8 @@ export default function SiteHeader() {
 
   return (
     <div
-      className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}`}
+      ref={headerRef}
+      className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}${pathname === '/wiki' ? ' is-reading-page' : ''}`}
       style={
         {
           '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
@@ -228,7 +232,8 @@ export default function SiteHeader() {
               isLoadingPlayers={isLoadingPlayers}
               isMobileMenuOpen={isMobileMenuOpen}
               isOnline={isOnline}
-              localeLabel={locale === 'zh-CN' ? 'EN' : '中文'}
+              localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
+              localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
               localeTooltip={localeTooltip}
               mounted={mounted}
               networkError={networkError}
@@ -252,6 +257,9 @@ export default function SiteHeader() {
             isOpen={isMobileMenuOpen}
             items={navItems}
             onClose={() => setIsMobileMenuOpen(false)}
+            localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
+            localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
+            onLocaleSwitch={switchLocale}
           />
         </div>
       </nav>

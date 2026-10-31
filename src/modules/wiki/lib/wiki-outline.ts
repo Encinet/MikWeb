@@ -10,6 +10,39 @@ export interface WikiHeadingPosition {
   top: number;
 }
 
+export interface WikiReadingAnchor {
+  slug: string;
+  progress: number;
+}
+
+export function captureWikiReadingAnchor(
+  headings: WikiHeadingPosition[],
+  readingLine: number,
+  articleBottom: number,
+): WikiReadingAnchor | null {
+  if (!headings.length || readingLine < headings[0].top || readingLine >= articleBottom)
+    return null;
+  const index = headings.findLastIndex((heading) => heading.top <= readingLine);
+  const start = headings[index];
+  const end = headings[index + 1]?.top ?? articleBottom;
+  return {
+    slug: start.slug,
+    progress: end > start.top ? (readingLine - start.top) / (end - start.top) : 0,
+  };
+}
+
+export function resolveWikiReadingAnchor(
+  headings: WikiHeadingPosition[],
+  anchor: WikiReadingAnchor,
+  articleBottom: number,
+): number | undefined {
+  const index = headings.findIndex((heading) => heading.slug === anchor.slug);
+  if (index < 0) return undefined;
+  const start = headings[index].top;
+  const end = headings[index + 1]?.top ?? articleBottom;
+  return start + (end - start) * anchor.progress;
+}
+
 export function groupWikiOutline(items: WikiSectionOutlineItem[]): WikiOutlineGroup[] {
   const groups: WikiOutlineGroup[] = [];
   for (const item of items) {

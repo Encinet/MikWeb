@@ -22,17 +22,26 @@
       "networkError": "网络错误"
     },
     "theme": {
-      "light": "浅色模式",
-      "dark": "深色模式",
+      "appearance": "外观",
+      "shortLabel": "外观",
+      "displayMode": "显示模式",
+      "light": "浅色",
+      "dark": "深色",
       "system": "跟随系统",
       "title": "主题色",
-      "reset": "使用今日配色",
-      "invalidColor": "请输入有效色值，例如 #79b86f。",
-      "hue": "色相"
+      "daily": "今日配色",
+      "reset": "恢复今日配色"
     },
     "account": {
       "login": "登录",
       "account": "个人"
+    },
+    "controls": {
+      "display": "显示与语言",
+      "openMenu": "打开导航",
+      "closeMenu": "关闭导航",
+      "language": "语言",
+      "switchLanguage": "切换至 {language}"
     }
   },
   "pcl2Page": {

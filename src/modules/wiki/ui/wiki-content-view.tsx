@@ -13,6 +13,7 @@ import {
   pushWikiHistory,
 } from '@/modules/wiki/lib/wiki-outline';
 import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
+import type { WikiNavigationPanel } from '@/modules/wiki/model/use-wiki-navigation-panel';
 import { useWikiReading } from '@/modules/wiki/model/use-wiki-reading';
 import type {
   SearchableWikiBlock,
@@ -24,9 +25,9 @@ import type {
   WikiSectionOutlineMap,
 } from '@/modules/wiki/model/wiki-section-types';
 import { createWikiMarkdownRenderers } from '@/modules/wiki/ui/wiki-markdown-renderers';
-import { WikiMobileOutline } from '@/modules/wiki/ui/wiki-mobile-outline';
 import { WikiNavigation } from '@/modules/wiki/ui/wiki-navigation';
 import { WikiOutlineLinks } from '@/modules/wiki/ui/wiki-outline-links';
+import { WikiReadingToolbar } from '@/modules/wiki/ui/wiki-reading-toolbar';
 import { WikiSearchBox } from '@/modules/wiki/ui/wiki-search-box';
 import { WikiSearchResults } from '@/modules/wiki/ui/wiki-search-results';
 import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
@@ -81,7 +82,7 @@ export default function WikiContent({
 }: WikiContentProps) {
   const fallbackSection = sections[0]?.id || '';
   const [activeSection, setActiveSection] = useState(initialSection || fallbackSection);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [navigationPanel, setNavigationPanel] = useState<WikiNavigationPanel>(null);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialQuery);
   const [isSearchComposing, setIsSearchComposing] = useState(false);
@@ -95,6 +96,9 @@ export default function WikiContent({
       ? deferredLiveSearchQuery
       : '';
   const isSearching = activeSearchQuery.length > 0;
+  useEffect(() => {
+    if (isSearching) setNavigationPanel(null);
+  }, [isSearching]);
   const { articleRef, activeSlug, requestScroll } = useWikiReading(
     activeSection,
     activeOutline,
@@ -153,7 +157,7 @@ export default function WikiContent({
       setActiveSection((currentSection) =>
         currentSection === nextSection ? currentSection : nextSection,
       );
-      setIsSidebarOpen(false);
+      setNavigationPanel(null);
       if (window.location.hash || event) {
         requestScroll({
           sectionId: nextSection,
@@ -227,7 +231,7 @@ export default function WikiContent({
   };
 
   const handleSectionChange = (id: WikiSectionId) => {
-    setIsSidebarOpen(false);
+    setNavigationPanel(null);
     committedSearchQuery.current = '';
     setActiveSection(id);
     setSearchQuery('');
@@ -237,7 +241,7 @@ export default function WikiContent({
   };
 
   const handleSearchResultOpen = (result: (typeof searchResults)[number]) => {
-    setIsSidebarOpen(false);
+    setNavigationPanel(null);
     committedSearchQuery.current = '';
     setActiveSection(result.sectionId);
     setSearchQuery('');
@@ -288,28 +292,33 @@ export default function WikiContent({
             }
           />
 
-          <div className={`wiki-page__layout ${isSearching ? 'is-searching' : ''}`}>
-            <WikiNavigation
-              activeSection={activeSection}
-              isSearching={isSearching}
-              isSidebarOpen={isSidebarOpen}
-              navigationLabel={navigation}
-              onSectionChange={handleSectionChange}
-              onSidebarOpenChange={setIsSidebarOpen}
-              sectionGroups={sectionGroups}
-            />
+          <div
+            className={`wiki-page__layout ${!isSearching && activeOutline.length > 0 ? 'has-outline' : ''}`}
+          >
+            <aside className="wiki-page__navigation">
+              <WikiNavigation
+                activeSection={activeSection}
+                isSearching={isSearching}
+                navigationLabel={navigation}
+                onSectionChange={handleSectionChange}
+                sectionGroups={sectionGroups}
+              />
+            </aside>
 
             <div className="wiki-page__content-column">
-              {!isSearching && activeOutline.length > 0 ? (
-                <WikiMobileOutline
-                  key={activeSection}
-                  activeSlug={activeSlug}
-                  sectionId={activeSection}
-                  items={activeOutline}
-                  label={onThisPage}
-                  onOpen={handleOutlineOpen}
-                />
-              ) : null}
+              <WikiReadingToolbar
+                activeSection={activeSection}
+                activeSlug={activeSlug}
+                isSearching={isSearching}
+                items={activeOutline}
+                navigationLabel={navigation}
+                outlineLabel={onThisPage}
+                sectionGroups={sectionGroups}
+                panel={navigationPanel}
+                onPanelChange={setNavigationPanel}
+                onSectionChange={handleSectionChange}
+                onOutlineOpen={handleOutlineOpen}
+              />
               <div className="wiki-page__content-panel">
                 <AnimatePresence mode="wait" initial={false}>
                   {isSearching ? (
