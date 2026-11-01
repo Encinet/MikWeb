@@ -26,7 +26,7 @@ export function isBuildingSortKey(value: string): value is BuildingSortKey {
 }
 
 export function getBuildingId(building: Building): string {
-  const hashSource = `${building.coordinates.x}-${building.coordinates.y}-${building.coordinates.z}-${building.buildDate}-${building.builders.map((builder) => builder.uuid).join('-')}`;
+  const hashSource = `${building.coordinates.world}-${building.coordinates.x}-${building.coordinates.y}-${building.coordinates.z}-${building.buildDate}-${building.builders.map((builder) => builder.uuid).join('-')}`;
   let hash = 0;
 
   for (let index = 0; index < hashSource.length; index += 1) {

@@ -1,4 +1,5 @@
 import type { Building } from '@/modules/building/model/building-types';
+import { isWorldName } from '@/modules/building/model/building-types';
 import type {
   BuilderDraft,
   BuildingSubmissionFormState,
@@ -22,8 +23,17 @@ export function buildBuildingSubmissionPayload(
   if (required.some((value) => !value.trim())) throw new Error('required');
   if (!builders.length) throw new Error('buildersRequired');
   if (!imageUrls.length) throw new Error('imagesRequired');
-  const coordinates = { x: Number(form.x), y: Number(form.y), z: Number(form.z) };
+  const coordinates = {
+    world: form.world.trim(),
+    x: Number(form.x),
+    y: Number(form.y),
+    z: Number(form.z),
+  };
   if (
+    !isWorldName(coordinates.world) ||
+    !form.x.trim() ||
+    !form.y.trim() ||
+    !form.z.trim() ||
     !Number.isFinite(coordinates.x) ||
     !Number.isFinite(coordinates.y) ||
     !Number.isFinite(coordinates.z)

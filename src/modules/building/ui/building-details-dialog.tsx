@@ -69,7 +69,7 @@ export function BuildingDetailsDialog({
   useModalInteraction(dialogRef, mounted && Boolean(building), onClose);
   const shouldReduceMotion = useReducedMotion();
   const buildingKey = building
-    ? `${building.coordinates.x}:${building.coordinates.y}:${building.coordinates.z}:${building.buildDate}`
+    ? `${building.coordinates.world}:${building.coordinates.x}:${building.coordinates.y}:${building.coordinates.z}:${building.buildDate}`
     : null;
   const [expandedState, setExpandedState] = useState<{
     buildingKey: string | null;
@@ -227,7 +227,8 @@ export function BuildingDetailsDialog({
                       aria-hidden="true"
                     />
                     <span className="building-archive-info-bar__meta-value">
-                      {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}
+                      {building.coordinates.world} · {building.coordinates.x},{' '}
+                      {building.coordinates.y}, {building.coordinates.z}
                     </span>
                   </span>
                   <span className="building-archive-info-bar__meta-item">

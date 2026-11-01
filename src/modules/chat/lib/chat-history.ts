@@ -112,7 +112,7 @@ export async function currentHistoryLease(owner: string): Promise<HistoryLease |
   });
 }
 
-export async function resetHistory(owner: string, persist: boolean): Promise<HistoryLease | null> {
+export async function resetHistory(owner: string, persist?: false): Promise<HistoryLease | null> {
   const db = await openDatabase();
   const lease = await transaction<HistoryLease | null>(db, 'readwrite', (state, messages, done) => {
     const request = state.get('current');
@@ -122,7 +122,11 @@ export async function resetHistory(owner: string, persist: boolean): Promise<His
         done(null);
         return;
       }
-      const next = { owner, epoch: crypto.randomUUID(), persist, staff: previous.staff };
+      const next = {
+        ...previous,
+        epoch: crypto.randomUUID(),
+        persist: persist ?? previous.persist,
+      };
       state.put(next, 'current');
       messages.clear();
       done(next);
@@ -130,6 +134,58 @@ export async function resetHistory(owner: string, persist: boolean): Promise<His
   });
   announceHistoryChange();
   return lease;
+}
+
+export async function enableHistory(
+  owner: string,
+  records: ChatMessage[],
+): Promise<HistoryLease | null> {
+  const db = await openDatabase();
+  const lease = await transaction<HistoryLease | null>(db, 'readwrite', (state, messages, done) => {
+    const request = state.get('current');
+    request.onsuccess = () => {
+      const previous = readState(request.result);
+      if (previous?.owner !== owner) {
+        done(null);
+        return;
+      }
+      const next = { ...previous, persist: true };
+      state.put(next, 'current');
+      for (const message of records) {
+        if (
+          message.createdAt <= Date.now() - MAX_AGE ||
+          !mayReadMessage(message, owner, next.staff)
+        )
+          continue;
+        messages.put({
+          key: `${owner}:${message.id}`,
+          owner,
+          createdAt: message.createdAt,
+          message,
+        });
+      }
+      trimHistory(messages, owner);
+      done(next);
+    };
+  });
+  announceHistoryChange();
+  return lease;
+}
+
+function trimHistory(messages: IDBObjectStore, owner: string): void {
+  const index = messages.index('ownerTime');
+  const count = index.count(range(owner));
+  count.onsuccess = () => {
+    let excess = count.result - MAX_RECORDS;
+    if (excess <= 0) return;
+    const oldest = index.openCursor(range(owner));
+    oldest.onsuccess = () => {
+      const cursor = oldest.result;
+      if (!cursor) return;
+      cursor.delete();
+      if (--excess > 0) cursor.continue();
+    };
+  };
 }
 
 export async function loadHistory(lease: HistoryLease): Promise<ChatMessage[]> {
@@ -184,19 +240,7 @@ export async function saveHistory(lease: HistoryLease, message: ChatMessage): Pr
       )
         return;
       messages.put({ key: `${owner}:${message.id}`, owner, createdAt: message.createdAt, message });
-      const index = messages.index('ownerTime');
-      const count = index.count(range(owner));
-      count.onsuccess = () => {
-        let excess = count.result - MAX_RECORDS;
-        if (excess <= 0) return;
-        const oldest = index.openCursor(range(owner));
-        oldest.onsuccess = () => {
-          const cursor = oldest.result;
-          if (!cursor) return;
-          cursor.delete();
-          if (--excess > 0) cursor.continue();
-        };
-      };
+      trimHistory(messages, owner);
     };
   });
 }

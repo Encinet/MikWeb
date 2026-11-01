@@ -8,6 +8,7 @@ export interface Builder extends PlayerIdentity {
 }
 
 export interface Coordinates {
+  world: string;
   x: number;
   y: number;
   z: number;
@@ -65,9 +66,25 @@ export function isBuilder(value: unknown): value is Builder {
 export function isCoordinates(value: unknown): value is Coordinates {
   return (
     isObjectRecord(value) &&
+    isWorldName(value.world) &&
     typeof value.x === 'number' &&
+    Number.isFinite(value.x) &&
     typeof value.y === 'number' &&
-    typeof value.z === 'number'
+    Number.isFinite(value.y) &&
+    typeof value.z === 'number' &&
+    Number.isFinite(value.z)
+  );
+}
+
+export function isWorldName(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.trim().length > 0 &&
+    value.length <= 128 &&
+    [...value].every((character) => {
+      const code = character.codePointAt(0) ?? 0;
+      return code > 31 && (code < 127 || code > 159);
+    })
   );
 }
 

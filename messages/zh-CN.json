@@ -33,10 +33,6 @@
       "daily": "今日配色",
       "reset": "恢复今日配色"
     },
-    "account": {
-      "login": "登录",
-      "account": "个人"
-    },
     "controls": {
       "display": "显示与语言",
       "openMenu": "打开导航",
@@ -156,8 +152,7 @@
       "description": "展示服务器内玩家的精彩建筑作品"
     },
     "hero": {
-      "title": "建筑收录",
-      "description": "展示服务器内玩家的精彩建筑作品"
+      "title": "建筑收录"
     },
     "search": {
       "clear": "清除搜索",
@@ -188,10 +183,6 @@
       "replica": "搬运"
     },
     "fields": {
-      "coordinates": "坐标",
-      "builder": "建造者",
-      "builders": "建造者",
-      "buildDate": "建造日期",
       "originalAuthor": "原作者",
       "source": "来源"
     },
@@ -216,10 +207,12 @@
     },
     "actions": {
       "close": "关闭",
+      "cancel": "取消",
       "copy": "复制",
       "copied": "已复制",
       "copyFailed": "复制失败",
-      "copyHelp": "复制失败，请选中文本手动复制。"
+      "copyHelp": "复制失败，请选中文本手动复制。",
+      "login": "登录"
     }
   },
   "notFound": {
@@ -237,8 +230,7 @@
       "description": "了解服务器规则、指令和游戏技巧"
     },
     "hero": {
-      "title": "游戏指南",
-      "description": "了解服务器规则、指令和游戏技巧"
+      "title": "游戏指南"
     },
     "navigation": {
       "title": "导航",
@@ -258,10 +250,6 @@
     }
   },
   "map": {
-    "meta": {
-      "title": "服务器地图",
-      "description": "在站内查看 Mik 服务器实时地图、世界坐标和玩家活动区域"
-    },
     "actions": {
       "openExternal": "新窗口打开地图"
     },
@@ -274,8 +262,7 @@
       "description": "查看服务器封禁记录"
     },
     "hero": {
-      "title": "封禁列表",
-      "description": "查看服务器封禁记录"
+      "title": "封禁列表"
     },
     "states": {
       "loading": "加载中...",
@@ -317,7 +304,6 @@
       },
       "codePanel": {
         "title": "验证码",
-        "empty": "先生成验证码，然后回到游戏内确认",
         "copyLabel": "复制网页登录命令",
         "remaining": "有效期剩余 {time}",
         "instructions": "在服务器内执行下方命令，确认后将自动登录。",
@@ -328,7 +314,6 @@
         "account": "进入个人页"
       },
       "states": {
-        "loading": "正在处理",
         "completing": "正在完成登录",
         "copied": "已复制",
         "expired": "验证码已过期，请重新生成",
@@ -346,32 +331,27 @@
       }
     },
     "account": {
-      "title": "个人界面",
+      "title": "个人中心",
       "subtitle": "个人概览",
       "loading": "加载中",
       "navigation": {
         "label": "个人中心导航",
         "overview": "个人概览",
-        "buildingSubmission": "建筑收入申请",
+        "buildingSubmission": "建筑投稿",
         "security": "登录与安全",
         "chat": "网页聊天"
-      },
-      "overview": {
-        "description": "账号状态与功能入口"
       },
       "signedOut": {
         "title": "尚未登录",
         "description": "请先通过游戏内验证码或 Passkey 登录"
       },
       "fields": {
-        "passkeys": "Passkey 数量",
+        "passkeys": "Passkey",
         "uuid": "玩家 UUID"
       },
       "actions": {
-        "login": "前往登录",
-        "buildingSubmission": "建筑收入申请",
-        "security": "登录与安全",
-        "logout": "退出登录"
+        "logout": "退出登录",
+        "managePasskeys": "管理"
       },
       "roles": {
         "member": "成员",
@@ -383,11 +363,7 @@
     "security": {
       "title": "登录与安全",
       "subtitle": "管理当前网页会话和可用于登录的 Passkey",
-      "signedOut": {
-        "title": "请先登录"
-      },
       "actions": {
-        "login": "前往登录",
         "addPasskey": "添加 Passkey",
         "delete": "删除",
         "revokeSession": "注销",
@@ -438,14 +414,9 @@
     }
   },
   "buildingSubmission": {
-    "eyebrow": "Member Submission",
-    "title": "建筑收入申请",
-    "subtitle": "提交你希望收入建筑展示的作品，管理员审核通过后会进入公开建筑列表",
+    "title": "建筑投稿",
+    "subtitle": "提交你的作品，审核通过后将展示在建筑收录中。",
     "quota": "待审核 / {max}",
-    "signedOut": {
-      "title": "请先登录",
-      "description": "建筑收入申请仅正式成员可使用"
-    },
     "sections": {
       "basic": "基本信息",
       "location": "建筑坐标",
@@ -461,6 +432,7 @@
       "descriptionEn": "英文描述",
       "buildType": "建筑类型",
       "buildDate": "建造日期",
+      "world": "世界名",
       "playerPlaceholder": "输入玩家名后按空格或 Enter",
       "weight": "权重",
       "totalWeight": "总权重 {total}",
@@ -477,7 +449,6 @@
       "replica": "复刻"
     },
     "actions": {
-      "login": "前往登录",
       "submit": "提交申请",
       "reset": "清空",
       "refresh": "刷新",
@@ -506,7 +477,7 @@
       "required": "中文和英文内容都需要填写",
       "buildersRequired": "至少需要一个建造者",
       "imagesRequired": "至少需要一张图片",
-      "coordinatesRequired": "坐标需要填写数字",
+      "coordinatesRequired": "请填写世界名和有效坐标",
       "sourceRequired": "二创和复刻需要填写完整来源",
       "invalid": "表单内容有误",
       "uploadLimited": "上传过于频繁或已有上传正在处理，请稍后重试。"
@@ -592,8 +563,7 @@
   },
   "chat": {
     "title": "聊天",
-    "join": "加入聊天",
-    "leave": "离开聊天",
+    "retry": "重新连接",
     "send": "发送",
     "you": "你",
     "game": "游戏内",
@@ -605,16 +575,17 @@
     "search": "查找在线玩家",
     "yourPresence": "{name}，这是你的账号",
     "startPrivate": "与 {name} 发起私聊",
+    "newPrivate": "新建私聊",
+    "participants": "当前频道在线玩家",
+    "mentionPlayers": "提及在线玩家",
     "nobodyOnline": "暂无其他在线玩家",
-    "joinToSeePlayers": "加入聊天后查看在线玩家",
     "emptyHistory": "还没有消息",
     "composeLabel": "向{channel}发送消息",
-    "composeOffline": "加入聊天后可以发送，草稿会保留。",
-    "privateOffline": "对方已离线，草稿已保留。",
-    "saveLocally": "在本浏览器保存记录",
-    "localHistoryHelp": "仅保存在此浏览器，保留 30 天，最多 1000 条。关闭保存、退出登录或切换账号时清空。",
+    "privateOffline": "对方已离线，无法发送。",
+    "saveLocally": "保存本机记录",
     "clearHistory": "清空本机记录",
-    "clearConfirm": "清空此账号在本浏览器保存的全部聊天记录？清空后无法恢复，其他设备和对方的记录不受影响。",
+    "clearAction": "清空",
+    "clearConfirm": "清空本机记录？此操作无法撤销。",
     "storageFailed": "浏览器无法保存记录，实时聊天仍可使用。本次记录可能在关闭页面后丢失。",
     "restoreDraft": "恢复到输入框",
     "webJoined": "{name} 加入了网页聊天",
@@ -643,52 +614,49 @@
     },
     "errors": {
       "default": "聊天暂时不可用，请稍后重试。",
-      "connection_failed": "聊天连接中断，正在尝试恢复。",
+      "connection_failed": "聊天连接失败。",
       "chat_unavailable": "聊天服务暂时不可用。",
       "auth_upstream_unavailable": "登录验证暂时不可用。",
       "chat_busy": "聊天服务繁忙，请稍后发送。",
       "invalid_response": "聊天响应异常，连接已关闭。",
       "invalid_message": "请发送不超过 1000 个字符、4 KiB 的单行文字。",
-      "recipient_unavailable": "对方不在线或暂时无法接收私聊。",
+      "recipient_unavailable": "对方已离线或无法接收私聊。",
       "staff_required": "你当前没有 staff 聊天权限。",
       "rate_limited": "发送过于频繁，请稍后再试。",
       "request_conflict": "发送编号冲突，请重新发送。",
       "connection_limit": "此账号的网页连接已达上限，请先关闭其他聊天页面。",
       "connection_unavailable": "此连接已失效，正在重新连接。",
-      "session_changed": "登录账号发生变化，请重新加入聊天。",
+      "session_changed": "登录账号发生变化，请重新连接。",
       "session_revoked": "此登录已退出，聊天连接已关闭。",
       "credentials_changed": "账号凭据已更新，请重新登录。",
       "chat_forbidden": "此账号当前无法使用网页聊天。",
       "authorization_expired": "聊天授权已到期。",
       "authorization_timeout": "聊天授权超时，请重试。",
       "connection_timeout": "连接已失去响应。",
-      "unauthenticated": "请先登录，再加入聊天。",
+      "unauthenticated": "请先登录。",
       "member_required": "网页聊天仅向当前社区成员开放。",
       "chat_capacity": "网页聊天连接已满，请稍后重试。"
     },
     "staffUnavailable": "Staff 权限已失效，请手动选择其他频道。",
     "settings": "聊天设置",
     "backHome": "返回首页",
-    "backAccount": "个人界面",
-    "login": "登录后加入",
+    "backAccount": "个人中心",
     "today": "今天",
     "latest": "回到最新",
-    "emptyOffline": "加入，和大家聊聊。",
     "privatePlaceholder": "私聊 {name}",
     "channelPlaceholder": "发送到{channel}",
     "noPlayersFound": "没有匹配的在线玩家",
     "confirmClear": "确认清空",
     "description": "与游戏内和网页玩家实时聊天。",
     "notifications": {
-      "off": "开启提及和私聊通知",
-      "on": "提及和私聊通知已开启",
+      "label": "私聊与提及通知",
       "unsupported": "此浏览器不支持网页通知",
       "denied": "通知已被浏览器阻止",
       "error": "通知未能启用，点击重试",
-      "help": "提醒新私聊和提及，并显示消息内容。每台设备单独开启；同一浏览器的标签页合并提醒。",
       "mentionTitle": "{name} 在{channel}频道提到了你",
       "public": "公共",
       "staff": "Staff"
-    }
+    },
+    "disableHistoryConfirm": "关闭保存并清空本机记录？"
   }
 }

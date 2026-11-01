@@ -31,6 +31,7 @@ export interface BuildingSubmissionFormState {
   descriptionZh: string;
   descriptionEn: string;
   buildType: BuildType;
+  world: string;
   x: string;
   y: string;
   z: string;
@@ -48,6 +49,7 @@ export function createInitialBuildingSubmissionForm(): BuildingSubmissionFormSta
     descriptionZh: '',
     descriptionEn: '',
     buildType: 'original',
+    world: 'world',
     x: '',
     y: '64',
     z: '',

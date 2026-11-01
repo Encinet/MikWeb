@@ -5,15 +5,7 @@ import type {
   RegistrationResponseJSON,
 } from '@simplewebauthn/browser';
 import { startRegistration } from '@simplewebauthn/browser';
-import {
-  KeyRound,
-  Loader2,
-  LogOut,
-  MonitorSmartphone,
-  Plus,
-  ShieldCheck,
-  Trash2,
-} from 'lucide-react';
+import { KeyRound, Loader2, LogOut, MonitorSmartphone, Plus, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AccountSecurityResponse } from '@/modules/auth/model/auth-types';
@@ -292,20 +284,28 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
 
   return (
     <>
-      <section className="account-detail-panel">
-        <div className="account-detail-panel__header">
-          <div className="account-detail-panel__title">
-            <span>
-              <MonitorSmartphone className="h-4 w-4" />
-            </span>
-            <div>
-              <h1>{t('sections.sessions')}</h1>
-              <p>{t('session.description')}</p>
-            </div>
+      <header className="account-page-heading">
+        <h1>{t('title')}</h1>
+        {message ? (
+          <p className="ui-inline-message" role="status">
+            {message}
+          </p>
+        ) : null}
+        {reauthentication ? (
+          <Link href="/login?next=security" className="account-text-link">
+            {t('actions.reauthenticate')}
+          </Link>
+        ) : null}
+      </header>
+      <section className="account-section" aria-labelledby="account-sessions-title">
+        <div className="account-section__header">
+          <div>
+            <h2 id="account-sessions-title">{t('sections.sessions')}</h2>
+            <p>{t('session.description')}</p>
           </div>
           <button
             type="button"
-            className="account-action-button account-action-button--danger"
+            className="ui-action-button ui-action-button--danger"
             disabled={isMutating || !security?.sessions.length}
             onClick={() => {
               setMessage(null);
@@ -317,18 +317,18 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
           </button>
         </div>
 
-        <div className="account-settings-list">
+        <div className="ui-settings-list">
           {(security?.sessions ?? []).map((session) => (
-            <div key={session.id} className="account-setting-row">
-              <div className="account-setting-row__label">
+            <div key={session.id} className="ui-setting-row">
+              <div className="ui-setting-row__label">
                 <span>
-                  <MonitorSmartphone className="h-5 w-5" />
+                  <MonitorSmartphone className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
                   <strong>
                     {t(`session.method.${session.authMethod}`)}
                     {session.current ? (
-                      <em className="account-setting-row__pill">{t('session.current')}</em>
+                      <em className="ui-setting-row__pill">{t('session.current')}</em>
                     ) : null}
                   </strong>
                   <small>
@@ -339,34 +339,31 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
                   </small>
                 </div>
               </div>
-              <button
-                type="button"
-                className="account-action-button account-action-button--danger"
-                disabled={isMutating || session.current}
-                onClick={() => void revokeSession(session.id)}
-              >
-                <LogOut className="h-4 w-4" />
-                {session.current ? t('session.current') : t('actions.revokeSession')}
-              </button>
+              {!session.current ? (
+                <button
+                  type="button"
+                  className="ui-action-button ui-action-button--danger"
+                  disabled={isMutating}
+                  onClick={() => void revokeSession(session.id)}
+                >
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                  {t('actions.revokeSession')}
+                </button>
+              ) : null}
             </div>
           ))}
         </div>
       </section>
 
-      <section className="account-detail-panel">
-        <div className="account-detail-panel__header">
-          <div className="account-detail-panel__title">
-            <span>
-              <ShieldCheck className="h-4 w-4" />
-            </span>
-            <div>
-              <h1>{t('sections.passkeys')}</h1>
-              <p>{t('passkey.description')}</p>
-            </div>
+      <section className="account-section" aria-labelledby="account-passkeys-title">
+        <div className="account-section__header">
+          <div>
+            <h2 id="account-passkeys-title">{t('sections.passkeys')}</h2>
+            <p>{t('passkey.description')}</p>
           </div>
           <button
             type="button"
-            className="account-action-button account-action-button--primary"
+            className="ui-action-button ui-action-button--primary"
             disabled={isMutating}
             onClick={registerPasskey}
           >
@@ -379,12 +376,12 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
           </button>
         </div>
 
-        <div className="account-settings-list">
+        <div className="ui-settings-list">
           {(security?.passkeys ?? []).map((passkey) => (
-            <div key={passkey.credentialId} className="account-setting-row">
-              <div className="account-setting-row__label">
+            <div key={passkey.credentialId} className="ui-setting-row">
+              <div className="ui-setting-row__label">
                 <span>
-                  <KeyRound className="h-5 w-5" />
+                  <KeyRound className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
                   <strong>{passkey.displayName || t('passkey.defaultName')}</strong>
@@ -395,35 +392,22 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
               </div>
               <button
                 type="button"
-                className="account-action-button account-action-button--danger"
+                className="ui-action-button ui-action-button--danger"
                 disabled={isMutating}
                 onClick={() =>
                   setConfirmation({ type: 'delete-passkey', credentialId: passkey.credentialId })
                 }
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
                 {t('actions.delete')}
               </button>
             </div>
           ))}
 
           {security && security.passkeys.length === 0 ? (
-            <div className="account-setting-row account-setting-row--empty">
-              {t('passkey.empty')}
-            </div>
+            <div className="ui-setting-row ui-setting-row--empty">{t('passkey.empty')}</div>
           ) : null}
         </div>
-
-        {message ? (
-          <div className="account-inline-message" role="status">
-            {message}
-          </div>
-        ) : null}
-        {reauthentication ? (
-          <Link href="/login?next=security" className="account-action-button">
-            {t('actions.reauthenticate')}
-          </Link>
-        ) : null}
       </section>
       <AppDialog
         isOpen={confirmation !== null}
@@ -450,30 +434,32 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
           <Link href="/login?next=security">{t('actions.reauthenticate')}</Link>
         ) : null}
         {message ? <p role="status">{message}</p> : null}
-        <button
-          type="button"
-          className="account-action-button"
-          disabled={isMutating}
-          data-dialog-initial-focus
-          onClick={() => setConfirmation(null)}
-        >
-          {t('actions.cancel')}
-        </button>
-        <button
-          type="button"
-          className="account-action-button account-action-button--danger"
-          disabled={isMutating}
-          aria-busy={isMutating}
-          onClick={() => {
-            if (!confirmation) return;
-            if (confirmation.type === 'delete-passkey')
-              void deletePasskey(confirmation.credentialId);
-            else void signOutAllSessions();
-          }}
-        >
-          {isMutating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-          {confirmationLabel}
-        </button>
+        <div className="account-dialog-actions">
+          <button
+            type="button"
+            className="ui-action-button"
+            disabled={isMutating}
+            data-dialog-initial-focus
+            onClick={() => setConfirmation(null)}
+          >
+            {t('actions.cancel')}
+          </button>
+          <button
+            type="button"
+            className="ui-action-button ui-action-button--danger"
+            disabled={isMutating}
+            aria-busy={isMutating}
+            onClick={() => {
+              if (!confirmation) return;
+              if (confirmation.type === 'delete-passkey')
+                void deletePasskey(confirmation.credentialId);
+              else void signOutAllSessions();
+            }}
+          >
+            {isMutating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+            {confirmationLabel}
+          </button>
+        </div>
       </AppDialog>
     </>
   );

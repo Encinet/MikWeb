@@ -64,38 +64,6 @@
   font-size: 0.8rem;
 }
 
-.wiki-navigation__item {
-  text-decoration: none;
-  display: flex;
-  width: 100%;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
-  border: 0;
-  border-radius: 0.8rem;
-  background: transparent;
-  color: var(--theme-text-muted-strong);
-  cursor: pointer;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  text-align: left;
-  transition:
-    color 160ms ease,
-    background-color 160ms ease;
-}
-
-.wiki-navigation__item:hover {
-  background: var(--theme-surface-hover);
-  color: var(--theme-text-heading);
-}
-
-.wiki-navigation__item.is-active {
-  background: color-mix(in srgb, var(--theme-accent-strong) 9%, transparent);
-  color: var(--theme-accent-strong);
-  font-weight: 600;
-}
-
 .wiki-reading-toolbar {
   position: sticky;
   top: var(--wiki-sticky-top);
@@ -689,7 +657,6 @@
 
 .wiki-markdown:focus-visible,
 .wiki-markdown [tabindex="-1"]:focus-visible,
-.wiki-navigation__item:focus-visible,
 .wiki-reading-toolbar__button:focus-visible,
 .wiki-reading-panel__close:focus-visible,
 .wiki-outline-links__item:focus-visible,
@@ -700,7 +667,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wiki-navigation__item,
   .wiki-reading-toolbar__button,
   .wiki-outline-links__item,
   .wiki-search-results__item {

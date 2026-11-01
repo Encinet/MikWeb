@@ -347,6 +347,10 @@
 .home-building-preview__coordinates svg {
   flex-shrink: 0;
 }
+.home-building-preview__coordinates > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .home-building-empty {
   display: flex;
   align-items: center;

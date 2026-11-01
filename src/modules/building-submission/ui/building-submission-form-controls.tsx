@@ -28,6 +28,7 @@ export function Section({
 export function TextField({
   className,
   label,
+  maxLength,
   onChange,
   required = false,
   type = 'text',
@@ -35,6 +36,7 @@ export function TextField({
 }: {
   className?: string;
   label: string;
+  maxLength?: number;
   onChange: (value: string) => void;
   required?: boolean;
   type?: string;
@@ -49,6 +51,7 @@ export function TextField({
       <input
         id={id}
         required={required}
+        maxLength={maxLength}
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}

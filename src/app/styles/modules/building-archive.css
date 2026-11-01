@@ -386,6 +386,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+.building-archive-card__info .coords > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.building-archive-card__info .coords > svg {
+  flex-shrink: 0;
+}
+
 .building-archive-card__info .builders {
   display: flex;
   min-width: 0;

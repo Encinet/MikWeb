@@ -6,6 +6,7 @@ import { useAuth } from '@/modules/auth/model/use-auth';
 import type { HistoryLease } from '@/modules/chat/lib/chat-history';
 import {
   currentHistoryLease,
+  enableHistory,
   loadHistory,
   onHistoryChange,
   resetHistory,
@@ -17,7 +18,7 @@ import type {
   ChatAccess,
   ChatDestination,
   ChatMessage,
-  ChatPeer,
+  ChatPresence,
 } from '@/modules/chat/model/chat-protocol';
 import { chatServerEventSchema, mayReadMessage } from '@/modules/chat/model/chat-protocol';
 
@@ -33,6 +34,7 @@ interface PresenceNotice {
   joined: boolean;
 }
 type ConnectionStatus = 'idle' | 'connecting' | 'authorizing' | 'online' | 'reconnecting' | 'error';
+const EMPTY_PRESENCE: ChatPresence = { players: [], staffPlayers: [] };
 
 function mergeMessages(existing: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
   const messages = new Map(existing.map((message) => [message.id, message]));
@@ -50,7 +52,7 @@ export function useWebChat() {
   const accountStaff = isStaffRole(account?.role);
   const [status, setStatus] = useState<ConnectionStatus>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [players, setPlayers] = useState<ChatPeer[]>([]);
+  const [presence, setPresence] = useState<ChatPresence>(EMPTY_PRESENCE);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [pending, setPending] = useState<PendingChatMessage[]>([]);
   const [notice, setNotice] = useState<PresenceNotice | null>(null);
@@ -64,6 +66,7 @@ export function useWebChat() {
   const reconnect = useRef<ReturnType<typeof setTimeout> | null>(null);
   const authorizing = useRef<AbortController | null>(null);
   const lease = useRef<HistoryLease | null>(null);
+  const historyOwner = useRef<string | null>(null);
   const allowedStaff = useRef(accountStaff);
   const dialRef = useRef<() => void>(() => undefined);
   const liveMessage = useRef<LiveMessageListener | undefined>(undefined);
@@ -82,7 +85,7 @@ export function useWebChat() {
     authorizing.current = null;
     socket.current?.close(1000);
     socket.current = null;
-    setPlayers([]);
+    setPresence(EMPTY_PRESENCE);
     setNotice(null);
     setPending((current) =>
       current.map((message) =>
@@ -97,6 +100,7 @@ export function useWebChat() {
       if (!current() || !owner) return;
       allowedStaff.current = staff;
       setStaff(staff);
+      if (!staff) setPresence((current) => ({ ...current, staffPlayers: [] }));
       setMessages((records) => records.filter((record) => mayReadMessage(record, owner, staff)));
       void setStaffHistoryPermission(owner, staff).catch(() => {
         if (current()) setStorageFailed(true);
@@ -106,67 +110,10 @@ export function useWebChat() {
   );
 
   useEffect(() => {
-    stop();
-    lease.current = null;
-    setMessages([]);
-    setPending([]);
-    setError(null);
-    allowedStaff.current = false;
-    setStaff(false);
-    if (!owner || !verified) return;
-    let current = true;
-    const load = async (initialize: boolean) => {
-      try {
-        const next = initialize
-          ? await syncHistoryAccount(owner, () => current)
-          : await currentHistoryLease(owner);
-        if (!current) return;
-        if (lease.current?.epoch !== next?.epoch) setMessages([]);
-        lease.current = next;
-        if (!next) {
-          stop();
-          setMessages([]);
-          return;
-        }
-        setPersist(next.persist);
-        const records = await loadHistory(next);
-        if (!current || lease.current?.epoch !== next.epoch) return;
-        setMessages((existing) =>
-          mergeMessages(records, existing).filter((message) =>
-            mayReadMessage(message, owner, allowedStaff.current),
-          ),
-        );
-      } catch {
-        if (current) setStorageFailed(true);
-      }
-    };
-    void load(true);
-    const unsubscribe = onHistoryChange(() => {
-      void load(false);
-    });
-    return () => {
-      current = false;
-      unsubscribe();
-      stop();
-      lease.current = null;
-    };
-  }, [owner, verified, stop]);
-
-  useEffect(() => {
     if (!notice) return;
     const timeout = setTimeout(() => setNotice(null), 7000);
     return () => clearTimeout(timeout);
   }, [notice]);
-
-  useEffect(() => {
-    let current = true;
-    // Account metadata initializes history access; an active connection owns its live permissions.
-    if (owner && verified && !socket.current)
-      applyPermissions(accountStaff, () => current && !socket.current);
-    return () => {
-      current = false;
-    };
-  }, [owner, verified, accountStaff, applyPermissions]);
 
   const dial = useCallback(() => {
     if (!owner || !verified || !wanted.current) return;
@@ -309,7 +256,10 @@ export function useWebChat() {
           break;
         }
         case 'presence':
-          setPlayers(message.players);
+          setPresence({
+            players: message.players,
+            staffPlayers: allowedStaff.current ? message.staffPlayers : [],
+          });
           break;
         case 'presence_notice':
           setNotice({ name: message.name, joined: message.joined });
@@ -350,7 +300,7 @@ export function useWebChat() {
                 : item,
             ),
           );
-          setError(message.error);
+          if (!message.requestId) setError(message.error);
           break;
         }
       }
@@ -361,7 +311,7 @@ export function useWebChat() {
       authorizing.current?.abort();
       authorizing.current = null;
       socket.current = null;
-      setPlayers([]);
+      setPresence(EMPTY_PRESENCE);
       setPending((existing) =>
         existing.map((item) => (item.status === 'sending' ? { ...item, status: 'unknown' } : item)),
       );
@@ -383,13 +333,77 @@ export function useWebChat() {
     dialRef.current = dial;
   }, [dial]);
 
-  const join = useCallback(() => {
+  const retry = useCallback(() => {
     if (socket.current || !owner || !verified) return;
     if (reconnect.current) clearTimeout(reconnect.current);
     wanted.current = true;
     attempt.current = 0;
-    dial();
-  }, [dial, owner, verified]);
+    dialRef.current();
+  }, [owner, verified]);
+
+  useEffect(() => {
+    stop();
+    historyOwner.current = null;
+    lease.current = null;
+    setMessages([]);
+    setPending([]);
+    setError(null);
+    allowedStaff.current = false;
+    setStaff(false);
+    if (!owner || !verified) return;
+    historyOwner.current = owner;
+    setStatus('connecting');
+    let current = true;
+    const load = async (initialize: boolean) => {
+      try {
+        const next = initialize
+          ? await syncHistoryAccount(owner, () => current)
+          : await currentHistoryLease(owner);
+        if (!current) return;
+        if (lease.current && lease.current.epoch !== next?.epoch) setMessages([]);
+        lease.current = next;
+        if (!next) {
+          stop();
+          setMessages([]);
+          return;
+        }
+        setPersist(next.persist);
+        const records = await loadHistory(next);
+        if (!current || lease.current?.epoch !== next.epoch) return;
+        setMessages((existing) =>
+          mergeMessages(records, existing).filter((message) =>
+            mayReadMessage(message, owner, allowedStaff.current),
+          ),
+        );
+      } catch {
+        if (current) setStorageFailed(true);
+      } finally {
+        // History initialization cannot overwrite live traffic; unavailable storage still permits chat.
+        if (initialize && current) retry();
+      }
+    };
+    void load(true);
+    const unsubscribe = onHistoryChange(() => {
+      void load(false);
+    });
+    return () => {
+      current = false;
+      unsubscribe();
+      historyOwner.current = null;
+      lease.current = null;
+      stop();
+    };
+  }, [owner, verified, retry, stop]);
+
+  useEffect(() => {
+    let current = true;
+    // Account metadata initializes history access; an active connection owns its live permissions.
+    if (owner && verified && !socket.current)
+      applyPermissions(accountStaff, () => current && !socket.current);
+    return () => {
+      current = false;
+    };
+  }, [owner, verified, accountStaff, applyPermissions]);
 
   const send = useCallback(
     (destination: ChatDestination, text: string): boolean => {
@@ -413,7 +427,7 @@ export function useWebChat() {
       }
       if (
         destination.channel === 'private' &&
-        !players.some((player) => player.playerUuid === destination.targetUuid)
+        !presence.players.some((player) => player.playerUuid === destination.targetUuid)
       ) {
         setError('recipient_unavailable');
         return false;
@@ -453,25 +467,39 @@ export function useWebChat() {
       }, 10_000);
       return true;
     },
-    [players, status],
+    [presence.players, status],
   );
 
-  const clearHistory = useCallback(
-    async (save = persist) => {
+  const applyHistoryLease = useCallback((next: HistoryLease | null, clear: boolean) => {
+    if (!next || next.owner !== historyOwner.current) return;
+    lease.current = next;
+    setPersist(next.persist);
+    if (clear) setMessages([]);
+    setStorageFailed(false);
+  }, []);
+
+  const clearHistory = useCallback(async () => {
+    if (!owner) return;
+    try {
+      applyHistoryLease(await resetHistory(owner), true);
+    } catch {
+      if (historyOwner.current === owner) setStorageFailed(true);
+    }
+  }, [owner, applyHistoryLease]);
+
+  const setPersistence = useCallback(
+    async (enabled: boolean) => {
       if (!owner) return;
       try {
-        const next = await resetHistory(owner, save);
-        if (next) {
-          lease.current = next;
-          setPersist(next.persist);
-          setMessages([]);
-          setStorageFailed(false);
-        }
+        const next = enabled
+          ? await enableHistory(owner, messages)
+          : await resetHistory(owner, false);
+        applyHistoryLease(next, !enabled);
       } catch {
-        setStorageFailed(true);
+        if (historyOwner.current === owner) setStorageFailed(true);
       }
     },
-    [owner, persist],
+    [owner, messages, applyHistoryLease],
   );
 
   const dismissPending = useCallback(
@@ -483,17 +511,17 @@ export function useWebChat() {
   return {
     status,
     error,
-    players,
+    presence,
     messages,
     pending,
     notice,
     staff,
     persist,
     storageFailed,
-    join,
-    leave: stop,
+    retry,
     send,
     clearHistory,
+    setPersistence,
     dismissPending,
     subscribeMessages,
   };

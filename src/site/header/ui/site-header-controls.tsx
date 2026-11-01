@@ -56,7 +56,7 @@ export function SiteHeaderControls({
   statusOfflineLabel,
   statusOnlineLabel,
 }: SiteHeaderControlsProps) {
-  const accountT = useTranslations('nav.account');
+  const commonT = useTranslations('common');
   const controlsT = useTranslations('nav.controls');
   const { account, authenticated, isLoading: isLoadingAuth } = useAuth();
 
@@ -101,8 +101,8 @@ export function SiteHeaderControls({
                 ? ' project-account-link--signed-in'
                 : ' project-account-link--signed-out'
             }`}
-            title={authenticated && account ? account.currentName : accountT('login')}
-            aria-label={authenticated && account ? account.currentName : accountT('login')}
+            title={authenticated && account ? account.currentName : commonT('actions.login')}
+            aria-label={authenticated && account ? account.currentName : commonT('actions.login')}
           >
             {authenticated && account ? (
               <>
@@ -121,7 +121,7 @@ export function SiteHeaderControls({
                 <span className="project-account-login-icon">
                   <UserRound className="h-4 w-4" />
                 </span>
-                <span className="project-account-login-label">{accountT('login')}</span>
+                <span className="project-account-login-label">{commonT('actions.login')}</span>
               </>
             )}
           </Link>

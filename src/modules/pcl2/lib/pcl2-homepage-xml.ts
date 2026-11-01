@@ -435,7 +435,7 @@ function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
       b.description?.[data.locale] || b.description?.['zh-CN'] || b.description?.en || '';
     const builders = (b.builders ?? []).map((bd) => bd.name).join(', ');
     const isReplica = b.buildType === 'replica';
-    const coordText = `${copy.coordinates}: [${b.coordinates?.x ?? '?'}, ${b.coordinates?.y ?? '?'}, ${b.coordinates?.z ?? '?'}]  ·  ${isReplica ? copy.replica : copy.original}`;
+    const coordText = `${copy.coordinates}: ${b.coordinates.world} [${b.coordinates.x}, ${b.coordinates.y}, ${b.coordinates.z}]  ·  ${isReplica ? copy.replica : copy.original}`;
 
     const imageNodes: XamlNode[] = [];
     const imgs = b.images ?? [];

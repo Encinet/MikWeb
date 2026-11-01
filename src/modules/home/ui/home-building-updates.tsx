@@ -115,7 +115,10 @@ export function HomeBuildingUpdates() {
                   ) : null}
                   <span className="home-building-preview__coordinates">
                     <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                    {building.coordinates.x}, {building.coordinates.y}, {building.coordinates.z}
+                    <span>
+                      {building.coordinates.world} · {building.coordinates.x},{' '}
+                      {building.coordinates.y}, {building.coordinates.z}
+                    </span>
                   </span>
                 </span>
               </button>

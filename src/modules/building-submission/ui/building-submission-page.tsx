@@ -71,11 +71,10 @@ export function BuildingSubmissionPage() {
 
   return (
     <AccountLayout>
-      <section className="account-detail-panel account-detail-panel--flush">
+      <section className="account-section">
         <div className="building-submission-shell">
           <header className="building-submission-hero">
             <div>
-              <p>{t('eyebrow')}</p>
               <h1>{t('title')}</h1>
               <span>{t('subtitle')}</span>
             </div>
@@ -88,12 +87,14 @@ export function BuildingSubmissionPage() {
           <form className="building-submission-form" onSubmit={submit}>
             <Section title={t('sections.basic')}>
               <TextField
+                className="building-submission-field--half"
                 label={t('fields.nameZh')}
                 value={form.nameZh}
                 onChange={(value) => updateForm('nameZh', value)}
                 required
               />
               <TextField
+                className="building-submission-field--half"
                 label={t('fields.nameEn')}
                 value={form.nameEn}
                 onChange={(value) => updateForm('nameEn', value)}
@@ -111,7 +112,7 @@ export function BuildingSubmissionPage() {
                 onChange={(value) => updateForm('descriptionEn', value)}
                 required
               />
-              <div className="building-submission-field building-submission-field--type">
+              <div className="building-submission-field building-submission-field--half">
                 <span className="building-submission-field-label">{t('fields.buildType')}</span>
                 <div className="building-submission-segments">
                   {(['original', 'derivative', 'replica'] as BuildType[]).map((type) => (
@@ -140,6 +141,13 @@ export function BuildingSubmissionPage() {
               className="building-submission-section--coordinates"
               title={t('sections.location')}
             >
+              <TextField
+                label={t('fields.world')}
+                value={form.world}
+                onChange={(value) => updateForm('world', value)}
+                maxLength={128}
+                required
+              />
               <TextField
                 label="X"
                 type="number"
@@ -310,7 +318,7 @@ export function BuildingSubmissionPage() {
                 onChange={(value) => setTagDraft((current) => ({ ...current, en: value }))}
               />
               <button
-                className="account-action-button building-submission-add-tag"
+                className="ui-action-button building-submission-add-tag"
                 type="button"
                 onClick={addTag}
               >
@@ -369,15 +377,11 @@ export function BuildingSubmissionPage() {
 
             <InlineFeedback value={feedback.form} />
             <div className="building-submission-actions">
-              <button
-                className="account-action-button"
-                type="button"
-                onClick={() => resetForm(account)}
-              >
+              <button className="ui-action-button" type="button" onClick={() => resetForm(account)}>
                 {t('actions.reset')}
               </button>
               <button
-                className="account-action-button account-action-button--primary"
+                className="ui-action-button ui-action-button--primary"
                 disabled={!canSubmit}
                 type="submit"
               >
@@ -395,7 +399,7 @@ export function BuildingSubmissionPage() {
             <div className="building-submission-history__head">
               <h2>{t('history.title')}</h2>
               <button
-                className="account-action-button"
+                className="ui-action-button"
                 type="button"
                 onClick={() => void loadSubmissions()}
               >

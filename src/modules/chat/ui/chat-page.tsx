@@ -3,20 +3,18 @@
 import {
   ArrowDown,
   ArrowLeft,
-  Bell,
   Check,
   Gamepad2,
   Globe,
   Hash,
   Loader2,
-  LogIn,
-  LogOut,
   MessageCircle,
+  MessageCirclePlus,
   PanelLeft,
+  RotateCw,
   Send,
   Settings2,
   Shield,
-  Trash2,
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -24,11 +22,15 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import type { ChatDestination, ChatMessage, ChatPeer } from '@/modules/chat/model/chat-protocol';
+import { channelPlayers } from '@/modules/chat/model/chat-presence';
+import type { ChatDestination, ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { destinationKey, messageConversation } from '@/modules/chat/model/chat-protocol';
 import { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
+import { ChatMentionInput } from '@/modules/chat/ui/chat-mention-input';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
+import { ChatPlayerList, PeerPresence } from '@/modules/chat/ui/chat-player-list';
+import { ChatSettings } from '@/modules/chat/ui/chat-settings';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { SITE_LOGO_PATH } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/routing';
@@ -59,6 +61,7 @@ function groupMessages(messages: ChatMessage[]) {
 export function ChatPage() {
   const { account, isLoading } = useAuth();
   const t = useTranslations('chat');
+  const commonT = useTranslations('common');
   if (account) return <ChatWorkspace key={account.playerUuid} account={account} />;
   return (
     <section className="chat-workspace chat-gate" aria-label={t('title')}>
@@ -78,7 +81,7 @@ export function ChatPage() {
           <p role="status">{t('status.authorizing')}</p>
         ) : (
           <Link href="/login" className="chat-primary">
-            {t('login')}
+            {commonT('actions.login')}
           </Link>
         )}
       </div>
@@ -93,8 +96,9 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   const [opened, setOpened] = useState<Map<string, string>>(new Map());
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [search, setSearch] = useState('');
-  const [overlay, setOverlay] = useState<'channels' | 'players' | 'settings' | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [overlay, setOverlay] = useState<
+    'channels' | 'players' | 'participants' | 'settings' | null
+  >(null);
   const [atBottom, setAtBottom] = useState(true);
   const log = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -102,7 +106,6 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   const searchId = useId();
   const composeId = useId();
   const hintId = useId();
-  const historyHelpId = useId();
   const owner = account.playerUuid;
   const key = destinationKey(selected);
   const choose = useCallback((destination: ChatDestination) => {
@@ -118,6 +121,20 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     });
   }, []);
   const chat = useWebChat();
+  const players = chat.presence.players;
+  const participants = useMemo(
+    () => channelPlayers(chat.presence, selected, owner),
+    [chat.presence, selected, owner],
+  );
+  const mentionPlayers = useMemo(
+    () => participants.filter((player) => player.playerUuid !== owner),
+    [participants, owner],
+  );
+  const roster =
+    overlay === 'players' ? players.filter((player) => player.playerUuid !== owner) : participants;
+  const filteredRoster = roster.filter((player) =>
+    player.name.toLowerCase().includes(search.toLowerCase()),
+  );
   const notifications = useChatNotifications(
     owner,
     selected,
@@ -135,7 +152,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   const joining = ['connecting', 'authorizing', 'reconnecting'].includes(chat.status);
   const peer =
     selected.channel === 'private'
-      ? chat.players.find((player) => player.playerUuid === selected.targetUuid)
+      ? players.find((player) => player.playerUuid === selected.targetUuid)
       : null;
   const available =
     online &&
@@ -145,13 +162,10 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     selected.channel === 'private'
       ? (peer?.name ?? selected.name)
       : t(`channels.${selected.channel}`);
-  const composeHint = !online
-    ? draft
-      ? t('composeOffline')
-      : null
-    : selected.channel === 'private' && !peer
+  const composeHint =
+    online && selected.channel === 'private' && !peer
       ? t('privateOffline')
-      : selected.channel === 'staff' && !chat.staff
+      : online && selected.channel === 'staff' && !chat.staff
         ? t('staffUnavailable')
         : null;
   const visible = useMemo(
@@ -170,9 +184,9 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     }
     return [...result].map(([id, name]) => ({
       id,
-      name: chat.players.find((player) => player.playerUuid === id)?.name ?? name,
+      name: players.find((player) => player.playerUuid === id)?.name ?? name,
     }));
-  }, [opened, chat.messages, chat.players, owner]);
+  }, [opened, chat.messages, players, owner]);
   const time = useMemo(
     () => new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }),
     [locale],
@@ -236,7 +250,14 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     setOverlay('players');
   };
   const navigation = (
-    <ChatNavigation selected={selected} staff={chat.staff} threads={threads} onChoose={choose} />
+    <ChatNavigation
+      selected={selected}
+      staff={chat.staff}
+      online={online}
+      threads={threads}
+      onChoose={choose}
+      onNewPrivate={openPlayers}
+    />
   );
   const RoomIcon =
     selected.channel === 'public' ? Hash : selected.channel === 'staff' ? Shield : MessageCircle;
@@ -299,13 +320,16 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             <button
               type="button"
               className="chat-icon-button chat-online-button"
-              aria-label={t('onlinePlayers', { count: chat.players.length })}
-              title={t('onlinePlayers', { count: chat.players.length })}
+              aria-label={t('onlinePlayers', { count: participants.length })}
+              title={t('onlinePlayers', { count: participants.length })}
               aria-haspopup="dialog"
-              onClick={openPlayers}
+              onClick={() => {
+                setSearch('');
+                setOverlay('participants');
+              }}
             >
               <span className="chat-avatar-stack" aria-hidden="true">
-                {chat.players.slice(0, 3).map((player) => (
+                {participants.slice(0, 3).map((player) => (
                   <MinecraftAvatar
                     key={player.playerUuid}
                     uuid={player.playerUuid}
@@ -315,13 +339,13 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
                 ))}
               </span>
               <Users className="chat-online-icon" size={17} aria-hidden="true" />
-              <span>{chat.players.length}</span>
+              <span>{participants.length}</span>
             </button>
           ) : null}
-          {!online && !joining ? (
-            <button type="button" className="chat-primary chat-join" onClick={chat.join}>
-              <LogIn size={15} aria-hidden="true" />
-              {t('join')}
+          {chat.status === 'error' ? (
+            <button type="button" className="chat-primary chat-retry" onClick={chat.retry}>
+              <RotateCw size={15} aria-hidden="true" />
+              {t('retry')}
             </button>
           ) : null}
           <button
@@ -366,7 +390,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               {!visible.length && !pending.length ? (
                 <div className="chat-empty">
                   <RoomIcon size={32} strokeWidth={1.25} aria-hidden="true" />
-                  <p>{online ? t('emptyHistory') : t('emptyOffline')}</p>
+                  {online ? <p>{t('emptyHistory')}</p> : null}
                 </div>
               ) : null}
               {groups.map((group, index) => {
@@ -490,23 +514,15 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             <label htmlFor={composeId} className="sr-only">
               {t('composeLabel', { channel: title })}
             </label>
-            <input
-              ref={input}
+            <ChatMentionInput
+              key={key}
+              inputRef={input}
               id={composeId}
               value={draft}
-              onChange={(event) =>
-                setDrafts((current) => ({ ...current, [key]: event.target.value }))
-              }
-              onKeyDown={(event) => {
-                if (
-                  event.key === 'Enter' &&
-                  (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)
-                )
-                  event.preventDefault();
-              }}
-              maxLength={2000}
-              autoComplete="off"
-              aria-describedby={composeHint ? hintId : undefined}
+              onChange={(value) => setDrafts((current) => ({ ...current, [key]: value }))}
+              enabled={available}
+              peers={mentionPlayers}
+              describedBy={composeHint ? hintId : undefined}
               placeholder={
                 selected.channel === 'private'
                   ? t('privatePlaceholder', { name: title })
@@ -539,18 +555,31 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
         </div>
       </div>
 
+      <aside className="chat-participants" aria-label={t('participants')}>
+        <h2>{t('onlinePlayers', { count: participants.length })}</h2>
+        <ChatPlayerList
+          players={participants}
+          owner={owner}
+          onChoose={choose}
+          emptyText={online ? t('nobodyOnline') : t(`status.${chat.status}`)}
+        />
+      </aside>
+
       <AppDialog
+        key={overlay}
         isOpen={overlay !== null}
         onClose={() => setOverlay(null)}
         title={
           overlay === 'players'
-            ? t('onlinePlayers', { count: chat.players.length })
-            : overlay === 'channels'
-              ? t('channelList')
-              : t('settings')
+            ? t('newPrivate')
+            : overlay === 'participants'
+              ? t('onlinePlayers', { count: participants.length })
+              : overlay === 'channels'
+                ? t('channelList')
+                : t('settings')
         }
         icon={
-          overlay === 'players' ? (
+          overlay === 'players' || overlay === 'participants' ? (
             <Users size={18} />
           ) : overlay === 'channels' ? (
             <MessageCircle size={18} />
@@ -558,7 +587,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             <Settings2 size={18} />
           )
         }
-        className={`chat-dialog${overlay === 'channels' ? ' chat-navigation-dialog' : ''}`}
+        className={`chat-dialog${overlay === 'channels' ? ' chat-navigation-dialog' : overlay === 'settings' ? ' chat-settings-dialog' : ''}`}
       >
         {overlay === 'channels' ? (
           <>
@@ -569,7 +598,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             </Link>
           </>
         ) : null}
-        {overlay === 'players' ? (
+        {overlay === 'players' || overlay === 'participants' ? (
           <div className="chat-people">
             <label htmlFor={searchId} className="sr-only">
               {t('search')}
@@ -583,124 +612,21 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               maxLength={64}
               autoComplete="off"
             />
-            <div className="chat-people__list">
-              {chat.players
-                .filter((player) => player.name.toLowerCase().includes(search.toLowerCase()))
-                .map((player) => (
-                  <button
-                    type="button"
-                    className="chat-peer"
-                    key={player.playerUuid}
-                    disabled={player.playerUuid === owner}
-                    aria-label={
-                      player.playerUuid === owner
-                        ? t('yourPresence', { name: player.name })
-                        : t('startPrivate', { name: player.name })
-                    }
-                    onClick={() =>
-                      choose({
-                        channel: 'private',
-                        targetUuid: player.playerUuid,
-                        name: player.name,
-                      })
-                    }
-                  >
-                    <MinecraftAvatar uuid={player.playerUuid} name={player.name} size={30} />
-                    <span>
-                      <strong>
-                        {player.name}
-                        {player.playerUuid === owner ? <small> {t('you')}</small> : null}
-                      </strong>
-                      <PeerPresence player={player} />
-                    </span>
-                    <MessageCircle size={16} aria-hidden="true" />
-                  </button>
-                ))}
-              {!chat.players.length ? (
-                <p className="chat-list-empty">
-                  {online ? t('nobodyOnline') : t('joinToSeePlayers')}
-                </p>
-              ) : !chat.players.some((player) =>
-                  player.name.toLowerCase().includes(search.toLowerCase()),
-                ) ? (
-                <p className="chat-list-empty">{t('noPlayersFound')}</p>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-        {overlay === 'settings' ? (
-          <div className="chat-settings">
-            <button
-              type="button"
-              className="chat-setting-action"
-              disabled={
-                notifications.busy ||
-                notifications.status === 'unsupported' ||
-                notifications.status === 'denied'
+            <ChatPlayerList
+              players={filteredRoster}
+              owner={owner}
+              onChoose={choose}
+              emptyText={
+                search
+                  ? t('noPlayersFound')
+                  : online
+                    ? t('nobodyOnline')
+                    : t(`status.${chat.status}`)
               }
-              aria-pressed={notifications.status === 'on'}
-              onClick={() => {
-                void notifications.toggle();
-              }}
-            >
-              <Bell size={17} aria-hidden="true" />
-              {t(`notifications.${notifications.status}`)}
-            </button>
-            <p>{t('notifications.help')}</p>
-            <label className="chat-storage-toggle">
-              <span>{t('saveLocally')}</span>
-              <input
-                type="checkbox"
-                checked={chat.persist}
-                disabled={busy}
-                aria-describedby={historyHelpId}
-                onChange={(event) => {
-                  setBusy(true);
-                  void chat.clearHistory(event.target.checked).finally(() => setBusy(false));
-                }}
-              />
-            </label>
-            <p id={historyHelpId}>{t('localHistoryHelp')}</p>
-            <details className="chat-delete">
-              <summary>
-                <Trash2 size={16} aria-hidden="true" />
-                {t('clearHistory')}
-              </summary>
-              <p>{t('clearConfirm')}</p>
-              <button
-                type="button"
-                className="chat-danger"
-                disabled={busy}
-                onClick={() => {
-                  setBusy(true);
-                  void chat
-                    .clearHistory()
-                    .then(() => setOverlay(null))
-                    .finally(() => setBusy(false));
-                }}
-              >
-                {t('confirmClear')}
-              </button>
-            </details>
-            {online || joining ? (
-              <button
-                type="button"
-                className="chat-setting-action"
-                onClick={() => {
-                  chat.leave();
-                  setOverlay(null);
-                }}
-              >
-                <LogOut size={17} aria-hidden="true" />
-                {t('leave')}
-              </button>
-            ) : null}
-            <Link href="/account" className="chat-setting-action">
-              <ArrowLeft size={17} aria-hidden="true" />
-              {t('backAccount')}
-            </Link>
+            />
           </div>
         ) : null}
+        {overlay === 'settings' ? <ChatSettings chat={chat} notifications={notifications} /> : null}
       </AppDialog>
     </section>
   );
@@ -709,11 +635,20 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
 interface ChatNavigationProps {
   selected: ChatDestination;
   staff: boolean;
+  online: boolean;
   threads: { id: string; name: string }[];
   onChoose: (destination: ChatDestination) => void;
+  onNewPrivate: () => void;
 }
 
-function ChatNavigation({ selected, staff, threads, onChoose }: ChatNavigationProps) {
+function ChatNavigation({
+  selected,
+  staff,
+  online,
+  threads,
+  onChoose,
+  onNewPrivate,
+}: ChatNavigationProps) {
   const t = useTranslations('chat');
   const key = destinationKey(selected);
   return (
@@ -741,47 +676,28 @@ function ChatNavigation({ selected, staff, threads, onChoose }: ChatNavigationPr
           </button>
         ) : null}
       </nav>
-      {threads.length ? (
-        <nav aria-label={t('privateList')} className="chat-threads">
-          <h2>{t('channels.private')}</h2>
-          {threads.map((thread) => (
-            <button
-              type="button"
-              key={thread.id}
-              className={key === `private:${thread.id}` ? 'is-active' : ''}
-              aria-current={key === `private:${thread.id}` ? 'page' : undefined}
-              onClick={() =>
-                onChoose({ channel: 'private', targetUuid: thread.id, name: thread.name })
-              }
-            >
-              <span className="chat-thread-avatar" aria-hidden="true">
-                <MinecraftAvatar uuid={thread.id} name={thread.name} size={24} />
-              </span>
-              <span>{thread.name}</span>
-            </button>
-          ))}
-        </nav>
-      ) : null}
+      <nav aria-label={t('privateList')} className="chat-threads">
+        <button type="button" onClick={onNewPrivate} disabled={!online}>
+          <MessageCirclePlus size={18} aria-hidden="true" />
+          {t('newPrivate')}
+        </button>
+        {threads.map((thread) => (
+          <button
+            type="button"
+            key={thread.id}
+            className={key === `private:${thread.id}` ? 'is-active' : ''}
+            aria-current={key === `private:${thread.id}` ? 'page' : undefined}
+            onClick={() =>
+              onChoose({ channel: 'private', targetUuid: thread.id, name: thread.name })
+            }
+          >
+            <span className="chat-thread-avatar" aria-hidden="true">
+              <MinecraftAvatar uuid={thread.id} name={thread.name} size={24} />
+            </span>
+            <span>{thread.name}</span>
+          </button>
+        ))}
+      </nav>
     </div>
-  );
-}
-
-function PeerPresence({ player }: { player: ChatPeer }) {
-  const t = useTranslations('chat');
-  return (
-    <span className="chat-peer-presence">
-      {player.game ? (
-        <span title={t('game')}>
-          <Gamepad2 size={13} aria-hidden="true" />
-          <span>{t('game')}</span>
-        </span>
-      ) : null}
-      {player.webConnections ? (
-        <span title={t('webCount', { count: player.webConnections })}>
-          <Globe size={12} aria-hidden="true" />
-          <span>{t('webCount', { count: player.webConnections })}</span>
-        </span>
-      ) : null}
-    </span>
   );
 }

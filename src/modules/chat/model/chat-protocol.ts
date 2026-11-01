@@ -88,6 +88,11 @@ const peerSchema = z.object({
   webConnections: z.number().int().min(0).max(32),
 });
 
+const presenceSchema = z.object({
+  players: z.array(peerSchema).max(512),
+  staffPlayers: z.array(uuid).max(512),
+});
+
 export const chatServerEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('hello'), connectionId: z.string().regex(/^[A-Za-z0-9_-]{32}$/) }),
   z.object({
@@ -99,7 +104,10 @@ export const chatServerEventSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('permissions'), staff: z.boolean() }),
   z.object({ type: z.literal('reauthorize') }),
-  z.object({ type: z.literal('presence'), players: z.array(peerSchema).max(512) }),
+  z.object({
+    type: z.literal('presence'),
+    ...presenceSchema.shape,
+  }),
   z.object({ type: z.literal('presence_notice'), joined: z.boolean(), name }),
   z.object({ type: z.literal('message'), message: chatMessageSchema }),
   z.object({
@@ -113,6 +121,7 @@ export const chatServerEventSchema = z.discriminatedUnion('type', [
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
 export type ChatPeer = z.infer<typeof peerSchema>;
+export type ChatPresence = z.infer<typeof presenceSchema>;
 export interface ChatAccess {
   owner: string;
   staff: boolean;

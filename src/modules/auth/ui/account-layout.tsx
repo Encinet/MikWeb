@@ -1,16 +1,18 @@
 'use client';
 
 import {
+  ChevronDown,
   Fingerprint,
   KeyRound,
   Landmark,
   LayoutDashboard,
   LogOut,
   MessageCircle,
+  PanelLeft,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
-import { useState } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { Link, usePathname, useRouter } from '@/shared/i18n/routing';
@@ -21,40 +23,56 @@ interface AccountLayoutProps {
 
 export function AccountLayout({ children }: AccountLayoutProps) {
   const t = useTranslations('auth.account');
+  const commonT = useTranslations('common');
   const pathname = usePathname();
   const router = useRouter();
   const [logoutFailed, setLogoutFailed] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const navigationId = useId();
+  const navigationToggle = useRef<HTMLButtonElement>(null);
   const { account, authenticated, isLoading, logout } = useAuth();
 
   const navItems = [
     {
-      href: '/chat',
-      icon: <MessageCircle className="h-4 w-4" />,
-      label: t('navigation.chat'),
-    },
-    {
       href: '/account',
-      icon: <LayoutDashboard className="h-4 w-4" />,
+      icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
       label: t('navigation.overview'),
     },
     {
+      href: '/chat',
+      icon: <MessageCircle className="h-4 w-4" aria-hidden="true" />,
+      label: t('navigation.chat'),
+    },
+    {
       href: '/account/building-submissions',
-      icon: <Landmark className="h-4 w-4" />,
+      icon: <Landmark className="h-4 w-4" aria-hidden="true" />,
       label: t('navigation.buildingSubmission'),
     },
     {
       href: '/account/security',
-      icon: <KeyRound className="h-4 w-4" />,
+      icon: <KeyRound className="h-4 w-4" aria-hidden="true" />,
       label: t('navigation.security'),
     },
   ];
+  const currentPage = navItems.find((item) => item.href === pathname);
+  const handleNavigationKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Escape' || !navigationOpen) return;
+    event.stopPropagation();
+    setNavigationOpen(false);
+    navigationToggle.current?.focus();
+  };
 
   const handleLogout = async () => {
+    setLoggingOut(true);
+    setLogoutFailed(false);
     try {
       await logout();
       router.replace('/login');
     } catch {
       setLogoutFailed(true);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -65,8 +83,8 @@ export function AccountLayout({ children }: AccountLayoutProps) {
           <section className="account-empty-state">
             <h1>{t('signedOut.title')}</h1>
             <p>{t('signedOut.description')}</p>
-            <Link href="/login" className="account-action-button account-action-button--primary">
-              {t('actions.login')}
+            <Link href="/login" className="ui-action-button ui-action-button--primary">
+              {commonT('actions.login')}
             </Link>
           </section>
         </div>
@@ -76,45 +94,83 @@ export function AccountLayout({ children }: AccountLayoutProps) {
 
   return (
     <div className="account-workspace page-shell page-shell-stable">
-      <div className="account-workspace__inner page-shell-content mx-auto w-full max-w-7xl">
-        <aside className="account-sidebar">
-          <div className="account-sidebar__identity">
-            <div className="account-sidebar__avatar">
+      <div className="account-workspace__inner page-shell-content" aria-busy={isLoading}>
+        <aside className="account-sidebar" aria-label={t('title')}>
+          <div className="account-identity">
+            <div className="account-identity__avatar">
               {account ? (
-                <MinecraftAvatar uuid={account.playerUuid} name={account.currentName} size={72} />
+                <MinecraftAvatar uuid={account.playerUuid} name={account.currentName} size={48} />
               ) : (
-                <Fingerprint className="h-9 w-9" />
+                <Fingerprint className="h-9 w-9" aria-hidden="true" />
               )}
             </div>
-            <div>
-              <p>{t('title')}</p>
-              <h1>{account?.currentName ?? t('loading')}</h1>
-              {account ? <span>{t(`roles.${account.role}`)}</span> : null}
+            <div className="account-identity__copy">
+              <strong>{account?.currentName ?? t('loading')}</strong>
+              {account ? <p>{t(`roles.${account.role}`)}</p> : null}
             </div>
           </div>
 
-          {logoutFailed ? <p role="alert">{t('logoutFailed')}</p> : null}
-          <nav className="account-sidebar__nav" aria-label={t('navigation.label')}>
-            {navItems.map((item) => {
-              const active = pathname === item.href;
-              return (
+          <button
+            ref={navigationToggle}
+            type="button"
+            className="account-navigation-toggle ui-sidebar-link"
+            aria-label={`${t('navigation.label')}: ${currentPage?.label ?? ''}`}
+            aria-expanded={navigationOpen}
+            aria-controls={navigationId}
+            onClick={() => setNavigationOpen((open) => !open)}
+            onKeyDown={handleNavigationKeyDown}
+          >
+            <PanelLeft className="h-4 w-4" aria-hidden="true" />
+            <span>{currentPage?.label}</span>
+            <ChevronDown
+              className="account-navigation-toggle__chevron h-4 w-4"
+              aria-hidden="true"
+            />
+          </button>
+
+          <div id={navigationId} className="account-sidebar__body" data-expanded={navigationOpen}>
+            <nav className="account-navigation" aria-label={t('navigation.label')}>
+              {navItems.map((item) => (
                 <Link
-                  aria-current={active ? 'page' : undefined}
-                  className={active ? 'is-active' : undefined}
+                  aria-current={pathname === item.href ? 'page' : undefined}
+                  className="ui-sidebar-link"
                   href={item.href}
                   key={item.href}
+                  onKeyDown={handleNavigationKeyDown}
+                  onClick={(event) => {
+                    if (
+                      event.metaKey ||
+                      event.ctrlKey ||
+                      event.shiftKey ||
+                      event.altKey ||
+                      !navigationOpen
+                    )
+                      return;
+                    setNavigationOpen(false);
+                    navigationToggle.current?.focus();
+                  }}
                 >
                   {item.icon}
                   <span>{item.label}</span>
                 </Link>
-              );
-            })}
-          </nav>
-
-          <button type="button" className="account-sidebar__logout" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" />
-            <span>{t('actions.logout')}</span>
-          </button>
+              ))}
+            </nav>
+            <button
+              type="button"
+              className="account-logout ui-action-button"
+              disabled={loggingOut || isLoading}
+              onClick={handleLogout}
+              onKeyDown={handleNavigationKeyDown}
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              <span>{t('actions.logout')}</span>
+            </button>
+          </div>
+          {logoutFailed ? (
+            <p role="alert" className="ui-inline-message">
+              {t('logoutFailed')}
+            </p>
+          ) : null}
         </aside>
 
         <div className="account-main">{children}</div>

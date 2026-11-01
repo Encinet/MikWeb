@@ -1,6 +1,6 @@
 .building-submission-shell {
   display: grid;
-  gap: 0.8rem;
+  gap: 1.75rem;
 }
 
 .building-submission-hero {
@@ -8,40 +8,27 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid var(--account-line);
-  padding-bottom: 0.8rem;
-}
-
-.building-submission-hero p {
-  color: var(--theme-text-muted);
-  font-size: 0.72rem;
-  font-weight: 780;
-  text-transform: uppercase;
 }
 
 .building-submission-hero h1 {
-  margin-top: 0.18rem;
   color: var(--theme-text-heading);
-  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
-  font-weight: 800;
-  line-height: 1.12;
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 .building-submission-hero span {
   display: block;
   max-width: 38rem;
-  margin-top: 0.32rem;
+  margin-top: 0.45rem;
   color: var(--theme-text-muted);
-  font-size: 0.84rem;
-  line-height: 1.45;
+  font-size: 0.875rem;
+  line-height: 1.7;
 }
 
 .building-submission-quota {
   min-width: 6.8rem;
-  border: 1px solid var(--account-line);
-  border-radius: 0.82rem;
-  background: var(--account-panel-soft);
-  padding: 0.48rem 0.62rem;
   text-align: right;
 }
 
@@ -76,8 +63,7 @@
   display: grid;
   grid-template-columns: minmax(6.8rem, 0.22fr) minmax(0, 1fr);
   gap: 0.9rem;
-  border-bottom: 1px solid var(--account-line);
-  padding: 0.82rem 0;
+  padding: 1rem 0;
 }
 
 .building-submission-section:first-child {
@@ -87,8 +73,8 @@
 .building-submission-section h2,
 .building-submission-history h2 {
   color: var(--theme-text-heading);
-  font-size: 0.86rem;
-  font-weight: 780;
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
 .building-submission-section__grid {
@@ -99,7 +85,7 @@
 }
 
 .building-submission-section--coordinates .building-submission-section__grid {
-  grid-template-columns: repeat(3, minmax(4.8rem, 6.2rem));
+  grid-template-columns: minmax(8rem, 12rem) repeat(3, minmax(4.8rem, 6.2rem));
   justify-content: start;
 }
 
@@ -113,7 +99,7 @@
   grid-column: 1 / -1;
 }
 
-.building-submission-field--type {
+.building-submission-field--half {
   grid-column: span 2;
 }
 
@@ -453,8 +439,7 @@
 .building-submission-history {
   display: grid;
   gap: 0.58rem;
-  border-top: 1px solid var(--account-line);
-  padding-top: 0.9rem;
+  padding-top: 1.5rem;
 }
 
 .building-submission-history__head {
@@ -466,7 +451,7 @@
 
 .building-submission-history__list {
   display: grid;
-  border-top: 1px solid var(--account-line);
+  gap: 0.5rem;
 }
 
 .building-submission-history__list > p {
@@ -480,7 +465,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid var(--account-line);
   padding: 0.62rem 0;
 }
 
@@ -581,8 +565,11 @@
   .building-submission-section--coordinates .building-submission-section__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+  .building-submission-section--coordinates .building-submission-field:first-child {
+    grid-column: 1 / -1;
+  }
 
-  .building-submission-field--type,
+  .building-submission-field--half,
   .building-submission-field--date,
   .building-submission-field--tag,
   .building-submission-field--source {
@@ -602,7 +589,7 @@
     justify-content: stretch;
   }
 
-  .building-submission-actions .account-action-button {
+  .building-submission-actions .ui-action-button {
     flex: 1;
   }
 }

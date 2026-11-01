@@ -1,3 +1,199 @@
+/* Sidebar navigation */
+
+.ui-sidebar-link {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: transparent;
+  padding: 0.65rem 0.75rem;
+  color: var(--theme-text-muted-strong);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.ui-sidebar-link > svg {
+  flex-shrink: 0;
+}
+
+.ui-sidebar-link:hover {
+  background: var(--theme-surface-hover);
+  color: var(--theme-text-heading);
+}
+
+.ui-sidebar-link[aria-current="page"] {
+  background: color-mix(in srgb, var(--theme-accent-strong) 9%, transparent);
+  color: var(--theme-accent-strong);
+  font-weight: 600;
+}
+
+.ui-sidebar-link:focus-visible {
+  outline: 2px solid var(--theme-accent-strong);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-sidebar-link {
+    transition: none;
+  }
+}
+
+/* Settings and actions */
+
+.ui-action-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--theme-surface-code);
+  color: var(--theme-text-muted-strong);
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 550;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.ui-action-button:hover:not(:disabled) {
+  background: var(--theme-surface-hover);
+  color: var(--theme-text-heading);
+}
+
+.ui-settings-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ui-setting-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 4.5rem;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 0.75rem;
+}
+
+.ui-setting-row__label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.ui-setting-row__label > span {
+  display: inline-flex;
+  width: 1.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-text-muted);
+}
+
+.ui-setting-row__label > div {
+  min-width: 0;
+}
+
+.ui-setting-row__label strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+  color: var(--theme-text-primary);
+  font-size: 0.9375rem;
+  font-weight: 550;
+}
+
+.ui-setting-row__pill {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-accent) 12%, transparent);
+  color: var(--theme-accent-strong);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.6875rem;
+  font-style: normal;
+  font-weight: 550;
+}
+
+.ui-setting-row__label small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--theme-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.ui-setting-row--empty {
+  display: block;
+  color: var(--theme-text-muted);
+  font-size: 0.875rem;
+}
+
+.ui-action-button--primary {
+  background: var(--theme-accent);
+  color: var(--theme-on-accent);
+}
+
+.ui-action-button--primary:hover:not(:disabled) {
+  background: var(--theme-accent-hover);
+  color: var(--theme-on-accent);
+}
+
+.ui-action-button--danger {
+  background: transparent;
+  color: var(--theme-accent-red);
+}
+
+.ui-action-button--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--theme-accent-red) 10%, transparent);
+  color: var(--theme-accent-red);
+}
+
+.ui-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ui-setting-row > .ui-action-button {
+  justify-self: end;
+}
+
+.ui-inline-message {
+  margin-top: 1rem;
+  color: var(--theme-text-muted-strong);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.ui-action-button:focus-visible {
+  outline: 2px solid var(--theme-accent-strong);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-action-button {
+    transition: none;
+  }
+}
+
 /* Dialogs and shared controls */
 
 .ui-dialog-overlay {
@@ -229,6 +425,65 @@
 .ui-list-row:hover {
   background: var(--theme-surface-hover);
   border-color: var(--theme-border-nav-hover);
+}
+
+.ui-switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.ui-switch > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.ui-switch > span {
+  width: 44px;
+  height: 26px;
+  border: 1px solid var(--theme-border-glass);
+  border-radius: 999px;
+  background: var(--theme-surface-code-block);
+  pointer-events: none;
+}
+.ui-switch > span::before {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 3px;
+  border-radius: 50%;
+  background: var(--theme-text-muted-strong);
+  transition: transform 160ms ease;
+}
+.ui-switch > input:checked + span {
+  border-color: transparent;
+  background: var(--theme-accent);
+}
+.ui-switch > input:checked + span::before {
+  transform: translateX(18px);
+  background: var(--theme-on-accent);
+}
+.ui-switch > input:focus-visible + span {
+  outline: 2px solid var(--theme-accent-strong);
+  outline-offset: 3px;
+}
+.ui-switch:has(input:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-switch > span::before {
+    transition: none;
+  }
 }
 
 .ui-content-link {

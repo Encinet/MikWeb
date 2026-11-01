@@ -535,13 +535,16 @@
   }
 
   .account-sidebar {
-    position: static !important;
+    position: static;
+    max-height: none;
+    overflow: visible;
     margin-bottom: 0.8rem;
   }
 
-  .account-sidebar__nav,
-  .account-sidebar__logout,
-  .account-action-button {
+  .account-navigation,
+  .account-navigation-toggle,
+  .account-logout,
+  .ui-action-button {
     display: none !important;
   }
 }

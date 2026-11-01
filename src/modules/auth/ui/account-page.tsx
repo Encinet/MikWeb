@@ -1,10 +1,9 @@
 'use client';
 
-import { KeyRound, ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
+import { Link } from '@/shared/i18n/routing';
 
 export function AccountPage() {
   const t = useTranslations('auth.account');
@@ -12,63 +11,26 @@ export function AccountPage() {
 
   return (
     <AccountLayout>
-      <section className="account-detail-panel">
-        <div className="account-detail-panel__header">
-          <div className="account-detail-panel__title">
-            <span>
-              <ShieldCheck className="h-4 w-4" />
-            </span>
-            <div>
-              <h1>{t('subtitle')}</h1>
-              <p>{t('overview.description')}</p>
-            </div>
+      <section className="account-section" aria-labelledby="account-overview-title">
+        <header className="account-page-heading">
+          <h1 id="account-overview-title">{t('subtitle')}</h1>
+        </header>
+        <dl className="account-facts">
+          <div>
+            <dt>{t('fields.passkeys')}</dt>
+            <dd>
+              <span>{account?.passkeyCount ?? '—'}</span>
+              <Link href="/account/security" className="account-text-link">
+                {t('actions.managePasskeys')}
+              </Link>
+            </dd>
           </div>
-        </div>
-
-        <div className="account-settings-list">
-          <InfoRow
-            icon={<KeyRound className="h-4 w-4" />}
-            label={t('fields.passkeys')}
-            value={account ? String(account.passkeyCount) : '-'}
-          />
-          <InfoRow
-            icon={<ShieldCheck className="h-4 w-4" />}
-            label={t('fields.uuid')}
-            value={account?.playerUuid ?? '-'}
-            monospace
-          />
-        </div>
+          <div>
+            <dt>{t('fields.uuid')}</dt>
+            <dd className="account-facts__uuid">{account?.playerUuid ?? '—'}</dd>
+          </div>
+        </dl>
       </section>
     </AccountLayout>
-  );
-}
-
-function InfoRow({
-  icon,
-  label,
-  monospace = false,
-  value,
-}: {
-  icon?: ReactNode;
-  label: string;
-  monospace?: boolean;
-  value: string;
-}) {
-  return (
-    <div className="account-setting-row">
-      <div className="account-setting-row__label">
-        <span>{icon}</span>
-        <strong>{label}</strong>
-      </div>
-      <div
-        className={
-          monospace
-            ? 'account-setting-row__value account-setting-row__value--mono'
-            : 'account-setting-row__value'
-        }
-      >
-        {value}
-      </div>
-    </div>
   );
 }

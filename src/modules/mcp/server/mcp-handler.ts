@@ -129,7 +129,7 @@ const sdkHandler = createMcpHandler(
       {
         title: 'Get Buildings',
         description:
-          'Get the list of buildings from the Minecraft server. builders format: "name(contribution%)" sorted by contribution desc. pos format: x y z (Minecraft coordinates).',
+          'Get the list of buildings from the Minecraft server. builders format: "name(contribution%)" sorted by contribution desc. Coordinates include the world name and x, y, z.',
         inputSchema: z.object({
           locale: z
             .enum(WIKI_LOCALES)
@@ -153,7 +153,7 @@ const sdkHandler = createMcpHandler(
           const desc = resolve(b.description);
           const notes = b.source?.notes ? resolve(b.source.notes) : null;
           const tags = b.tags?.map(resolve).filter(Boolean).join(',');
-          const { x, y, z } = b.coordinates;
+          const { world, x, y, z } = b.coordinates;
 
           const sortedBuilders = [...b.builders].sort((a, b) => b.weight - a.weight);
           const showWeight =
@@ -168,7 +168,7 @@ const sdkHandler = createMcpHandler(
 
           const fields = [
             `type:${b.buildType}`,
-            `x:${x} y:${y} z:${z}`,
+            `world:${world} x:${x} y:${y} z:${z}`,
             `date:${b.buildDate}`,
             builders && `builders:${builders}`,
             tags && `tags:${tags}`,

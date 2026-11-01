@@ -2,6 +2,7 @@
 
 @import "./styles/base/tokens.css";
 @import "./styles/base/document.css";
+@import "./styles/shared/ui-system.css";
 @import "./styles/modules/auth-login.css";
 @import "./styles/shared/feedback.css";
 @import "./styles/modules/account.css";
@@ -10,7 +11,6 @@
 @import "./styles/shared/art-guide-pages.css";
 @import "./styles/layout/safe-overlays.css";
 @import "./styles/base/view-transitions.css";
-@import "./styles/shared/ui-system.css";
 @import "./styles/site/footer.css";
 @import "./styles/site/header.css";
 @import "./styles/site/theme-settings.css";
