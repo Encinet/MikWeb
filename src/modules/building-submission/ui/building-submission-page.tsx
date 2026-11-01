@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
-import type { BuildType, LocalizedText } from '@/modules/building/model/building-types';
+import type { BuildType } from '@/modules/building/model/building-types';
+import { getLocalizedText } from '@/modules/building/model/building-types';
 import {
   formatPercent,
   MAX_BUILDING_SUBMISSION_IMAGES,
@@ -67,16 +68,6 @@ export function BuildingSubmissionPage() {
     event.preventDefault();
     void resolvePlayer();
   };
-
-  if (account?.role === 'default') {
-    return (
-      <AccountLayout>
-        <section className="account-detail-panel">
-          <p>{t('states.memberRequired')}</p>
-        </section>
-      </AccountLayout>
-    );
-  }
 
   return (
     <AccountLayout>
@@ -420,7 +411,7 @@ export function BuildingSubmissionPage() {
                 submissions.map((submission) => (
                   <article key={submission.id}>
                     <div>
-                      <h3>{localized(submission.payload.name, locale)}</h3>
+                      <h3>{getLocalizedText(submission.payload.name, locale)}</h3>
                       <span>{new Date(submission.createdAt).toLocaleString(locale)}</span>
                       {submission.status === 'rejected' && submission.reviewNote ? (
                         <p className="building-submission-history__note">
@@ -456,9 +447,4 @@ function builderColor(index: number): string {
 
 function builderStyle(index: number): CSSProperties & { '--builder-color': string } {
   return { '--builder-color': builderColor(index) };
-}
-
-function localized(value: LocalizedText | undefined, locale: string): string {
-  if (!value) return '';
-  return value[locale] ?? value['zh-CN'] ?? value.en ?? Object.values(value)[0] ?? '';
 }

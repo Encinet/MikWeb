@@ -67,12 +67,44 @@ export function useBuildingSubmissionForm() {
   const draftImagesRef = useRef<BuildingSubmissionImageDraft[]>([]);
   const [form, setForm] = useState(createInitialBuildingSubmissionForm);
 
+  const accountGeneration = useRef(0);
+  const activeAccount = useRef(account?.playerUuid);
+  const pendingSubmission = useRef<AbortController | null>(null);
+  useEffect(() => {
+    accountGeneration.current++;
+    activeAccount.current = account?.playerUuid;
+    setLoadingSubmissions(false);
+    setResolvingPlayer(false);
+    setPlayerInput('');
+    pendingSubmission.current?.abort();
+    setSubmissions([]);
+    setSubmitting(false);
+    setUploading(false);
+    setFeedback({});
+    setForm(createInitialBuildingSubmissionForm());
+    setTags([]);
+    setTagDraft({ zh: '', en: '' });
+    setBuilders((current) =>
+      current.filter((builder) => builder.uuid === account?.playerUuid && builder.locked),
+    );
+    setDraftImages((current) => {
+      for (const image of current) URL.revokeObjectURL(image.previewUrl);
+      return [];
+    });
+    return () => {
+      accountGeneration.current++;
+      pendingSubmission.current?.abort();
+    };
+  }, [account?.playerUuid]);
+
   const loadSubmissions = useCallback(
     async (options: { force?: boolean } = {}) => {
-      if (!account || account.role === 'default') {
+      if (activeAccount.current !== account?.playerUuid) return;
+      if (!account) {
         setSubmissions([]);
         return;
       }
+      const generation = accountGeneration.current;
       showFeedback('history', null);
       setLoadingSubmissions(true);
       try {
@@ -80,7 +112,11 @@ export function useBuildingSubmissionForm() {
           url: '/api/account/building-submissions/mine',
           request: { method: 'POST' },
           cache: 'no-store',
-          validate: isBuildingSubmissionListResponse,
+          validate: (value): value is BuildingSubmissionListResponse =>
+            isBuildingSubmissionListResponse(value) &&
+            value.submissions.every(
+              (submission) => submission.submitterUuid === account.playerUuid,
+            ),
           timeoutMs: 8000,
           browserCache: {
             force: options.force,
@@ -89,14 +125,16 @@ export function useBuildingSubmissionForm() {
           },
           fallbackErrorMessage: 'Failed to load building submissions',
         });
+        if (generation !== accountGeneration.current) return;
         if (result.status !== 'success') {
           throw new Error('load_failed');
         }
         setSubmissions(result.data.submissions);
       } catch {
+        if (generation !== accountGeneration.current) return;
         showFeedback('history', { message: t('states.loadFailed'), kind: 'error' });
       } finally {
-        setLoadingSubmissions(false);
+        if (generation === accountGeneration.current) setLoadingSubmissions(false);
       }
     },
     [account, showFeedback, t],
@@ -139,11 +177,7 @@ export function useBuildingSubmissionForm() {
     [builders],
   );
   const canSubmit =
-    authenticated &&
-    account?.role !== 'default' &&
-    pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS &&
-    !submitting &&
-    !uploading;
+    authenticated && pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS && !submitting && !uploading;
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -153,6 +187,7 @@ export function useBuildingSubmissionForm() {
     const name = playerInput.trim();
     if (!name || resolvingPlayer) return;
 
+    const generation = accountGeneration.current;
     showFeedback('builders', null);
     setResolvingPlayer(true);
     try {
@@ -162,6 +197,7 @@ export function useBuildingSubmissionForm() {
         body: JSON.stringify({ name }),
       });
       const payload = (await response.json().catch(() => ({}))) as { player?: ResolvedPlayer };
+      if (generation !== accountGeneration.current) return;
       if (!response.ok || !payload.player) {
         throw new Error('not_found');
       }
@@ -174,9 +210,10 @@ export function useBuildingSubmissionForm() {
       });
       setPlayerInput('');
     } catch {
+      if (generation !== accountGeneration.current) return;
       showFeedback('builders', { message: t('states.playerNotFound'), kind: 'error' });
     } finally {
-      setResolvingPlayer(false);
+      if (generation === accountGeneration.current) setResolvingPlayer(false);
     }
   };
 
@@ -238,8 +275,9 @@ export function useBuildingSubmissionForm() {
 
     showFeedback('images', null);
     setUploading(true);
+    const drafts: BuildingSubmissionImageDraft[] = [];
+    const generation = accountGeneration.current;
     try {
-      const drafts: BuildingSubmissionImageDraft[] = [];
       for (const file of selected) {
         const draft = await createBuildingSubmissionImageDraft(file);
         if (
@@ -251,8 +289,14 @@ export function useBuildingSubmissionForm() {
         }
         drafts.push(draft);
       }
+      if (generation !== accountGeneration.current) {
+        for (const draft of drafts) URL.revokeObjectURL(draft.previewUrl);
+        return;
+      }
       setDraftImages((current) => [...current, ...drafts]);
     } catch (error) {
+      for (const draft of drafts) URL.revokeObjectURL(draft.previewUrl);
+      if (generation !== accountGeneration.current) return;
       showFeedback('images', {
         message:
           error instanceof Error && error.message === 'image_too_small'
@@ -261,7 +305,7 @@ export function useBuildingSubmissionForm() {
         kind: 'error',
       });
     } finally {
-      setUploading(false);
+      if (generation === accountGeneration.current) setUploading(false);
     }
   };
 
@@ -289,6 +333,9 @@ export function useBuildingSubmissionForm() {
       return;
     }
 
+    if (pendingSubmission.current && !pendingSubmission.current.signal.aborted) return;
+    const controller = new AbortController();
+    pendingSubmission.current = controller;
     setSubmitting(true);
     setUploading(true);
     showFeedback('form', { message: t('states.uploading'), kind: 'loading' });
@@ -297,7 +344,9 @@ export function useBuildingSubmissionForm() {
         draftImages,
         account,
         form.nameEn,
+        controller.signal,
       );
+      controller.signal.throwIfAborted();
       payload = {
         ...payload,
         images: uploadedImages.map((image) => image.url),
@@ -305,6 +354,7 @@ export function useBuildingSubmissionForm() {
       showFeedback('form', { message: t('states.submitting'), kind: 'loading' });
       const response = await fetch('/api/account/building-submissions', {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           payload,
@@ -322,6 +372,7 @@ export function useBuildingSubmissionForm() {
         .catch(() => ({}))) as BuildingSubmissionCreateResponse & {
         error?: string;
       };
+      controller.signal.throwIfAborted();
       if (!response.ok) {
         throw new Error(result.error ?? 'submit_failed');
       }
@@ -337,13 +388,17 @@ export function useBuildingSubmissionForm() {
       resetForm(account);
       showFeedback('form', { message: t('states.submitted'), kind: 'success' });
     } catch (error) {
+      if (controller.signal.aborted) return;
       showFeedback('form', {
         message: t(submitErrorMessageKey(error)),
         kind: 'error',
       });
     } finally {
-      setUploading(false);
-      setSubmitting(false);
+      if (pendingSubmission.current === controller) pendingSubmission.current = null;
+      if (!controller.signal.aborted) {
+        setUploading(false);
+        setSubmitting(false);
+      }
     }
   };
 
@@ -421,6 +476,12 @@ function submitErrorMessageKey(error: unknown): `states.${string}` {
   if (error.message === 'image_too_small') {
     return 'states.imageTooSmall';
   }
+  if (
+    error.message === 'upload_limit_reached' ||
+    error.message === 'upload_in_progress' ||
+    error.message === 'image_upload_busy'
+  )
+    return 'states.uploadLimited';
   if (error.message === 'upload_failed') {
     return 'states.uploadFailed';
   }

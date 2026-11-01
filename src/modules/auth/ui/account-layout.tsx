@@ -1,9 +1,16 @@
 'use client';
 
-import { Fingerprint, KeyRound, Landmark, LayoutDashboard, LogOut } from 'lucide-react';
+import {
+  Fingerprint,
+  KeyRound,
+  Landmark,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { Link, usePathname, useRouter } from '@/shared/i18n/routing';
@@ -16,34 +23,39 @@ export function AccountLayout({ children }: AccountLayoutProps) {
   const t = useTranslations('auth.account');
   const pathname = usePathname();
   const router = useRouter();
+  const [logoutFailed, setLogoutFailed] = useState(false);
   const { account, authenticated, isLoading, logout } = useAuth();
 
-  const navItems = useMemo(() => {
-    const items = [
-      {
-        href: '/account',
-        icon: <LayoutDashboard className="h-4 w-4" />,
-        label: t('navigation.overview'),
-      },
-    ];
-    if (account?.role !== 'default') {
-      items.push({
-        href: '/account/building-submissions',
-        icon: <Landmark className="h-4 w-4" />,
-        label: t('navigation.buildingSubmission'),
-      });
-    }
-    items.push({
+  const navItems = [
+    {
+      href: '/chat',
+      icon: <MessageCircle className="h-4 w-4" />,
+      label: t('navigation.chat'),
+    },
+    {
+      href: '/account',
+      icon: <LayoutDashboard className="h-4 w-4" />,
+      label: t('navigation.overview'),
+    },
+    {
+      href: '/account/building-submissions',
+      icon: <Landmark className="h-4 w-4" />,
+      label: t('navigation.buildingSubmission'),
+    },
+    {
       href: '/account/security',
       icon: <KeyRound className="h-4 w-4" />,
       label: t('navigation.security'),
-    });
-    return items;
-  }, [account?.role, t]);
+    },
+  ];
 
   const handleLogout = async () => {
-    await logout();
-    router.replace('/login');
+    try {
+      await logout();
+      router.replace('/login');
+    } catch {
+      setLogoutFailed(true);
+    }
   };
 
   if (!isLoading && !authenticated) {
@@ -77,10 +89,11 @@ export function AccountLayout({ children }: AccountLayoutProps) {
             <div>
               <p>{t('title')}</p>
               <h1>{account?.currentName ?? t('loading')}</h1>
-              {account?.role ? <span>{t(`roles.${account.role}` as 'roles.default')}</span> : null}
+              {account ? <span>{t(`roles.${account.role}`)}</span> : null}
             </div>
           </div>
 
+          {logoutFailed ? <p role="alert">{t('logoutFailed')}</p> : null}
           <nav className="account-sidebar__nav" aria-label={t('navigation.label')}>
             {navItems.map((item) => {
               const active = pathname === item.href;

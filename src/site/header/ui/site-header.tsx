@@ -1,6 +1,15 @@
 'use client';
 
-import { BookOpen, Building2, ClipboardList, Home, MapIcon, Play, Shield } from 'lucide-react';
+import {
+  BookOpen,
+  Building2,
+  ClipboardList,
+  Home,
+  MapIcon,
+  MessageCircle,
+  Play,
+  Shield,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -60,7 +69,15 @@ export default function SiteHeader() {
       { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
     ];
 
-    if (!authenticated && !isLoadingAuth) {
+    if (authenticated) {
+      items.push({
+        id: 'chat',
+        icon: MessageCircle,
+        label: t('items.chat'),
+        path: '/chat',
+        highlight: true,
+      });
+    } else if (!isLoadingAuth) {
       items.push({
         id: 'apply',
         icon: Play,

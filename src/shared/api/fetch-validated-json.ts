@@ -74,12 +74,19 @@ export async function fetchValidatedJson<TData>({
   if (browserCacheKey && !browserCache?.force) {
     const cached = browserCacheStore.get(browserCacheKey);
     if (cached && cached.expiresAt > Date.now()) {
-      return cached.result as FetchSuccessResult<TData>;
+      if (validate(cached.result.data)) {
+        return { status: 'success', data: cached.result.data };
+      }
+      browserCacheStore.delete(browserCacheKey);
     }
 
     const inFlight = browserInFlightRequests.get(browserCacheKey);
     if (inFlight) {
-      return (await inFlight) as FetchValidatedJsonResult<TData>;
+      const result = await inFlight;
+      if (result.status !== 'success') return result;
+      return validate(result.data)
+        ? { status: 'success', data: result.data }
+        : { status: 'invalid-data', error: invalidDataMessage };
     }
   }
 
@@ -97,14 +104,11 @@ export async function fetchValidatedJson<TData>({
     return request;
   }
 
-  browserInFlightRequests.set(
-    browserCacheKey,
-    request as Promise<FetchValidatedJsonResult<unknown>>,
-  );
+  browserInFlightRequests.set(browserCacheKey, request);
 
   try {
     const result = await request;
-    if (result.status === 'success') {
+    if (result.status === 'success' && browserInFlightRequests.get(browserCacheKey) === request) {
       pruneBrowserCache();
       browserCacheStore.set(browserCacheKey, {
         expiresAt: Date.now() + (browserCache?.ttlMs ?? 0),
@@ -114,7 +118,9 @@ export async function fetchValidatedJson<TData>({
     }
     return result;
   } finally {
-    browserInFlightRequests.delete(browserCacheKey);
+    if (browserInFlightRequests.get(browserCacheKey) === request) {
+      browserInFlightRequests.delete(browserCacheKey);
+    }
   }
 }
 
@@ -234,6 +240,7 @@ export function writeFetchValidatedJsonBrowserCache<TData>({
     return;
   }
 
+  browserInFlightRequests.delete(key);
   pruneBrowserCache();
   browserCacheStore.set(key, {
     expiresAt: Date.now() + ttlMs,

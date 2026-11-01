@@ -14,6 +14,7 @@
       "bans": "封禁列表",
       "wiki": "游戏指南",
       "join": "申请加入",
+      "chat": "网页聊天",
       "notices": "社区公示"
     },
     "status": {
@@ -136,8 +137,7 @@
         "rules": "服务器规则",
         "notices": "社区公示",
         "launcher": "启动器主页",
-        "gettingStarted": "新手入门",
-        "apply": "申请加入"
+        "gettingStarted": "新手入门"
       },
       "buildings": {
         "title": "世界与建筑",
@@ -341,7 +341,8 @@
         "passkeyCancelled": "Passkey 登录已取消",
         "passkeyDomainMismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
         "passkeyBrowserUnsupported": "当前浏览器不支持 Passkey",
-        "loginFailed": "暂时无法完成登录，请重试。"
+        "loginFailed": "暂时无法完成登录，请重试。",
+        "rateLimited": "请求过于频繁，请稍后重试。"
       }
     },
     "account": {
@@ -352,7 +353,8 @@
         "label": "个人中心导航",
         "overview": "个人概览",
         "buildingSubmission": "建筑收入申请",
-        "security": "登录与安全"
+        "security": "登录与安全",
+        "chat": "网页聊天"
       },
       "overview": {
         "description": "账号状态与功能入口"
@@ -372,11 +374,11 @@
         "logout": "退出登录"
       },
       "roles": {
-        "default": "新人",
         "member": "成员",
-        "helper": "协管",
-        "manager": "管理者"
-      }
+        "moderator": "管理",
+        "custodian": "维护者"
+      },
+      "logoutFailed": "退出登录失败，请重试。"
     },
     "security": {
       "title": "登录与安全",
@@ -388,7 +390,10 @@
         "login": "前往登录",
         "addPasskey": "添加 Passkey",
         "delete": "删除",
-        "revokeSession": "注销"
+        "revokeSession": "注销",
+        "signOutAllSessions": "退出所有网页会话",
+        "reauthenticate": "重新验证身份",
+        "cancel": "取消"
       },
       "sections": {
         "sessions": "浏览器会话",
@@ -396,6 +401,7 @@
       },
       "session": {
         "description": "查看当前登录状态，并注销不再使用的浏览器",
+        "signOutAllConfirmation": "将退出所有浏览器，包括当前浏览器。已注册的 Passkey 会保留。",
         "current": "当前",
         "lastSeenAt": "上次活动 {time}",
         "expiresAt": "闲置到期 {time}",
@@ -408,7 +414,9 @@
         "description": "管理可用于网页登录的设备、系统账号或安全密钥",
         "defaultName": "Mik Passkey",
         "createdAt": "创建于 {time}",
-        "empty": "当前账号还没有绑定 Passkey"
+        "empty": "当前账号还没有绑定 Passkey",
+        "deleteConfirmation": "撤销这个 Passkey 后，它将无法再用于登录。已建立的网页会话仍然有效。",
+        "lastKeyWarning": "这是最后一个 Passkey。撤销后，你仍可通过游戏内验证码登录。"
       },
       "states": {
         "unavailable": "暂时无法开始 Passkey 注册",
@@ -422,7 +430,10 @@
         "deleteFailed": "删除失败",
         "deleted": "Passkey 已删除",
         "revokeSessionFailed": "注销会话失败",
-        "sessionRevoked": "会话已注销"
+        "sessionRevoked": "会话已注销",
+        "reauthenticationRequired": "请先重新登录验证身份，再管理 Passkey 或注销其他网页会话。",
+        "passkeyLimit": "Passkey 数量已达上限，请先撤销不再使用的密钥。",
+        "loadFailed": "暂时无法读取安全设置，请稍后重试。"
       }
     }
   },
@@ -498,7 +509,7 @@
       "coordinatesRequired": "坐标需要填写数字",
       "sourceRequired": "二创和复刻需要填写完整来源",
       "invalid": "表单内容有误",
-      "memberRequired": "建筑投稿仅向正式成员开放。"
+      "uploadLimited": "上传过于频繁或已有上传正在处理，请稍后重试。"
     },
     "status": {
       "pending": "待审核",
@@ -577,6 +588,107 @@
     "search": {
       "placeholder": "搜索公示、玩家或位置",
       "clear": "清除搜索"
+    }
+  },
+  "chat": {
+    "title": "聊天",
+    "join": "加入聊天",
+    "leave": "离开聊天",
+    "send": "发送",
+    "you": "你",
+    "game": "游戏内",
+    "offline": "已离线",
+    "webCount": "网页 ×{count}",
+    "channelList": "频道与私聊",
+    "privateList": "本机私聊会话",
+    "onlinePlayers": "在线玩家（{count}）",
+    "search": "查找在线玩家",
+    "yourPresence": "{name}，这是你的账号",
+    "startPrivate": "与 {name} 发起私聊",
+    "nobodyOnline": "暂无其他在线玩家",
+    "joinToSeePlayers": "加入聊天后查看在线玩家",
+    "emptyHistory": "还没有消息",
+    "composeLabel": "向{channel}发送消息",
+    "composeOffline": "加入聊天后可以发送，草稿会保留。",
+    "privateOffline": "对方已离线，草稿已保留。",
+    "saveLocally": "在本浏览器保存记录",
+    "localHistoryHelp": "仅保存在此浏览器，保留 30 天，最多 1000 条。关闭保存、退出登录或切换账号时清空。",
+    "clearHistory": "清空本机记录",
+    "clearConfirm": "清空此账号在本浏览器保存的全部聊天记录？清空后无法恢复，其他设备和对方的记录不受影响。",
+    "storageFailed": "浏览器无法保存记录，实时聊天仍可使用。本次记录可能在关闭页面后丢失。",
+    "restoreDraft": "恢复到输入框",
+    "webJoined": "{name} 加入了网页聊天",
+    "webLeft": "{name} 退出了网页聊天",
+    "channels": {
+      "public": "公共",
+      "staff": "Staff",
+      "private": "私聊"
+    },
+    "source": {
+      "web": "网页",
+      "game": "游戏"
+    },
+    "status": {
+      "idle": "未连接",
+      "connecting": "连接中",
+      "authorizing": "验证中",
+      "online": "在线",
+      "reconnecting": "重连中",
+      "error": "已断开"
+    },
+    "delivery": {
+      "sending": "正在发送",
+      "unknown": "结果未知，请先核对再重发",
+      "failed": "发送失败"
+    },
+    "errors": {
+      "default": "聊天暂时不可用，请稍后重试。",
+      "connection_failed": "聊天连接中断，正在尝试恢复。",
+      "chat_unavailable": "聊天服务暂时不可用。",
+      "auth_upstream_unavailable": "登录验证暂时不可用。",
+      "chat_busy": "聊天服务繁忙，请稍后发送。",
+      "invalid_response": "聊天响应异常，连接已关闭。",
+      "invalid_message": "请发送不超过 1000 个字符、4 KiB 的单行文字。",
+      "recipient_unavailable": "对方不在线或暂时无法接收私聊。",
+      "staff_required": "你当前没有 staff 聊天权限。",
+      "rate_limited": "发送过于频繁，请稍后再试。",
+      "request_conflict": "发送编号冲突，请重新发送。",
+      "connection_limit": "此账号的网页连接已达上限，请先关闭其他聊天页面。",
+      "connection_unavailable": "此连接已失效，正在重新连接。",
+      "session_changed": "登录账号发生变化，请重新加入聊天。",
+      "session_revoked": "此登录已退出，聊天连接已关闭。",
+      "credentials_changed": "账号凭据已更新，请重新登录。",
+      "chat_forbidden": "此账号当前无法使用网页聊天。",
+      "authorization_expired": "聊天授权已到期。",
+      "authorization_timeout": "聊天授权超时，请重试。",
+      "connection_timeout": "连接已失去响应。",
+      "unauthenticated": "请先登录，再加入聊天。",
+      "member_required": "网页聊天仅向当前社区成员开放。",
+      "chat_capacity": "网页聊天连接已满，请稍后重试。"
+    },
+    "staffUnavailable": "Staff 权限已失效，请手动选择其他频道。",
+    "settings": "聊天设置",
+    "backHome": "返回首页",
+    "backAccount": "个人界面",
+    "login": "登录后加入",
+    "today": "今天",
+    "latest": "回到最新",
+    "emptyOffline": "加入，和大家聊聊。",
+    "privatePlaceholder": "私聊 {name}",
+    "channelPlaceholder": "发送到{channel}",
+    "noPlayersFound": "没有匹配的在线玩家",
+    "confirmClear": "确认清空",
+    "description": "与游戏内和网页玩家实时聊天。",
+    "notifications": {
+      "off": "开启提及和私聊通知",
+      "on": "提及和私聊通知已开启",
+      "unsupported": "此浏览器不支持网页通知",
+      "denied": "通知已被浏览器阻止",
+      "error": "通知未能启用，点击重试",
+      "help": "提醒新私聊和提及，并显示消息内容。每台设备单独开启；同一浏览器的标签页合并提醒。",
+      "mentionTitle": "{name} 在{channel}频道提到了你",
+      "public": "公共",
+      "staff": "Staff"
     }
   }
 }

@@ -1,6 +1,9 @@
 'use client';
 
-import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/browser';
+import type {
+  PublicKeyCredentialCreationOptionsJSON,
+  RegistrationResponseJSON,
+} from '@simplewebauthn/browser';
 import { startRegistration } from '@simplewebauthn/browser';
 import {
   KeyRound,
@@ -12,7 +15,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AccountSecurityResponse } from '@/modules/auth/model/auth-types';
 import { isAccountSecurityResponse } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
@@ -21,71 +24,133 @@ import {
   clearFetchValidatedJsonBrowserCache,
   fetchValidatedJson,
 } from '@/shared/api/fetch-validated-json';
+import { Link } from '@/shared/i18n/routing';
+import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
 const SECURITY_CACHE_TTL_MS = 60_000;
 
 export function AccountSecurityPage() {
+  const { account } = useAuth();
+  return (
+    <AccountLayout>
+      {account ? (
+        <AccountSecurity key={account.playerUuid} playerUuid={account.playerUuid} />
+      ) : null}
+    </AccountLayout>
+  );
+}
+
+function AccountSecurity({ playerUuid }: { playerUuid: string }) {
   const t = useTranslations('auth.security');
   const locale = useLocale();
-  const { account, authenticated, refresh } = useAuth();
+  const { refresh, logout } = useAuth();
   const [security, setSecurity] = useState<AccountSecurityResponse | null>(null);
   const [isMutating, setIsMutating] = useState(false);
+  const [reauthentication, setReauthentication] = useState(false);
+  const [confirmation, setConfirmation] = useState<
+    { type: 'delete-passkey'; credentialId: string } | { type: 'sign-out-all' } | null
+  >(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  const cacheKey = `account:security:${playerUuid}`;
+  const accountGeneration = useRef(0);
+  useEffect(
+    () => () => {
+      accountGeneration.current++;
+    },
+    [],
+  );
 
   const loadSecurity = useCallback(
     async (options: { force?: boolean } = {}) => {
-      if (!account) {
-        setSecurity(null);
-        return;
-      }
+      const generation = accountGeneration.current;
       const result = await fetchValidatedJson({
         url: '/api/account/security',
         request: { method: 'POST' },
         cache: 'no-store',
-        validate: isAccountSecurityResponse,
+        validate: (value): value is AccountSecurityResponse =>
+          isAccountSecurityResponse(value) && value.account.playerUuid === playerUuid,
         timeoutMs: 8000,
         browserCache: {
           force: options.force,
-          key: accountSecurityCacheKey(account.playerUuid),
+          key: cacheKey,
           ttlMs: SECURITY_CACHE_TTL_MS,
         },
         fallbackErrorMessage: 'Failed to load account security',
       });
+      if (generation !== accountGeneration.current) return false;
       if (result.status === 'success') {
         setSecurity(result.data);
-        return;
+        return true;
       }
-      setSecurity((current) => current);
+      setMessage(t('states.loadFailed'));
+      return false;
     },
-    [account],
+    [playerUuid, cacheKey, t],
   );
 
   useEffect(() => {
-    if (authenticated && account) {
-      void loadSecurity();
-      return;
+    void loadSecurity();
+  }, [loadSecurity]);
+
+  const refreshSecurity = async (generation: number) => {
+    clearFetchValidatedJsonBrowserCache({ key: cacheKey });
+    try {
+      const refreshed = await refresh();
+      if (
+        !refreshed ||
+        refreshed.playerUuid !== playerUuid ||
+        generation !== accountGeneration.current
+      )
+        return false;
+      const loaded = await loadSecurity({ force: true });
+      return loaded && generation === accountGeneration.current;
+    } catch {
+      if (generation === accountGeneration.current) setMessage(t('states.loadFailed'));
+      return false;
     }
-    setSecurity(null);
-  }, [account, authenticated, loadSecurity]);
+  };
 
   const registerPasskey = async () => {
+    const generation = accountGeneration.current;
     setIsMutating(true);
     setMessage(null);
     try {
       const optionsResponse = await fetch('/api/auth/passkeys/options/register', {
         method: 'POST',
         cache: 'no-store',
+        signal: AbortSignal.timeout(10_000),
       });
       const optionsPayload = (await optionsResponse.json()) as {
         options?: PublicKeyCredentialCreationOptionsJSON;
+        error?: string;
       };
+      if (generation !== accountGeneration.current) return;
 
       if (!optionsResponse.ok || !optionsPayload.options) {
-        setMessage(t('states.unavailable'));
+        setReauthentication(optionsPayload.error === 'reauthentication_required');
+        setMessage(
+          t(
+            optionsPayload.error === 'reauthentication_required'
+              ? 'states.reauthenticationRequired'
+              : optionsPayload.error === 'passkey_limit'
+                ? 'states.passkeyLimit'
+                : 'states.unavailable',
+          ),
+        );
         return;
       }
 
-      const credential = await startRegistration({ optionsJSON: optionsPayload.options });
+      let credential: RegistrationResponseJSON;
+      try {
+        credential = await startRegistration({ optionsJSON: optionsPayload.options });
+      } catch (error) {
+        if (generation === accountGeneration.current) {
+          setMessage(t(passkeyRegistrationErrorMessageKey(error)));
+        }
+        return;
+      }
+      if (generation !== accountGeneration.current) return;
       const registerResponse = await fetch('/api/auth/passkeys/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,52 +159,78 @@ export function AccountSecurityPage() {
           displayName: t('passkey.defaultName'),
         }),
         cache: 'no-store',
+        signal: AbortSignal.timeout(10_000),
       });
 
+      if (generation !== accountGeneration.current) return;
       if (!registerResponse.ok) {
-        setMessage(t('states.registerFailed'));
+        const error = (await registerResponse.json().catch(() => ({}))) as { error?: string };
+        setReauthentication(error.error === 'reauthentication_required');
+        setMessage(
+          t(
+            error.error === 'reauthentication_required'
+              ? 'states.reauthenticationRequired'
+              : 'states.registerFailed',
+          ),
+        );
         return;
       }
 
-      if (account) {
-        clearFetchValidatedJsonBrowserCache({ key: accountSecurityCacheKey(account.playerUuid) });
-      }
-      await Promise.all([loadSecurity({ force: true }), refresh()]);
-      setMessage(t('states.registered'));
-    } catch (error) {
-      setMessage(t(passkeyRegistrationErrorMessageKey(error)));
+      if (await refreshSecurity(generation)) setMessage(t('states.registered'));
+    } catch {
+      if (generation !== accountGeneration.current) return;
+      setMessage(t('states.registerFailed'));
     } finally {
-      setIsMutating(false);
+      if (generation === accountGeneration.current) setIsMutating(false);
     }
   };
 
   const deletePasskey = async (credentialId: string) => {
+    const generation = accountGeneration.current;
     setIsMutating(true);
     setMessage(null);
     try {
       const response = await fetch(`/api/auth/passkeys/${encodeURIComponent(credentialId)}`, {
         method: 'DELETE',
         cache: 'no-store',
+        signal: AbortSignal.timeout(10_000),
       });
 
+      if (generation !== accountGeneration.current) return;
       if (!response.ok) {
-        setMessage(t('states.deleteFailed'));
+        const error = (await response.json().catch(() => ({}))) as { error?: string };
+        setReauthentication(error.error === 'reauthentication_required');
+        setMessage(
+          t(
+            error.error === 'reauthentication_required'
+              ? 'states.reauthenticationRequired'
+              : 'states.deleteFailed',
+          ),
+        );
         return;
       }
 
-      if (security) {
-        clearFetchValidatedJsonBrowserCache({
-          key: accountSecurityCacheKey(security.account.playerUuid),
-        });
-      }
-      await Promise.all([loadSecurity({ force: true }), refresh()]);
+      setConfirmation(null);
+      setSecurity((current) =>
+        current
+          ? {
+              ...current,
+              passkeys: current.passkeys.filter((passkey) => passkey.credentialId !== credentialId),
+            }
+          : current,
+      );
+      if (!(await refreshSecurity(generation))) return;
       setMessage(t('states.deleted'));
+    } catch {
+      if (generation !== accountGeneration.current) return;
+      setMessage(t('states.deleteFailed'));
     } finally {
-      setIsMutating(false);
+      if (generation === accountGeneration.current) setIsMutating(false);
     }
   };
 
   const revokeSession = async (sessionId: string) => {
+    const generation = accountGeneration.current;
     setIsMutating(true);
     setMessage(null);
     try {
@@ -148,27 +239,59 @@ export function AccountSecurityPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetSessionId: sessionId }),
         cache: 'no-store',
+        signal: AbortSignal.timeout(10_000),
       });
 
+      if (generation !== accountGeneration.current) return;
       if (!response.ok) {
-        setMessage(t('states.revokeSessionFailed'));
+        const error = (await response.json().catch(() => ({}))) as { error?: string };
+        setReauthentication(error.error === 'reauthentication_required');
+        setMessage(
+          t(
+            error.error === 'reauthentication_required'
+              ? 'states.reauthenticationRequired'
+              : 'states.revokeSessionFailed',
+          ),
+        );
         return;
       }
 
-      if (security) {
-        clearFetchValidatedJsonBrowserCache({
-          key: accountSecurityCacheKey(security.account.playerUuid),
-        });
-      }
-      await loadSecurity({ force: true });
+      clearFetchValidatedJsonBrowserCache({ key: cacheKey });
+      if (!(await loadSecurity({ force: true })) || generation !== accountGeneration.current)
+        return;
       setMessage(t('states.sessionRevoked'));
+    } catch {
+      if (generation !== accountGeneration.current) return;
+      setMessage(t('states.revokeSessionFailed'));
     } finally {
-      setIsMutating(false);
+      if (generation === accountGeneration.current) setIsMutating(false);
     }
   };
 
+  const signOutAllSessions = async () => {
+    const generation = accountGeneration.current;
+    setIsMutating(true);
+    setMessage(null);
+    try {
+      await logout({ allSessions: true });
+    } catch (error) {
+      if (generation !== accountGeneration.current) return;
+      const needsAuthentication =
+        error instanceof Error && error.message === 'reauthentication_required';
+      setReauthentication(needsAuthentication);
+      setMessage(
+        t(needsAuthentication ? 'states.reauthenticationRequired' : 'states.revokeSessionFailed'),
+      );
+    } finally {
+      if (generation === accountGeneration.current) setIsMutating(false);
+    }
+  };
+
+  const deletingPasskey = confirmation?.type === 'delete-passkey';
+  const confirmationLabel = t(deletingPasskey ? 'actions.delete' : 'actions.signOutAllSessions');
+
   return (
-    <AccountLayout>
+    <>
       <section className="account-detail-panel">
         <div className="account-detail-panel__header">
           <div className="account-detail-panel__title">
@@ -180,6 +303,18 @@ export function AccountSecurityPage() {
               <p>{t('session.description')}</p>
             </div>
           </div>
+          <button
+            type="button"
+            className="account-action-button account-action-button--danger"
+            disabled={isMutating || !security?.sessions.length}
+            onClick={() => {
+              setMessage(null);
+              setConfirmation({ type: 'sign-out-all' });
+            }}
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            {t('actions.signOutAllSessions')}
+          </button>
         </div>
 
         <div className="account-settings-list">
@@ -262,7 +397,9 @@ export function AccountSecurityPage() {
                 type="button"
                 className="account-action-button account-action-button--danger"
                 disabled={isMutating}
-                onClick={() => void deletePasskey(passkey.credentialId)}
+                onClick={() =>
+                  setConfirmation({ type: 'delete-passkey', credentialId: passkey.credentialId })
+                }
               >
                 <Trash2 className="h-4 w-4" />
                 {t('actions.delete')}
@@ -277,9 +414,68 @@ export function AccountSecurityPage() {
           ) : null}
         </div>
 
-        {message ? <div className="account-inline-message">{message}</div> : null}
+        {message ? (
+          <div className="account-inline-message" role="status">
+            {message}
+          </div>
+        ) : null}
+        {reauthentication ? (
+          <Link href="/login?next=security" className="account-action-button">
+            {t('actions.reauthenticate')}
+          </Link>
+        ) : null}
       </section>
-    </AccountLayout>
+      <AppDialog
+        isOpen={confirmation !== null}
+        onClose={() => {
+          if (!isMutating) setConfirmation(null);
+        }}
+        title={confirmationLabel}
+        icon={
+          deletingPasskey ? (
+            <Trash2 className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <LogOut className="h-5 w-5" aria-hidden="true" />
+          )
+        }
+        descriptionId="security-confirm-description"
+      >
+        <p id="security-confirm-description">
+          {t(deletingPasskey ? 'passkey.deleteConfirmation' : 'session.signOutAllConfirmation')}
+        </p>
+        {deletingPasskey && security?.passkeys.length === 1 ? (
+          <p>{t('passkey.lastKeyWarning')}</p>
+        ) : null}
+        {reauthentication ? (
+          <Link href="/login?next=security">{t('actions.reauthenticate')}</Link>
+        ) : null}
+        {message ? <p role="status">{message}</p> : null}
+        <button
+          type="button"
+          className="account-action-button"
+          disabled={isMutating}
+          data-dialog-initial-focus
+          onClick={() => setConfirmation(null)}
+        >
+          {t('actions.cancel')}
+        </button>
+        <button
+          type="button"
+          className="account-action-button account-action-button--danger"
+          disabled={isMutating}
+          aria-busy={isMutating}
+          onClick={() => {
+            if (!confirmation) return;
+            if (confirmation.type === 'delete-passkey')
+              void deletePasskey(confirmation.credentialId);
+            else void signOutAllSessions();
+          }}
+        >
+          {isMutating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+          {confirmationLabel}
+        </button>
+      </AppDialog>
+    </>
   );
 }
 
@@ -309,10 +505,6 @@ function readErrorCode(error: unknown): string {
   }
   const code = (error as { code?: unknown }).code;
   return typeof code === 'string' ? code : '';
-}
-
-function accountSecurityCacheKey(playerUuid: string): string {
-  return `account:security:${playerUuid}`;
 }
 
 function formatDate(value: string, locale: string): string {

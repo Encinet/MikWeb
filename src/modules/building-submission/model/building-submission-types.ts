@@ -3,7 +3,6 @@ import { isBuilding } from '@/modules/building/model/building-types';
 
 export interface BuildingSubmissionImage {
   url: string;
-  displayUrl?: string;
   width: number;
   height: number;
   size: number;
@@ -48,7 +47,6 @@ export function isBuildingSubmissionImage(value: unknown): value is BuildingSubm
   return (
     isObjectRecord(value) &&
     typeof value.url === 'string' &&
-    (value.displayUrl === undefined || typeof value.displayUrl === 'string') &&
     typeof value.width === 'number' &&
     typeof value.height === 'number' &&
     typeof value.size === 'number' &&

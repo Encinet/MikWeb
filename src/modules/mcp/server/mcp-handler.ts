@@ -3,10 +3,11 @@ import 'server-only';
 import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 
-import type { AnnouncementsApiResponse } from '@/modules/announcement/model/announcement-types';
-import type { BansApiResponse } from '@/modules/ban/model/ban-types';
-import type { BuildingsApiResponse, LocalizedText } from '@/modules/building/model/building-types';
-import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
+import { isBanItemArray } from '@/modules/ban/model/ban-types';
+import type { LocalizedText } from '@/modules/building/model/building-types';
+import { getLocalizedText, isBuildingArray } from '@/modules/building/model/building-types';
+import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { WIKI_LOCALES } from '@/modules/wiki/lib/wiki-grouping';
 import { buildWikiSearchIndex, searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import type {
@@ -17,6 +18,10 @@ import type {
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { SITE_URL } from '@/shared/config/site-config';
+import {
+  RequestBodyLimitError,
+  readLimitedRequestBody,
+} from '@/shared/server/limited-request-body';
 
 const wikiIndexCache = new Map<string, Promise<SearchableWikiBlock[]>>();
 
@@ -42,21 +47,51 @@ function getWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
   return pending;
 }
 
-// Wraps fetch with error handling; throws on non-ok or network failure
-async function apiFetch<TResponse>(url: string): Promise<TResponse> {
-  let response: Response;
-  try {
-    response = await fetch(url);
-  } catch (err) {
-    throw new Error(`Network error fetching ${url}: ${(err as Error).message}`);
-  }
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} fetching ${url}`);
-  }
-  return (await response.json()) as TResponse;
+async function apiFetch<TResponse>(
+  url: string,
+  validate: (value: unknown) => value is TResponse,
+): Promise<TResponse> {
+  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error('Data service unavailable');
+  const bytes = await readLimitedRequestBody(response, 1024 * 1024);
+  const data: unknown = JSON.parse(new TextDecoder().decode(bytes));
+  if (!validate(data)) throw new Error('Invalid data service response');
+  return data;
 }
 
-export const mcpHandler = createMcpHandler(
+let activeRequests = 0;
+export async function mcpHandler(request: Request): Promise<Response> {
+  if (activeRequests >= 8)
+    return Response.json({ error: 'busy' }, { status: 503, headers: { 'Retry-After': '5' } });
+  activeRequests++;
+  try {
+    if (request.method === 'POST') {
+      const body = await readLimitedRequestBody(request, 16 * 1024);
+      const parsed: unknown = JSON.parse(new TextDecoder().decode(body));
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+        return Response.json({ error: 'invalid_request' }, { status: 400 });
+      request = new Request(request.url, {
+        method: 'POST',
+        headers: request.headers,
+        body: body as BodyInit,
+        signal: request.signal,
+      });
+    }
+    return await sdkHandler(request);
+  } catch (error) {
+    return Response.json(
+      {
+        error:
+          error instanceof RequestBodyLimitError ? 'request_body_too_large' : 'invalid_request',
+      },
+      { status: error instanceof RequestBodyLimitError ? 413 : 400 },
+    );
+  } finally {
+    activeRequests--;
+  }
+}
+
+const sdkHandler = createMcpHandler(
   (server) => {
     server.registerTool(
       'get_players',
@@ -66,7 +101,7 @@ export const mcpHandler = createMcpHandler(
         inputSchema: z.object({}),
       },
       async () => {
-        const data: PlayerOnlinePayload = await apiFetch(dataApiUrl('/players'));
+        const data = await apiFetch(dataApiUrl('/players'), isPlayerOnlinePayload);
 
         if (data.online === -1) {
           return { content: [{ type: 'text', text: 'Server offline.' }] };
@@ -97,13 +132,13 @@ export const mcpHandler = createMcpHandler(
           'Get the list of buildings from the Minecraft server. builders format: "name(contribution%)" sorted by contribution desc. pos format: x y z (Minecraft coordinates).',
         inputSchema: z.object({
           locale: z
-            .string()
+            .enum(WIKI_LOCALES)
             .default('zh-CN')
             .describe('Locale for localized fields (e.g. zh-CN, en).'),
         }),
       },
       async ({ locale }) => {
-        const data: BuildingsApiResponse = await apiFetch(dataApiUrl('/buildings'));
+        const data = await apiFetch(dataApiUrl('/buildings'), isBuildingArray);
 
         if (data.length === 0) {
           return {
@@ -111,8 +146,7 @@ export const mcpHandler = createMcpHandler(
           };
         }
 
-        const resolve = (localized: LocalizedText): string =>
-          localized[locale] ?? localized['zh-CN'] ?? Object.values(localized)[0] ?? '';
+        const resolve = (localized: LocalizedText): string => getLocalizedText(localized, locale);
 
         const lines = data.map((b, i) => {
           const name = resolve(b.name);
@@ -121,7 +155,7 @@ export const mcpHandler = createMcpHandler(
           const tags = b.tags?.map(resolve).filter(Boolean).join(',');
           const { x, y, z } = b.coordinates;
 
-          const sortedBuilders = b.builders.sort((a, b) => b.weight - a.weight);
+          const sortedBuilders = [...b.builders].sort((a, b) => b.weight - a.weight);
           const showWeight =
             sortedBuilders.length > 1 &&
             sortedBuilders.some((b) => b.weight !== sortedBuilders[0].weight);
@@ -158,7 +192,10 @@ export const mcpHandler = createMcpHandler(
 
         return {
           content: [
-            { type: 'text', text: `${data.length} building(s) found:\n\n${lines.join('\n\n')}` },
+            {
+              type: 'text',
+              text: boundedText(`${data.length} building(s) found:\n\n${lines.join('\n\n')}`),
+            },
           ],
         };
       },
@@ -172,7 +209,7 @@ export const mcpHandler = createMcpHandler(
         inputSchema: z.object({}),
       },
       async () => {
-        const data: BansApiResponse = await apiFetch(dataApiUrl('/bans'));
+        const data = await apiFetch(dataApiUrl('/bans'), isBanItemArray);
 
         if (data.length === 0) {
           return {
@@ -193,7 +230,9 @@ export const mcpHandler = createMcpHandler(
         });
 
         return {
-          content: [{ type: 'text', text: `${data.length} ban(s):\n\n${lines.join('\n')}` }],
+          content: [
+            { type: 'text', text: boundedText(`${data.length} ban(s):\n\n${lines.join('\n')}`) },
+          ],
         };
       },
     );
@@ -208,12 +247,13 @@ export const mcpHandler = createMcpHandler(
             .number()
             .int()
             .positive()
+            .max(50)
             .default(5)
             .describe('Number of announcements to return.'),
         }),
       },
       async ({ count }) => {
-        const data: AnnouncementsApiResponse = await apiFetch(dataApiUrl('/announcements'));
+        const data = await apiFetch(dataApiUrl('/announcements'), isAnnouncementItemArray);
 
         if (data.length === 0) {
           return {
@@ -225,7 +265,10 @@ export const mcpHandler = createMcpHandler(
 
         return {
           content: [
-            { type: 'text', text: `${lines.length} announcement(s):\n\n${lines.join('\n')}` },
+            {
+              type: 'text',
+              text: boundedText(`${lines.length} announcement(s):\n\n${lines.join('\n')}`),
+            },
           ],
         };
       },
@@ -243,7 +286,7 @@ export const mcpHandler = createMcpHandler(
           '(e.g. "规则 规范 制度" helps match the server rules page). Returns the full content of matched wiki sections and lets the caller control how many results are returned.',
         inputSchema: z.object({
           searchPhrases: z
-            .array(z.string())
+            .array(z.string().trim().min(1).max(160))
             .min(1)
             .max(5)
             .describe(
@@ -280,9 +323,13 @@ export const mcpHandler = createMcpHandler(
           .map((result) => `[${result.path}]\n${result.url}\n\n${result.content}`)
           .join('\n\n---\n\n');
 
-        return { content: [{ type: 'text', text }] };
+        return { content: [{ type: 'text', text: boundedText(text) }] };
       },
     );
   },
-  { verboseLogs: true },
+  { verboseLogs: false, maxSubscriptions: 0 },
 );
+
+function boundedText(text: string): string {
+  return text.length <= 64_000 ? text : `${text.slice(0, 64_000)}\n[Output truncated]`;
+}

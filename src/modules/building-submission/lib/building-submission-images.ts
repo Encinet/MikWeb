@@ -6,6 +6,11 @@ import {
 } from '@/modules/building-submission/model/building-submission-form';
 import type { BuildingSubmissionImage } from '@/modules/building-submission/model/building-submission-types';
 
+const uploadedDrafts = new WeakMap<
+  File,
+  { owner: string; expiresAt: number; image: BuildingSubmissionImage }
+>();
+
 export async function createBuildingSubmissionImageDraft(
   file: File,
 ): Promise<BuildingSubmissionImageDraft> {
@@ -27,9 +32,16 @@ export async function uploadBuildingSubmissionImageDrafts(
   images: BuildingSubmissionImageDraft[],
   account: AuthAccount,
   buildingEnglishName: string,
+  signal?: AbortSignal,
 ): Promise<BuildingSubmissionImage[]> {
   const uploaded: BuildingSubmissionImage[] = [];
   for (let index = 0; index < images.length; index += 1) {
+    signal?.throwIfAborted();
+    const cached = uploadedDrafts.get(images[index].file);
+    if (cached && cached.owner === account.playerUuid && cached.expiresAt > Date.now()) {
+      uploaded.push(cached.image);
+      continue;
+    }
     const outputName = buildImageFileName(
       account.currentName,
       buildingEnglishName,
@@ -43,7 +55,14 @@ export async function uploadBuildingSubmissionImageDrafts(
     ) {
       throw new Error('image_too_small');
     }
-    uploaded.push(await uploadWebp(converted.file));
+    signal?.throwIfAborted();
+    const image = await uploadWebp(converted.file, signal);
+    uploadedDrafts.set(images[index].file, {
+      owner: account.playerUuid,
+      image,
+      expiresAt: Date.now() + 23 * 3600_000,
+    });
+    uploaded.push(image);
   }
   return uploaded;
 }
@@ -60,7 +79,10 @@ async function convertToWebp(
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext('2d');
-  if (!context) throw new Error('upload_failed');
+  if (!context) {
+    bitmap.close();
+    throw new Error('upload_failed');
+  }
   context.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
   const blob = await new Promise<Blob | null>((resolve) =>
@@ -99,14 +121,18 @@ function sanitizeFileNamePart(value: string, fallback: string): string {
   return clean || fallback;
 }
 
-async function uploadWebp(file: File): Promise<BuildingSubmissionImage> {
+async function uploadWebp(file: File, signal?: AbortSignal): Promise<BuildingSubmissionImage> {
   const formData = new FormData();
   formData.set('image', file);
   const response = await fetch('/api/account/images/upload', {
     method: 'POST',
     body: formData,
+    signal,
   });
-  const payload = (await response.json().catch(() => ({}))) as { image?: BuildingSubmissionImage };
-  if (!response.ok || !payload.image) throw new Error('upload_failed');
+  const payload = (await response.json().catch(() => ({}))) as {
+    image?: BuildingSubmissionImage;
+    error?: string;
+  };
+  if (!response.ok || !payload.image) throw new Error(payload.error ?? 'upload_failed');
   return payload.image;
 }

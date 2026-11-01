@@ -29,7 +29,7 @@ export function AccountPage() {
           <InfoRow
             icon={<KeyRound className="h-4 w-4" />}
             label={t('fields.passkeys')}
-            value={String(account?.passkeyCount ?? 0)}
+            value={account ? String(account.passkeyCount) : '-'}
           />
           <InfoRow
             icon={<ShieldCheck className="h-4 w-4" />}

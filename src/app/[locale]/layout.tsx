@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
+import { ChatAccountGuard } from '@/modules/chat/model/chat-account-guard';
 import { PlayerStatusProvider } from '@/modules/player/model/player-status-provider';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { routing } from '@/shared/i18n/routing';
@@ -83,6 +84,7 @@ export default async function LocaleLayout({
       <NextIntlClientProvider messages={messages}>
         <PlayerStatusProvider>
           <AuthProvider initialSessionPresent={initialSessionPresent}>
+            <ChatAccountGuard />
             <BuildingsProvider>
               <ThemeColor />
               <StructuredData />

@@ -110,26 +110,8 @@ export function isBuildingArray(value: unknown): value is Building[] {
   return Array.isArray(value) && value.every(isBuilding);
 }
 
-export function getLocalizedText(
-  content: LocalizedText | undefined,
-  locale: string,
-  fallbackLocales: string[] = ['en', 'zh-CN'],
-): string {
-  if (!content) {
-    return '';
-  }
-
-  const localeCandidates = [locale, ...fallbackLocales];
-
-  for (const localeCandidate of localeCandidates) {
-    const localizedValue = content[localeCandidate];
-
-    if (localizedValue) {
-      return localizedValue;
-    }
-  }
-
-  return Object.values(content)[0] ?? '';
+export function getLocalizedText(content: LocalizedText | undefined, locale: string): string {
+  return content?.[locale] || content?.en || content?.['zh-CN'] || '';
 }
 
 export function sortBuildersByWeight(builders: Builder[]): Builder[] {

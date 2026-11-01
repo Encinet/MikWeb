@@ -56,12 +56,12 @@ export function DesktopSiteHeaderNavigation({
           <Link
             key={item.id}
             href={item.path as string}
-            className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
+            className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight px-4' : isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
             style={{ position: 'relative' }}
           >
-            <item.icon className="relative z-10 h-4 w-4" />
+            <item.icon className="relative z-10 h-4 w-4" aria-hidden="true" />
             <span className="relative z-10 whitespace-nowrap">{item.label}</span>
-            {isActive ? (
+            {isActive && !item.highlight ? (
               <motion.div
                 key={`${item.id}-${underlineDirection}-${underlineDistance}`}
                 className="absolute right-0 bottom-0 left-0 h-0.5"
@@ -145,8 +145,9 @@ export function MobileSiteHeaderMenu({
                     key={item.id}
                     href={item.path as string}
                     onClick={onClose}
-                    className={`${isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} block py-3 px-4`}
+                    className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-2' : isActive ? 'ui-nav-link ui-nav-link--active block' : 'ui-nav-link block'} py-3 px-4`}
                   >
+                    {item.highlight && <item.icon className="h-4 w-4" aria-hidden="true" />}
                     {item.label}
                   </Link>
                 );

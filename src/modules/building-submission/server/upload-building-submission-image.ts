@@ -1,103 +1,112 @@
 import 'server-only';
 
-import { readAccountSummaryFromCookies } from '@/modules/auth/server/auth-bff';
+import type { OutputInfo } from 'sharp';
+import sharp from 'sharp';
+import { callImageUploadService } from '@/modules/auth/server/auth-bff';
+import {
+  RequestBodyLimitError,
+  readLimitedRequestBody,
+} from '@/shared/server/limited-request-body';
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_MULTIPART_BYTES = MAX_UPLOAD_BYTES + 16 * 1024;
+let activeUploads = 0;
 
-export async function uploadBuildingSubmissionImage(request: Request) {
-  const auth = await readAccountSummaryFromCookies(request);
-  if (!auth.account) {
-    return (
-      auth.response ??
-      Response.json(
-        { error: 'unauthenticated' },
-        { status: 401, headers: { 'Cache-Control': 'no-store' } },
-      )
-    );
-  }
-
+export async function uploadBuildingSubmissionImage(request: Request): Promise<Response> {
   const apiKey = process.env.IMGBB_API_KEY?.trim();
-  if (!apiKey) {
-    return Response.json(
-      { error: 'image_upload_not_configured', detail: 'IMGBB_API_KEY is not configured.' },
-      { status: 503, headers: { 'Cache-Control': 'no-store' } },
-    );
-  }
-
-  const formData = await request.formData().catch(() => null);
-  const image = formData?.get('image');
-  if (!(image instanceof File)) {
-    return Response.json(
-      { error: 'image_required' },
-      { status: 400, headers: { 'Cache-Control': 'no-store' } },
-    );
-  }
-  if (image.type !== 'image/webp') {
-    return Response.json(
-      { error: 'image_must_be_webp' },
-      { status: 415, headers: { 'Cache-Control': 'no-store' } },
-    );
-  }
-  if (image.size <= 0 || image.size > MAX_UPLOAD_BYTES) {
-    return Response.json(
-      { error: 'image_too_large', maxBytes: MAX_UPLOAD_BYTES },
-      { status: 413, headers: { 'Cache-Control': 'no-store' } },
-    );
-  }
-
-  const upstreamForm = new FormData();
-  upstreamForm.set('key', apiKey);
-  upstreamForm.set('image', image, sanitizeImageName(image.name));
-
-  let upstream: Response;
+  if (!apiKey) return uploadError('image_upload_not_configured', 503);
+  if (activeUploads >= 4) return uploadError('image_upload_busy', 503, '10');
+  activeUploads++;
   try {
-    upstream = await fetch('https://api.imgbb.com/1/upload', {
+    // One account lookup also reserves the durable quota and prevents parallel uploads for this account.
+    const authorized = await callImageUploadService(request, 'reserve');
+    if (!authorized.ok) return authorized;
+    const { uploadId } = (await authorized.json()) as { uploadId?: string };
+    if (typeof uploadId !== 'string') return uploadError('image_upload_unavailable', 502);
+    if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('multipart/form-data;')) {
+      return uploadError('multipart_required', 415);
+    }
+    const body = await readLimitedRequestBody(request, MAX_MULTIPART_BYTES);
+    const form = await new Response(body as BodyInit, {
+      headers: { 'Content-Type': request.headers.get('Content-Type') ?? '' },
+    }).formData();
+    const image = form.get('image');
+    if (!(image instanceof File) || [...form.keys()].length !== 1)
+      return uploadError('image_required', 400);
+    if (image.type !== 'image/webp') return uploadError('image_must_be_webp', 415);
+    if (image.size <= 0 || image.size > MAX_UPLOAD_BYTES)
+      return uploadError('image_too_large', 413);
+    const input = Buffer.from(await image.arrayBuffer());
+    if (input.toString('ascii', 0, 4) !== 'RIFF' || input.toString('ascii', 8, 12) !== 'WEBP') {
+      return uploadError('invalid_image', 422);
+    }
+    let decoded: { data: Buffer; info: OutputInfo };
+    try {
+      const decoder = sharp(input, { failOn: 'warning', limitInputPixels: 1920 * 1920 });
+      const metadata = await decoder.metadata();
+      if (
+        metadata.format !== 'webp' ||
+        (metadata.pages ?? 1) !== 1 ||
+        !metadata.width ||
+        !metadata.height ||
+        metadata.width < 960 ||
+        metadata.height < 540 ||
+        metadata.width > 1920 ||
+        metadata.height > 1920
+      ) {
+        return uploadError('invalid_image_dimensions', 422);
+      }
+      // Decode the entire image and strip metadata before it reaches the hosting service.
+      decoded = await decoder
+        .webp({ quality: 86, effort: 3 })
+        .toBuffer({ resolveWithObject: true });
+    } catch {
+      return uploadError('invalid_image', 422);
+    }
+    if (decoded.data.length > MAX_UPLOAD_BYTES) return uploadError('image_too_large', 413);
+    const upstreamForm = new FormData();
+    upstreamForm.set('key', apiKey);
+    upstreamForm.set(
+      'image',
+      new Blob([new Uint8Array(decoded.data)], { type: 'image/webp' }),
+      sanitizeImageName(image.name),
+    );
+    const upstream = await fetch('https://api.imgbb.com/1/upload', {
       method: 'POST',
       body: upstreamForm,
       cache: 'no-store',
       signal: AbortSignal.timeout(20_000),
     });
-  } catch {
-    return Response.json(
-      { error: 'image_upload_unavailable' },
-      { status: 502, headers: { 'Cache-Control': 'no-store' } },
+    const payload = (await upstream.json()) as ImgBbResponse;
+    const url = payload.data?.image?.url ?? payload.data?.url;
+    if (
+      !upstream.ok ||
+      !payload.success ||
+      typeof url !== 'string' ||
+      !/^https:\/\/i\.ibb\.co\/[^/]+\/[^/?#]+\.webp$/i.test(url) ||
+      Number(payload.data?.width) !== decoded.info.width ||
+      Number(payload.data?.height) !== decoded.info.height ||
+      Number(payload.data?.size) !== decoded.data.length ||
+      payload.data?.image?.mime !== 'image/webp'
+    ) {
+      return uploadError('invalid_image_upload_response', 502);
+    }
+    const receipt = {
+      url,
+      width: decoded.info.width,
+      height: decoded.info.height,
+      size: decoded.data.length,
+      mime: 'image/webp',
+    };
+    return await callImageUploadService(request, 'complete', { uploadId, image: receipt });
+  } catch (error) {
+    return uploadError(
+      error instanceof RequestBodyLimitError ? 'image_too_large' : 'image_upload_unavailable',
+      error instanceof RequestBodyLimitError ? 413 : 502,
     );
+  } finally {
+    activeUploads--;
   }
-
-  const payload = (await upstream.json().catch(() => ({}))) as ImgBbResponse;
-  if (!upstream.ok || !payload.success || !payload.data) {
-    return Response.json(
-      { error: 'image_upload_failed' },
-      { status: upstream.status || 502, headers: { 'Cache-Control': 'no-store' } },
-    );
-  }
-
-  const imageUrl = payload.data.image?.url ?? payload.data.url;
-  const width = Number(payload.data.width);
-  const height = Number(payload.data.height);
-  const size = Number(payload.data.size);
-  const mime = payload.data.image?.mime ?? 'image/webp';
-
-  if (!imageUrl || !Number.isFinite(width) || !Number.isFinite(height) || !Number.isFinite(size)) {
-    return Response.json(
-      { error: 'invalid_image_upload_response' },
-      { status: 502, headers: { 'Cache-Control': 'no-store' } },
-    );
-  }
-
-  return Response.json(
-    {
-      image: {
-        url: imageUrl,
-        displayUrl: readStringField(payload.data, 'display_url') ?? imageUrl,
-        width,
-        height,
-        size,
-        mime,
-      },
-    },
-    { headers: { 'Cache-Control': 'no-store' } },
-  );
 }
 
 interface ImgBbResponse {
@@ -107,18 +116,21 @@ interface ImgBbResponse {
     width?: string | number;
     height?: string | number;
     size?: string | number;
-    image?: {
-      url?: string;
-      mime?: string;
-    };
+    image?: { url?: string; mime?: string };
   };
 }
-
-function readStringField(value: Record<string, unknown>, key: string): string | undefined {
-  const field = value[key];
-  return typeof field === 'string' ? field : undefined;
+function uploadError(error: string, status: number, retryAfter?: string): Response {
+  return Response.json(
+    { error },
+    {
+      status,
+      headers: {
+        'Cache-Control': 'no-store',
+        ...(retryAfter ? { 'Retry-After': retryAfter } : {}),
+      },
+    },
+  );
 }
-
 function sanitizeImageName(name: string): string {
   const clean = name
     .replace(/\.[^.]+$/, '')

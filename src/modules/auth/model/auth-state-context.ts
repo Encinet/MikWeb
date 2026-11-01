@@ -7,8 +7,9 @@ export interface AuthState {
   account: AuthAccount | null;
   authenticated: boolean;
   isLoading: boolean;
-  refresh: () => Promise<void>;
-  logout: () => Promise<void>;
+  verified: boolean;
+  refresh: () => Promise<AuthAccount | null>;
+  logout: (options?: { allSessions?: boolean }) => Promise<void>;
 }
 
 export const AuthStateContext = createContext<AuthState | null>(null);

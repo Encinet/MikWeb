@@ -1,9 +1,13 @@
 export interface AuthAccount {
   playerUuid: string;
   currentName: string;
-  role: string;
+  role: 'member' | 'moderator' | 'custodian';
   updatedAt: string;
-  passkeyCount?: number;
+  passkeyCount: number;
+}
+
+export function isStaffRole(role: unknown): role is 'moderator' | 'custodian' {
+  return role === 'moderator' || role === 'custodian';
 }
 
 export interface AuthSession {
@@ -23,10 +27,9 @@ export interface AuthPasskey {
   displayName?: string;
 }
 
-export interface AuthMeResponse {
-  authenticated: boolean;
-  account?: AuthAccount;
-}
+export type AuthMeResponse =
+  | { authenticated: false }
+  | { authenticated: true; account: AuthAccount };
 
 export interface AccountSecurityResponse {
   account: AuthAccount;
@@ -44,9 +47,19 @@ export function isAuthAccount(value: unknown): value is AuthAccount {
     isObjectRecord(value) &&
     typeof value.playerUuid === 'string' &&
     typeof value.currentName === 'string' &&
-    typeof value.role === 'string' &&
+    (value.role === 'member' || isStaffRole(value.role)) &&
     typeof value.updatedAt === 'string' &&
-    (value.passkeyCount === undefined || typeof value.passkeyCount === 'number')
+    typeof value.passkeyCount === 'number' &&
+    Number.isSafeInteger(value.passkeyCount) &&
+    value.passkeyCount >= 0
+  );
+}
+
+export function isAuthMeResponse(value: unknown): value is AuthMeResponse {
+  return (
+    isObjectRecord(value) &&
+    typeof value.authenticated === 'boolean' &&
+    (!value.authenticated || isAuthAccount(value.account))
   );
 }
 

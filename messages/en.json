@@ -14,6 +14,7 @@
       "bans": "Ban List",
       "wiki": "Wiki",
       "join": "Apply to Join",
+      "chat": "Web Chat",
       "notices": "Notices"
     },
     "status": {
@@ -136,8 +137,7 @@
         "rules": "Server rules",
         "notices": "Community notices",
         "launcher": "Launcher homepage",
-        "gettingStarted": "Getting started",
-        "apply": "Apply to join"
+        "gettingStarted": "Getting started"
       },
       "buildings": {
         "title": "World and builds",
@@ -341,7 +341,8 @@
         "passkeyCancelled": "Passkey login was cancelled.",
         "passkeyDomainMismatch": "This domain does not support Passkeys. Use mcmik.top.",
         "passkeyBrowserUnsupported": "This browser does not support Passkeys.",
-        "loginFailed": "Unable to complete sign-in. Please try again."
+        "loginFailed": "Unable to complete sign-in. Please try again.",
+        "rateLimited": "Too many requests. Please wait and try again."
       }
     },
     "account": {
@@ -352,7 +353,8 @@
         "label": "Account navigation",
         "overview": "Overview",
         "buildingSubmission": "Building submission",
-        "security": "Login and security"
+        "security": "Login and security",
+        "chat": "Web chat"
       },
       "overview": {
         "description": "Account status and tools."
@@ -372,11 +374,11 @@
         "logout": "Log out"
       },
       "roles": {
-        "default": "Newcomer",
         "member": "Member",
-        "helper": "Helper",
-        "manager": "Manager"
-      }
+        "moderator": "Moderator",
+        "custodian": "Custodian"
+      },
+      "logoutFailed": "Sign-out failed. Please try again."
     },
     "security": {
       "title": "Login and Security",
@@ -388,7 +390,10 @@
         "login": "Go to login",
         "addPasskey": "Add Passkey",
         "delete": "Delete",
-        "revokeSession": "Revoke"
+        "revokeSession": "Revoke",
+        "signOutAllSessions": "Sign out all browsers",
+        "reauthenticate": "Verify your identity again",
+        "cancel": "Cancel"
       },
       "sections": {
         "sessions": "Browser Sessions",
@@ -396,6 +401,7 @@
       },
       "session": {
         "description": "Review active browser sign-ins and revoke browsers you no longer use.",
+        "signOutAllConfirmation": "Sign out every browser, including this one? Registered passkeys will be kept.",
         "current": "Current",
         "lastSeenAt": "Last active {time}",
         "expiresAt": "Idle expiry {time}",
@@ -408,7 +414,9 @@
         "description": "Manage devices, platform accounts, and security keys that can sign in.",
         "defaultName": "Mik Passkey",
         "createdAt": "Created at {time}",
-        "empty": "This account has no Passkeys yet."
+        "empty": "This account has no Passkeys yet.",
+        "deleteConfirmation": "Revoking this passkey prevents future sign-ins with it. Existing web sessions remain active.",
+        "lastKeyWarning": "This is your last passkey. You can still sign in using an in-game code after revoking it."
       },
       "states": {
         "unavailable": "Passkey registration is temporarily unavailable.",
@@ -422,7 +430,10 @@
         "deleteFailed": "Delete failed.",
         "deleted": "Passkey deleted.",
         "revokeSessionFailed": "Failed to revoke session.",
-        "sessionRevoked": "Session revoked."
+        "sessionRevoked": "Session revoked.",
+        "reauthenticationRequired": "Please sign in again before managing passkeys or revoking other web sessions.",
+        "passkeyLimit": "The passkey limit has been reached. Revoke an unused key first.",
+        "loadFailed": "Security settings could not be loaded. Please try again later."
       }
     }
   },
@@ -498,7 +509,7 @@
       "coordinatesRequired": "Coordinates must be numbers.",
       "sourceRequired": "Derivative and replica builds require complete source information.",
       "invalid": "The form is invalid.",
-      "memberRequired": "Building submissions are for Members."
+      "uploadLimited": "Uploads are busy or your upload limit has been reached. Please try again later."
     },
     "status": {
       "pending": "Pending",
@@ -577,6 +588,107 @@
     "search": {
       "placeholder": "Search notices, players or locations",
       "clear": "Clear search"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "join": "Join chat",
+    "leave": "Leave chat",
+    "send": "Send",
+    "you": "you",
+    "game": "In game",
+    "offline": "Offline",
+    "webCount": "Web ×{count}",
+    "channelList": "Channels and messages",
+    "privateList": "Local private conversations",
+    "onlinePlayers": "Online players ({count})",
+    "search": "Find online players",
+    "yourPresence": "{name}, your account",
+    "startPrivate": "Message {name}",
+    "nobodyOnline": "No other players online",
+    "joinToSeePlayers": "Join chat to see online players",
+    "emptyHistory": "No messages yet",
+    "composeLabel": "Message {channel}",
+    "composeOffline": "Join to send. Your draft is kept.",
+    "privateOffline": "This player is offline. Your draft is kept.",
+    "saveLocally": "Save messages in this browser",
+    "localHistoryHelp": "Stored in this browser for 30 days, up to 1,000 messages. Turning this off, signing out or switching accounts clears it.",
+    "clearHistory": "Clear local history",
+    "clearConfirm": "Clear all chat messages saved for this account in this browser? They cannot be recovered. Other devices and recipients keep their own copies.",
+    "storageFailed": "This browser cannot save messages. Live chat still works, but messages may be lost when you close the page.",
+    "restoreDraft": "Restore draft",
+    "webJoined": "{name} joined web chat",
+    "webLeft": "{name} left web chat",
+    "channels": {
+      "public": "Public",
+      "staff": "Staff",
+      "private": "Private messages"
+    },
+    "source": {
+      "web": "Web",
+      "game": "Game"
+    },
+    "status": {
+      "idle": "Not connected",
+      "connecting": "Connecting",
+      "authorizing": "Verifying",
+      "online": "Online",
+      "reconnecting": "Reconnecting",
+      "error": "Disconnected"
+    },
+    "delivery": {
+      "sending": "Sending",
+      "unknown": "Result unknown; check before sending again",
+      "failed": "Failed"
+    },
+    "errors": {
+      "default": "Chat is unavailable. Please try again later.",
+      "connection_failed": "Chat disconnected. Trying to reconnect.",
+      "chat_unavailable": "Chat is temporarily unavailable.",
+      "auth_upstream_unavailable": "Login verification is unavailable.",
+      "chat_busy": "Chat is busy. Please try again shortly.",
+      "invalid_response": "An invalid chat response closed the connection.",
+      "invalid_message": "Send a single line of text, up to 1000 characters and 4 KiB.",
+      "recipient_unavailable": "This player is offline or cannot receive private messages.",
+      "staff_required": "You do not currently have staff chat permission.",
+      "rate_limited": "You are sending too quickly. Please wait.",
+      "request_conflict": "The message request conflicts with an earlier send. Try again.",
+      "connection_limit": "Your account has reached its web connection limit. Close another chat page first.",
+      "connection_unavailable": "This connection expired. Reconnecting.",
+      "session_changed": "The signed-in account changed. Join chat again.",
+      "session_revoked": "This login was signed out and chat was disconnected.",
+      "credentials_changed": "Your account credentials changed. Sign in again.",
+      "chat_forbidden": "This account cannot currently use web chat.",
+      "authorization_expired": "Chat authorization expired.",
+      "authorization_timeout": "Chat authorization timed out. Please retry.",
+      "connection_timeout": "The connection stopped responding.",
+      "unauthenticated": "Sign in before joining chat.",
+      "member_required": "Web chat is available to current community members.",
+      "chat_capacity": "Web chat is at capacity. Please try again later."
+    },
+    "staffUnavailable": "Staff permission is no longer available. Choose another channel to send.",
+    "settings": "Chat settings",
+    "backHome": "Back to home",
+    "backAccount": "Your account",
+    "login": "Sign in to join",
+    "today": "Today",
+    "latest": "Latest messages",
+    "emptyOffline": "Join the conversation.",
+    "privatePlaceholder": "Message {name}",
+    "channelPlaceholder": "Message {channel}",
+    "noPlayersFound": "No matching players online",
+    "confirmClear": "Clear history",
+    "description": "Chat with players in game and on the web.",
+    "notifications": {
+      "off": "Enable mention and private message notifications",
+      "on": "Mention and private message notifications enabled",
+      "unsupported": "Notifications are unavailable in this browser",
+      "denied": "Notifications are blocked by your browser",
+      "error": "Could not enable notifications. Click to retry",
+      "help": "Show message previews for new private messages and mentions. Enable on each device. Tabs in one browser share alerts.",
+      "mentionTitle": "{name} mentioned you in {channel}",
+      "public": "Public",
+      "staff": "Staff"
     }
   }
 }

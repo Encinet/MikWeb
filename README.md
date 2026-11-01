@@ -4,7 +4,7 @@ Mik Casual 官网与内容站点，支持 `zh-CN` / `en` 双语，包含官网�
 
 ## 快速开始
 
-使用 Bun 安装依赖；构建和运行环境需要 Node.js 22 或更高版本。`@types/node` 保持在 Node 22 系列，与最低支持的运行环境一致。
+网站部署在 Vercel。使用 Bun 安装依赖，构建和运行需要 Node.js 22 或更高版本。
 
 ```bash
 bun install
@@ -16,7 +16,7 @@ bun dev
 | 命令 | 说明 |
 |------|------|
 | `bun dev` | 启动开发服务器 |
-| `bun build` | 生产构建 |
+| `bun run build` | 生产构建 |
 | `bun start` | 启动生产服务 |
 | `bun fix` | 自动修正 Biome 可处理的问题 |
 | `bun check:wiki` | 校验 Wiki 元信息、分组目录、章节结构与双语文件配对 |
@@ -55,7 +55,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 
 ## 登录配置
 
-网页登录只支持游戏内验证码和 Passkey。浏览器只请求 MikWeb，MikWeb 服务端再用共享密钥访问 Mik Data；这个密钥不能放到客户端代码里。
+网页登录使用游戏内验证码或 Passkey，登录请求经 MikWeb 服务端转发至 Mik Data。
 
 本地开发可复制 `.env.example` 为 `.env.local`：
 
@@ -65,11 +65,15 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 | `MIKWEB_AUTH_CLIENT_SECRET` | Yes | MikWeb 到 Mik Data 的服务端共享密钥，必须和 Mik Data 的同名 secret 一致 |
 | `IMGBB_API_KEY` | Yes, for building submissions | ImgBB API key，只在 MikWeb 服务端使用，不能暴露给浏览器 |
 
-玩家建筑收入申请使用 `/account/building-submissions`。浏览器会先把图片转换为 WebP 并做最低清晰度检查，然后提交到 `POST /api/account/images/upload`；该路由会再次确认登录状态，再把图片上传到 ImgBB。最终申请提交到 Mik Data 时，Mik Data 会校验正式成员身份、最多 10 个待审核申请、ImgBB 图片 URL、WebP 元数据和建筑 payload。
+Passkey 与网页会话在 `/account/security` 管理。添加或撤销 Passkey、注销其他会话或退出全部会话，需要最近 5 分钟内的身份验证。
+
+网页登录需要配套的 mikdata 和 mik 插件，配置见各项目文档。
+
+建筑申请入口为 `/account/building-submissions`，每个账号最多 10 项待审核申请。图片转换为 WebP 后上传至 ImgBB；文件上限 4 MiB，最低尺寸 960×540，最长边不超过 1920 像素。
 
 ## MCP
 
-端点使用 MCP SDK v2，支持 `2026-07-28` 无状态协议，并兼容 2025 版 Streamable HTTP 客户端；不需要 Redis 或服务端会话存储。
+MCP 端点使用无状态 Streamable HTTP。
 
 `src/app/api/mcp/route.ts` 提供 HTTP 入口，工具定义位于 `src/modules/mcp/server/mcp-handler.ts`：
 
@@ -98,6 +102,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 
 ```bash
 bun check
+bun run build
 ```
 
 仅修改 Wiki 或文案时，至少运行：
@@ -105,3 +110,11 @@ bun check
 ```bash
 bun check:wiki
 ```
+
+## 网页聊天
+
+登录后点击导航栏的「网页聊天」进入 `/chat`，支持与游戏互通的公共、staff 和在线私聊。
+
+历史记录仅保存在当前浏览器，可在聊天设置中关闭或清空；私聊和提及通知需主动开启。
+
+部署时，将 `chat.mcmik.top/ws` 通过 Cloudflare Tunnel 转发到插件的 `127.0.0.1:35354`，其他路径拒绝。仅允许正式网站 Origin `https://mcmik.top`；完整配置见 mik 项目的 `docs/web-chat.md`。
