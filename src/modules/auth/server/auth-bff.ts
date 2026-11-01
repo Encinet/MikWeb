@@ -191,14 +191,9 @@ function clientRateLimitKey(request: Request): string {
 
 async function readJsonObject(request: Request): Promise<Record<string, unknown>> {
   if (!request.body) return {};
-  if (
-    request.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() !== 'application/json'
-  ) {
-    throw new AuthRequestError('unsupported_media_type', 415);
-  }
-  let raw: string;
+  let bytes: Uint8Array;
   try {
-    raw = new TextDecoder().decode(await readLimitedRequestBody(request, MAX_AUTH_BODY_BYTES));
+    bytes = await readLimitedRequestBody(request, MAX_AUTH_BODY_BYTES);
   } catch (error) {
     if (error instanceof RequestBodyLimitError)
       throw new AuthRequestError('request_body_too_large', 413);
@@ -208,6 +203,14 @@ async function readJsonObject(request: Request): Promise<Record<string, unknown>
       timedOut ? 408 : 400,
     );
   }
+  // HTTP adapters can expose an empty stream for a bodyless POST.
+  if (bytes.byteLength === 0) return {};
+  if (
+    request.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() !== 'application/json'
+  ) {
+    throw new AuthRequestError('unsupported_media_type', 415);
+  }
+  const raw = new TextDecoder().decode(bytes);
   if (!raw.trim()) return {};
   let body: unknown;
   try {
