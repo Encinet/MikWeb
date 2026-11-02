@@ -2,7 +2,8 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
-import type { ChatDestination, ChatMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { messageConversation, messageDestination } from '@/modules/chat/model/chat-protocol';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 

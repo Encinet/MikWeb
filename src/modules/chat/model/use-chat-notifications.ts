@@ -3,12 +3,10 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { registerChatNotificationWorker } from '@/modules/chat/lib/chat-notifications';
-import type { ChatAccess, ChatDestination, ChatMessage } from '@/modules/chat/model/chat-protocol';
-import {
-  chatDestinationSchema,
-  destinationKey,
-  messageConversation,
-} from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import { destinationKey, readChatDestination } from '@/modules/chat/model/chat-destination';
+import type { ChatAccess, ChatMessage } from '@/modules/chat/model/chat-protocol';
+import { messageConversation } from '@/modules/chat/model/chat-protocol';
 
 const PREFERENCE = 'mik-chat-notifications';
 let registration: Promise<ServiceWorkerRegistration> | undefined;
@@ -96,8 +94,8 @@ export function useChatNotifications(
         return;
       const data = event.data as { type?: unknown; owner?: unknown; destination?: unknown } | null;
       if (data?.type !== 'mik-chat-notification-open' || data.owner !== owner) return;
-      const parsed = chatDestinationSchema.safeParse(data.destination);
-      if (parsed.success) open.current(parsed.data);
+      const destination = readChatDestination(data.destination);
+      if (destination) open.current(destination);
     };
     sync();
     window.addEventListener('storage', sync);
@@ -107,12 +105,12 @@ export function useChatNotifications(
     const fragment = new URLSearchParams(window.location.hash.slice(1));
     const conversation = fragment.get('chat');
     if (fragment.get('owner') === owner && conversation) {
-      const parsed = chatDestinationSchema.safeParse(
+      const destination = readChatDestination(
         conversation.startsWith('private:')
           ? { channel: 'private', targetUuid: conversation.slice(8), name: conversation.slice(8) }
           : { channel: conversation },
       );
-      if (parsed.success) open.current(parsed.data);
+      if (destination) open.current(destination);
       window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
     return () => {

@@ -2,8 +2,9 @@
 
 import { Hash, MessageCirclePlus, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ChatDestination } from '@/modules/chat/model/chat-protocol';
-import { destinationKey } from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import { destinationKey } from '@/modules/chat/model/chat-destination';
+
 import type { ChatUnread } from '@/modules/chat/model/chat-reading';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 

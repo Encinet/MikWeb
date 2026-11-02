@@ -16,13 +16,11 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import { destinationKey } from '@/modules/chat/model/chat-destination';
 import { channelPlayers } from '@/modules/chat/model/chat-presence';
-import type { ChatDestination } from '@/modules/chat/model/chat-protocol';
-import {
-  destinationKey,
-  messageConversation,
-  messageDestination,
-} from '@/modules/chat/model/chat-protocol';
+
+import { messageConversation, messageDestination } from '@/modules/chat/model/chat-protocol';
 import { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
 import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';

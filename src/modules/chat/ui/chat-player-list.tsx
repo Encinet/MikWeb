@@ -2,7 +2,8 @@
 
 import { Gamepad2, Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ChatDestination, ChatPeer } from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 export function ChatPlayerList({

@@ -1,36 +1,111 @@
 /// <reference lib="webworker" />
 
-import { z } from 'zod';
-import { chatDestinationSchema, destinationKey } from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import { destinationKey, readChatDestination } from '@/modules/chat/model/chat-destination';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
-const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
-const conversation = z.string().regex(/^(?:public|staff|private:[0-9a-f-]{36})$/);
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const chatPath = /^\/(?:zh-CN|en)\/chat\/?$/;
-const viewSchema = z.object({ owner: uuid, token: uuid, conversation, staff: z.boolean() });
-const notificationSchema = z
-  .object({
-    owner: uuid,
-    destination: chatDestinationSchema,
-    conversation,
-    url: z.string().regex(chatPath),
-  })
-  .refine((data) => destinationKey(data.destination) === data.conversation);
-const requestSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('account'), owner: uuid.nullable(), staff: z.boolean() }),
-  viewSchema.extend({ type: z.literal('view') }),
-  z.object({ type: z.literal('clear'), owner: uuid }),
-  z.object({ type: z.literal('release'), owner: uuid, token: uuid }),
-  viewSchema.extend({
-    type: z.literal('notify'),
-    id: z.string().min(1).max(128),
-    destination: chatDestinationSchema,
-    title: z.string().max(256),
-    body: z.string().max(256),
-    view: conversation,
-  }),
-]);
-type ChatView = z.infer<typeof viewSchema>;
+interface ChatView {
+  owner: string;
+  token: string;
+  conversation: string;
+  staff: boolean;
+}
+interface NotificationData {
+  owner: string;
+  destination: ChatDestination;
+  conversation: string;
+  url: string;
+}
+type NotificationRequest =
+  | { type: 'account'; owner: string | null; staff: boolean }
+  | { type: 'clear'; owner: string }
+  | { type: 'release'; owner: string; token: string }
+  | (ChatView & { type: 'view' })
+  | (ChatView & {
+      type: 'notify';
+      id: string;
+      destination: ChatDestination;
+      title: string;
+      body: string;
+      view: string;
+    });
+
+function record(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+function isUuid(value: unknown): value is string {
+  return typeof value === 'string' && uuid.test(value);
+}
+function isConversation(value: unknown): value is string {
+  return (
+    value === 'public' ||
+    value === 'staff' ||
+    (typeof value === 'string' && value.startsWith('private:') && isUuid(value.slice(8)))
+  );
+}
+function text(value: unknown, max: number, min = 0): value is string {
+  return typeof value === 'string' && value.length >= min && value.length <= max;
+}
+
+function readRequest(value: unknown): NotificationRequest | null {
+  if (!record(value)) return null;
+  if (value.type === 'account') {
+    return (value.owner === null || isUuid(value.owner)) && typeof value.staff === 'boolean'
+      ? { type: 'account', owner: value.owner, staff: value.staff }
+      : null;
+  }
+  if (!isUuid(value.owner)) return null;
+  if (value.type === 'clear') return { type: 'clear', owner: value.owner };
+  if (value.type === 'release')
+    return isUuid(value.token) ? { type: 'release', owner: value.owner, token: value.token } : null;
+  if (
+    !isUuid(value.token) ||
+    !isConversation(value.conversation) ||
+    typeof value.staff !== 'boolean'
+  )
+    return null;
+  const view: ChatView = {
+    owner: value.owner,
+    token: value.token,
+    conversation: value.conversation,
+    staff: value.staff,
+  };
+  if (value.type === 'view') return { type: 'view', ...view };
+  if (
+    value.type !== 'notify' ||
+    !text(value.id, 128, 1) ||
+    !text(value.title, 256) ||
+    !text(value.body, 256) ||
+    !isConversation(value.view)
+  )
+    return null;
+  const destination = readChatDestination(value.destination);
+  if (!destination || destinationKey(destination) !== value.conversation) return null;
+  return {
+    type: 'notify',
+    ...view,
+    id: value.id,
+    destination,
+    title: value.title,
+    body: value.body,
+    view: value.view,
+  };
+}
+
+function readNotificationData(value: unknown): NotificationData | null {
+  if (!record(value) || !isUuid(value.owner) || !text(value.url, 32) || !chatPath.test(value.url))
+    return null;
+  const destination = readChatDestination(value.destination);
+  if (!destination || destinationKey(destination) !== value.conversation) return null;
+  return {
+    owner: value.owner,
+    destination,
+    conversation: destinationKey(destination),
+    url: value.url,
+  };
+}
 const views = new Map<string, ChatView>();
 const seen = new Map<string, number>();
 let revision = 0;
@@ -56,14 +131,14 @@ function currentNotification(data: ChatView, clientId: string) {
 
 async function closeUnreadableNotifications(clientId?: string) {
   for (const notification of await worker.registration.getNotifications()) {
-    const parsed = notificationSchema.safeParse(notification.data);
-    if (!parsed.success) {
+    const data = readNotificationData(notification.data);
+    if (!data) {
       notification.close();
       continue;
     }
     const view = clientId === undefined ? undefined : views.get(clientId);
-    if (clientId !== undefined && (!view || parsed.data.owner !== view.owner)) continue;
-    if (!permitted(parsed.data.owner, parsed.data.conversation, view)) notification.close();
+    if (clientId !== undefined && (!view || data.owner !== view.owner)) continue;
+    if (!permitted(data.owner, data.conversation, view)) notification.close();
   }
 }
 
@@ -80,9 +155,8 @@ function chatClient(client: Client | ServiceWorker | MessagePort | null): client
 worker.addEventListener('message', (event) => {
   const client = event.source;
   if (!windowClient(client) || new URL(client.url).origin !== worker.location.origin) return;
-  const parsed = requestSchema.safeParse(event.data);
-  if (!parsed.success) return;
-  const data = parsed.data;
+  const data = readRequest(event.data);
+  if (!data) return;
   if (data.type === 'account') {
     if (policy?.owner !== data.owner || policy?.staff !== data.staff) revision++;
     policy = { owner: data.owner, staff: data.staff };
@@ -119,12 +193,7 @@ worker.addEventListener('message', (event) => {
     );
     return;
   }
-  if (
-    !chatClient(client) ||
-    !permitted(data.owner, data.conversation, data) ||
-    destinationKey(data.destination) !== data.conversation
-  )
-    return;
+  if (!chatClient(client) || !permitted(data.owner, data.conversation, data)) return;
   const view = views.get(client.id);
   if (view && !currentNotification(data, client.id)) return;
   if (!view)
@@ -185,9 +254,8 @@ worker.addEventListener('message', (event) => {
 
 worker.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const parsed = notificationSchema.safeParse(event.notification.data);
-  if (!parsed.success || !permitted(parsed.data.owner, parsed.data.conversation)) return;
-  const data = parsed.data;
+  const data = readNotificationData(event.notification.data);
+  if (!data || !permitted(data.owner, data.conversation)) return;
   event.waitUntil(
     (async () => {
       const windows = await worker.clients.matchAll({ type: 'window', includeUncontrolled: true });

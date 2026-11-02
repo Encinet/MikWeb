@@ -12,7 +12,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ChatDestination, ChatMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor, ChatUnread } from '@/modules/chat/model/chat-reading';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';

@@ -1,4 +1,5 @@
-import type { ChatDestination, ChatPeer, ChatPresence } from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import type { ChatPeer, ChatPresence } from '@/modules/chat/model/chat-protocol';
 
 /** One channel projection for rosters, counts and mention completion. */
 export function channelPlayers(

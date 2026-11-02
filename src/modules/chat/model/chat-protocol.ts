@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 
 const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
 const name = z
@@ -126,23 +127,10 @@ export interface ChatAccess {
   owner: string;
   staff: boolean;
 }
-export const chatDestinationSchema = z.discriminatedUnion('channel', [
-  z.object({ channel: z.literal('public') }),
-  z.object({ channel: z.literal('staff') }),
-  z.object({ channel: z.literal('private'), targetUuid: uuid, name }),
-]);
-export type ChatDestination = z.infer<typeof chatDestinationSchema>;
-
 export function messageConversation(message: ChatMessage, owner: string): string {
   return message.channel === 'private'
     ? `private:${message.senderUuid === owner ? message.targetUuid : message.senderUuid}`
     : message.channel;
-}
-
-export function destinationKey(destination: ChatDestination): string {
-  return destination.channel === 'private'
-    ? `private:${destination.targetUuid}`
-    : destination.channel;
 }
 
 export function messageDestination(message: ChatMessage, owner: string): ChatDestination | null {

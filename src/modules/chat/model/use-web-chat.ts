@@ -16,12 +16,8 @@ import {
   syncHistoryAccount,
 } from '@/modules/chat/lib/chat-history';
 import { ChatTransport } from '@/modules/chat/lib/chat-transport';
-import type {
-  ChatAccess,
-  ChatDestination,
-  ChatMessage,
-  ChatPresence,
-} from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import type { ChatAccess, ChatMessage, ChatPresence } from '@/modules/chat/model/chat-protocol';
 import {
   chatServerEventSchema,
   mayReadMessage,
