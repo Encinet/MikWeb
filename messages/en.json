@@ -562,18 +562,15 @@
     }
   },
   "chat": {
-    "title": "Chat",
+    "title": "Web chat",
     "retry": "Reconnect",
     "send": "Send",
     "you": "you",
     "game": "In game",
-    "offline": "Offline",
     "webCount": "Web ×{count}",
-    "channelList": "Channels and messages",
     "privateList": "Local private conversations",
     "onlinePlayers": "Online players ({count})",
     "search": "Find online players",
-    "yourPresence": "{name}, your account",
     "startPrivate": "Message {name}",
     "newPrivate": "New message",
     "participants": "Players in this channel",
@@ -586,7 +583,7 @@
     "clearHistory": "Clear local history",
     "clearAction": "Clear",
     "clearConfirm": "Clear local history? This cannot be undone.",
-    "storageFailed": "This browser cannot save messages. Live chat still works, but messages may be lost when you close the page.",
+    "storageFailed": "Messages cannot be saved locally and may be lost when you close this page.",
     "restoreDraft": "Restore draft",
     "webJoined": "{name} joined web chat",
     "webLeft": "{name} left web chat",
@@ -640,11 +637,8 @@
     "staffUnavailable": "Staff permission is no longer available. Choose another channel to send.",
     "settings": "Chat settings",
     "backHome": "Back to home",
-    "backAccount": "Your account",
     "today": "Today",
     "latest": "Latest messages",
-    "privatePlaceholder": "Message {name}",
-    "channelPlaceholder": "Message {channel}",
     "noPlayersFound": "No matching players online",
     "confirmClear": "Clear history",
     "description": "Chat with players in game and on the web.",
@@ -657,6 +651,7 @@
       "public": "Public",
       "staff": "Staff"
     },
-    "disableHistoryConfirm": "Stop saving and clear local history?"
+    "disableHistoryConfirm": "Stop saving and clear local history?",
+    "messagePlaceholder": "Message…"
   }
 }

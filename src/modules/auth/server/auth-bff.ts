@@ -99,11 +99,15 @@ async function forwardAuthRequest(
   if (browserNonce !== undefined) upstreamHeaders.set('X-Mik-Browser-Nonce', browserNonce);
 
   try {
-    const upstream = await fetch(new URL(path, DATA_AUTH_ORIGIN), {
+    const upstreamUrl = new URL(path, DATA_AUTH_ORIGIN);
+    if (upstreamUrl.protocol !== 'https:' || upstreamUrl.username || upstreamUrl.password)
+      return authError('auth_not_configured', 503);
+    const upstream = await fetch(upstreamUrl, {
       method,
       headers: upstreamHeaders,
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: 'no-store',
+      redirect: 'error',
       signal: AbortSignal.timeout(8000),
     });
     const responseBody = await upstream.text();

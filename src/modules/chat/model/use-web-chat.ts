@@ -14,6 +14,7 @@ import {
   setStaffHistoryPermission,
   syncHistoryAccount,
 } from '@/modules/chat/lib/chat-history';
+import { ChatTransport } from '@/modules/chat/lib/chat-transport';
 import type {
   ChatAccess,
   ChatDestination,
@@ -59,7 +60,7 @@ export function useWebChat() {
   const [staff, setStaff] = useState(accountStaff);
   const [persist, setPersist] = useState(true);
   const [storageFailed, setStorageFailed] = useState(false);
-  const socket = useRef<WebSocket | null>(null);
+  const socket = useRef<ChatTransport | null>(null);
   const generation = useRef(0);
   const wanted = useRef(false);
   const attempt = useRef(0);
@@ -122,9 +123,9 @@ export function useWebChat() {
     authorizing.current = null;
     setStatus(attempt.current ? 'reconnecting' : 'connecting');
     setError(null);
-    let ws: WebSocket;
+    let ws: ChatTransport;
     try {
-      ws = new WebSocket('wss://chat.mcmik.top/ws');
+      ws = new ChatTransport();
     } catch {
       setStatus('error');
       setError('connection_failed');
@@ -178,7 +179,7 @@ export function useWebChat() {
         if (authorizing.current === controller) authorizing.current = null;
       }
     };
-    expire(12_000);
+    expire(16_000);
     ws.onmessage = (event: MessageEvent<unknown>) => {
       if (!current()) return;
       if (typeof event.data !== 'string' || event.data.length > 128 * 1024) {

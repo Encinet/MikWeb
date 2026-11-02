@@ -15,6 +15,7 @@
     "check": "biome check . && tsc --noEmit -p tsconfig.check.json && bun run check:wiki"
   },
   "dependencies": {
+    "@hpke/core": "^1.9.0",
     "@modelcontextprotocol/server": "^2.4.0",
     "@simplewebauthn/browser": "^14.0.0",
     "@vercel/analytics": "^2.0.1",

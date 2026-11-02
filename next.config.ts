@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
     const headers = [
       {
         key: 'Content-Security-Policy',
-        value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+        value:
+          "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; connect-src 'self' https://data.mcmik.top wss://chat.mcmik.top; upgrade-insecure-requests",
       },
       { key: 'X-Frame-Options', value: 'DENY' },
       { key: 'X-Content-Type-Options', value: 'nosniff' },

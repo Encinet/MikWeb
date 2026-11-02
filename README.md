@@ -115,6 +115,8 @@ bun check:wiki
 
 登录后点击导航栏的「网页聊天」进入 `/chat`，支持与游戏互通的公共、staff 和在线私聊。
 
+首次接入时，将插件启动日志的 `Web chat public key` 配置为 Vercel 的 `NEXT_PUBLIC_WEB_CHAT_PUBLIC_KEY` 后重新部署；正常重启沿用原密钥。聊天内容通过浏览器到插件的 HPKE 加密传输。
+
 历史记录仅保存在当前浏览器，可在聊天设置中关闭或清空；私聊和提及通知需主动开启。
 
 部署时，将 `chat.mcmik.top/ws` 通过 Cloudflare Tunnel 转发到插件的 `127.0.0.1:35354`，其他路径拒绝。仅允许正式网站 Origin `https://mcmik.top`；完整配置见 mik 项目的 `docs/web-chat.md`。

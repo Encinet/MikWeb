@@ -562,18 +562,15 @@
     }
   },
   "chat": {
-    "title": "聊天",
+    "title": "网页聊天",
     "retry": "重新连接",
     "send": "发送",
     "you": "你",
     "game": "游戏内",
-    "offline": "已离线",
     "webCount": "网页 ×{count}",
-    "channelList": "频道与私聊",
     "privateList": "本机私聊会话",
     "onlinePlayers": "在线玩家（{count}）",
     "search": "查找在线玩家",
-    "yourPresence": "{name}，这是你的账号",
     "startPrivate": "与 {name} 发起私聊",
     "newPrivate": "新建私聊",
     "participants": "当前频道在线玩家",
@@ -586,7 +583,7 @@
     "clearHistory": "清空本机记录",
     "clearAction": "清空",
     "clearConfirm": "清空本机记录？此操作无法撤销。",
-    "storageFailed": "浏览器无法保存记录，实时聊天仍可使用。本次记录可能在关闭页面后丢失。",
+    "storageFailed": "无法保存本机记录，关闭页面后可能丢失。",
     "restoreDraft": "恢复到输入框",
     "webJoined": "{name} 加入了网页聊天",
     "webLeft": "{name} 退出了网页聊天",
@@ -640,11 +637,8 @@
     "staffUnavailable": "Staff 权限已失效，请手动选择其他频道。",
     "settings": "聊天设置",
     "backHome": "返回首页",
-    "backAccount": "个人中心",
     "today": "今天",
     "latest": "回到最新",
-    "privatePlaceholder": "私聊 {name}",
-    "channelPlaceholder": "发送到{channel}",
     "noPlayersFound": "没有匹配的在线玩家",
     "confirmClear": "确认清空",
     "description": "与游戏内和网页玩家实时聊天。",
@@ -657,6 +651,7 @@
       "public": "公共",
       "staff": "Staff"
     },
-    "disableHistoryConfirm": "关闭保存并清空本机记录？"
+    "disableHistoryConfirm": "关闭保存并清空本机记录？",
+    "messagePlaceholder": "输入消息…"
   }
 }

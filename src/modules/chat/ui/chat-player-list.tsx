@@ -1,6 +1,6 @@
 'use client';
 
-import { Gamepad2, Globe, MessageCircle } from 'lucide-react';
+import { Gamepad2, Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ChatDestination, ChatPeer } from '@/modules/chat/model/chat-protocol';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
@@ -18,35 +18,42 @@ export function ChatPlayerList({
 }) {
   const t = useTranslations('chat');
   return (
-    <div className="chat-people__list">
-      {players.map((player) => (
-        <button
-          type="button"
-          className="chat-peer"
-          key={player.playerUuid}
-          disabled={player.playerUuid === owner}
-          aria-label={
-            player.playerUuid === owner
-              ? t('yourPresence', { name: player.name })
-              : t('startPrivate', { name: player.name })
-          }
-          onClick={() =>
-            onChoose({ channel: 'private', targetUuid: player.playerUuid, name: player.name })
-          }
-        >
-          <MinecraftAvatar uuid={player.playerUuid} name={player.name} size={30} />
-          <span>
-            <strong>
+    <ul className="chat-people__list">
+      {players.map((player) => {
+        const self = player.playerUuid === owner;
+        const content = (
+          <>
+            <span className="chat-peer__avatar" aria-hidden="true">
+              <MinecraftAvatar uuid={player.playerUuid} name={player.name} size={28} />
+            </span>
+            <span className="chat-peer__name">
               {player.name}
-              {player.playerUuid === owner ? <small> {t('you')}</small> : null}
-            </strong>
+              {self ? <small> {t('you')}</small> : null}
+            </span>
             <PeerPresence player={player} />
-          </span>
-          {player.playerUuid !== owner ? <MessageCircle size={16} aria-hidden="true" /> : null}
-        </button>
-      ))}
-      {!players.length ? <p className="chat-list-empty">{emptyText}</p> : null}
-    </div>
+          </>
+        );
+        return (
+          <li key={player.playerUuid}>
+            {self ? (
+              <div className="chat-peer">{content}</div>
+            ) : (
+              <button
+                type="button"
+                className="chat-peer"
+                aria-label={t('startPrivate', { name: player.name })}
+                onClick={() =>
+                  onChoose({ channel: 'private', targetUuid: player.playerUuid, name: player.name })
+                }
+              >
+                {content}
+              </button>
+            )}
+          </li>
+        );
+      })}
+      {!players.length ? <li className="chat-list-empty">{emptyText}</li> : null}
+    </ul>
   );
 }
 
@@ -57,13 +64,16 @@ export function PeerPresence({ player }: { player: ChatPeer }) {
       {player.game ? (
         <span title={t('game')}>
           <Gamepad2 size={13} aria-hidden="true" />
-          <span>{t('game')}</span>
+          <span className="sr-only">{t('game')}</span>
         </span>
       ) : null}
       {player.webConnections ? (
         <span title={t('webCount', { count: player.webConnections })}>
           <Globe size={12} aria-hidden="true" />
-          <span>{t('webCount', { count: player.webConnections })}</span>
+          <span className="sr-only">{t('webCount', { count: player.webConnections })}</span>
+          {player.webConnections > 1 ? (
+            <span aria-hidden="true">×{player.webConnections}</span>
+          ) : null}
         </span>
       ) : null}
     </span>

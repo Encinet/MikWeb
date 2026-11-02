@@ -2,8 +2,6 @@
 
 import {
   ArrowDown,
-  ArrowLeft,
-  Check,
   Gamepad2,
   Globe,
   Hash,
@@ -66,7 +64,6 @@ export function ChatPage() {
   return (
     <section className="chat-workspace chat-gate" aria-label={t('title')}>
       <Link href="/" className="chat-back">
-        <ArrowLeft size={16} aria-hidden="true" />
         <Image src={SITE_LOGO_PATH} alt="" width={32} height={32} />
         <span>Mik</span>
       </Link>
@@ -150,6 +147,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   const length = [...draft].length;
   const online = chat.status === 'online';
   const joining = ['connecting', 'authorizing', 'reconnecting'].includes(chat.status);
+  const isChannel = selected.channel !== 'private';
   const peer =
     selected.channel === 'private'
       ? players.find((player) => player.playerUuid === selected.targetUuid)
@@ -261,21 +259,37 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   );
   const RoomIcon =
     selected.channel === 'public' ? Hash : selected.channel === 'staff' ? Shield : MessageCircle;
+  const brand = (
+    <Link href="/" className="chat-brand" aria-label={t('backHome')}>
+      <Image src={SITE_LOGO_PATH} alt="" width={36} height={36} />
+      <span>Mik</span>
+    </Link>
+  );
+  const identity = (
+    <div className="chat-identity">
+      <span aria-hidden="true">
+        <MinecraftAvatar uuid={owner} name={account.currentName} size={28} />
+      </span>
+      <div>
+        <strong>{account.currentName}</strong>
+        <span className="chat-connection-status" data-status={chat.status} role="status">
+          {joining ? (
+            <Loader2 className="chat-spinner" size={12} aria-hidden="true" />
+          ) : (
+            <span className="chat-connection-dot" aria-hidden="true" />
+          )}
+          {t(`status.${chat.status}`)}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
-    <section className="chat-workspace" aria-label={t('title')}>
+    <section className="chat-workspace" data-channel={selected.channel} aria-label={t('title')}>
       <aside className="chat-sidebar">
-        <Link href="/" className="chat-brand" aria-label={t('backHome')}>
-          <Image src={SITE_LOGO_PATH} alt="" width={36} height={36} />
-          <span>Mik</span>
-          <ArrowLeft className="chat-brand__back" size={15} aria-hidden="true" />
-        </Link>
+        {brand}
         {navigation}
-        <Link href="/account" className="chat-identity" aria-label={t('backAccount')}>
-          <MinecraftAvatar uuid={owner} name={account.currentName} size={28} />
-          <span>{account.currentName}</span>
-          <ArrowLeft size={15} aria-hidden="true" />
-        </Link>
+        {identity}
       </aside>
 
       <div className="chat-conversation">
@@ -283,7 +297,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           <button
             type="button"
             className="chat-icon-button chat-mobile-menu"
-            aria-label={t('channelList')}
+            aria-label={t('title')}
             aria-haspopup="dialog"
             onClick={() => setOverlay('channels')}
           >
@@ -299,24 +313,14 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             </span>
             <div className="chat-room-copy">
               <h1>{title}</h1>
-              {selected.channel === 'private' ? (
+              {selected.channel === 'private' && online && peer ? (
                 <div className="chat-private-presence">
-                  {peer ? <PeerPresence player={peer} /> : t('offline')}
+                  <PeerPresence player={peer} />
                 </div>
               ) : null}
             </div>
           </div>
-          {online || joining ? (
-            <span className={`chat-connection-status${online ? ' is-online' : ''}`} role="status">
-              {joining ? (
-                <Loader2 className="chat-spinner" size={14} aria-hidden="true" />
-              ) : online ? (
-                <Check size={14} aria-hidden="true" />
-              ) : null}
-              <span>{t(`status.${chat.status}`)}</span>
-            </span>
-          ) : null}
-          {online ? (
+          {online && isChannel ? (
             <button
               type="button"
               className="chat-icon-button chat-online-button"
@@ -328,24 +332,8 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
                 setOverlay('participants');
               }}
             >
-              <span className="chat-avatar-stack" aria-hidden="true">
-                {participants.slice(0, 3).map((player) => (
-                  <MinecraftAvatar
-                    key={player.playerUuid}
-                    uuid={player.playerUuid}
-                    name={player.name}
-                    size={24}
-                  />
-                ))}
-              </span>
-              <Users className="chat-online-icon" size={17} aria-hidden="true" />
+              <Users size={18} aria-hidden="true" />
               <span>{participants.length}</span>
-            </button>
-          ) : null}
-          {chat.status === 'error' ? (
-            <button type="button" className="chat-primary chat-retry" onClick={chat.retry}>
-              <RotateCw size={15} aria-hidden="true" />
-              {t('retry')}
             </button>
           ) : null}
           <button
@@ -360,12 +348,21 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           </button>
         </header>
 
-        {chat.error ? (
-          <p className="chat-feedback" role="alert">
-            {errorText(chat.error)}
-          </p>
+        {chat.error || !online ? (
+          <div
+            className={`chat-feedback${chat.error ? '' : ' chat-feedback--connection'}`}
+            role={chat.error ? 'alert' : 'status'}
+          >
+            <p>{chat.error ? errorText(chat.error) : t(`status.${chat.status}`)}</p>
+            {chat.status === 'error' ? (
+              <button type="button" className="chat-text-button" onClick={chat.retry}>
+                <RotateCw size={15} aria-hidden="true" />
+                {t('retry')}
+              </button>
+            ) : null}
+          </div>
         ) : null}
-        {chat.storageFailed ? (
+        {chat.storageFailed && overlay !== 'settings' ? (
           <p className="chat-feedback" role="status">
             {t('storageFailed')}
           </p>
@@ -523,11 +520,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               enabled={available}
               peers={mentionPlayers}
               describedBy={composeHint ? hintId : undefined}
-              placeholder={
-                selected.channel === 'private'
-                  ? t('privatePlaceholder', { name: title })
-                  : t('channelPlaceholder', { channel: title })
-              }
+              placeholder={t('messagePlaceholder')}
             />
             {length > 800 ? (
               <span
@@ -555,15 +548,19 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
         </div>
       </div>
 
-      <aside className="chat-participants" aria-label={t('participants')}>
-        <h2>{t('onlinePlayers', { count: participants.length })}</h2>
-        <ChatPlayerList
-          players={participants}
-          owner={owner}
-          onChoose={choose}
-          emptyText={online ? t('nobodyOnline') : t(`status.${chat.status}`)}
-        />
-      </aside>
+      {isChannel ? (
+        <aside className="chat-participants" aria-label={t('participants')}>
+          <h2>{online ? t('onlinePlayers', { count: participants.length }) : t('participants')}</h2>
+          {online ? (
+            <ChatPlayerList
+              players={participants}
+              owner={owner}
+              onChoose={choose}
+              emptyText={t('nobodyOnline')}
+            />
+          ) : null}
+        </aside>
+      ) : null}
 
       <AppDialog
         key={overlay}
@@ -575,7 +572,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             : overlay === 'participants'
               ? t('onlinePlayers', { count: participants.length })
               : overlay === 'channels'
-                ? t('channelList')
+                ? t('title')
                 : t('settings')
         }
         icon={
@@ -591,11 +588,9 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
       >
         {overlay === 'channels' ? (
           <>
+            {brand}
             {navigation}
-            <Link href="/account" className="chat-back">
-              <ArrowLeft size={16} aria-hidden="true" />
-              {t('backAccount')}
-            </Link>
+            {identity}
           </>
         ) : null}
         {overlay === 'players' || overlay === 'participants' ? (
@@ -653,10 +648,10 @@ function ChatNavigation({
   const key = destinationKey(selected);
   return (
     <div className="chat-navigation">
-      <nav aria-label={t('channelList')} className="chat-channels">
+      <nav aria-label={t('title')} className="chat-channels">
         <button
           type="button"
-          className={key === 'public' ? 'is-active' : ''}
+          className="ui-sidebar-link"
           aria-current={key === 'public' ? 'page' : undefined}
           onClick={() => onChoose({ channel: 'public' })}
         >
@@ -666,7 +661,7 @@ function ChatNavigation({
         {staff || selected.channel === 'staff' ? (
           <button
             type="button"
-            className={key === 'staff' ? 'is-active' : ''}
+            className="ui-sidebar-link"
             aria-current={key === 'staff' ? 'page' : undefined}
             disabled={!staff}
             onClick={() => onChoose({ channel: 'staff' })}
@@ -677,7 +672,7 @@ function ChatNavigation({
         ) : null}
       </nav>
       <nav aria-label={t('privateList')} className="chat-threads">
-        <button type="button" onClick={onNewPrivate} disabled={!online}>
+        <button type="button" className="ui-sidebar-link" onClick={onNewPrivate} disabled={!online}>
           <MessageCirclePlus size={18} aria-hidden="true" />
           {t('newPrivate')}
         </button>
@@ -685,7 +680,7 @@ function ChatNavigation({
           <button
             type="button"
             key={thread.id}
-            className={key === `private:${thread.id}` ? 'is-active' : ''}
+            className="ui-sidebar-link"
             aria-current={key === `private:${thread.id}` ? 'page' : undefined}
             onClick={() =>
               onChoose({ channel: 'private', targetUuid: thread.id, name: thread.name })
