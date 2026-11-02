@@ -294,42 +294,8 @@
     "login": {
       "title": "玩家登录",
       "subtitle": "使用游戏账号登录，仅限正式成员。",
-      "minecraft": {
-        "title": "游戏内验证码",
-        "description": "在服务器内执行命令确认登录"
-      },
-      "passkey": {
-        "title": "Passkey",
-        "description": "使用已绑定的设备或安全密钥"
-      },
-      "codePanel": {
-        "title": "验证码",
-        "waiting": "等待游戏内确认",
-        "copyLabel": "复制网页登录命令",
-        "remaining": "有效期剩余 {time}",
-        "instructions": "在服务器内执行下方命令，确认后将自动登录。",
-        "copyHint": "点击复制命令",
-        "copyFailed": "复制失败，请手动复制上方命令。"
-      },
       "actions": {
         "account": "进入个人页"
-      },
-      "states": {
-        "creating": "正在生成验证码",
-        "completing": "正在完成登录",
-        "copied": "已复制",
-        "expired": "验证码已过期，请重新生成",
-        "unavailable": "暂时无法生成验证码",
-        "statusUnavailable": "暂时无法获取确认状态，正在重试。",
-        "memberRequired": "此网页系统仅向正式成员开放",
-        "passkeyStarting": "请完成 Passkey 验证",
-        "passkeyUnavailable": "暂时无法开始 Passkey 登录",
-        "passkeyFailed": "Passkey 验证失败",
-        "passkeyCancelled": "Passkey 登录已取消",
-        "passkeyDomainMismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
-        "passkeyBrowserUnsupported": "当前浏览器不支持 Passkey",
-        "loginFailed": "暂时无法完成登录，请重试。",
-        "rateLimited": "请求过于频繁，请稍后重试。"
       }
     },
     "account": {
@@ -364,14 +330,17 @@
     },
     "security": {
       "title": "登录与安全",
-      "subtitle": "管理当前网页会话和可用于登录的 Passkey",
       "actions": {
         "addPasskey": "添加 Passkey",
         "delete": "删除",
         "revokeSession": "注销",
         "signOutAllSessions": "退出所有网页会话",
-        "reauthenticate": "重新验证身份",
-        "cancel": "取消"
+        "cancel": "取消",
+        "createPasskey": "创建 Passkey",
+        "rename": "重命名",
+        "renameItem": "重命名 {name}",
+        "save": "保存",
+        "refresh": "刷新"
       },
       "sections": {
         "sessions": "浏览器会话",
@@ -386,7 +355,9 @@
         "method": {
           "minecraft-challenge": "游戏内验证码登录",
           "passkey": "Passkey 登录"
-        }
+        },
+        "revokeConfirmation": "这个浏览器将退出登录。",
+        "defaultName": "网页会话"
       },
       "passkey": {
         "description": "管理可用于网页登录的设备、系统账号或安全密钥",
@@ -394,24 +365,78 @@
         "createdAt": "创建于 {time}",
         "empty": "当前账号还没有绑定 Passkey",
         "deleteConfirmation": "撤销这个 Passkey 后，它将无法再用于登录。已建立的网页会话仍然有效。",
-        "lastKeyWarning": "这是最后一个 Passkey。撤销后，你仍可通过游戏内验证码登录。"
+        "lastKeyWarning": "这是最后一个 Passkey。撤销后，你仍可通过游戏内验证码登录。",
+        "lastUsedAt": "上次使用 {time}",
+        "neverUsed": "尚未用于登录"
       },
       "states": {
-        "unavailable": "暂时无法开始 Passkey 注册",
         "registerFailed": "Passkey 注册失败",
+        "creatingPasskey": "正在创建 Passkey",
         "registered": "Passkey 已添加",
-        "cancelled": "Passkey 操作已取消",
-        "domainMismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
-        "alreadyRegistered": "这个 Passkey 已经绑定过",
-        "unsupportedAuthenticator": "当前设备不支持可用于登录的 Passkey",
-        "browserUnsupported": "当前浏览器不支持 Passkey",
         "deleteFailed": "删除失败",
         "deleted": "Passkey 已删除",
         "revokeSessionFailed": "注销会话失败",
         "sessionRevoked": "会话已注销",
-        "reauthenticationRequired": "请先重新登录验证身份，再管理 Passkey 或注销其他网页会话。",
         "passkeyLimit": "Passkey 数量已达上限，请先撤销不再使用的密钥。",
-        "loadFailed": "暂时无法读取安全设置，请稍后重试。"
+        "loadFailed": "暂时无法读取安全设置，请稍后重试。",
+        "renamed": "名称已保存",
+        "renameFailed": "名称保存失败，请重试。",
+        "invalidName": "名称最多 64 个字符，不能包含控制字符或换行。",
+        "loading": "正在读取安全设置"
+      },
+      "name": {
+        "label": "名称",
+        "hint": "留空使用默认名称。",
+        "sessionPlaceholder": "例如：家里的电脑",
+        "passkeyPlaceholder": "例如：iCloud 钥匙串"
+      }
+    },
+    "authentication": {
+      "methods": "验证方式",
+      "verifyTitle": "验证身份",
+      "completingLogin": "正在完成登录",
+      "completingVerification": "正在确认身份",
+      "passkeyStarting": "请完成 Passkey 验证",
+      "creating": "正在生成验证码",
+      "otherMethod": "使用其他方式",
+      "signIn": "登录",
+      "minecraft": {
+        "title": "游戏内验证码",
+        "description": "在服务器内执行命令确认身份"
+      },
+      "passkey": {
+        "title": "Passkey",
+        "description": "使用已绑定的设备或安全密钥"
+      },
+      "codePanel": {
+        "title": "验证码",
+        "waiting": "等待游戏内确认",
+        "copyLabel": "复制身份验证命令",
+        "remaining": "有效期剩余 {time}",
+        "instructions": "在服务器内执行下方命令并确认。",
+        "copyHint": "点击复制命令",
+        "copyFailed": "复制失败，请手动复制上方命令。",
+        "copied": "已复制"
+      },
+      "errors": {
+        "request_failed": "暂时无法完成验证，请重试。",
+        "expired": "验证码已过期，请重新生成",
+        "rate_limited": "请求过于频繁，请稍后重试。",
+        "member_required": "此网页系统仅向正式成员开放",
+        "status_unavailable": "暂时无法获取确认状态，正在重试。",
+        "plugin_unavailable": "游戏服务器暂时无法连接，请稍后重试。",
+        "account_mismatch": "请使用当前账号完成验证。",
+        "unauthenticated": "当前登录已失效，请重新登录。",
+        "authentication_invalidated": "账号安全信息已变更，请重新验证。",
+        "passkey_unavailable": "没有可用的 Passkey，请使用游戏内确认。",
+        "passkey_verification_failed": "Passkey 验证失败，请重试。",
+        "invalid_challenge": "本次验证已失效，请重新开始。",
+        "invalid_browser_nonce": "本次验证已失效，请重新开始。",
+        "cancelled": "Passkey 操作已取消",
+        "passkey_already_registered": "这个 Passkey 已经绑定过",
+        "passkey_domain_mismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
+        "passkey_unsupported_authenticator": "当前设备不支持可用于登录的 Passkey",
+        "passkey_browser_unsupported": "当前浏览器不支持 Passkey"
       }
     }
   },
@@ -587,8 +612,13 @@
     "clearConfirm": "清空本机记录？此操作无法撤销。",
     "storageFailed": "无法保存本机记录，关闭页面后可能丢失。",
     "restoreDraft": "恢复到输入框",
-    "webJoined": "{name} 加入了网页聊天",
-    "webLeft": "{name} 退出了网页聊天",
+    "server": {
+      "label": "服务器",
+      "gameJoined": "{name} 加入了游戏",
+      "gameLeft": "{name} 退出了游戏",
+      "webJoined": "{name} 加入了网页聊天",
+      "webLeft": "{name} 退出了网页聊天"
+    },
     "channels": {
       "public": "公共",
       "staff": "Staff",

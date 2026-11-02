@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, Gamepad2, Globe, Hash, MessageCircle, Shield } from 'lucide-react';
+import { ArrowDown, Gamepad2, Globe, Hash, MessageCircle, Server, Shield } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   Fragment,
@@ -13,11 +13,16 @@ import {
   useState,
 } from 'react';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
-import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
+import type {
+  ChatMessage,
+  ChatPlayerMessage,
+  ChatServerMessage,
+} from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor, ChatUnread } from '@/modules/chat/model/chat-reading';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
+import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
 import type { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
@@ -54,6 +59,8 @@ function groupMessages(messages: ChatMessage[], boundary?: string) {
     const last = groups.at(-1)?.at(-1);
     if (
       last &&
+      last.kind === 'player' &&
+      message.kind === 'player' &&
       message.id !== boundary &&
       last.senderUuid === message.senderUuid &&
       last.source === message.source &&
@@ -216,7 +223,9 @@ export const ChatMessageList = memo(function ChatMessageList({
           ) : null}
           {!messages.length && !pending.length ? (
             <div className="chat-empty">
-              <RoomIcon size={32} strokeWidth={1.25} aria-hidden="true" />
+              <span className="chat-empty__mark" aria-hidden="true">
+                <RoomIcon size={32} strokeWidth={1.25} />
+              </span>
               <p>{t('emptyHistory')}</p>
             </div>
           ) : null}
@@ -225,7 +234,8 @@ export const ChatMessageList = memo(function ChatMessageList({
             if (!first) return null;
             const previous = groups[index - 1]?.[0];
             const showDate = !previous || dayKey(previous.createdAt) !== dayKey(first.createdAt);
-            const SourceIcon = first.source === 'game' ? Gamepad2 : Globe;
+            const SourceIcon =
+              first.kind === 'player' && first.source === 'game' ? Gamepad2 : Globe;
             return (
               <Fragment key={first.id}>
                 {showDate ? (
@@ -242,42 +252,54 @@ export const ChatMessageList = memo(function ChatMessageList({
                     <span>{t('readMarker')}</span>
                   </div>
                 ) : null}
-                <article className={`chat-message${first.senderUuid === owner ? ' is-own' : ''}`}>
-                  <div className="chat-message__avatar" aria-hidden="true">
-                    <MinecraftAvatar uuid={first.senderUuid} name={first.senderName} size={36} />
-                  </div>
-                  <div className="chat-message__content">
-                    <div className="chat-message__meta">
-                      <strong>{first.senderName}</strong>
-                      <span className="chat-message__source" title={t(`source.${first.source}`)}>
-                        <SourceIcon size={12} aria-hidden="true" />
-                        <span className="sr-only">{t(`source.${first.source}`)}</span>
-                      </span>
-                      <time
-                        dateTime={new Date(first.createdAt).toISOString()}
-                        title={format.full.format(first.createdAt)}
-                      >
-                        {format.time.format(first.createdAt)}
-                      </time>
+                {first.kind === 'server' ? (
+                  <ServerMessageLine
+                    message={first}
+                    title={format.full.format(first.createdAt)}
+                    time={format.time.format(first.createdAt)}
+                    highlight={highlight === first.id}
+                    track={track}
+                  />
+                ) : (
+                  <article className={`chat-message${first.senderUuid === owner ? ' is-own' : ''}`}>
+                    <div className="chat-message__avatar" aria-hidden="true">
+                      <MinecraftAvatar uuid={first.senderUuid} name={first.senderName} size={40} />
                     </div>
-                    {group.map((message) => (
-                      <MessageLine
-                        key={message.id}
-                        message={message}
-                        title={format.full.format(message.createdAt)}
-                        highlight={highlight === message.id}
-                        track={track}
-                      />
-                    ))}
-                  </div>
-                </article>
+                    <div className="chat-message__content">
+                      <div className="chat-message__meta">
+                        <strong>{first.senderName}</strong>
+                        <span className="chat-message__source" title={t(`source.${first.source}`)}>
+                          <SourceIcon size={13} aria-hidden="true" />
+                          <span className="sr-only">{t(`source.${first.source}`)}</span>
+                        </span>
+                        <time
+                          dateTime={new Date(first.createdAt).toISOString()}
+                          title={format.full.format(first.createdAt)}
+                        >
+                          {format.time.format(first.createdAt)}
+                        </time>
+                      </div>
+                      {group
+                        .filter((message) => message.kind === 'player')
+                        .map((message) => (
+                          <MessageLine
+                            key={message.id}
+                            message={message}
+                            title={format.full.format(message.createdAt)}
+                            highlight={highlight === message.id}
+                            track={track}
+                          />
+                        ))}
+                    </div>
+                  </article>
+                )}
               </Fragment>
             );
           })}
           {pending.map((message) => (
             <article className="chat-message chat-message--pending" key={message.requestId}>
               <div className="chat-message__avatar" aria-hidden="true">
-                <MinecraftAvatar uuid={owner} name={name} size={36} />
+                <MinecraftAvatar uuid={owner} name={name} size={40} />
               </div>
               <div className="chat-message__content">
                 <div className="chat-message__meta">
@@ -331,7 +353,7 @@ const MessageLine = memo(function MessageLine({
   highlight,
   track,
 }: {
-  message: ChatMessage;
+  message: ChatPlayerMessage;
   title: string;
   highlight: boolean;
   track: ReturnType<typeof useChatReadTracker>;
@@ -350,5 +372,54 @@ const MessageLine = memo(function MessageLine({
       <ChatMessageContent content={message.content} />
       <span ref={attach} className="chat-read-sentinel" aria-hidden="true" />
     </p>
+  );
+});
+
+const ServerMessageLine = memo(function ServerMessageLine({
+  message,
+  title,
+  time,
+  highlight,
+  track,
+}: {
+  message: ChatServerMessage;
+  title: string;
+  time: string;
+  highlight: boolean;
+  track: ReturnType<typeof useChatReadTracker>;
+}) {
+  const t = useTranslations('chat.server');
+  const content = useChatMessageContent();
+  const attach = useCallback(
+    (element: HTMLSpanElement | null) => track(element, messageCursor(message)),
+    [track, message],
+  );
+  return (
+    <article
+      className={`chat-server-message chat-message__line${highlight ? ' is-highlighted' : ''}`}
+      data-chat-message={message.id}
+      tabIndex={-1}
+      title={title}
+      aria-label={t('label')}
+    >
+      <span className="chat-server-message__avatar" aria-hidden="true">
+        {message.subject ? (
+          <MinecraftAvatar
+            uuid={message.subject.playerUuid}
+            name={message.subject.name}
+            size={22}
+          />
+        ) : (
+          <Server size={18} />
+        )}
+      </span>
+      <p className="chat-server-message__content">
+        <ChatMessageContent content={content(message)} />
+        {message.countsAsUnread ? (
+          <span ref={attach} className="chat-read-sentinel" aria-hidden="true" />
+        ) : null}
+      </p>
+      <time dateTime={new Date(message.createdAt).toISOString()}>{time}</time>
+    </article>
   );
 });

@@ -1,8 +1,8 @@
 import { Fragment } from 'react';
-import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatContent } from '@/modules/chat/model/chat-protocol';
 
 /** Render validated text/link runs without HTML, Markdown or a second link parser. */
-export function ChatMessageContent({ content }: Pick<ChatMessage, 'content'>) {
+export function ChatMessageContent({ content }: { content: ChatContent }) {
   let offset = 0;
   return content.map((part) => {
     const start = offset;

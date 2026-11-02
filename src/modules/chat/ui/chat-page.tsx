@@ -295,7 +295,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           <div className="chat-room-title">
             <span className="chat-room-mark" aria-hidden="true">
               {selected.channel === 'private' ? (
-                <MinecraftAvatar uuid={selected.targetUuid} name={title} size={32} />
+                <MinecraftAvatar uuid={selected.targetUuid} name={title} size={36} />
               ) : (
                 <RoomIcon size={22} />
               )}
@@ -309,42 +309,44 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               ) : null}
             </div>
           </div>
-          {isChannel ? (
+          <div className="chat-room-actions">
+            {isChannel ? (
+              <button
+                type="button"
+                className="chat-icon-button chat-online-button"
+                aria-label={t('onlinePlayers', { count: participants.length })}
+                title={t('onlinePlayers', { count: participants.length })}
+                aria-haspopup="dialog"
+                onClick={() => {
+                  setSearch('');
+                  setOverlay('participants');
+                }}
+              >
+                <Users size={18} aria-hidden="true" />
+                <span>{participants.length}</span>
+              </button>
+            ) : null}
             <button
               type="button"
-              className="chat-icon-button chat-online-button"
-              aria-label={t('onlinePlayers', { count: participants.length })}
-              title={t('onlinePlayers', { count: participants.length })}
+              className="chat-icon-button"
+              aria-label={t('searchMessages')}
+              title={t('searchMessages')}
               aria-haspopup="dialog"
-              onClick={() => {
-                setSearch('');
-                setOverlay('participants');
-              }}
+              onClick={() => setOverlay('search')}
             >
-              <Users size={18} aria-hidden="true" />
-              <span>{participants.length}</span>
+              <Search size={19} aria-hidden="true" />
             </button>
-          ) : null}
-          <button
-            type="button"
-            className="chat-icon-button"
-            aria-label={t('searchMessages')}
-            title={t('searchMessages')}
-            aria-haspopup="dialog"
-            onClick={() => setOverlay('search')}
-          >
-            <Search size={19} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="chat-icon-button"
-            aria-label={t('settings')}
-            title={t('settings')}
-            aria-haspopup="dialog"
-            onClick={() => setOverlay('settings')}
-          >
-            <Settings2 size={19} aria-hidden="true" />
-          </button>
+            <button
+              type="button"
+              className="chat-icon-button"
+              aria-label={t('settings')}
+              title={t('settings')}
+              aria-haspopup="dialog"
+              onClick={() => setOverlay('settings')}
+            >
+              <Settings2 size={19} aria-hidden="true" />
+            </button>
+          </div>
         </header>
 
         {chat.error ? (
@@ -375,11 +377,6 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           onRestore={restoreDraft}
           onJumpComplete={completeJump}
         />
-        {selected.channel === 'public' && chat.notice ? (
-          <div className="chat-notice" aria-live="polite">
-            <p>{t(chat.notice.joined ? 'webJoined' : 'webLeft', { name: chat.notice.name })}</p>
-          </div>
-        ) : null}
         <div className="chat-compose-area">
           <form
             className="chat-compose"

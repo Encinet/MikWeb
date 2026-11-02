@@ -55,6 +55,16 @@ export function AuthProvider({ children, initialSessionPresent }: AuthProviderPr
     }
   }, []);
 
+  const acceptAuthentication = useCallback((nextAccount: AuthAccount) => {
+    verificationGeneration.current++;
+    verifiedAccount.current = nextAccount.playerUuid;
+    clearFetchValidatedJsonBrowserCache({ prefix: 'account:' });
+    setAccount(nextAccount);
+    setVerified(true);
+    setIsLoading(false);
+    announceAccountChange();
+  }, []);
+
   const logout = useCallback(async (options: { allSessions?: boolean } = {}) => {
     const all = options.allSessions === true;
     const response = await fetch(all ? '/api/account/sessions/revoke' : '/api/auth/logout', {
@@ -114,8 +124,9 @@ export function AuthProvider({ children, initialSessionPresent }: AuthProviderPr
       verified,
       logout,
       refresh,
+      acceptAuthentication,
     }),
-    [account, isLoading, logout, refresh, verified],
+    [account, isLoading, logout, refresh, verified, acceptAuthentication],
   );
 
   return <AuthStateContext.Provider value={value}>{children}</AuthStateContext.Provider>;

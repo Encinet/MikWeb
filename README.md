@@ -65,7 +65,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 | `MIKWEB_AUTH_CLIENT_SECRET` | Yes | MikWeb 到 Mik Data 的服务端共享密钥，必须和 Mik Data 的同名 secret 一致 |
 | `IMGBB_API_KEY` | Yes, for building submissions | ImgBB API key，只在 MikWeb 服务端使用，不能暴露给浏览器 |
 
-Passkey 与网页会话在 `/account/security` 管理。添加或撤销 Passkey、注销其他会话或退出全部会话，需要最近 5 分钟内的身份验证。
+Passkey 与网页会话在 `/account/security` 管理。敏感操作需要最近 5 分钟内验证身份，可在设置页通过已有 Passkey 或游戏确认完成。已签发的注册挑战独立有效 5 分钟。
 
 网页登录需要配套的 mikdata 和 mik 插件，配置见各项目文档。
 

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { registerChatNotificationWorker } from '@/modules/chat/lib/chat-notifications';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey, readChatDestination } from '@/modules/chat/model/chat-destination';
-import type { ChatAccess, ChatMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatAccess, ChatPlayerMessage } from '@/modules/chat/model/chat-protocol';
 import { messageConversation } from '@/modules/chat/model/chat-protocol';
 
 const PREFERENCE = 'mik-chat-notifications';
@@ -43,7 +43,7 @@ function worker() {
   return registration;
 }
 
-function messagePreview(message: ChatMessage): string {
+function messagePreview(message: ChatPlayerMessage): string {
   const text = message.content
     .map((part) => part.text)
     .join('')
@@ -181,7 +181,7 @@ export function useChatNotifications(
   };
 
   const receive = useCallback(
-    (message: ChatMessage, access: () => ChatAccess | null) => {
+    (message: ChatPlayerMessage, access: () => ChatAccess | null) => {
       if (
         status === 'error' ||
         !enabled() ||

@@ -15,8 +15,8 @@ const AUTH_POST_PATHS = new Set([
   '/logout',
   '/passkeys/options/register',
   '/passkeys/register',
-  '/passkeys/options/login',
-  '/passkeys/login',
+  '/passkeys/options/authenticate',
+  '/passkeys/authenticate',
 ]);
 const ACCOUNT_POST_PATHS = new Set([
   '/security',
@@ -57,7 +57,8 @@ export async function proxyAuthRequest({ kind, path, request }: ProxyOptions): P
     path: kind === 'account' ? `/me${routePath}` : `/auth${routePath}`,
     method: request.method,
     browserNonce,
-    body: buildUpstreamBody({ browserNonce, kind, request, routePath, sessionId, requestBody }),
+    sessionId,
+    body: buildUpstreamBody({ kind, request, routePath, requestBody }),
   });
 }
 
@@ -73,7 +74,8 @@ export async function callImageUploadService(
   return forwardAuthRequest(request, {
     path: `/me/images/${action}`,
     method: 'POST',
-    body: { ...payload, sessionId },
+    sessionId,
+    body: payload,
   });
 }
 
@@ -82,11 +84,12 @@ interface UpstreamRequest {
   method: string;
   body?: Record<string, unknown>;
   browserNonce?: string;
+  sessionId?: string;
 }
 
 async function forwardAuthRequest(
   request: Request,
-  { path, method, body, browserNonce }: UpstreamRequest,
+  { path, method, body, browserNonce, sessionId }: UpstreamRequest,
 ): Promise<Response> {
   const secret = process.env.MIKWEB_AUTH_CLIENT_SECRET?.trim();
   if (!secret) return authError('auth_not_configured', 503);
@@ -97,6 +100,7 @@ async function forwardAuthRequest(
     'X-Mikweb-Auth': secret,
   });
   if (browserNonce !== undefined) upstreamHeaders.set('X-Mik-Browser-Nonce', browserNonce);
+  if (sessionId !== undefined) upstreamHeaders.set('X-Mik-Session', sessionId);
 
   try {
     const upstreamUrl = new URL(path, DATA_AUTH_ORIGIN);
@@ -127,64 +131,47 @@ async function forwardAuthRequest(
 }
 
 function buildUpstreamBody({
-  browserNonce,
   kind,
   request,
   routePath,
-  sessionId,
   requestBody,
 }: {
-  browserNonce: string;
   kind: AuthPathKind;
   request: Request;
   routePath: string;
-  sessionId: string;
   requestBody: Record<string, unknown>;
 }): Record<string, unknown> | undefined {
+  if (request.method === 'PATCH') return { displayName: requestBody.displayName };
   if (kind === 'account') {
     if (routePath === '/chat/authorize')
-      return { sessionId, connectionId: requestBody.connectionId };
-    if (routePath === '/players/resolve') return { sessionId, name: requestBody.name };
+      return {
+        connectionId: requestBody.connectionId,
+        clientPublicKey: requestBody.clientPublicKey,
+      };
+    if (routePath === '/players/resolve') return { name: requestBody.name };
     if (routePath === '/building-submissions') {
-      return { sessionId, payload: requestBody.payload, images: requestBody.images };
+      return { payload: requestBody.payload, images: requestBody.images };
     }
     if (routePath === '/sessions/revoke') {
       return {
-        sessionId,
         targetSessionId: requestBody.targetSessionId,
         all: requestBody.all === true,
       };
     }
-    return { sessionId };
-  }
-
-  if (
-    routePath === '/me' ||
-    routePath === '/logout' ||
-    routePath === '/passkeys/options/register'
-  ) {
-    return { sessionId };
+    return {};
   }
 
   if (routePath === '/passkeys/register') {
-    return { sessionId, credential: requestBody.credential, displayName: requestBody.displayName };
+    return { credential: requestBody.credential, displayName: requestBody.displayName };
   }
 
-  if (/^\/passkeys\/[^/]+$/.test(routePath) && request.method === 'DELETE') {
-    return { sessionId };
+  if (routePath === '/challenges' || routePath === '/passkeys/options/authenticate') {
+    return { purpose: requestBody.purpose };
   }
-
-  if (/^\/challenges\/[^/]+\/complete$/.test(routePath)) {
-    return { browserNonce };
+  if (routePath === '/passkeys/authenticate') {
+    return { credential: requestBody.credential };
   }
-
-  if (routePath === '/challenges' || routePath === '/passkeys/options/login') {
-    return { browserNonce };
-  }
-  if (routePath === '/passkeys/login') {
-    return { browserNonce, credential: requestBody.credential };
-  }
-  return undefined;
+  return request.method === 'GET' ? undefined : {};
 }
 
 function clientRateLimitKey(request: Request): string {
@@ -229,12 +216,17 @@ async function readJsonObject(request: Request): Promise<Record<string, unknown>
 }
 
 function isAllowedRoute(kind: AuthPathKind, path: string, method: string): boolean {
-  if (kind === 'account') return method === 'POST' && ACCOUNT_POST_PATHS.has(path);
+  if (kind === 'account')
+    return method === 'POST'
+      ? ACCOUNT_POST_PATHS.has(path)
+      : method === 'PATCH' && /^\/sessions\/[A-Za-z0-9_-]{43}$/.test(path);
   if (method === 'POST') {
     return AUTH_POST_PATHS.has(path) || /^\/challenges\/[A-Za-z0-9_-]{24}\/complete$/.test(path);
   }
   if (method === 'GET') return /^\/challenges\/[A-Za-z0-9_-]{24}$/.test(path);
-  return method === 'DELETE' && /^\/passkeys\/[A-Za-z0-9_-]{1,2048}$/.test(path);
+  return (
+    (method === 'DELETE' || method === 'PATCH') && /^\/passkeys\/[A-Za-z0-9_-]{1,2048}$/.test(path)
+  );
 }
 
 function isSameOriginRequest(request: Request): boolean {

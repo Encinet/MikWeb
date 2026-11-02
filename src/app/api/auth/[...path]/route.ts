@@ -18,6 +18,10 @@ export async function DELETE(request: Request, context: RouteContext) {
   return proxy(request, context);
 }
 
+export async function PATCH(request: Request, context: RouteContext) {
+  return proxy(request, context);
+}
+
 async function proxy(request: Request, context: RouteContext): Promise<Response> {
   const { path } = await context.params;
   return proxyAuthRequest({ kind: 'auth', path, request });

@@ -9,6 +9,7 @@ export interface AuthState {
   isLoading: boolean;
   verified: boolean;
   refresh: () => Promise<AuthAccount | null>;
+  acceptAuthentication: (account: AuthAccount) => void;
   logout: (options?: { allSessions?: boolean }) => Promise<void>;
 }
 

@@ -1,10 +1,12 @@
 'use client';
 
+import { Server } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { messageConversation, messageDestination } from '@/modules/chat/model/chat-protocol';
+import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 const PAGE_SIZE = 50;
@@ -21,6 +23,7 @@ export function ChatMessageSearch({
   onChoose: (destination: ChatDestination, messageId: string) => void;
 }) {
   const t = useTranslations('chat');
+  const content = useChatMessageContent();
   const locale = useLocale();
   const id = useId();
   const [query, setQuery] = useState('');
@@ -33,15 +36,17 @@ export function ChatMessageSearch({
       .filter(
         (message) =>
           (scope === 'all' || messageConversation(message, owner) === conversation) &&
-          (message.content
+          (content(message)
             .map((part) => part.text)
             .join('')
             .toLowerCase()
             .includes(needle) ||
-            message.senderName.toLowerCase().includes(needle)),
+            (message.kind === 'player' ? message.senderName : (message.subject?.name ?? ''))
+              .toLowerCase()
+              .includes(needle)),
       )
       .toReversed();
-  }, [messages, needle, scope, owner, conversation]);
+  }, [messages, needle, scope, owner, conversation, content]);
   const time = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
@@ -99,7 +104,13 @@ export function ChatMessageSearch({
             destination.channel === 'private'
               ? destination.name
               : t(`channels.${destination.channel}`);
-          const text = message.content.map((part) => part.text).join('');
+          const text = content(message)
+            .map((part) => part.text)
+            .join('');
+          const subject =
+            message.kind === 'player'
+              ? { playerUuid: message.senderUuid, name: message.senderName }
+              : message.subject;
           const match = text.toLowerCase().indexOf(needle);
           const start = Math.max(0, match - 40);
           const excerpt = text.slice(start, start + 180);
@@ -112,13 +123,21 @@ export function ChatMessageSearch({
                 onClick={() => onChoose(destination, message.id)}
               >
                 <span aria-hidden="true">
-                  <MinecraftAvatar uuid={message.senderUuid} name={message.senderName} size={28} />
+                  {subject ? (
+                    <MinecraftAvatar uuid={subject.playerUuid} name={subject.name} size={28} />
+                  ) : (
+                    <Server size={20} />
+                  )}
                 </span>
                 <span className="chat-search-result__content">
                   <span className="chat-search-result__meta">
-                    <strong>{message.senderName}</strong>
+                    <strong>
+                      {message.kind === 'player' ? message.senderName : t('server.label')}
+                    </strong>
                     {scope === 'all' &&
-                    (message.channel !== 'private' || message.senderUuid === owner) ? (
+                    (message.channel !== 'private' ||
+                      message.kind === 'server' ||
+                      message.senderUuid === owner) ? (
                       <span>{label}</span>
                     ) : null}
                     <time dateTime={new Date(message.createdAt).toISOString()}>

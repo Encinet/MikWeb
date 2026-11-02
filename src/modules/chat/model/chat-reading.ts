@@ -1,11 +1,32 @@
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
-import { messageConversation } from '@/modules/chat/model/chat-protocol';
+import {
+  countsAsUnread,
+  isPassiveMessage,
+  messageConversation,
+} from '@/modules/chat/model/chat-protocol';
 
 export const CHAT_HISTORY_LIMIT = 1000;
+export const CHAT_ACTIVITY_LIMIT = 200;
+
+/** Quiet activity has its own budget and cannot evict conversation messages. */
+export function retainChatHistory(messages: ChatMessage[]): ChatMessage[] {
+  let activity = 0;
+  let conversation = 0;
+  return messages
+    .toReversed()
+    .filter((message) =>
+      isPassiveMessage(message)
+        ? ++activity <= CHAT_ACTIVITY_LIMIT
+        : ++conversation <= CHAT_HISTORY_LIMIT,
+    )
+    .toReversed();
+}
 
 export interface ChatReadCursor {
   messageId: string;
   createdAt: number;
+  streamId: string;
+  sequence: number;
 }
 
 /** Null means this conversation has arrived but has never been read on this browser. */
@@ -17,11 +38,19 @@ export interface ChatUnread {
 }
 
 export function messageCursor(message: ChatMessage): ChatReadCursor {
-  return { messageId: message.id, createdAt: message.createdAt };
+  return {
+    messageId: message.id,
+    createdAt: message.createdAt,
+    streamId: message.streamId,
+    sequence: message.sequence,
+  };
 }
 
 export function compareCursors(a: ChatReadCursor, b: ChatReadCursor): number {
-  return a.createdAt - b.createdAt || a.messageId.localeCompare(b.messageId);
+  return (
+    a.createdAt - b.createdAt ||
+    (a.streamId === b.streamId ? a.sequence - b.sequence : a.messageId.localeCompare(b.messageId))
+  );
 }
 
 export function advanceReadPosition(
@@ -57,9 +86,18 @@ export function readStoredPositions(value: unknown): ChatReadPositions {
       cursor.messageId.length > 0 &&
       cursor.messageId.length <= 128 &&
       Number.isSafeInteger(cursor.createdAt) &&
-      cursor.createdAt >= 0
+      cursor.createdAt >= 0 &&
+      typeof cursor.streamId === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(cursor.streamId) &&
+      Number.isSafeInteger(cursor.sequence) &&
+      cursor.sequence > 0
     )
-      result.set(key, { messageId: cursor.messageId, createdAt: cursor.createdAt });
+      result.set(key, {
+        messageId: cursor.messageId,
+        createdAt: cursor.createdAt,
+        streamId: cursor.streamId,
+        sequence: cursor.sequence,
+      });
     if (result.size >= CHAT_HISTORY_LIMIT) break;
   }
   return result;
@@ -72,7 +110,7 @@ export function unreadMessages(
 ): Map<string, ChatUnread> {
   const result = new Map<string, ChatUnread>();
   for (const message of messages) {
-    if (message.senderUuid === owner) continue;
+    if (!countsAsUnread(message, owner)) continue;
     const key = messageConversation(message, owner);
     // Records without a cursor are the baseline from a previously saved history.
     if (!positions.has(key)) continue;

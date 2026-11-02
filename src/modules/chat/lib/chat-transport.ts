@@ -1,11 +1,36 @@
 import type { RecipientContext, SenderContext } from '@hpke/core';
 import { Aes256Gcm, CipherSuite, DhkemP256HkdfSha256, HkdfSha256 } from '@hpke/core';
 
-const PROTOCOL = 'mik-chat-hpke-v1\0https://mcmik.top\0';
+const PROTOCOL = 'mik-chat-hpke-2026-11-03\0https://mcmik.top\0';
+const KEY_LIFETIME = 30 * 60 * 1000;
+const EXCHANGE_TIMEOUT = 5000;
+const APPLICATION = 0;
+const KEY_EXCHANGE = 1;
+// Allow bounded records already in flight when the server starts rotating at 16,384.
+const HARD_RECORD_LIMIT = 16_384 + 256;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 
 export type ChatTransportFailure = 'network' | 'protocol';
+
+interface Session {
+  generation: number;
+  incoming: RecipientContext;
+  outgoing: SenderContext;
+  expiresAt: number;
+  expiresAtWallClock: number;
+  received: number;
+  sent: number;
+}
+
+interface Exchange {
+  generation: number;
+  expiresAt: number;
+  serverKey: CryptoKey | null;
+  clientKey: CryptoKeyPair | null;
+  outgoing: SenderContext | null;
+  resume: () => void;
+}
 
 function encode(bytes: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(bytes)))
@@ -29,7 +54,13 @@ function decode(value: unknown, size: number): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-/** Wire encryption only. Identity, permissions and message parsing remain in their existing owners. */
+function object(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    throw new Error('invalid_chat_record');
+  return value as Record<string, unknown>;
+}
+
+/** Owns wire encryption and key lifetimes; authorization and logical presence stay above it. */
 export class ChatTransport {
   onmessage: ((event: MessageEvent<unknown>) => void) | null = null;
   onclose: (() => void) | null = null;
@@ -42,13 +73,16 @@ export class ChatTransport {
     aead: new Aes256Gcm(),
   });
   private id = '';
+  private boundKey = '';
+  private initialClientKey: CryptoKeyPair | null = null;
   private stage: 'hello' | 'key' | 'confirmation' | 'ready' | 'closed' = 'hello';
-  private serverKey: CryptoKey | null = null;
-  private clientKey: CryptoKeyPair | null = null;
-  private incoming: RecipientContext | null = null;
-  private outgoing: SenderContext | null = null;
+  private session: Session | null = null;
+  private exchange: Exchange | null = null;
+  private exchangeTimer: ReturnType<typeof setTimeout> | null = null;
+  private lifetimeTimer: ReturnType<typeof setTimeout> | null = null;
   private reading = Promise.resolve();
   private writing = Promise.resolve();
+  private cleartext = new Set<Uint8Array<ArrayBuffer>>();
   private reads = 0;
   private readBytes = 0;
   private writeBytes = 0;
@@ -58,13 +92,14 @@ export class ChatTransport {
     this.ws = new WebSocket('wss://chat.mcmik.top/ws');
     this.ws.binaryType = 'arraybuffer';
     this.ws.onmessage = (event: MessageEvent<unknown>) => {
+      if (this.stage === 'closed') return;
       const size =
         typeof event.data === 'string'
           ? encoder.encode(event.data).length
           : event.data instanceof ArrayBuffer
             ? event.data.byteLength
             : Number.POSITIVE_INFINITY;
-      if (size > 128 * 1024 + 16 || this.reads >= 32 || this.readBytes + size > 1024 * 1024) {
+      if (size > 128 * 1024 + 1 + 16 || this.reads >= 32 || this.readBytes + size > 1024 * 1024) {
         this.fail();
         return;
       }
@@ -79,14 +114,14 @@ export class ChatTransport {
         });
     };
     this.ws.onclose = () => {
-      this.stage = 'closed';
-      this.incoming = null;
-      this.outgoing = null;
-      this.clientKey = null;
-      this.serverKey = null;
+      this.destroy();
       this.onclose?.();
     };
-    this.ws.onerror = () => this.onerror?.('network');
+    this.ws.onerror = () => {
+      if (this.stage === 'closed') return;
+      this.close();
+      this.onerror?.('network');
+    };
   }
 
   get readyState(): number {
@@ -97,122 +132,366 @@ export class ChatTransport {
     return this.ws.bufferedAmount + this.writeBytes;
   }
 
+  get authorizationKey(): string {
+    return this.boundKey;
+  }
+
   close(code = 1000): void {
-    this.stage = 'closed';
+    this.destroy();
     this.ws.close(code);
   }
 
   send(json: string): void {
     const clear = encoder.encode(json);
     if (
-      this.stage !== 'ready' ||
+      this.stage === 'closed' ||
+      !this.session ||
       this.ws.readyState !== WebSocket.OPEN ||
       clear.length > 8192 ||
       this.bufferedAmount + clear.length > 32 * 1024
-    )
+    ) {
+      clear.fill(0);
       throw new Error('chat_not_writable');
+    }
+    this.cleartext.add(clear);
     this.writeBytes += clear.length;
-    // HPKE contexts advance a sequence number; concurrent sealing would break ordering.
+    // The exchange barrier pauses new writes while previous records finish under the old key.
     this.writing = this.writing
       .then(async () => {
-        if (this.stage !== 'ready' || !this.outgoing) throw new Error('chat_closed');
-        const cipher = await this.outgoing.seal(clear);
-        if (this.stage !== 'ready') return;
-        this.ws.send(cipher);
+        if (this.stage === 'closed' || !this.session) return;
+        await this.writeProtected(this.session, clear);
       })
       .catch(() => this.fail())
       .finally(() => {
         clear.fill(0);
-        this.writeBytes -= clear.length;
+        if (this.cleartext.delete(clear)) this.writeBytes -= clear.length;
       });
   }
 
-  private info(direction: string): Uint8Array<ArrayBuffer> {
-    return encoder.encode(`${PROTOCOL}${this.id}\0${direction}`);
+  private info(generation: number, direction: string): Uint8Array<ArrayBuffer> {
+    return encoder.encode(`${PROTOCOL}${this.id}\0${generation}\0${this.boundKey}\0${direction}`);
+  }
+
+  private destroyExchange(): void {
+    if (this.exchangeTimer) clearTimeout(this.exchangeTimer);
+    this.exchangeTimer = null;
+    const exchange = this.exchange;
+    this.exchange = null;
+    if (exchange) {
+      exchange.clientKey = null;
+      exchange.serverKey = null;
+      exchange.outgoing = null;
+      exchange.resume();
+    }
+  }
+
+  private destroy(): void {
+    this.stage = 'closed';
+    if (this.lifetimeTimer) clearTimeout(this.lifetimeTimer);
+    this.lifetimeTimer = null;
+    this.session = null;
+    this.initialClientKey = null;
+    this.destroyExchange();
+    for (const clear of this.cleartext) clear.fill(0);
+    this.cleartext.clear();
+    this.writeBytes = 0;
+    this.ws.onmessage = null;
+    this.id = '';
+    this.boundKey = '';
   }
 
   private fail(): void {
     if (this.stage === 'closed') return;
-    this.onerror?.('protocol');
+    if (
+      this.ws.readyState !== WebSocket.OPEN ||
+      (this.exchange && Date.now() >= this.exchange.expiresAt)
+    ) {
+      this.close(4001);
+      return;
+    }
     this.close(4002);
+    this.onerror?.('protocol');
+  }
+
+  private usable(session: Session): boolean {
+    if (this.stage === 'closed' || this.session !== session) return false;
+    if (
+      this.ws.readyState !== WebSocket.OPEN ||
+      performance.now() >= session.expiresAt ||
+      Date.now() >= session.expiresAtWallClock ||
+      session.sent >= HARD_RECORD_LIMIT ||
+      session.received >= HARD_RECORD_LIMIT
+    ) {
+      this.close(4001);
+      return false;
+    }
+    return true;
+  }
+
+  private async writeProtected(
+    session: Session,
+    clear: Uint8Array<ArrayBuffer>,
+    kind = APPLICATION,
+  ): Promise<void> {
+    if (!this.usable(session)) return;
+    const record = new Uint8Array(clear.length + 1);
+    record[0] = kind;
+    record.set(clear, 1);
+    this.cleartext.add(record);
+    try {
+      const cipher = await session.outgoing.seal(record);
+      if (!this.usable(session)) return;
+      session.sent++;
+      this.ws.send(cipher);
+    } finally {
+      record.fill(0);
+      this.cleartext.delete(record);
+    }
   }
 
   private async receive(data: unknown): Promise<void> {
     if (this.stage === 'closed') return;
-    if (this.stage === 'ready') {
-      if (!(data instanceof ArrayBuffer) || !this.incoming)
-        throw new Error('encrypted_chat_required');
-      const clear = await this.incoming.open(data);
-      if (this.stage !== 'ready') return;
-      this.onmessage?.(new MessageEvent('message', { data: decoder.decode(clear) }));
+    if (this.ws.readyState !== WebSocket.OPEN) {
+      this.close(4001);
+      return;
+    }
+    if (this.session) {
+      const session = this.session;
+      if (!(data instanceof ArrayBuffer)) throw new Error('encrypted_chat_required');
+      if (!this.usable(session)) return;
+      const clear = await session.incoming.open(data);
+      const record = new Uint8Array(clear);
+      this.cleartext.add(record);
+      try {
+        if (!this.usable(session)) return;
+        session.received++;
+        if (record.length < 2) throw new Error('invalid_chat_record');
+        const json = decoder.decode(record.subarray(1));
+        if (record[0] === KEY_EXCHANGE) {
+          if (record.length > 1025) throw new Error('invalid_key_exchange');
+          await this.keyFrame(object(JSON.parse(json)), true);
+        } else if (record[0] === APPLICATION) {
+          if (this.stage !== 'ready') throw new Error('application_during_key_exchange');
+          this.onmessage?.(new MessageEvent('message', { data: json }));
+        } else throw new Error('invalid_chat_record');
+      } finally {
+        record.fill(0);
+        this.cleartext.delete(record);
+      }
       return;
     }
     if (typeof data !== 'string' || data.length > 1024) throw new Error('invalid_key_exchange');
-    const body: unknown = JSON.parse(data);
-    if (!body || typeof body !== 'object' || Array.isArray(body))
-      throw new Error('invalid_key_exchange');
-    const frame = body as Record<string, unknown>;
+    const body = object(JSON.parse(data));
     if (this.stage === 'hello') {
       if (
-        Object.keys(frame).length !== 2 ||
-        frame.type !== 'hello' ||
-        typeof frame.connectionId !== 'string' ||
-        !/^[A-Za-z0-9_-]{32}$/.test(frame.connectionId)
+        Object.keys(body).length !== 2 ||
+        body.type !== 'hello' ||
+        typeof body.connectionId !== 'string' ||
+        !/^[A-Za-z0-9_-]{32}$/.test(body.connectionId)
       )
         throw new Error('invalid_connection');
-      this.id = frame.connectionId;
+      this.id = body.connectionId;
       this.stage = 'key';
+      const clientKey = await crypto.subtle.generateKey(
+        { name: 'ECDH', namedCurve: 'P-256' },
+        false,
+        ['deriveBits'],
+      );
+      const publicKey = await this.suite.kem.serializePublicKey(clientKey.publicKey);
+      if (this.id !== body.connectionId || this.ws.readyState !== WebSocket.OPEN) return;
+      this.initialClientKey = clientKey;
+      this.boundKey = encode(publicKey);
       this.onmessage?.(new MessageEvent('message', { data }));
       return;
     }
-    if (frame.type !== 'key' || Object.keys(frame).length !== 3)
+    await this.keyFrame(body, false);
+  }
+
+  private async keyFrame(frame: Record<string, unknown>, encrypted: boolean): Promise<void> {
+    if (
+      frame.type !== 'key' ||
+      Object.keys(frame).length !== 4 ||
+      typeof frame.generation !== 'number' ||
+      !Number.isSafeInteger(frame.generation) ||
+      frame.generation < 0 ||
+      encrypted !== Boolean(this.session)
+    )
       throw new Error('invalid_key_exchange');
-    if (this.stage === 'key') {
-      const publicKey = decode(frame.key, 65);
-      const signature = decode(frame.signature, 64);
-      const trusted = await crypto.subtle.importKey(
-        'raw',
-        this.trustedKey,
-        { name: 'ECDSA', namedCurve: 'P-256' },
-        false,
-        ['verify'],
-      );
+    if ('key' in frame) {
       if (
-        !(await crypto.subtle.verify(
-          { name: 'ECDSA', hash: 'SHA-256' },
-          trusted,
-          signature,
-          this.info(`key\0${frame.key}`),
-        ))
+        this.exchange ||
+        this.stage !== (this.session ? 'ready' : 'key') ||
+        frame.generation !== (this.session ? this.session.generation + 1 : 0)
       )
-        throw new Error('untrusted_chat_key');
-      this.serverKey = await this.suite.kem.deserializePublicKey(publicKey);
-      this.clientKey = await this.suite.kem.generateKeyPair();
-      this.outgoing = await this.suite.createSenderContext({
-        recipientPublicKey: this.serverKey,
-        info: this.info('client'),
-      });
-      const reverseKey = await this.suite.kem.serializePublicKey(this.clientKey.publicKey);
-      const cipher = await this.outgoing.seal(reverseKey);
-      if (this.stage !== 'key') return;
-      this.stage = 'confirmation';
-      this.ws.send(
-        JSON.stringify({ type: 'key', enc: encode(this.outgoing.enc), ciphertext: encode(cipher) }),
-      );
+        throw new Error('invalid_key_generation');
+      await this.beginExchange(frame);
       return;
     }
-    if (!this.clientKey || !this.serverKey) throw new Error('invalid_key_exchange');
-    this.incoming = await this.suite.createRecipientContext({
-      recipientKey: this.clientKey.privateKey,
-      senderPublicKey: this.serverKey,
+    const exchange = this.exchange;
+    if (exchange && Date.now() >= exchange.expiresAt) {
+      this.close(4001);
+      return;
+    }
+    if (
+      this.stage !== 'confirmation' ||
+      !exchange?.clientKey ||
+      !exchange.serverKey ||
+      !exchange.outgoing ||
+      exchange.generation !== frame.generation
+    )
+      throw new Error('invalid_key_exchange');
+    const incoming = await this.suite.createRecipientContext({
+      recipientKey: exchange.clientKey,
+      senderPublicKey: exchange.serverKey,
       enc: decode(frame.enc, 65),
-      info: this.info('server'),
+      info: this.info(exchange.generation, 'server'),
     });
-    const ready = await this.incoming.open(decode(frame.ciphertext, 21));
-    if (decoder.decode(ready) !== 'ready') throw new Error('invalid_key_confirmation');
-    if (this.stage !== 'confirmation') return;
-    this.clientKey = null;
-    this.serverKey = null;
-    this.stage = 'ready';
+    if (this.exchange !== exchange) return;
+    if (Date.now() >= exchange.expiresAt) {
+      this.close(4001);
+      return;
+    }
+    const ready = new Uint8Array(await incoming.open(decode(frame.ciphertext, 21)));
+    this.cleartext.add(ready);
+    let proof: Uint8Array<ArrayBuffer> | null = null;
+    let finished: Uint8Array<ArrayBuffer> | null = null;
+    try {
+      if (decoder.decode(ready) !== 'ready') throw new Error('invalid_key_confirmation');
+      if (this.exchange !== exchange) return;
+      if (Date.now() >= exchange.expiresAt) {
+        this.close(4001);
+        return;
+      }
+      // The reverse context's exporter proves possession of the HTTP-bound private key.
+      proof = new Uint8Array(
+        await incoming.export(this.info(exchange.generation, 'client-finished'), 32),
+      );
+      this.cleartext.add(proof);
+      const json = encoder.encode(
+        JSON.stringify({
+          type: 'finished',
+          generation: exchange.generation,
+          verify: encode(proof.buffer),
+        }),
+      );
+      finished = new Uint8Array(json.length + 1);
+      finished[0] = KEY_EXCHANGE;
+      finished.set(json, 1);
+      json.fill(0);
+      this.cleartext.add(finished);
+      if (this.exchange !== exchange || !exchange.outgoing) return;
+      const cipher = await exchange.outgoing.seal(finished);
+      if (this.exchange !== exchange) return;
+      if (Date.now() >= exchange.expiresAt || this.ws.readyState !== WebSocket.OPEN) {
+        this.close(4001);
+        return;
+      }
+      this.ws.send(cipher);
+      this.session = {
+        generation: exchange.generation,
+        incoming,
+        outgoing: exchange.outgoing,
+        expiresAt: performance.now() + KEY_LIFETIME + EXCHANGE_TIMEOUT,
+        expiresAtWallClock: Date.now() + KEY_LIFETIME + EXCHANGE_TIMEOUT,
+        received: 0,
+        sent: 1,
+      };
+      this.initialClientKey = null;
+      this.stage = 'ready';
+      this.destroyExchange();
+      if (this.lifetimeTimer) clearTimeout(this.lifetimeTimer);
+      this.lifetimeTimer = setTimeout(() => this.close(4001), KEY_LIFETIME + EXCHANGE_TIMEOUT);
+    } finally {
+      for (const clear of [ready, proof, finished]) {
+        if (clear) {
+          clear.fill(0);
+          this.cleartext.delete(clear);
+        }
+      }
+    }
+  }
+
+  private async beginExchange(frame: Record<string, unknown>): Promise<void> {
+    const previousWrites = this.writing;
+    let resume = () => {};
+    const paused = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    this.writing = previousWrites.then(() => paused);
+    const exchange: Exchange = {
+      generation: frame.generation as number,
+      expiresAt: Date.now() + EXCHANGE_TIMEOUT,
+      serverKey: null,
+      clientKey: null,
+      outgoing: null,
+      resume,
+    };
+    this.exchange = exchange;
+    this.stage = 'confirmation';
+    this.exchangeTimer = setTimeout(() => this.close(4001), EXCHANGE_TIMEOUT);
+    const current = () => {
+      if (this.exchange !== exchange) return false;
+      if (this.ws.readyState !== WebSocket.OPEN || Date.now() >= exchange.expiresAt) {
+        this.close(4001);
+        return false;
+      }
+      return true;
+    };
+    const publicKey = decode(frame.key, 65);
+    const signature = decode(frame.signature, 64);
+    const trusted = await crypto.subtle.importKey(
+      'raw',
+      this.trustedKey,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['verify'],
+    );
+    if (!current()) return;
+    if (
+      !(await crypto.subtle.verify(
+        { name: 'ECDSA', hash: 'SHA-256' },
+        trusted,
+        signature,
+        this.info(exchange.generation, `key\0${frame.key}`),
+      ))
+    )
+      throw new Error('untrusted_chat_key');
+    if (!current()) return;
+    const serverKey = await this.suite.kem.deserializePublicKey(publicKey);
+    if (!current()) return;
+    exchange.serverKey = serverKey;
+    const clientKey =
+      exchange.generation === 0
+        ? this.initialClientKey
+        : await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, false, [
+            'deriveBits',
+          ]);
+    if (!current()) return;
+    if (!clientKey) throw new Error('missing_authorization_key');
+    exchange.clientKey = clientKey;
+    const outgoing = await this.suite.createSenderContext({
+      recipientPublicKey: serverKey,
+      info: this.info(exchange.generation, 'client'),
+    });
+    if (!current()) return;
+    exchange.outgoing = outgoing;
+    const reverseKey = await this.suite.kem.serializePublicKey(clientKey.publicKey);
+    const cipher = await outgoing.seal(reverseKey);
+    await previousWrites;
+    if (!current()) return;
+    const json = JSON.stringify({
+      type: 'key',
+      generation: exchange.generation,
+      enc: encode(outgoing.enc),
+      ciphertext: encode(cipher),
+    });
+    if (this.session) {
+      const clear = encoder.encode(json);
+      try {
+        await this.writeProtected(this.session, clear, KEY_EXCHANGE);
+      } finally {
+        clear.fill(0);
+      }
+    } else this.ws.send(json);
   }
 }

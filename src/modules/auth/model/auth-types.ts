@@ -12,6 +12,7 @@ export function isStaffRole(role: unknown): role is 'moderator' | 'custodian' {
 
 export interface AuthSession {
   id: string;
+  displayName?: string;
   current: boolean;
   issuedAt: string;
   lastSeenAt: string;
@@ -67,6 +68,7 @@ export function isAuthSession(value: unknown): value is AuthSession {
   return (
     isObjectRecord(value) &&
     typeof value.id === 'string' &&
+    (value.displayName === undefined || typeof value.displayName === 'string') &&
     typeof value.current === 'boolean' &&
     typeof value.issuedAt === 'string' &&
     typeof value.lastSeenAt === 'string' &&

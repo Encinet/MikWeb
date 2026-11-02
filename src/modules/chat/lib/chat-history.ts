@@ -1,12 +1,14 @@
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import {
   chatMessageSchema,
+  isPassiveMessage,
   mayReadMessage,
   messageConversation,
 } from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor, ChatReadPositions } from '@/modules/chat/model/chat-reading';
 import {
   advanceReadPosition,
+  CHAT_ACTIVITY_LIMIT,
   CHAT_HISTORY_LIMIT,
   compareCursors,
   messageCursor,
@@ -32,12 +34,14 @@ let database: Promise<IDBDatabase> | undefined;
 
 function openDatabase(): Promise<IDBDatabase> {
   database ??= new Promise((resolve, reject) => {
-    const request = indexedDB.open('mik-chat', 1);
+    const request = indexedDB.open('mik-chat', 2);
     request.onupgradeneeded = () => {
       const db = request.result;
-      db.createObjectStore('state');
+      if (!db.objectStoreNames.contains('state')) db.createObjectStore('state');
+      if (db.objectStoreNames.contains('messages')) db.deleteObjectStore('messages');
       const messages = db.createObjectStore('messages', { keyPath: 'key' });
-      messages.createIndex('ownerTime', ['owner', 'createdAt']);
+      messages.createIndex('ownerTime', ['owner', 'createdAt', 'sequence']);
+      messages.createIndex('ownerBucketTime', ['owner', 'bucket', 'createdAt', 'sequence']);
     };
     request.onerror = () => {
       database = undefined;
@@ -59,7 +63,21 @@ function openDatabase(): Promise<IDBDatabase> {
 }
 
 function range(owner: string): IDBKeyRange {
-  return IDBKeyRange.bound([owner, 0], [owner, Number.MAX_SAFE_INTEGER]);
+  return IDBKeyRange.bound(
+    [owner, 0, 0],
+    [owner, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+  );
+}
+
+function storedMessage(owner: string, message: ChatMessage) {
+  return {
+    key: `${owner}:${message.id}`,
+    owner,
+    createdAt: message.createdAt,
+    sequence: message.sequence,
+    bucket: isPassiveMessage(message) ? 'activity' : 'conversation',
+    message,
+  };
 }
 
 interface StoredState extends HistoryLease {
@@ -185,12 +203,7 @@ export async function enableHistory(
           !mayReadMessage(message, owner, next.staff)
         )
           continue;
-        messages.put({
-          key: `${owner}:${message.id}`,
-          owner,
-          createdAt: message.createdAt,
-          message,
-        });
+        messages.put(storedMessage(owner, message));
       }
       trimHistory(messages, owner);
       done(next);
@@ -201,19 +214,28 @@ export async function enableHistory(
 }
 
 function trimHistory(messages: IDBObjectStore, owner: string): void {
-  const index = messages.index('ownerTime');
-  const count = index.count(range(owner));
-  count.onsuccess = () => {
-    let excess = count.result - CHAT_HISTORY_LIMIT;
-    if (excess <= 0) return;
-    const oldest = index.openCursor(range(owner));
-    oldest.onsuccess = () => {
-      const cursor = oldest.result;
-      if (!cursor) return;
-      cursor.delete();
-      if (--excess > 0) cursor.continue();
+  const index = messages.index('ownerBucketTime');
+  for (const [bucket, limit] of [
+    ['activity', CHAT_ACTIVITY_LIMIT],
+    ['conversation', CHAT_HISTORY_LIMIT],
+  ] as const) {
+    const scope = IDBKeyRange.bound(
+      [owner, bucket, 0, 0],
+      [owner, bucket, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+    );
+    const count = index.count(scope);
+    count.onsuccess = () => {
+      let excess = count.result - limit;
+      if (excess <= 0) return;
+      const oldest = index.openCursor(scope);
+      oldest.onsuccess = () => {
+        const cursor = oldest.result;
+        if (!cursor) return;
+        cursor.delete();
+        if (--excess > 0) cursor.continue();
+      };
     };
-  };
+  }
 }
 
 export interface ChatHistorySnapshot {
@@ -227,6 +249,8 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
   const db = await openDatabase();
   return transaction(db, 'readwrite', (state, messages, done) => {
     const result: ChatMessage[] = [];
+    let activity = 0;
+    let conversation = 0;
     const snapshot: ChatHistorySnapshot = { messages: result, readPositions: new Map() };
     done(snapshot);
     const check = state.get('current');
@@ -241,7 +265,8 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
           result.sort((a, b) => compareCursors(messageCursor(a), messageCursor(b)));
           const baseline: ChatReadPositions = new Map();
           for (const message of result)
-            baseline.set(messageConversation(message, owner), messageCursor(message));
+            if (!isPassiveMessage(message))
+              baseline.set(messageConversation(message, owner), messageCursor(message));
           // Initialize existing records once; an explicit null remains unread across reloads.
           for (const [key, latest] of baseline) {
             snapshot.readPositions.set(
@@ -261,8 +286,13 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
           !mayReadMessage(parsed.data, owner, active.staff)
         ) {
           cursor.delete();
-        } else if (result.length < CHAT_HISTORY_LIMIT) result.push(parsed.data);
-        else cursor.delete();
+        } else {
+          const keep = isPassiveMessage(parsed.data)
+            ? ++activity <= CHAT_ACTIVITY_LIMIT
+            : ++conversation <= CHAT_HISTORY_LIMIT;
+          if (keep) result.push(parsed.data);
+          else cursor.delete();
+        }
         cursor.continue();
       };
     };
@@ -285,9 +315,11 @@ export async function saveHistory(lease: HistoryLease, message: ChatMessage): Pr
         !mayReadMessage(message, owner, active.staff)
       )
         return;
-      messages.put({ key: `${owner}:${message.id}`, owner, createdAt: message.createdAt, message });
+      messages.put(storedMessage(owner, message));
       const key = messageConversation(message, owner);
-      const positions = advanceReadPosition(active.readPositions, key, null);
+      const positions = !isPassiveMessage(message)
+        ? advanceReadPosition(active.readPositions, key, null)
+        : active.readPositions;
       if (positions !== active.readPositions)
         state.put({ ...active, readPositions: positions }, 'current');
       trimHistory(messages, owner);

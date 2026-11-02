@@ -4,58 +4,72 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
   RegistrationResponseJSON,
 } from '@simplewebauthn/browser';
-import { startRegistration } from '@simplewebauthn/browser';
-import { KeyRound, Loader2, LogOut, MonitorSmartphone, Plus, Trash2 } from 'lucide-react';
+import { startRegistration, WebAuthnAbortService } from '@simplewebauthn/browser';
+import { KeyRound, Loader2, LogOut, MonitorSmartphone, Plus, RefreshCw } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AccountSecurityResponse } from '@/modules/auth/model/auth-types';
+import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
+import { webAuthnError } from '@/modules/auth/lib/webauthn-error';
+import type { AccountSecurityResponse, AuthAccount } from '@/modules/auth/model/auth-types';
 import { isAccountSecurityResponse } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
+import { ReauthenticationDialog } from '@/modules/auth/ui/reauthentication-dialog';
+import type { SecurityAction } from '@/modules/auth/ui/security-action-dialog';
+import { SecurityActionDialog } from '@/modules/auth/ui/security-action-dialog';
+import { SecurityItem } from '@/modules/auth/ui/security-item';
 import {
   clearFetchValidatedJsonBrowserCache,
   fetchValidatedJson,
 } from '@/shared/api/fetch-validated-json';
-import { Link } from '@/shared/i18n/routing';
-import { AppDialog } from '@/shared/ui/dialog/app-dialog';
+import { useRouter } from '@/shared/i18n/routing';
 
 const SECURITY_CACHE_TTL_MS = 60_000;
+interface SecurityDialog {
+  step: 'action' | 'verify';
+  action: SecurityAction;
+}
 
 export function AccountSecurityPage() {
   const { account } = useAuth();
   return (
     <AccountLayout>
-      {account ? (
-        <AccountSecurity key={account.playerUuid} playerUuid={account.playerUuid} />
-      ) : null}
+      {account ? <AccountSecurity key={account.playerUuid} account={account} /> : null}
     </AccountLayout>
   );
 }
 
-function AccountSecurity({ playerUuid }: { playerUuid: string }) {
+function AccountSecurity({ account }: { account: AuthAccount }) {
+  const { playerUuid } = account;
   const t = useTranslations('auth.security');
+  const authenticationT = useTranslations('auth.authentication.errors');
   const locale = useLocale();
+  const router = useRouter();
   const { refresh, logout } = useAuth();
   const [security, setSecurity] = useState<AccountSecurityResponse | null>(null);
-  const [isMutating, setIsMutating] = useState(false);
-  const [reauthentication, setReauthentication] = useState(false);
-  const [confirmation, setConfirmation] = useState<
-    { type: 'delete-passkey'; credentialId: string } | { type: 'sign-out-all' } | null
-  >(null);
+  const [running, setRunning] = useState<SecurityAction | null>(null);
+  const [dialog, setDialog] = useState<SecurityDialog | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
+  const [loading, setLoading] = useState(true);
+  const generation = useRef(0);
+  const mutating = useRef(false);
+  const securityRequest = useRef(0);
+  const ceremony = useRef(false);
   const cacheKey = `account:security:${playerUuid}`;
-  const accountGeneration = useRef(0);
+
   useEffect(
     () => () => {
-      accountGeneration.current++;
+      generation.current++;
+      if (ceremony.current) WebAuthnAbortService.cancelCeremony();
     },
     [],
   );
 
   const loadSecurity = useCallback(
-    async (options: { force?: boolean } = {}) => {
-      const generation = accountGeneration.current;
+    async ({ force = false }: { force?: boolean } = {}) => {
+      const current = generation.current;
+      const request = ++securityRequest.current;
+      setLoading(true);
       const result = await fetchValidatedJson({
         url: '/api/account/security',
         request: { method: 'POST' },
@@ -63,14 +77,11 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
         validate: (value): value is AccountSecurityResponse =>
           isAccountSecurityResponse(value) && value.account.playerUuid === playerUuid,
         timeoutMs: 8000,
-        browserCache: {
-          force: options.force,
-          key: cacheKey,
-          ttlMs: SECURITY_CACHE_TTL_MS,
-        },
+        browserCache: { force, key: cacheKey, ttlMs: SECURITY_CACHE_TTL_MS },
         fallbackErrorMessage: 'Failed to load account security',
       });
-      if (generation !== accountGeneration.current) return false;
+      if (current !== generation.current || request !== securityRequest.current) return false;
+      setLoading(false);
       if (result.status === 'success') {
         setSecurity(result.data);
         return true;
@@ -78,424 +89,343 @@ function AccountSecurity({ playerUuid }: { playerUuid: string }) {
       setMessage(t('states.loadFailed'));
       return false;
     },
-    [playerUuid, cacheKey, t],
+    [cacheKey, playerUuid, t],
   );
 
   useEffect(() => {
     void loadSecurity();
   }, [loadSecurity]);
 
-  const refreshSecurity = async (generation: number) => {
+  const refreshSecurity = async (current: number) => {
     clearFetchValidatedJsonBrowserCache({ key: cacheKey });
     try {
       const refreshed = await refresh();
-      if (
-        !refreshed ||
-        refreshed.playerUuid !== playerUuid ||
-        generation !== accountGeneration.current
-      )
-        return false;
-      const loaded = await loadSecurity({ force: true });
-      return loaded && generation === accountGeneration.current;
+      if (current !== generation.current || refreshed?.playerUuid !== playerUuid) return;
+      await loadSecurity({ force: true });
     } catch {
-      if (generation === accountGeneration.current) setMessage(t('states.loadFailed'));
-      return false;
+      if (current === generation.current) setMessage(t('states.loadFailed'));
     }
   };
 
-  const registerPasskey = async () => {
-    const generation = accountGeneration.current;
-    setIsMutating(true);
+  const run = async (action: SecurityAction) => {
+    if (mutating.current) return;
+    if (
+      (action.type === 'add-passkey' || action.type === 'rename') &&
+      ([...action.displayName.normalize('NFC').trim()].length > 64 ||
+        /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u.test(action.displayName))
+    ) {
+      setMessage(t('states.invalidName'));
+      return;
+    }
+    mutating.current = true;
+    const current = generation.current;
+    const active = () => current === generation.current;
+    setRunning(action);
     setMessage(null);
     try {
-      const optionsResponse = await fetch('/api/auth/passkeys/options/register', {
-        method: 'POST',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10_000),
-      });
-      const optionsPayload = (await optionsResponse.json()) as {
-        options?: PublicKeyCredentialCreationOptionsJSON;
-        error?: string;
-      };
-      if (generation !== accountGeneration.current) return;
-
-      if (!optionsResponse.ok || !optionsPayload.options) {
-        setReauthentication(optionsPayload.error === 'reauthentication_required');
-        setMessage(
-          t(
-            optionsPayload.error === 'reauthentication_required'
-              ? 'states.reauthenticationRequired'
-              : optionsPayload.error === 'passkey_limit'
-                ? 'states.passkeyLimit'
-                : 'states.unavailable',
-          ),
-        );
-        return;
-      }
-
-      let credential: RegistrationResponseJSON;
-      try {
-        credential = await startRegistration({ optionsJSON: optionsPayload.options });
-      } catch (error) {
-        if (generation === accountGeneration.current) {
-          setMessage(t(passkeyRegistrationErrorMessageKey(error)));
+      switch (action.type) {
+        case 'add-passkey': {
+          const payload = await authRequest<{ options: PublicKeyCredentialCreationOptionsJSON }>(
+            '/api/auth/passkeys/options/register',
+          );
+          if (!active()) return;
+          if (!payload.options) throw new AuthRequestError('invalid_response', 502);
+          ceremony.current = true;
+          let credential: RegistrationResponseJSON;
+          try {
+            credential = await startRegistration({ optionsJSON: payload.options });
+          } catch (cause) {
+            throw new AuthRequestError(webAuthnError(cause), 400);
+          } finally {
+            ceremony.current = false;
+          }
+          if (!active()) return;
+          await authRequest('/api/auth/passkeys/register', {
+            body: { credential, displayName: action.displayName },
+          });
+          break;
         }
-        return;
+        case 'rename':
+          await authRequest(
+            action.kind === 'passkey'
+              ? `/api/auth/passkeys/${encodeURIComponent(action.id)}`
+              : `/api/account/sessions/${encodeURIComponent(action.id)}`,
+            { method: 'PATCH', body: { displayName: action.displayName } },
+          );
+          break;
+        case 'delete-passkey':
+          await authRequest(`/api/auth/passkeys/${encodeURIComponent(action.credentialId)}`, {
+            method: 'DELETE',
+          });
+          break;
+        case 'revoke-session':
+          await authRequest('/api/account/sessions/revoke', {
+            body: { targetSessionId: action.sessionId },
+          });
+          break;
+        case 'sign-out-all':
+          await logout({ allSessions: true });
+          return;
       }
-      if (generation !== accountGeneration.current) return;
-      const registerResponse = await fetch('/api/auth/passkeys/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          credential,
-          displayName: t('passkey.defaultName'),
-        }),
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10_000),
-      });
-
-      if (generation !== accountGeneration.current) return;
-      if (!registerResponse.ok) {
-        const error = (await registerResponse.json().catch(() => ({}))) as { error?: string };
-        setReauthentication(error.error === 'reauthentication_required');
-        setMessage(
-          t(
-            error.error === 'reauthentication_required'
-              ? 'states.reauthenticationRequired'
-              : 'states.registerFailed',
-          ),
-        );
-        return;
-      }
-
-      if (await refreshSecurity(generation)) setMessage(t('states.registered'));
-    } catch {
-      if (generation !== accountGeneration.current) return;
-      setMessage(t('states.registerFailed'));
-    } finally {
-      if (generation === accountGeneration.current) setIsMutating(false);
-    }
-  };
-
-  const deletePasskey = async (credentialId: string) => {
-    const generation = accountGeneration.current;
-    setIsMutating(true);
-    setMessage(null);
-    try {
-      const response = await fetch(`/api/auth/passkeys/${encodeURIComponent(credentialId)}`, {
-        method: 'DELETE',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10_000),
-      });
-
-      if (generation !== accountGeneration.current) return;
-      if (!response.ok) {
-        const error = (await response.json().catch(() => ({}))) as { error?: string };
-        setReauthentication(error.error === 'reauthentication_required');
-        setMessage(
-          t(
-            error.error === 'reauthentication_required'
-              ? 'states.reauthenticationRequired'
-              : 'states.deleteFailed',
-          ),
-        );
-        return;
-      }
-
-      setConfirmation(null);
-      setSecurity((current) =>
-        current
-          ? {
-              ...current,
-              passkeys: current.passkeys.filter((passkey) => passkey.credentialId !== credentialId),
-            }
-          : current,
-      );
-      if (!(await refreshSecurity(generation))) return;
-      setMessage(t('states.deleted'));
-    } catch {
-      if (generation !== accountGeneration.current) return;
-      setMessage(t('states.deleteFailed'));
-    } finally {
-      if (generation === accountGeneration.current) setIsMutating(false);
-    }
-  };
-
-  const revokeSession = async (sessionId: string) => {
-    const generation = accountGeneration.current;
-    setIsMutating(true);
-    setMessage(null);
-    try {
-      const response = await fetch('/api/account/sessions/revoke', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetSessionId: sessionId }),
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10_000),
-      });
-
-      if (generation !== accountGeneration.current) return;
-      if (!response.ok) {
-        const error = (await response.json().catch(() => ({}))) as { error?: string };
-        setReauthentication(error.error === 'reauthentication_required');
-        setMessage(
-          t(
-            error.error === 'reauthentication_required'
-              ? 'states.reauthenticationRequired'
-              : 'states.revokeSessionFailed',
-          ),
-        );
-        return;
-      }
-
-      clearFetchValidatedJsonBrowserCache({ key: cacheKey });
-      if (!(await loadSecurity({ force: true })) || generation !== accountGeneration.current)
-        return;
-      setMessage(t('states.sessionRevoked'));
-    } catch {
-      if (generation !== accountGeneration.current) return;
-      setMessage(t('states.revokeSessionFailed'));
-    } finally {
-      if (generation === accountGeneration.current) setIsMutating(false);
-    }
-  };
-
-  const signOutAllSessions = async () => {
-    const generation = accountGeneration.current;
-    setIsMutating(true);
-    setMessage(null);
-    try {
-      await logout({ allSessions: true });
-    } catch (error) {
-      if (generation !== accountGeneration.current) return;
-      const needsAuthentication =
-        error instanceof Error && error.message === 'reauthentication_required';
-      setReauthentication(needsAuthentication);
+      if (!active()) return;
+      setDialog(null);
       setMessage(
-        t(needsAuthentication ? 'states.reauthenticationRequired' : 'states.revokeSessionFailed'),
+        t(
+          action.type === 'rename'
+            ? 'states.renamed'
+            : action.type === 'add-passkey'
+              ? 'states.registered'
+              : action.type === 'delete-passkey'
+                ? 'states.deleted'
+                : 'states.sessionRevoked',
+        ),
       );
+      if (action.type === 'rename') {
+        clearFetchValidatedJsonBrowserCache({ key: cacheKey });
+        await loadSecurity({ force: true });
+      } else await refreshSecurity(current);
+    } catch (cause) {
+      if (!active()) return;
+      const code =
+        cause instanceof AuthRequestError
+          ? cause.code
+          : cause instanceof Error
+            ? cause.message
+            : 'request_failed';
+      if (code === 'reauthentication_required') {
+        setDialog({ step: 'verify', action });
+      } else if (
+        code === 'unauthenticated' ||
+        (cause instanceof AuthRequestError && cause.status === 401)
+      ) {
+        router.replace('/login?next=security');
+      } else if (code === 'invalid_display_name') setMessage(t('states.invalidName'));
+      else if (code === 'passkey_limit') setMessage(t('states.passkeyLimit'));
+      else if (authenticationT.has(code)) setMessage(authenticationT(code));
+      else
+        setMessage(
+          t(
+            action.type === 'rename'
+              ? 'states.renameFailed'
+              : action.type === 'add-passkey'
+                ? 'states.registerFailed'
+                : action.type === 'delete-passkey'
+                  ? 'states.deleteFailed'
+                  : 'states.revokeSessionFailed',
+          ),
+        );
     } finally {
-      if (generation === accountGeneration.current) setIsMutating(false);
+      mutating.current = false;
+      if (active()) setRunning(null);
     }
   };
 
-  const deletingPasskey = confirmation?.type === 'delete-passkey';
-  const confirmationLabel = t(deletingPasskey ? 'actions.delete' : 'actions.signOutAllSessions');
+  const openAction = (action: SecurityAction) => {
+    setMessage(null);
+
+    setDialog({ step: 'action', action });
+  };
+  const isMutating = running !== null;
+  const visibleDialog = dialog && dialog.step !== 'verify' ? dialog : null;
+  const selectedAction = visibleDialog?.action;
+  const targetName =
+    selectedAction?.type === 'delete-passkey'
+      ? security?.passkeys.find((key) => key.credentialId === selectedAction.credentialId)
+          ?.displayName || t('passkey.defaultName')
+      : selectedAction?.type === 'revoke-session'
+        ? security?.sessions.find((session) => session.id === selectedAction.sessionId)
+            ?.displayName || t('session.defaultName')
+        : null;
 
   return (
     <>
-      <header className="account-page-heading">
+      <header className="account-page-heading security-page-heading">
         <h1>{t('title')}</h1>
-        {message ? (
+        <button
+          type="button"
+          className="security-refresh ui-floating-control"
+          aria-label={t('actions.refresh')}
+          title={t('actions.refresh')}
+          disabled={loading || isMutating}
+          onClick={() => {
+            setMessage(null);
+            void loadSecurity({ force: true });
+          }}
+        >
+          <RefreshCw
+            className={`h-4 w-4${loading ? ' motion-safe:animate-spin' : ''}`}
+            aria-hidden="true"
+          />
+        </button>
+        {message && !visibleDialog ? (
           <p className="ui-inline-message" role="status">
             {message}
           </p>
         ) : null}
-        {reauthentication ? (
-          <Link href="/login?next=security" className="account-text-link">
-            {t('actions.reauthenticate')}
-          </Link>
-        ) : null}
       </header>
-      <section className="account-section" aria-labelledby="account-sessions-title">
-        <div className="account-section__header">
-          <div>
-            <h2 id="account-sessions-title">{t('sections.sessions')}</h2>
-            <p>{t('session.description')}</p>
-          </div>
-          <button
-            type="button"
-            className="ui-action-button ui-action-button--danger"
-            disabled={isMutating || !security?.sessions.length}
-            onClick={() => {
-              setMessage(null);
-              setConfirmation({ type: 'sign-out-all' });
-            }}
-          >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            {t('actions.signOutAllSessions')}
-          </button>
-        </div>
-
-        <div className="ui-settings-list">
-          {(security?.sessions ?? []).map((session) => (
-            <div key={session.id} className="ui-setting-row">
-              <div className="ui-setting-row__label">
-                <span>
-                  <MonitorSmartphone className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <strong>
-                    {t(`session.method.${session.authMethod}`)}
-                    {session.current ? (
-                      <em className="ui-setting-row__pill">{t('session.current')}</em>
-                    ) : null}
-                  </strong>
-                  <small>
-                    {t('session.lastSeenAt', { time: formatDate(session.lastSeenAt, locale) })}
-                  </small>
-                  <small>
-                    {t('session.expiresAt', { time: formatDate(session.idleExpiresAt, locale) })}
-                  </small>
-                </div>
-              </div>
-              {!session.current ? (
-                <button
-                  type="button"
-                  className="ui-action-button ui-action-button--danger"
-                  disabled={isMutating}
-                  onClick={() => void revokeSession(session.id)}
-                >
-                  <LogOut className="h-4 w-4" aria-hidden="true" />
-                  {t('actions.revokeSession')}
-                </button>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="account-section" aria-labelledby="account-passkeys-title">
-        <div className="account-section__header">
-          <div>
-            <h2 id="account-passkeys-title">{t('sections.passkeys')}</h2>
-            <p>{t('passkey.description')}</p>
-          </div>
-          <button
-            type="button"
-            className="ui-action-button ui-action-button--primary"
-            disabled={isMutating}
-            onClick={registerPasskey}
-          >
-            {isMutating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-            {t('actions.addPasskey')}
-          </button>
-        </div>
-
-        <div className="ui-settings-list">
-          {(security?.passkeys ?? []).map((passkey) => (
-            <div key={passkey.credentialId} className="ui-setting-row">
-              <div className="ui-setting-row__label">
-                <span>
-                  <KeyRound className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <strong>{passkey.displayName || t('passkey.defaultName')}</strong>
-                  <small>
-                    {t('passkey.createdAt', { time: formatDate(passkey.createdAt, locale) })}
-                  </small>
-                </div>
+      {!security && loading ? (
+        <p className="security-loading" role="status">
+          {t('states.loading')}
+        </p>
+      ) : null}
+      {security ? (
+        <>
+          <section className="account-section" aria-labelledby="account-sessions-title">
+            <div className="account-section__header">
+              <div>
+                <h2 id="account-sessions-title">{t('sections.sessions')}</h2>
+                <p>{t('session.description')}</p>
               </div>
               <button
                 type="button"
                 className="ui-action-button ui-action-button--danger"
-                disabled={isMutating}
-                onClick={() =>
-                  setConfirmation({ type: 'delete-passkey', credentialId: passkey.credentialId })
-                }
+                disabled={isMutating || !security?.sessions.length}
+                onClick={() => openAction({ type: 'sign-out-all' })}
               >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-                {t('actions.delete')}
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                {t('actions.signOutAllSessions')}
               </button>
             </div>
-          ))}
-
-          {security && security.passkeys.length === 0 ? (
-            <div className="ui-setting-row ui-setting-row--empty">{t('passkey.empty')}</div>
-          ) : null}
-        </div>
-      </section>
-      <AppDialog
-        isOpen={confirmation !== null}
-        onClose={() => {
-          if (!isMutating) setConfirmation(null);
-        }}
-        title={confirmationLabel}
-        icon={
-          deletingPasskey ? (
-            <Trash2 className="h-5 w-5" aria-hidden="true" />
-          ) : (
-            <LogOut className="h-5 w-5" aria-hidden="true" />
-          )
-        }
-        descriptionId="security-confirm-description"
-      >
-        <p id="security-confirm-description">
-          {t(deletingPasskey ? 'passkey.deleteConfirmation' : 'session.signOutAllConfirmation')}
-        </p>
-        {deletingPasskey && security?.passkeys.length === 1 ? (
-          <p>{t('passkey.lastKeyWarning')}</p>
-        ) : null}
-        {reauthentication ? (
-          <Link href="/login?next=security">{t('actions.reauthenticate')}</Link>
-        ) : null}
-        {message ? <p role="status">{message}</p> : null}
-        <div className="account-dialog-actions">
-          <button
-            type="button"
-            className="ui-action-button"
-            disabled={isMutating}
-            data-dialog-initial-focus
-            onClick={() => setConfirmation(null)}
-          >
-            {t('actions.cancel')}
-          </button>
-          <button
-            type="button"
-            className="ui-action-button ui-action-button--danger"
-            disabled={isMutating}
-            aria-busy={isMutating}
-            onClick={() => {
-              if (!confirmation) return;
-              if (confirmation.type === 'delete-passkey')
-                void deletePasskey(confirmation.credentialId);
-              else void signOutAllSessions();
-            }}
-          >
-            {isMutating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-            {confirmationLabel}
-          </button>
-        </div>
-      </AppDialog>
+            <ul className="security-list">
+              {security.sessions.map((session) => (
+                <SecurityItem
+                  key={session.id}
+                  name={session.displayName || t('session.defaultName')}
+                  icon={<MonitorSmartphone className="h-5 w-5" />}
+                  current={session.current}
+                  disabled={isMutating}
+                  removeLabel={t('actions.revokeSession')}
+                  onRename={() =>
+                    openAction({
+                      type: 'rename',
+                      kind: 'session',
+                      id: session.id,
+                      displayName: session.displayName ?? '',
+                    })
+                  }
+                  onRemove={
+                    session.current
+                      ? undefined
+                      : () => openAction({ type: 'revoke-session', sessionId: session.id })
+                  }
+                >
+                  <p>{t(`session.method.${session.authMethod}`)}</p>
+                  <p>
+                    <time dateTime={session.lastSeenAt}>
+                      {t('session.lastSeenAt', { time: formatDate(session.lastSeenAt, locale) })}
+                    </time>
+                  </p>
+                  <p className="security-item__secondary">
+                    <time dateTime={session.idleExpiresAt}>
+                      {t('session.expiresAt', { time: formatDate(session.idleExpiresAt, locale) })}
+                    </time>
+                  </p>
+                </SecurityItem>
+              ))}
+            </ul>
+          </section>
+          <section className="account-section" aria-labelledby="account-passkeys-title">
+            <div className="account-section__header">
+              <div>
+                <h2 id="account-passkeys-title">{t('sections.passkeys')}</h2>
+                <p>{t('passkey.description')}</p>
+              </div>
+              <button
+                type="button"
+                className="ui-action-button ui-action-button--primary"
+                disabled={isMutating || !security}
+                onClick={() => openAction({ type: 'add-passkey', displayName: '' })}
+                aria-busy={running?.type === 'add-passkey' || undefined}
+              >
+                {running?.type === 'add-passkey' ? (
+                  <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
+                ) : (
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                )}
+                {t('actions.addPasskey')}
+              </button>
+            </div>
+            <ul className="security-list">
+              {security.passkeys.map((passkey) => (
+                <SecurityItem
+                  key={passkey.credentialId}
+                  name={passkey.displayName || t('passkey.defaultName')}
+                  icon={<KeyRound className="h-5 w-5" />}
+                  disabled={isMutating}
+                  removeLabel={t('actions.delete')}
+                  onRename={() =>
+                    openAction({
+                      type: 'rename',
+                      kind: 'passkey',
+                      id: passkey.credentialId,
+                      displayName: passkey.displayName ?? '',
+                    })
+                  }
+                  onRemove={() =>
+                    openAction({
+                      type: 'delete-passkey',
+                      credentialId: passkey.credentialId,
+                    })
+                  }
+                >
+                  <p>
+                    {passkey.lastUsedAt ? (
+                      <time dateTime={passkey.lastUsedAt}>
+                        {t('passkey.lastUsedAt', { time: formatDate(passkey.lastUsedAt, locale) })}
+                      </time>
+                    ) : (
+                      t('passkey.neverUsed')
+                    )}
+                  </p>
+                  <p className="security-item__secondary">
+                    <time dateTime={passkey.createdAt}>
+                      {t('passkey.createdAt', { time: formatDate(passkey.createdAt, locale) })}
+                    </time>
+                  </p>
+                </SecurityItem>
+              ))}
+              {security.passkeys.length === 0 ? (
+                <li className="security-empty">{t('passkey.empty')}</li>
+              ) : null}
+            </ul>
+          </section>
+        </>
+      ) : null}
+      {dialog?.step === 'verify' ? (
+        <ReauthenticationDialog
+          account={security ? { ...account, passkeyCount: security.passkeys.length } : account}
+          onClose={() => setDialog(null)}
+          onVerified={() => {
+            setDialog({
+              step: 'action',
+              action: dialog.action,
+            });
+            void loadSecurity({ force: true });
+          }}
+        />
+      ) : null}
+      {visibleDialog ? (
+        <SecurityActionDialog
+          account={account}
+          action={visibleDialog.action}
+          busy={isMutating}
+          message={message}
+          targetName={targetName}
+          passkeyCount={security?.passkeys.length ?? account.passkeyCount}
+          onClose={() => {
+            setDialog(null);
+            setMessage(null);
+          }}
+          onSubmit={(action) => void run(action)}
+          onClearMessage={() => setMessage(null)}
+        />
+      ) : null}
     </>
   );
 }
 
-function passkeyRegistrationErrorMessageKey(error: unknown): `states.${string}` {
-  const code = readErrorCode(error);
-  if (code === 'ERROR_INVALID_DOMAIN' || code === 'ERROR_INVALID_RP_ID') {
-    return 'states.domainMismatch';
-  }
-  if (code === 'ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED') {
-    return 'states.alreadyRegistered';
-  }
-  if (
-    code === 'ERROR_AUTHENTICATOR_MISSING_DISCOVERABLE_CREDENTIAL_SUPPORT' ||
-    code === 'ERROR_AUTHENTICATOR_MISSING_USER_VERIFICATION_SUPPORT'
-  ) {
-    return 'states.unsupportedAuthenticator';
-  }
-  if (error instanceof Error && error.message === 'WebAuthn is not supported in this browser') {
-    return 'states.browserUnsupported';
-  }
-  return 'states.cancelled';
-}
-
-function readErrorCode(error: unknown): string {
-  if (!error || typeof error !== 'object' || !('code' in error)) {
-    return '';
-  }
-  const code = (error as { code?: unknown }).code;
-  return typeof code === 'string' ? code : '';
-}
-
 function formatDate(value: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(value),
+  );
 }

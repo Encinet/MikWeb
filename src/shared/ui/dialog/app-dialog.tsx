@@ -16,6 +16,7 @@ interface AppDialogProps {
   onClose: () => void;
   className?: string;
   descriptionId?: string;
+  dismissible?: boolean;
 }
 
 export function AppDialog(props: AppDialogProps) {
@@ -31,11 +32,15 @@ function OpenDialog({
   onClose,
   className = '',
   descriptionId,
+  dismissible = true,
 }: AppDialogProps) {
   const t = useTranslations('common');
   const titleId = useId();
   const ref = useRef<HTMLDialogElement>(null);
-  useModalInteraction(ref, true, onClose);
+  const requestClose = () => {
+    if (dismissible) onClose();
+  };
+  useModalInteraction(ref, true, requestClose);
 
   return (
     <div className="ui-dialog-overlay safe-fixed-overlay">
@@ -44,7 +49,8 @@ function OpenDialog({
         className="app-dialog-backdrop"
         tabIndex={-1}
         aria-label={t('actions.close')}
-        onClick={onClose}
+        onClick={requestClose}
+        disabled={!dismissible}
       />
       <dialog
         ref={ref}
@@ -64,7 +70,8 @@ function OpenDialog({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
+            disabled={!dismissible}
             aria-label={t('actions.close')}
             data-dialog-close
             className="app-dialog-close ui-floating-control"

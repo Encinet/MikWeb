@@ -66,21 +66,53 @@ const contentSchema = z
       parts.reduce((length, part) => length + (part.href?.length ?? 0), 0) <= 4096,
   );
 
-export const chatMessageSchema = z
+const messageFields = {
+  id: z.string().min(1).max(128),
+  channel: z.enum(['public', 'staff', 'private']),
+  targetUuid: uuid.optional(),
+  targetName: z.string().max(64).optional(),
+  createdAt: z.number().int().nonnegative().max(8_640_000_000_000_000),
+  streamId: uuid,
+  sequence: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+};
+
+const playerMessageSchema = z
   .object({
-    id: z.string().min(1).max(128),
+    ...messageFields,
+    kind: z.literal('player'),
     requestId: z.string().max(64).nullable().optional(),
-    channel: z.enum(['public', 'staff', 'private']),
     senderUuid: uuid,
     senderName: name,
-    targetUuid: uuid.nullable().optional(),
-    targetName: z.string().max(64).optional(),
     content: contentSchema,
     mentioned: z.boolean(),
     source: z.enum(['web', 'game']),
-    createdAt: z.number().int().nonnegative().max(8_640_000_000_000_000),
   })
   .refine((value) => value.channel !== 'private' || Boolean(value.targetUuid));
+
+const serverTranslationSchema = z.strictObject({
+  template: z.enum(['gameJoined', 'gameLeft', 'webJoined', 'webLeft']),
+  values: z.strictObject({ name }),
+});
+
+const serverMessageSchema = z
+  .object({
+    ...messageFields,
+    kind: z.literal('server'),
+    recipientUuid: uuid.optional(),
+    content: z.union([contentSchema, serverTranslationSchema]),
+    subject: z.strictObject({ playerUuid: uuid, name }).optional(),
+    countsAsUnread: z.boolean(),
+  })
+  .refine((value) =>
+    value.channel === 'private'
+      ? Boolean(value.targetUuid && value.recipientUuid && value.targetUuid !== value.recipientUuid)
+      : !value.targetUuid && !value.recipientUuid,
+  );
+
+export const chatMessageSchema = z.discriminatedUnion('kind', [
+  playerMessageSchema,
+  serverMessageSchema,
+]);
 
 const peerSchema = z.object({
   playerUuid: uuid,
@@ -109,7 +141,6 @@ export const chatServerEventSchema = z.discriminatedUnion('type', [
     type: z.literal('presence'),
     ...presenceSchema.shape,
   }),
-  z.object({ type: z.literal('presence_notice'), joined: z.boolean(), name }),
   z.object({ type: z.literal('message'), message: chatMessageSchema }),
   z.object({
     type: z.literal('accepted'),
@@ -121,6 +152,9 @@ export const chatServerEventSchema = z.discriminatedUnion('type', [
 ]);
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
+export type ChatPlayerMessage = z.infer<typeof playerMessageSchema>;
+export type ChatServerMessage = z.infer<typeof serverMessageSchema>;
+export type ChatContent = z.infer<typeof contentSchema>;
 export type ChatPeer = z.infer<typeof peerSchema>;
 export type ChatPresence = z.infer<typeof presenceSchema>;
 export interface ChatAccess {
@@ -129,25 +163,42 @@ export interface ChatAccess {
 }
 export function messageConversation(message: ChatMessage, owner: string): string {
   return message.channel === 'private'
-    ? `private:${message.senderUuid === owner ? message.targetUuid : message.senderUuid}`
+    ? `private:${message.kind === 'server' || message.senderUuid === owner ? message.targetUuid : message.senderUuid}`
     : message.channel;
 }
 
 export function messageDestination(message: ChatMessage, owner: string): ChatDestination | null {
   if (message.channel !== 'private') return { channel: message.channel };
-  const outgoing = message.senderUuid === owner;
-  const targetUuid = outgoing ? message.targetUuid : message.senderUuid;
+  const outgoing = message.kind === 'server' || message.senderUuid === owner;
+  const targetUuid = outgoing
+    ? message.targetUuid
+    : message.kind === 'player'
+      ? message.senderUuid
+      : undefined;
   if (!targetUuid) return null;
   return {
     channel: 'private',
     targetUuid,
-    name: (outgoing ? message.targetName : message.senderName) || targetUuid,
+    name:
+      (outgoing ? message.targetName : message.kind === 'player' ? message.senderName : '') ||
+      targetUuid,
   };
 }
 
 export function mayReadMessage(message: ChatMessage, owner: string, staff: boolean): boolean {
   if (message.channel === 'staff') return staff;
   return (
-    message.channel !== 'private' || message.senderUuid === owner || message.targetUuid === owner
+    message.channel !== 'private' ||
+    (message.kind === 'server'
+      ? message.recipientUuid === owner
+      : message.senderUuid === owner || message.targetUuid === owner)
   );
+}
+
+export function countsAsUnread(message: ChatMessage, owner: string): boolean {
+  return message.kind === 'server' ? message.countsAsUnread : message.senderUuid !== owner;
+}
+
+export function isPassiveMessage(message: ChatMessage): boolean {
+  return message.kind === 'server' && !message.countsAsUnread;
 }

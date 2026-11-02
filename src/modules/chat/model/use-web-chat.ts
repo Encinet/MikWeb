@@ -17,9 +17,15 @@ import {
 } from '@/modules/chat/lib/chat-history';
 import { ChatTransport } from '@/modules/chat/lib/chat-transport';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
-import type { ChatAccess, ChatMessage, ChatPresence } from '@/modules/chat/model/chat-protocol';
+import type {
+  ChatAccess,
+  ChatMessage,
+  ChatPlayerMessage,
+  ChatPresence,
+} from '@/modules/chat/model/chat-protocol';
 import {
   chatServerEventSchema,
+  isPassiveMessage,
   mayReadMessage,
   messageConversation,
 } from '@/modules/chat/model/chat-protocol';
@@ -31,6 +37,9 @@ import type {
 import {
   advanceReadPosition,
   CHAT_HISTORY_LIMIT,
+  compareCursors,
+  messageCursor,
+  retainChatHistory,
   unreadMessages,
 } from '@/modules/chat/model/chat-reading';
 
@@ -41,10 +50,6 @@ export interface PendingChatMessage {
   status: 'sending' | 'unknown' | 'failed';
   error?: string;
 }
-interface PresenceNotice {
-  name: string;
-  joined: boolean;
-}
 type ChatConnection =
   | { status: 'idle' | 'connecting' | 'authorizing' | 'online'; error?: never }
   | { status: 'reconnecting'; error?: string }
@@ -54,12 +59,12 @@ const EMPTY_PRESENCE: ChatPresence = { players: [], staffPlayers: [] };
 function mergeMessages(existing: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
   const messages = new Map(existing.map((message) => [message.id, message]));
   for (const message of incoming) messages.set(message.id, message);
-  return [...messages.values()]
-    .sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id))
-    .slice(-CHAT_HISTORY_LIMIT);
+  return retainChatHistory(
+    [...messages.values()].sort((a, b) => compareCursors(messageCursor(a), messageCursor(b))),
+  );
 }
 
-type LiveMessageListener = (message: ChatMessage, access: () => ChatAccess | null) => void;
+type LiveMessageListener = (message: ChatPlayerMessage, access: () => ChatAccess | null) => void;
 
 export function useWebChat() {
   const { account, verified, refresh } = useAuth();
@@ -73,11 +78,14 @@ export function useWebChat() {
   const [readPositions, setReadPositions] = useState<ChatReadPositions>(new Map());
   const [historyEpoch, setHistoryEpoch] = useState('');
   const [pending, setPending] = useState<PendingChatMessage[]>([]);
-  const [notice, setNotice] = useState<PresenceNotice | null>(null);
   const [staff, setStaff] = useState(accountStaff);
   const [persist, setPersist] = useState(true);
   const [storageFailed, setStorageFailed] = useState(false);
   const socket = useRef<ChatTransport | null>(null);
+  const authorizationExpiry = useRef<{
+    at: number;
+    timer: ReturnType<typeof setTimeout>;
+  } | null>(null);
   const generation = useRef(0);
   const wanted = useRef(false);
   const attempt = useRef(0);
@@ -114,23 +122,30 @@ export function useWebChat() {
     });
   }, [messages, owner, updateReading]);
 
-  const stop = useCallback(() => {
-    wanted.current = false;
-    generation.current++;
-    if (reconnect.current) clearTimeout(reconnect.current);
-    authorizing.current?.abort();
-    authorizing.current = null;
-    socket.current?.close(1000);
+  const releaseSocket = useCallback(() => {
+    const previous = socket.current;
     socket.current = null;
+    if (authorizationExpiry.current) clearTimeout(authorizationExpiry.current.timer);
+    authorizationExpiry.current = null;
+    previous?.close();
     setPresence(EMPTY_PRESENCE);
-    setNotice(null);
     setPending((current) =>
       current.map((message) =>
         message.status === 'sending' ? { ...message, status: 'unknown' } : message,
       ),
     );
-    setConnection({ status: 'idle' });
   }, []);
+
+  const stop = useCallback(() => {
+    wanted.current = false;
+    generation.current++;
+    if (reconnect.current) clearTimeout(reconnect.current);
+    reconnect.current = null;
+    authorizing.current?.abort();
+    authorizing.current = null;
+    releaseSocket();
+    setConnection({ status: 'idle' });
+  }, [releaseSocket]);
 
   const applyPermissions = useCallback(
     (staff: boolean, current: () => boolean) => {
@@ -153,18 +168,16 @@ export function useWebChat() {
     [owner, updateReading],
   );
 
-  useEffect(() => {
-    if (!notice) return;
-    const timeout = setTimeout(() => setNotice(null), 7000);
-    return () => clearTimeout(timeout);
-  }, [notice]);
-
   const dial = useCallback(() => {
     if (!owner || !verified || !wanted.current) return;
     const currentGeneration = ++generation.current;
+    const previous = socket.current;
+    if (reconnect.current) clearTimeout(reconnect.current);
+    reconnect.current = null;
     authorizing.current?.abort();
     authorizing.current = null;
-    setConnection({ status: attempt.current ? 'reconnecting' : 'connecting' });
+    releaseSocket();
+    setConnection({ status: previous || attempt.current ? 'reconnecting' : 'connecting' });
     setError(null);
     let ws: ChatTransport;
     try {
@@ -177,7 +190,6 @@ export function useWebChat() {
     socket.current = ws;
     let connectionId = '';
     let confirmed = false;
-    let expires: ReturnType<typeof setTimeout> | null = null;
     const current = () => generation.current === currentGeneration && socket.current === ws;
     const invalidResponse = () => {
       wanted.current = false;
@@ -185,10 +197,13 @@ export function useWebChat() {
       ws.close();
     };
     const expire = (delay: number) => {
-      if (expires) clearTimeout(expires);
-      expires = setTimeout(() => {
-        if (current()) ws.close();
-      }, delay);
+      if (authorizationExpiry.current) clearTimeout(authorizationExpiry.current.timer);
+      authorizationExpiry.current = {
+        at: Date.now() + delay,
+        timer: setTimeout(() => {
+          if (current()) ws.close();
+        }, delay),
+      };
     };
     const authorize = async () => {
       if (!connectionId || !current() || authorizing.current) return;
@@ -199,7 +214,7 @@ export function useWebChat() {
         const response = await fetch('/api/account/chat/authorize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ connectionId }),
+          body: JSON.stringify({ connectionId, clientPublicKey: ws.authorizationKey }),
           cache: 'no-store',
           signal: controller.signal,
         });
@@ -310,27 +325,26 @@ export function useWebChat() {
             staffPlayers: allowedStaff.current ? message.staffPlayers : [],
           });
           break;
-        case 'presence_notice':
-          setNotice({ name: message.name, joined: message.joined });
-          break;
         case 'message': {
           if (!mayReadMessage(message.message, owner, allowedStaff.current)) {
             invalidResponse();
             return;
           }
           const record = message.message;
-          updateReading((positions) =>
-            advanceReadPosition(positions, messageConversation(record, owner), null),
-          );
+          if (!isPassiveMessage(record))
+            updateReading((positions) =>
+              advanceReadPosition(positions, messageConversation(record, owner), null),
+            );
           setMessages((existing) => mergeMessages(existing, [record]));
-          liveMessage.current?.(record, () =>
-            current() &&
-            ws.readyState === WebSocket.OPEN &&
-            mayReadMessage(record, owner, allowedStaff.current)
-              ? { owner, staff: allowedStaff.current }
-              : null,
-          );
-          if (record.senderUuid === owner && record.requestId)
+          if (record.kind === 'player')
+            liveMessage.current?.(record, () =>
+              current() &&
+              ws.readyState === WebSocket.OPEN &&
+              mayReadMessage(record, owner, allowedStaff.current)
+                ? { owner, staff: allowedStaff.current }
+                : null,
+            );
+          if (record.kind === 'player' && record.senderUuid === owner && record.requestId)
             setPending((existing) =>
               existing.filter((item) => item.requestId !== record.requestId),
             );
@@ -358,15 +372,10 @@ export function useWebChat() {
       }
     };
     ws.onclose = () => {
-      if (expires) clearTimeout(expires);
       if (!current()) return;
       authorizing.current?.abort();
       authorizing.current = null;
-      socket.current = null;
-      setPresence(EMPTY_PRESENCE);
-      setPending((existing) =>
-        existing.map((item) => (item.status === 'sending' ? { ...item, status: 'unknown' } : item)),
-      );
+      releaseSocket();
       if (!wanted.current) {
         setConnection((current) => ({
           status: 'error',
@@ -386,21 +395,41 @@ export function useWebChat() {
         setConnection({ status: 'error', error: 'invalid_response' });
       } else setConnection({ status: 'reconnecting', error: 'connection_failed' });
     };
-  }, [owner, verified, refresh, applyPermissions, updateReading]);
+  }, [owner, verified, refresh, applyPermissions, updateReading, releaseSocket]);
 
   useEffect(() => {
     dialRef.current = dial;
   }, [dial]);
 
+  useEffect(() => {
+    const recover = () => {
+      if (!wanted.current) return;
+      const ws = socket.current;
+      if (
+        ws &&
+        (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) &&
+        Date.now() < (authorizationExpiry.current?.at ?? 0)
+      )
+        return;
+      dialRef.current();
+    };
+    const visible = () => {
+      if (document.visibilityState === 'visible') recover();
+    };
+    document.addEventListener('visibilitychange', visible);
+    window.addEventListener('pageshow', visible);
+    window.addEventListener('focus', visible);
+    window.addEventListener('online', recover);
+    return () => {
+      document.removeEventListener('visibilitychange', visible);
+      window.removeEventListener('pageshow', visible);
+      window.removeEventListener('focus', visible);
+      window.removeEventListener('online', recover);
+    };
+  }, []);
+
   const retry = useCallback(() => {
-    if (!owner || !verified) return;
-    if (socket.current) {
-      if (wanted.current) return;
-      generation.current++;
-      socket.current.close();
-      socket.current = null;
-    }
-    if (reconnect.current) clearTimeout(reconnect.current);
+    if (!owner || !verified || (socket.current && wanted.current)) return;
     wanted.current = true;
     attempt.current = 0;
     dialRef.current();
@@ -643,7 +672,6 @@ export function useWebChat() {
     unread,
     markRead,
     pending,
-    notice,
     staff,
     persist,
     storageFailed,

@@ -294,42 +294,8 @@
     "login": {
       "title": "Player Login",
       "subtitle": "Sign in with your game account. Members only.",
-      "minecraft": {
-        "title": "In-game Code",
-        "description": "Confirm sign-in with a command on the server."
-      },
-      "passkey": {
-        "title": "Passkey",
-        "description": "Use a linked device or security key."
-      },
-      "codePanel": {
-        "title": "Code",
-        "waiting": "Waiting for in-game confirmation",
-        "copyLabel": "Copy web login command",
-        "remaining": "Expires in {time}",
-        "instructions": "Run this command on the server. You’ll sign in automatically after confirming.",
-        "copyHint": "Click to copy command",
-        "copyFailed": "Copy failed. Copy the command above manually."
-      },
       "actions": {
         "account": "Open account"
-      },
-      "states": {
-        "creating": "Generating code",
-        "completing": "Completing login",
-        "copied": "Copied",
-        "expired": "The code expired. Generate a new one.",
-        "unavailable": "Code login is temporarily unavailable.",
-        "statusUnavailable": "Unable to check confirmation. Retrying…",
-        "memberRequired": "This web system is only available to formal members.",
-        "passkeyStarting": "Confirm with your Passkey",
-        "passkeyUnavailable": "Passkey login is temporarily unavailable.",
-        "passkeyFailed": "Passkey verification failed.",
-        "passkeyCancelled": "Passkey login was cancelled.",
-        "passkeyDomainMismatch": "This domain does not support Passkeys. Use mcmik.top.",
-        "passkeyBrowserUnsupported": "This browser does not support Passkeys.",
-        "loginFailed": "Unable to complete sign-in. Please try again.",
-        "rateLimited": "Too many requests. Please wait and try again."
       }
     },
     "account": {
@@ -364,14 +330,17 @@
     },
     "security": {
       "title": "Login and Security",
-      "subtitle": "Manage the current web session and Passkeys that can sign in.",
       "actions": {
         "addPasskey": "Add Passkey",
         "delete": "Delete",
         "revokeSession": "Revoke",
         "signOutAllSessions": "Sign out all browsers",
-        "reauthenticate": "Verify your identity again",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "createPasskey": "Create Passkey",
+        "rename": "Rename",
+        "renameItem": "Rename {name}",
+        "save": "Save",
+        "refresh": "Refresh"
       },
       "sections": {
         "sessions": "Browser Sessions",
@@ -386,7 +355,9 @@
         "method": {
           "minecraft-challenge": "In-game code sign-in",
           "passkey": "Passkey sign-in"
-        }
+        },
+        "revokeConfirmation": "This browser will be signed out.",
+        "defaultName": "Browser session"
       },
       "passkey": {
         "description": "Manage devices, platform accounts, and security keys that can sign in.",
@@ -394,24 +365,78 @@
         "createdAt": "Created at {time}",
         "empty": "This account has no Passkeys yet.",
         "deleteConfirmation": "Revoking this passkey prevents future sign-ins with it. Existing web sessions remain active.",
-        "lastKeyWarning": "This is your last passkey. You can still sign in using an in-game code after revoking it."
+        "lastKeyWarning": "This is your last passkey. You can still sign in using an in-game code after revoking it.",
+        "lastUsedAt": "Last used {time}",
+        "neverUsed": "Not used to sign in yet"
       },
       "states": {
-        "unavailable": "Passkey registration is temporarily unavailable.",
         "registerFailed": "Passkey registration failed.",
+        "creatingPasskey": "Creating your Passkey",
         "registered": "Passkey added.",
-        "cancelled": "Passkey operation was cancelled.",
-        "domainMismatch": "This domain does not support Passkeys. Use mcmik.top.",
-        "alreadyRegistered": "This Passkey is already bound.",
-        "unsupportedAuthenticator": "This device does not support a sign-in Passkey.",
-        "browserUnsupported": "This browser does not support Passkeys.",
         "deleteFailed": "Delete failed.",
         "deleted": "Passkey deleted.",
         "revokeSessionFailed": "Failed to revoke session.",
         "sessionRevoked": "Session revoked.",
-        "reauthenticationRequired": "Please sign in again before managing passkeys or revoking other web sessions.",
         "passkeyLimit": "The passkey limit has been reached. Revoke an unused key first.",
-        "loadFailed": "Security settings could not be loaded. Please try again later."
+        "loadFailed": "Security settings could not be loaded. Please try again later.",
+        "renamed": "Name saved",
+        "renameFailed": "Could not save the name. Try again.",
+        "invalidName": "Use up to 64 characters, without control characters or line breaks.",
+        "loading": "Loading security settings"
+      },
+      "name": {
+        "label": "Name",
+        "hint": "Leave empty to use the default name.",
+        "sessionPlaceholder": "e.g. Home computer",
+        "passkeyPlaceholder": "e.g. iCloud Keychain"
+      }
+    },
+    "authentication": {
+      "methods": "Authentication method",
+      "verifyTitle": "Verify your identity",
+      "completingLogin": "Completing login",
+      "completingVerification": "Verifying your identity",
+      "passkeyStarting": "Confirm with your Passkey",
+      "creating": "Generating code",
+      "otherMethod": "Use another method",
+      "signIn": "Sign in",
+      "minecraft": {
+        "title": "In-game Code",
+        "description": "Confirm your identity with a command on the server."
+      },
+      "passkey": {
+        "title": "Passkey",
+        "description": "Use a linked device or security key."
+      },
+      "codePanel": {
+        "title": "Code",
+        "waiting": "Waiting for in-game confirmation",
+        "copyLabel": "Copy identity verification command",
+        "remaining": "Expires in {time}",
+        "instructions": "Run this command on the server and confirm.",
+        "copyHint": "Click to copy command",
+        "copyFailed": "Copy failed. Copy the command above manually.",
+        "copied": "Copied"
+      },
+      "errors": {
+        "request_failed": "Unable to complete verification. Please retry.",
+        "expired": "The code expired. Generate a new one.",
+        "rate_limited": "Too many requests. Please wait and try again.",
+        "member_required": "This web system is only available to formal members.",
+        "status_unavailable": "Unable to check confirmation. Retrying…",
+        "plugin_unavailable": "The game server is unavailable. Please retry shortly.",
+        "account_mismatch": "Verify with the current account.",
+        "unauthenticated": "Your session has expired. Sign in again.",
+        "authentication_invalidated": "Account security has changed. Verify again.",
+        "passkey_unavailable": "No Passkey is available. Use in-game verification.",
+        "passkey_verification_failed": "Passkey verification failed. Please retry.",
+        "invalid_challenge": "This verification expired. Start again.",
+        "invalid_browser_nonce": "This verification expired. Start again.",
+        "cancelled": "Passkey operation was cancelled.",
+        "passkey_already_registered": "This Passkey is already bound.",
+        "passkey_domain_mismatch": "This domain does not support Passkeys. Use mcmik.top.",
+        "passkey_unsupported_authenticator": "This device does not support a sign-in Passkey.",
+        "passkey_browser_unsupported": "This browser does not support Passkeys."
       }
     }
   },
@@ -587,8 +612,13 @@
     "clearConfirm": "Clear local history? This cannot be undone.",
     "storageFailed": "Messages cannot be saved locally and may be lost when you close this page.",
     "restoreDraft": "Restore draft",
-    "webJoined": "{name} joined web chat",
-    "webLeft": "{name} left web chat",
+    "server": {
+      "label": "Server",
+      "gameJoined": "{name} joined the game",
+      "gameLeft": "{name} left the game",
+      "webJoined": "{name} joined web chat",
+      "webLeft": "{name} left web chat"
+    },
     "channels": {
       "public": "Public",
       "staff": "Staff",
