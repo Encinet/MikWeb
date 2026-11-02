@@ -145,6 +145,18 @@ export function destinationKey(destination: ChatDestination): string {
     : destination.channel;
 }
 
+export function messageDestination(message: ChatMessage, owner: string): ChatDestination | null {
+  if (message.channel !== 'private') return { channel: message.channel };
+  const outgoing = message.senderUuid === owner;
+  const targetUuid = outgoing ? message.targetUuid : message.senderUuid;
+  if (!targetUuid) return null;
+  return {
+    channel: 'private',
+    targetUuid,
+    name: (outgoing ? message.targetName : message.senderName) || targetUuid,
+  };
+}
+
 export function mayReadMessage(message: ChatMessage, owner: string, staff: boolean): boolean {
   if (message.channel === 'staff') return staff;
   return (

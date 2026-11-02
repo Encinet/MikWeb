@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isStaffRole } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import type { HistoryLease } from '@/modules/chat/lib/chat-history';
@@ -11,6 +11,7 @@ import {
   onHistoryChange,
   resetHistory,
   saveHistory,
+  saveReadPosition,
   setStaffHistoryPermission,
   syncHistoryAccount,
 } from '@/modules/chat/lib/chat-history';
@@ -21,9 +22,23 @@ import type {
   ChatMessage,
   ChatPresence,
 } from '@/modules/chat/model/chat-protocol';
-import { chatServerEventSchema, mayReadMessage } from '@/modules/chat/model/chat-protocol';
+import {
+  chatServerEventSchema,
+  mayReadMessage,
+  messageConversation,
+} from '@/modules/chat/model/chat-protocol';
+import type {
+  ChatReadCursor,
+  ChatReadPositions,
+  ChatUnread,
+} from '@/modules/chat/model/chat-reading';
+import {
+  advanceReadPosition,
+  CHAT_HISTORY_LIMIT,
+  unreadMessages,
+} from '@/modules/chat/model/chat-reading';
 
-interface PendingChatMessage {
+export interface PendingChatMessage {
   requestId: string;
   destination: ChatDestination;
   text: string;
@@ -34,7 +49,10 @@ interface PresenceNotice {
   name: string;
   joined: boolean;
 }
-type ConnectionStatus = 'idle' | 'connecting' | 'authorizing' | 'online' | 'reconnecting' | 'error';
+type ChatConnection =
+  | { status: 'idle' | 'connecting' | 'authorizing' | 'online'; error?: never }
+  | { status: 'reconnecting'; error?: string }
+  | { status: 'error'; error: string };
 const EMPTY_PRESENCE: ChatPresence = { players: [], staffPlayers: [] };
 
 function mergeMessages(existing: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
@@ -42,7 +60,7 @@ function mergeMessages(existing: ChatMessage[], incoming: ChatMessage[]): ChatMe
   for (const message of incoming) messages.set(message.id, message);
   return [...messages.values()]
     .sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id))
-    .slice(-500);
+    .slice(-CHAT_HISTORY_LIMIT);
 }
 
 type LiveMessageListener = (message: ChatMessage, access: () => ChatAccess | null) => void;
@@ -51,10 +69,13 @@ export function useWebChat() {
   const { account, verified, refresh } = useAuth();
   const owner = account?.playerUuid ?? null;
   const accountStaff = isStaffRole(account?.role);
-  const [status, setStatus] = useState<ConnectionStatus>('idle');
+  const [connection, setConnection] = useState<ChatConnection>({ status: 'idle' });
+  const status = connection.status;
   const [error, setError] = useState<string | null>(null);
   const [presence, setPresence] = useState<ChatPresence>(EMPTY_PRESENCE);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [readPositions, setReadPositions] = useState<ChatReadPositions>(new Map());
+  const [historyEpoch, setHistoryEpoch] = useState('');
   const [pending, setPending] = useState<PendingChatMessage[]>([]);
   const [notice, setNotice] = useState<PresenceNotice | null>(null);
   const [staff, setStaff] = useState(accountStaff);
@@ -67,16 +88,35 @@ export function useWebChat() {
   const reconnect = useRef<ReturnType<typeof setTimeout> | null>(null);
   const authorizing = useRef<AbortController | null>(null);
   const lease = useRef<HistoryLease | null>(null);
+  const reading = useRef<ChatReadPositions>(new Map());
   const historyOwner = useRef<string | null>(null);
   const allowedStaff = useRef(accountStaff);
   const dialRef = useRef<() => void>(() => undefined);
   const liveMessage = useRef<LiveMessageListener | undefined>(undefined);
+  const updateReading = useCallback(
+    (update: (previous: ChatReadPositions) => ChatReadPositions) => {
+      const next = update(reading.current);
+      if (next === reading.current) return;
+      reading.current = next;
+      setReadPositions(next);
+    },
+    [],
+  );
   const subscribeMessages = useCallback((listener: LiveMessageListener) => {
     liveMessage.current = listener;
     return () => {
       if (liveMessage.current === listener) liveMessage.current = undefined;
     };
   }, []);
+
+  useEffect(() => {
+    if (!owner || reading.current.size <= CHAT_HISTORY_LIMIT) return;
+    const retained = new Set(messages.map((message) => messageConversation(message, owner)));
+    updateReading((positions) => {
+      const next = new Map([...positions].filter(([key]) => retained.has(key)));
+      return next.size === positions.size ? positions : next;
+    });
+  }, [messages, owner, updateReading]);
 
   const stop = useCallback(() => {
     wanted.current = false;
@@ -93,7 +133,7 @@ export function useWebChat() {
         message.status === 'sending' ? { ...message, status: 'unknown' } : message,
       ),
     );
-    setStatus('idle');
+    setConnection({ status: 'idle' });
   }, []);
 
   const applyPermissions = useCallback(
@@ -102,12 +142,19 @@ export function useWebChat() {
       allowedStaff.current = staff;
       setStaff(staff);
       if (!staff) setPresence((current) => ({ ...current, staffPlayers: [] }));
+      if (!staff)
+        updateReading((positions) => {
+          if (!positions.has('staff')) return positions;
+          const next = new Map(positions);
+          next.delete('staff');
+          return next;
+        });
       setMessages((records) => records.filter((record) => mayReadMessage(record, owner, staff)));
       void setStaffHistoryPermission(owner, staff).catch(() => {
         if (current()) setStorageFailed(true);
       });
     },
-    [owner],
+    [owner, updateReading],
   );
 
   useEffect(() => {
@@ -121,14 +168,13 @@ export function useWebChat() {
     const currentGeneration = ++generation.current;
     authorizing.current?.abort();
     authorizing.current = null;
-    setStatus(attempt.current ? 'reconnecting' : 'connecting');
+    setConnection({ status: attempt.current ? 'reconnecting' : 'connecting' });
     setError(null);
     let ws: ChatTransport;
     try {
       ws = new ChatTransport();
     } catch {
-      setStatus('error');
-      setError('connection_failed');
+      setConnection({ status: 'error', error: 'connection_failed' });
       wanted.current = false;
       return;
     }
@@ -139,7 +185,7 @@ export function useWebChat() {
     const current = () => generation.current === currentGeneration && socket.current === ws;
     const invalidResponse = () => {
       wanted.current = false;
-      setError('invalid_response');
+      setConnection({ status: 'error', error: 'invalid_response' });
       ws.close();
     };
     const expire = (delay: number) => {
@@ -164,8 +210,10 @@ export function useWebChat() {
         if (!current()) return;
         if (!response.ok) {
           const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          setError(payload?.error ?? 'chat_unavailable');
-          if ([401, 403, 429].includes(response.status)) {
+          const reason = typeof payload?.error === 'string' ? payload.error : 'chat_unavailable';
+          const terminal = [401, 403, 429].includes(response.status);
+          setConnection({ status: terminal ? 'error' : 'reconnecting', error: reason });
+          if (terminal) {
             wanted.current = false;
             if (response.status === 401 || response.status === 403)
               void refresh().catch(() => undefined);
@@ -205,7 +253,7 @@ export function useWebChat() {
           return;
         }
         connectionId = message.connectionId;
-        setStatus('authorizing');
+        setConnection({ status: 'authorizing' });
         void authorize();
         return;
       }
@@ -217,23 +265,27 @@ export function useWebChat() {
         if (message.playerUuid !== owner) {
           wanted.current = false;
           ws.close();
-          setError('session_changed');
+          setConnection({ status: 'error', error: 'session_changed' });
           void refresh().catch(() => undefined);
           return;
         }
         confirmed = true;
         attempt.current = 0;
         applyPermissions(message.staff, current);
-        setStatus('online');
+        setConnection({ status: 'online' });
         setError(null);
         expire(65_000);
         return;
       }
       if (message.type === 'closed') {
-        setError(message.reason);
-        if (['session_revoked', 'credentials_changed', 'chat_forbidden'].includes(message.reason)) {
+        const terminal = ['session_revoked', 'credentials_changed', 'chat_forbidden'].includes(
+          message.reason,
+        );
+        setConnection({ status: terminal ? 'error' : 'reconnecting', error: message.reason });
+        if (terminal) {
           wanted.current = false;
           setMessages([]);
+          updateReading(() => new Map());
           setPending([]);
           lease.current = null;
           void syncHistoryAccount(null, () => generation.current === currentGeneration).catch(
@@ -271,6 +323,9 @@ export function useWebChat() {
             return;
           }
           const record = message.message;
+          updateReading((positions) =>
+            advanceReadPosition(positions, messageConversation(record, owner), null),
+          );
           setMessages((existing) => mergeMessages(existing, [record]));
           liveMessage.current?.(record, () =>
             current() &&
@@ -317,25 +372,38 @@ export function useWebChat() {
         existing.map((item) => (item.status === 'sending' ? { ...item, status: 'unknown' } : item)),
       );
       if (!wanted.current) {
-        setStatus('error');
+        setConnection((current) => ({
+          status: 'error',
+          error: current.error ?? 'connection_failed',
+        }));
         return;
       }
-      setStatus('reconnecting');
+      setConnection((current) => ({ status: 'reconnecting', error: current.error }));
       const delay =
         Math.min(30_000, 1000 * 2 ** Math.min(attempt.current++, 5)) + Math.random() * 750;
       reconnect.current = setTimeout(() => dialRef.current(), delay);
     };
-    ws.onerror = () => {
-      if (current()) setError('connection_failed');
+    ws.onerror = (failure) => {
+      if (!current() || !wanted.current) return;
+      if (failure === 'protocol') {
+        wanted.current = false;
+        setConnection({ status: 'error', error: 'invalid_response' });
+      } else setConnection({ status: 'reconnecting', error: 'connection_failed' });
     };
-  }, [owner, verified, refresh, applyPermissions]);
+  }, [owner, verified, refresh, applyPermissions, updateReading]);
 
   useEffect(() => {
     dialRef.current = dial;
   }, [dial]);
 
   const retry = useCallback(() => {
-    if (socket.current || !owner || !verified) return;
+    if (!owner || !verified) return;
+    if (socket.current) {
+      if (wanted.current) return;
+      generation.current++;
+      socket.current.close();
+      socket.current = null;
+    }
     if (reconnect.current) clearTimeout(reconnect.current);
     wanted.current = true;
     attempt.current = 0;
@@ -347,13 +415,15 @@ export function useWebChat() {
     historyOwner.current = null;
     lease.current = null;
     setMessages([]);
+    updateReading(() => new Map());
+    setHistoryEpoch('');
     setPending([]);
     setError(null);
     allowedStaff.current = false;
     setStaff(false);
     if (!owner || !verified) return;
     historyOwner.current = owner;
-    setStatus('connecting');
+    setConnection({ status: 'connecting' });
     let current = true;
     const load = async (initialize: boolean) => {
       try {
@@ -361,21 +431,34 @@ export function useWebChat() {
           ? await syncHistoryAccount(owner, () => current)
           : await currentHistoryLease(owner);
         if (!current) return;
-        if (lease.current && lease.current.epoch !== next?.epoch) setMessages([]);
+        if (lease.current && lease.current.epoch !== next?.epoch) {
+          setMessages([]);
+          updateReading(() => new Map());
+        }
         lease.current = next;
+        setHistoryEpoch(next?.epoch ?? '');
         if (!next) {
           stop();
           setMessages([]);
+          updateReading(() => new Map());
           return;
         }
         setPersist(next.persist);
-        const records = await loadHistory(next);
+        const snapshot = await loadHistory(next);
         if (!current || lease.current?.epoch !== next.epoch) return;
         setMessages((existing) =>
-          mergeMessages(records, existing).filter((message) =>
+          mergeMessages(snapshot.messages, existing).filter((message) =>
             mayReadMessage(message, owner, allowedStaff.current),
           ),
         );
+        updateReading((positions) => {
+          let merged = positions;
+          for (const [key, cursor] of snapshot.readPositions) {
+            if (key !== 'staff' || allowedStaff.current)
+              merged = advanceReadPosition(merged, key, cursor);
+          }
+          return merged;
+        });
       } catch {
         if (current) setStorageFailed(true);
       } finally {
@@ -384,8 +467,20 @@ export function useWebChat() {
       }
     };
     void load(true);
-    const unsubscribe = onHistoryChange(() => {
-      void load(false);
+    const unsubscribe = onHistoryChange((reading) => {
+      if (!reading) {
+        void load(false);
+        return;
+      }
+      if (
+        reading.owner === owner &&
+        reading.epoch === lease.current?.epoch &&
+        (reading.conversation !== 'staff' || allowedStaff.current)
+      ) {
+        updateReading((positions) =>
+          advanceReadPosition(positions, reading.conversation, reading.cursor),
+        );
+      }
     });
     return () => {
       current = false;
@@ -394,7 +489,7 @@ export function useWebChat() {
       lease.current = null;
       stop();
     };
-  }, [owner, verified, retry, stop]);
+  }, [owner, verified, retry, stop, updateReading]);
 
   useEffect(() => {
     let current = true;
@@ -410,7 +505,14 @@ export function useWebChat() {
     (destination: ChatDestination, text: string): boolean => {
       const ws = socket.current;
       const value = text.trim();
-      if (!ws || ws.readyState !== WebSocket.OPEN || status !== 'online' || !value) return false;
+      if (
+        !wanted.current ||
+        !ws ||
+        ws.readyState !== WebSocket.OPEN ||
+        status !== 'online' ||
+        !value
+      )
+        return false;
       if (
         [...value].length > 1000 ||
         new TextEncoder().encode(value).length > 4096 ||
@@ -448,7 +550,8 @@ export function useWebChat() {
       try {
         ws.send(JSON.stringify(body));
       } catch {
-        setError('connection_failed');
+        setConnection({ status: 'reconnecting', error: 'connection_failed' });
+        ws.close();
         return false;
       }
       setPending((existing) => [
@@ -471,13 +574,20 @@ export function useWebChat() {
     [presence.players, status],
   );
 
-  const applyHistoryLease = useCallback((next: HistoryLease | null, clear: boolean) => {
-    if (!next || next.owner !== historyOwner.current) return;
-    lease.current = next;
-    setPersist(next.persist);
-    if (clear) setMessages([]);
-    setStorageFailed(false);
-  }, []);
+  const applyHistoryLease = useCallback(
+    (next: HistoryLease | null, clear: boolean) => {
+      if (!next || next.owner !== historyOwner.current) return;
+      lease.current = next;
+      setHistoryEpoch(next.epoch);
+      setPersist(next.persist);
+      if (clear) {
+        setMessages([]);
+        updateReading(() => new Map());
+      }
+      setStorageFailed(false);
+    },
+    [updateReading],
+  );
 
   const clearHistory = useCallback(async () => {
     if (!owner) return;
@@ -493,7 +603,7 @@ export function useWebChat() {
       if (!owner) return;
       try {
         const next = enabled
-          ? await enableHistory(owner, messages)
+          ? await enableHistory(owner, messages, reading.current)
           : await resetHistory(owner, false);
         applyHistoryLease(next, !enabled);
       } catch {
@@ -509,11 +619,33 @@ export function useWebChat() {
     [],
   );
 
+  const markRead = useCallback(
+    (conversation: string, cursor: ChatReadCursor) => {
+      if (!owner || (conversation === 'staff' && !allowedStaff.current)) return;
+      const next = advanceReadPosition(reading.current, conversation, cursor);
+      if (next === reading.current) return;
+      updateReading(() => next);
+      const history = lease.current;
+      if (history)
+        void saveReadPosition(history, conversation, cursor).catch(() => {
+          if (lease.current === history) setStorageFailed(true);
+        });
+    },
+    [owner, updateReading],
+  );
+  const unread = useMemo(
+    () => (owner ? unreadMessages(messages, owner, readPositions) : new Map<string, ChatUnread>()),
+    [messages, owner, readPositions],
+  );
+
   return {
-    status,
+    connection,
     error,
     presence,
     messages,
+    historyEpoch,
+    unread,
+    markRead,
     pending,
     notice,
     staff,

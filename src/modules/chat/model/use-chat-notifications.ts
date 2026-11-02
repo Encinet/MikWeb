@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CHAT_NOTIFICATION_WORKER } from '@/modules/chat/lib/chat-notifications';
+import { registerChatNotificationWorker } from '@/modules/chat/lib/chat-notifications';
 import type { ChatAccess, ChatDestination, ChatMessage } from '@/modules/chat/model/chat-protocol';
 import {
   chatDestinationSchema,
@@ -36,8 +36,7 @@ function enabled() {
 }
 
 function worker() {
-  registration ??= navigator.serviceWorker
-    .register(CHAT_NOTIFICATION_WORKER)
+  registration ??= registerChatNotificationWorker()
     .then(async () => navigator.serviceWorker.ready)
     .catch((error: unknown) => {
       registration = undefined;
@@ -86,11 +85,13 @@ export function useChatNotifications(
       else if (Notification.permission === 'denied') setStatus('denied');
       else setStatus(enabled() ? 'on' : 'off');
     };
-    const receive = (event: MessageEvent<unknown>) => {
+    const receive = async (event: MessageEvent<unknown>) => {
       if (
         event.origin !== window.location.origin ||
         !(event.source instanceof ServiceWorker) ||
-        event.source.scriptURL !== new URL(CHAT_NOTIFICATION_WORKER, window.location.origin).href
+        !registration ||
+        event.source !== (await registration.catch(() => undefined))?.active ||
+        token.current !== currentToken
       )
         return;
       const data = event.data as { type?: unknown; owner?: unknown; destination?: unknown } | null;

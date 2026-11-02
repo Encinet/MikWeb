@@ -1,5 +1,17 @@
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
-import { chatMessageSchema, mayReadMessage } from '@/modules/chat/model/chat-protocol';
+import {
+  chatMessageSchema,
+  mayReadMessage,
+  messageConversation,
+} from '@/modules/chat/model/chat-protocol';
+import type { ChatReadCursor, ChatReadPositions } from '@/modules/chat/model/chat-reading';
+import {
+  advanceReadPosition,
+  CHAT_HISTORY_LIMIT,
+  compareCursors,
+  messageCursor,
+  readStoredPositions,
+} from '@/modules/chat/model/chat-reading';
 
 export interface HistoryLease {
   owner: string | null;
@@ -7,8 +19,14 @@ export interface HistoryLease {
   persist: boolean;
 }
 
+interface HistoryReadChange {
+  owner: string;
+  epoch: string;
+  conversation: string;
+  cursor: ChatReadCursor;
+}
+
 const CHANGE_EVENT = 'mik-chat-history-change';
-const MAX_RECORDS = 1000;
 const MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 let database: Promise<IDBDatabase> | undefined;
 
@@ -46,6 +64,7 @@ function range(owner: string): IDBKeyRange {
 
 interface StoredState extends HistoryLease {
   staff: boolean;
+  readPositions: ChatReadPositions;
 }
 
 function readState(value: unknown): StoredState | null {
@@ -55,7 +74,7 @@ function readState(value: unknown): StoredState | null {
     typeof candidate.epoch === 'string' &&
     typeof candidate.persist === 'boolean' &&
     typeof candidate.staff === 'boolean'
-    ? (candidate as StoredState)
+    ? { ...(candidate as StoredState), readPositions: readStoredPositions(candidate.readPositions) }
     : null;
 }
 
@@ -93,7 +112,13 @@ export async function syncHistoryAccount(
       let lease = readState(request.result);
       if (!lease || lease.owner !== owner) {
         messages.clear();
-        lease = { owner, epoch: crypto.randomUUID(), persist: true, staff: false };
+        lease = {
+          owner,
+          epoch: crypto.randomUUID(),
+          persist: true,
+          staff: false,
+          readPositions: new Map(),
+        };
         state.put(lease, 'current');
       }
       done(lease);
@@ -126,6 +151,7 @@ export async function resetHistory(owner: string, persist?: false): Promise<Hist
         ...previous,
         epoch: crypto.randomUUID(),
         persist: persist ?? previous.persist,
+        readPositions: new Map(),
       };
       state.put(next, 'current');
       messages.clear();
@@ -139,6 +165,7 @@ export async function resetHistory(owner: string, persist?: false): Promise<Hist
 export async function enableHistory(
   owner: string,
   records: ChatMessage[],
+  readPositions: ChatReadPositions,
 ): Promise<HistoryLease | null> {
   const db = await openDatabase();
   const lease = await transaction<HistoryLease | null>(db, 'readwrite', (state, messages, done) => {
@@ -149,7 +176,8 @@ export async function enableHistory(
         done(null);
         return;
       }
-      const next = { ...previous, persist: true };
+      const next = { ...previous, persist: true, readPositions: new Map(readPositions) };
+      if (!next.staff) next.readPositions.delete('staff');
       state.put(next, 'current');
       for (const message of records) {
         if (
@@ -176,7 +204,7 @@ function trimHistory(messages: IDBObjectStore, owner: string): void {
   const index = messages.index('ownerTime');
   const count = index.count(range(owner));
   count.onsuccess = () => {
-    let excess = count.result - MAX_RECORDS;
+    let excess = count.result - CHAT_HISTORY_LIMIT;
     if (excess <= 0) return;
     const oldest = index.openCursor(range(owner));
     oldest.onsuccess = () => {
@@ -188,13 +216,19 @@ function trimHistory(messages: IDBObjectStore, owner: string): void {
   };
 }
 
-export async function loadHistory(lease: HistoryLease): Promise<ChatMessage[]> {
+export interface ChatHistorySnapshot {
+  messages: ChatMessage[];
+  readPositions: ChatReadPositions;
+}
+
+export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnapshot> {
   const owner = lease.owner;
-  if (!owner || !lease.persist) return [];
+  if (!owner || !lease.persist) return { messages: [], readPositions: new Map() };
   const db = await openDatabase();
   return transaction(db, 'readwrite', (state, messages, done) => {
     const result: ChatMessage[] = [];
-    done(result);
+    const snapshot: ChatHistorySnapshot = { messages: result, readPositions: new Map() };
+    done(snapshot);
     const check = state.get('current');
     check.onsuccess = () => {
       const active = readState(check.result);
@@ -204,7 +238,18 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatMessage[]> {
       request.onsuccess = () => {
         const cursor = request.result;
         if (!cursor) {
-          result.reverse();
+          result.sort((a, b) => compareCursors(messageCursor(a), messageCursor(b)));
+          const baseline: ChatReadPositions = new Map();
+          for (const message of result)
+            baseline.set(messageConversation(message, owner), messageCursor(message));
+          // Initialize existing records once; an explicit null remains unread across reloads.
+          for (const [key, latest] of baseline) {
+            snapshot.readPositions.set(
+              key,
+              active.readPositions.has(key) ? (active.readPositions.get(key) ?? null) : latest,
+            );
+          }
+          state.put({ ...active, readPositions: snapshot.readPositions }, 'current');
           return;
         }
         const record = cursor.value as { owner?: unknown; message?: unknown };
@@ -216,7 +261,8 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatMessage[]> {
           !mayReadMessage(parsed.data, owner, active.staff)
         ) {
           cursor.delete();
-        } else if (result.length < 500) result.push(parsed.data);
+        } else if (result.length < CHAT_HISTORY_LIMIT) result.push(parsed.data);
+        else cursor.delete();
         cursor.continue();
       };
     };
@@ -240,9 +286,44 @@ export async function saveHistory(lease: HistoryLease, message: ChatMessage): Pr
       )
         return;
       messages.put({ key: `${owner}:${message.id}`, owner, createdAt: message.createdAt, message });
+      const key = messageConversation(message, owner);
+      const positions = advanceReadPosition(active.readPositions, key, null);
+      if (positions !== active.readPositions)
+        state.put({ ...active, readPositions: positions }, 'current');
       trimHistory(messages, owner);
     };
   });
+}
+
+export async function saveReadPosition(
+  lease: HistoryLease,
+  conversation: string,
+  cursor: ChatReadCursor,
+): Promise<void> {
+  if (!lease.owner || !lease.persist) return;
+  const db = await openDatabase();
+  const changed = await transaction<boolean>(db, 'readwrite', (state, _messages, done) => {
+    done(false);
+    const check = state.get('current');
+    check.onsuccess = () => {
+      const active = readState(check.result);
+      if (
+        !active ||
+        active.owner !== lease.owner ||
+        active.epoch !== lease.epoch ||
+        !active.persist ||
+        (conversation === 'staff' && !active.staff)
+      )
+        return;
+      const positions = advanceReadPosition(active.readPositions, conversation, cursor);
+      if (positions !== active.readPositions) {
+        state.put({ ...active, readPositions: positions }, 'current');
+        done(true);
+      }
+    };
+  });
+  if (changed)
+    announceHistoryChange({ owner: lease.owner, epoch: lease.epoch, conversation, cursor });
 }
 
 /** Update the local write gate before removing staff data, including writes from other tabs. */
@@ -255,6 +336,7 @@ export async function setStaffHistoryPermission(owner: string, allowed: boolean)
       const active = readState(check.result);
       if (!active || active.owner !== owner) return;
       if (active.staff === allowed) return;
+      if (!allowed) active.readPositions.delete('staff');
       state.put({ ...active, staff: allowed }, 'current');
       if (allowed) return;
       const request = messages.index('ownerTime').openCursor(range(owner));
@@ -270,23 +352,48 @@ export async function setStaffHistoryPermission(owner: string, allowed: boolean)
   });
 }
 
-export function announceHistoryChange(): void {
-  window.dispatchEvent(new Event(CHANGE_EVENT));
+export function announceHistoryChange(reading?: HistoryReadChange): void {
+  window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: reading }));
   try {
-    localStorage.setItem(CHANGE_EVENT, crypto.randomUUID());
+    localStorage.setItem(CHANGE_EVENT, reading ? JSON.stringify(reading) : crypto.randomUUID());
   } catch {
     /* Browser storage can be disabled. */
   }
 }
 
-export function onHistoryChange(listener: () => void): () => void {
+function readHistoryChange(value: unknown): HistoryReadChange | undefined {
+  if (!value || typeof value !== 'object') return;
+  const data = value as Partial<HistoryReadChange>;
+  if (
+    typeof data.owner !== 'string' ||
+    typeof data.epoch !== 'string' ||
+    typeof data.conversation !== 'string'
+  )
+    return;
+  const cursor = readStoredPositions(new Map([[data.conversation, data.cursor]])).get(
+    data.conversation,
+  );
+  if (cursor)
+    return { owner: data.owner, epoch: data.epoch, conversation: data.conversation, cursor };
+}
+
+export function onHistoryChange(listener: (reading?: HistoryReadChange) => void): () => void {
+  const onChange = (event: Event) =>
+    listener(readHistoryChange((event as CustomEvent<unknown>).detail));
   const onStorage = (event: StorageEvent) => {
-    if (event.key === CHANGE_EVENT || event.key === null) listener();
+    if (event.key !== CHANGE_EVENT && event.key !== null) return;
+    let value: unknown;
+    try {
+      value = JSON.parse(event.newValue ?? 'null');
+    } catch {
+      /* Reset signals have no payload. */
+    }
+    listener(readHistoryChange(value));
   };
-  window.addEventListener(CHANGE_EVENT, listener);
+  window.addEventListener(CHANGE_EVENT, onChange);
   window.addEventListener('storage', onStorage);
   return () => {
-    window.removeEventListener(CHANGE_EVENT, listener);
+    window.removeEventListener(CHANGE_EVENT, onChange);
     window.removeEventListener('storage', onStorage);
   };
 }

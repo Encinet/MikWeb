@@ -1,121 +1,111 @@
 'use client';
 
 import {
-  ArrowDown,
-  Gamepad2,
-  Globe,
   Hash,
-  Loader2,
   MessageCircle,
-  MessageCirclePlus,
   PanelLeft,
   RotateCw,
+  Search,
   Send,
   Settings2,
   Shield,
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useLocale, useTranslations } from 'next-intl';
-import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { channelPlayers } from '@/modules/chat/model/chat-presence';
-import type { ChatDestination, ChatMessage } from '@/modules/chat/model/chat-protocol';
-import { destinationKey, messageConversation } from '@/modules/chat/model/chat-protocol';
+import type { ChatDestination } from '@/modules/chat/model/chat-protocol';
+import {
+  destinationKey,
+  messageConversation,
+  messageDestination,
+} from '@/modules/chat/model/chat-protocol';
 import { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
+import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
+import { ChatGate } from '@/modules/chat/ui/chat-gate';
 import { ChatMentionInput } from '@/modules/chat/ui/chat-mention-input';
-import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
+import type { ChatMessageJump } from '@/modules/chat/ui/chat-message-list';
+import { ChatMessageList } from '@/modules/chat/ui/chat-message-list';
+import { ChatMessageSearch } from '@/modules/chat/ui/chat-message-search';
+import { ChatNavigation } from '@/modules/chat/ui/chat-navigation';
 import { ChatPlayerList, PeerPresence } from '@/modules/chat/ui/chat-player-list';
 import { ChatSettings } from '@/modules/chat/ui/chat-settings';
+import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { SITE_LOGO_PATH } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/routing';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
-function dayKey(timestamp: number) {
-  const date = new Date(timestamp);
-  return [date.getFullYear(), date.getMonth(), date.getDate()].join('-');
-}
-
-function groupMessages(messages: ChatMessage[]) {
-  const groups: ChatMessage[][] = [];
-  for (const message of messages) {
-    const last = groups.at(-1)?.at(-1);
-    if (
-      last &&
-      last.senderUuid === message.senderUuid &&
-      last.source === message.source &&
-      message.createdAt - last.createdAt < 180_000 &&
-      dayKey(last.createdAt) === dayKey(message.createdAt)
-    ) {
-      groups.at(-1)?.push(message);
-    } else groups.push([message]);
-  }
-  return groups;
-}
-
 export function ChatPage() {
-  const { account, isLoading } = useAuth();
+  const { account, isLoading, verified, refresh } = useAuth();
   const t = useTranslations('chat');
   const commonT = useTranslations('common');
-  if (account) return <ChatWorkspace key={account.playerUuid} account={account} />;
+  if (account && verified) return <ChatWorkspace key={account.playerUuid} account={account} />;
   return (
-    <section className="chat-workspace chat-gate" aria-label={t('title')}>
-      <Link href="/" className="chat-back">
-        <Image src={SITE_LOGO_PATH} alt="" width={32} height={32} />
-        <span>Mik</span>
-      </Link>
-      <div className="chat-gate__content">
-        {isLoading ? (
-          <Loader2 className="chat-spinner" size={26} aria-hidden="true" />
-        ) : (
-          <MessageCircle size={32} aria-hidden="true" />
-        )}
-        <h1>{t('title')}</h1>
-        {isLoading ? (
-          <p role="status">{t('status.authorizing')}</p>
-        ) : (
+    <ChatGate
+      state={isLoading ? 'pending' : verified ? 'signed-out' : 'error'}
+      message={
+        isLoading
+          ? t('status.authorizing')
+          : verified
+            ? undefined
+            : t('errors.auth_upstream_unavailable')
+      }
+    >
+      {!isLoading ? (
+        verified ? (
           <Link href="/login" className="chat-primary">
             {commonT('actions.login')}
           </Link>
-        )}
-      </div>
-    </section>
+        ) : (
+          <button
+            type="button"
+            className="chat-primary"
+            onClick={() => void refresh().catch(() => undefined)}
+          >
+            <RotateCw size={15} aria-hidden="true" />
+            {t('retry')}
+          </button>
+        )
+      ) : null}
+    </ChatGate>
   );
 }
 
 function ChatWorkspace({ account }: { account: AuthAccount }) {
   const t = useTranslations('chat');
-  const locale = useLocale();
   const [selected, setSelected] = useState<ChatDestination>({ channel: 'public' });
   const [opened, setOpened] = useState<Map<string, string>>(new Map());
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [search, setSearch] = useState('');
+  const [jump, setJump] = useState<ChatMessageJump | null>(null);
+  const jumpSequence = useRef(0);
+  const completeJump = useCallback((sequence: number) => {
+    setJump((current) => (current?.sequence === sequence ? null : current));
+  }, []);
   const [overlay, setOverlay] = useState<
-    'channels' | 'players' | 'participants' | 'settings' | null
+    'channels' | 'players' | 'participants' | 'settings' | 'search' | null
   >(null);
-  const [atBottom, setAtBottom] = useState(true);
-  const log = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
-  const nearBottom = useRef(true);
   const searchId = useId();
   const composeId = useId();
   const hintId = useId();
   const owner = account.playerUuid;
   const key = destinationKey(selected);
-  const choose = useCallback((destination: ChatDestination) => {
-    nearBottom.current = true;
-    setAtBottom(true);
+  const choose = useCallback((destination: ChatDestination, messageId?: string) => {
     setSelected(destination);
+    setJump(
+      messageId
+        ? { conversation: destinationKey(destination), messageId, sequence: ++jumpSequence.current }
+        : null,
+    );
     setOverlay(null);
     if (destination.channel === 'private')
       setOpened((previous) => new Map(previous).set(destination.targetUuid, destination.name));
-    requestAnimationFrame(() => {
-      if (log.current) log.current.scrollTop = log.current.scrollHeight;
-      input.current?.focus({ preventScroll: true });
-    });
   }, []);
   const chat = useWebChat();
   const players = chat.presence.players;
@@ -136,7 +126,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     owner,
     selected,
     choose,
-    chat.status === 'online',
+    chat.connection.status === 'online',
     chat.staff,
   );
   useEffect(
@@ -145,8 +135,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   );
   const draft = drafts[key] ?? '';
   const length = [...draft].length;
-  const online = chat.status === 'online';
-  const joining = ['connecting', 'authorizing', 'reconnecting'].includes(chat.status);
+  const online = chat.connection.status === 'online';
   const isChannel = selected.channel !== 'private';
   const peer =
     selected.channel === 'private'
@@ -170,33 +159,24 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     () => chat.messages.filter((message) => messageConversation(message, owner) === key),
     [chat.messages, owner, key],
   );
-  const groups = useMemo(() => groupMessages(visible), [visible]);
-  const pending = chat.pending.filter((message) => destinationKey(message.destination) === key);
+  const pending = useMemo(
+    () => chat.pending.filter((message) => destinationKey(message.destination) === key),
+    [chat.pending, key],
+  );
+  const viewKey = `${chat.historyEpoch}:${key}`;
+  const scroll = useChatScroll(viewKey);
   const threads = useMemo(() => {
     const result = new Map(opened);
     for (const message of chat.messages) {
       if (message.channel !== 'private') continue;
-      const id = message.senderUuid === owner ? message.targetUuid : message.senderUuid;
-      const name = message.senderUuid === owner ? message.targetName : message.senderName;
-      if (id && name) result.set(id, name);
+      const destination = messageDestination(message, owner);
+      if (destination?.channel === 'private') result.set(destination.targetUuid, destination.name);
     }
     return [...result].map(([id, name]) => ({
       id,
       name: players.find((player) => player.playerUuid === id)?.name ?? name,
     }));
   }, [opened, chat.messages, players, owner]);
-  const time = useMemo(
-    () => new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }),
-    [locale],
-  );
-  const date = useMemo(
-    () => new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }),
-    [locale],
-  );
-  const fullDate = useMemo(
-    () => new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }),
-    [locale],
-  );
 
   useEffect(() => {
     const viewport = window.visualViewport;
@@ -218,41 +198,56 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     };
   }, []);
 
-  useEffect(() => {
-    const element = log.current;
-    if (!element) return;
-    const observer = new ResizeObserver(() => {
-      if (nearBottom.current) element.scrollTop = element.scrollHeight;
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  const lastMessage = visible.at(-1)?.id;
-  const pendingCount = pending.length;
-  useEffect(() => {
-    if (!lastMessage && pendingCount === 0) return;
-    if (nearBottom.current && log.current) log.current.scrollTop = log.current.scrollHeight;
-  }, [lastMessage, pendingCount]);
-
   const errorText = (code: string) =>
     t.has(`errors.${code}`) ? t(`errors.${code}`) : t('errors.default');
   const send = () => {
     if (available && chat.send(selected, draft)) {
-      nearBottom.current = true;
+      setJump({ conversation: key, messageId: null, sequence: ++jumpSequence.current });
       setDrafts((current) => ({ ...current, [key]: '' }));
     }
   };
+  const restoreDraft = useCallback(
+    (message: PendingChatMessage) => {
+      setDrafts((current) => ({
+        ...current,
+        [key]: [current[key], message.text].filter(Boolean).join(' '),
+      }));
+      chat.dismissPending(message.requestId);
+      input.current?.focus();
+    },
+    [key, chat.dismissPending],
+  );
   const openPlayers = () => {
     setSearch('');
     setOverlay('players');
   };
+  if (!online) {
+    const { connection } = chat;
+    const failed = connection.status === 'error';
+    return (
+      <ChatGate
+        state={failed ? 'error' : 'pending'}
+        message={
+          connection.error
+            ? errorText(connection.error)
+            : t(`status.${connection.status === 'idle' ? 'authorizing' : connection.status}`)
+        }
+      >
+        {failed ? (
+          <button type="button" className="chat-primary" onClick={chat.retry}>
+            <RotateCw size={15} aria-hidden="true" />
+            {t('retry')}
+          </button>
+        ) : null}
+      </ChatGate>
+    );
+  }
   const navigation = (
     <ChatNavigation
       selected={selected}
       staff={chat.staff}
-      online={online}
       threads={threads}
+      unread={chat.unread}
       onChoose={choose}
       onNewPrivate={openPlayers}
     />
@@ -272,13 +267,9 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
       </span>
       <div>
         <strong>{account.currentName}</strong>
-        <span className="chat-connection-status" data-status={chat.status} role="status">
-          {joining ? (
-            <Loader2 className="chat-spinner" size={12} aria-hidden="true" />
-          ) : (
-            <span className="chat-connection-dot" aria-hidden="true" />
-          )}
-          {t(`status.${chat.status}`)}
+        <span className="chat-connection-status" role="status">
+          <span className="chat-connection-dot" aria-hidden="true" />
+          {t('status.online')}
         </span>
       </div>
     </div>
@@ -313,14 +304,14 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             </span>
             <div className="chat-room-copy">
               <h1>{title}</h1>
-              {selected.channel === 'private' && online && peer ? (
+              {selected.channel === 'private' && peer ? (
                 <div className="chat-private-presence">
                   <PeerPresence player={peer} />
                 </div>
               ) : null}
             </div>
           </div>
-          {online && isChannel ? (
+          {isChannel ? (
             <button
               type="button"
               className="chat-icon-button chat-online-button"
@@ -339,6 +330,16 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           <button
             type="button"
             className="chat-icon-button"
+            aria-label={t('searchMessages')}
+            title={t('searchMessages')}
+            aria-haspopup="dialog"
+            onClick={() => setOverlay('search')}
+          >
+            <Search size={19} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="chat-icon-button"
             aria-label={t('settings')}
             title={t('settings')}
             aria-haspopup="dialog"
@@ -348,19 +349,10 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           </button>
         </header>
 
-        {chat.error || !online ? (
-          <div
-            className={`chat-feedback${chat.error ? '' : ' chat-feedback--connection'}`}
-            role={chat.error ? 'alert' : 'status'}
-          >
-            <p>{chat.error ? errorText(chat.error) : t(`status.${chat.status}`)}</p>
-            {chat.status === 'error' ? (
-              <button type="button" className="chat-text-button" onClick={chat.retry}>
-                <RotateCw size={15} aria-hidden="true" />
-                {t('retry')}
-              </button>
-            ) : null}
-          </div>
+        {chat.error ? (
+          <p className="chat-feedback" role="alert">
+            {errorText(chat.error)}
+          </p>
         ) : null}
         {chat.storageFailed && overlay !== 'settings' ? (
           <p className="chat-feedback" role="status">
@@ -368,133 +360,23 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           </p>
         ) : null}
 
-        <div className="chat-stream">
-          <div
-            ref={log}
-            className="chat-log"
-            role="log"
-            aria-label={title}
-            aria-live={online ? 'polite' : 'off'}
-            aria-relevant="additions text"
-            onScroll={(event) => {
-              const element = event.currentTarget;
-              nearBottom.current =
-                element.scrollHeight - element.scrollTop - element.clientHeight < 80;
-              setAtBottom(nearBottom.current);
-            }}
-          >
-            <div className="chat-log__content">
-              {!visible.length && !pending.length ? (
-                <div className="chat-empty">
-                  <RoomIcon size={32} strokeWidth={1.25} aria-hidden="true" />
-                  {online ? <p>{t('emptyHistory')}</p> : null}
-                </div>
-              ) : null}
-              {groups.map((group, index) => {
-                const first = group[0];
-                if (!first) return null;
-                const previous = groups[index - 1]?.[0];
-                const showDate =
-                  !previous || dayKey(previous.createdAt) !== dayKey(first.createdAt);
-                const SourceIcon = first.source === 'game' ? Gamepad2 : Globe;
-                return (
-                  <Fragment key={first.id}>
-                    {showDate ? (
-                      <div className="chat-date">
-                        <span>
-                          {dayKey(first.createdAt) === dayKey(Date.now())
-                            ? t('today')
-                            : date.format(first.createdAt)}
-                        </span>
-                      </div>
-                    ) : null}
-                    <article
-                      className={`chat-message${first.senderUuid === owner ? ' is-own' : ''}`}
-                    >
-                      <div className="chat-message__avatar" aria-hidden="true">
-                        <MinecraftAvatar
-                          uuid={first.senderUuid}
-                          name={first.senderName}
-                          size={36}
-                        />
-                      </div>
-                      <div className="chat-message__content">
-                        <div className="chat-message__meta">
-                          <strong>{first.senderName}</strong>
-                          <span
-                            className="chat-message__source"
-                            title={t(`source.${first.source}`)}
-                          >
-                            <SourceIcon size={12} aria-hidden="true" />
-                            <span className="sr-only">{t(`source.${first.source}`)}</span>
-                          </span>
-                          <time
-                            dateTime={new Date(first.createdAt).toISOString()}
-                            title={fullDate.format(first.createdAt)}
-                          >
-                            {time.format(first.createdAt)}
-                          </time>
-                        </div>
-                        {group.map((message) => (
-                          <p key={message.id} title={fullDate.format(message.createdAt)}>
-                            <ChatMessageContent content={message.content} />
-                          </p>
-                        ))}
-                      </div>
-                    </article>
-                  </Fragment>
-                );
-              })}
-              {pending.map((message) => (
-                <article className="chat-message chat-message--pending" key={message.requestId}>
-                  <div className="chat-message__avatar" aria-hidden="true">
-                    <MinecraftAvatar uuid={owner} name={account.currentName} size={36} />
-                  </div>
-                  <div className="chat-message__content">
-                    <div className="chat-message__meta">
-                      <strong>{account.currentName}</strong>
-                      <span>{t(`delivery.${message.status}`)}</span>
-                    </div>
-                    <p>{message.text}</p>
-                    {message.error ? (
-                      <p className="chat-message__error">{errorText(message.error)}</p>
-                    ) : null}
-                    {message.status !== 'sending' ? (
-                      <button
-                        type="button"
-                        className="chat-text-button"
-                        onClick={() => {
-                          setDrafts((current) => ({
-                            ...current,
-                            [key]: [current[key], message.text].filter(Boolean).join(' '),
-                          }));
-                          chat.dismissPending(message.requestId);
-                          input.current?.focus();
-                        }}
-                      >
-                        {t('restoreDraft')}
-                      </button>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-          {!atBottom ? (
-            <button
-              className="chat-latest"
-              type="button"
-              onClick={() => {
-                nearBottom.current = true;
-                setAtBottom(true);
-                if (log.current) log.current.scrollTop = log.current.scrollHeight;
-              }}
-            >
-              <ArrowDown size={14} aria-hidden="true" />
-              {t('latest')}
-            </button>
-          ) : null}
-        </div>
+        <ChatMessageList
+          key={viewKey}
+          conversation={key}
+          destination={selected}
+          title={title}
+          owner={owner}
+          name={account.currentName}
+          messages={visible}
+          pending={pending}
+          unread={chat.unread.get(key)}
+          jump={jump}
+          paused={overlay !== null}
+          scroll={scroll}
+          onRead={chat.markRead}
+          onRestore={restoreDraft}
+          onJumpComplete={completeJump}
+        />
         {selected.channel === 'public' && chat.notice ? (
           <div className="chat-notice" aria-live="polite">
             <p>{t(chat.notice.joined ? 'webJoined' : 'webLeft', { name: chat.notice.name })}</p>
@@ -550,15 +432,13 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
 
       {isChannel ? (
         <aside className="chat-participants" aria-label={t('participants')}>
-          <h2>{online ? t('onlinePlayers', { count: participants.length }) : t('participants')}</h2>
-          {online ? (
-            <ChatPlayerList
-              players={participants}
-              owner={owner}
-              onChoose={choose}
-              emptyText={t('nobodyOnline')}
-            />
-          ) : null}
+          <h2>{t('onlinePlayers', { count: participants.length })}</h2>
+          <ChatPlayerList
+            players={participants}
+            owner={owner}
+            onChoose={choose}
+            emptyText={t('nobodyOnline')}
+          />
         </aside>
       ) : null}
 
@@ -571,20 +451,24 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             ? t('newPrivate')
             : overlay === 'participants'
               ? t('onlinePlayers', { count: participants.length })
-              : overlay === 'channels'
-                ? t('title')
-                : t('settings')
+              : overlay === 'search'
+                ? t('searchMessages')
+                : overlay === 'channels'
+                  ? t('title')
+                  : t('settings')
         }
         icon={
           overlay === 'players' || overlay === 'participants' ? (
             <Users size={18} />
+          ) : overlay === 'search' ? (
+            <Search size={18} />
           ) : overlay === 'channels' ? (
             <MessageCircle size={18} />
           ) : (
             <Settings2 size={18} />
           )
         }
-        className={`chat-dialog${overlay === 'channels' ? ' chat-navigation-dialog' : overlay === 'settings' ? ' chat-settings-dialog' : ''}`}
+        className={`chat-dialog${overlay === 'channels' ? ' chat-navigation-dialog' : overlay === 'settings' ? ' chat-settings-dialog' : overlay === 'search' ? ' chat-search-dialog' : ''}`}
       >
         {overlay === 'channels' ? (
           <>
@@ -611,88 +495,20 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               players={filteredRoster}
               owner={owner}
               onChoose={choose}
-              emptyText={
-                search
-                  ? t('noPlayersFound')
-                  : online
-                    ? t('nobodyOnline')
-                    : t(`status.${chat.status}`)
-              }
+              emptyText={search ? t('noPlayersFound') : t('nobodyOnline')}
             />
           </div>
+        ) : null}
+        {overlay === 'search' ? (
+          <ChatMessageSearch
+            messages={chat.messages}
+            owner={owner}
+            conversation={key}
+            onChoose={choose}
+          />
         ) : null}
         {overlay === 'settings' ? <ChatSettings chat={chat} notifications={notifications} /> : null}
       </AppDialog>
     </section>
-  );
-}
-
-interface ChatNavigationProps {
-  selected: ChatDestination;
-  staff: boolean;
-  online: boolean;
-  threads: { id: string; name: string }[];
-  onChoose: (destination: ChatDestination) => void;
-  onNewPrivate: () => void;
-}
-
-function ChatNavigation({
-  selected,
-  staff,
-  online,
-  threads,
-  onChoose,
-  onNewPrivate,
-}: ChatNavigationProps) {
-  const t = useTranslations('chat');
-  const key = destinationKey(selected);
-  return (
-    <div className="chat-navigation">
-      <nav aria-label={t('title')} className="chat-channels">
-        <button
-          type="button"
-          className="ui-sidebar-link"
-          aria-current={key === 'public' ? 'page' : undefined}
-          onClick={() => onChoose({ channel: 'public' })}
-        >
-          <Hash size={18} aria-hidden="true" />
-          {t('channels.public')}
-        </button>
-        {staff || selected.channel === 'staff' ? (
-          <button
-            type="button"
-            className="ui-sidebar-link"
-            aria-current={key === 'staff' ? 'page' : undefined}
-            disabled={!staff}
-            onClick={() => onChoose({ channel: 'staff' })}
-          >
-            <Shield size={17} aria-hidden="true" />
-            {t('channels.staff')}
-          </button>
-        ) : null}
-      </nav>
-      <nav aria-label={t('privateList')} className="chat-threads">
-        <button type="button" className="ui-sidebar-link" onClick={onNewPrivate} disabled={!online}>
-          <MessageCirclePlus size={18} aria-hidden="true" />
-          {t('newPrivate')}
-        </button>
-        {threads.map((thread) => (
-          <button
-            type="button"
-            key={thread.id}
-            className="ui-sidebar-link"
-            aria-current={key === `private:${thread.id}` ? 'page' : undefined}
-            onClick={() =>
-              onChoose({ channel: 'private', targetUuid: thread.id, name: thread.name })
-            }
-          >
-            <span className="chat-thread-avatar" aria-hidden="true">
-              <MinecraftAvatar uuid={thread.id} name={thread.name} size={24} />
-            </span>
-            <span>{thread.name}</span>
-          </button>
-        ))}
-      </nav>
-    </div>
   );
 }

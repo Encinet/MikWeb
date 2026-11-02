@@ -5,6 +5,8 @@ const PROTOCOL = 'mik-chat-hpke-v1\0https://mcmik.top\0';
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 
+export type ChatTransportFailure = 'network' | 'protocol';
+
 function encode(bytes: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(bytes)))
     .replaceAll('+', '-')
@@ -31,7 +33,7 @@ function decode(value: unknown, size: number): Uint8Array<ArrayBuffer> {
 export class ChatTransport {
   onmessage: ((event: MessageEvent<unknown>) => void) | null = null;
   onclose: (() => void) | null = null;
-  onerror: (() => void) | null = null;
+  onerror: ((failure: ChatTransportFailure) => void) | null = null;
   private readonly ws: WebSocket;
   private readonly trustedKey: Uint8Array<ArrayBuffer>;
   private readonly suite = new CipherSuite({
@@ -84,7 +86,7 @@ export class ChatTransport {
       this.serverKey = null;
       this.onclose?.();
     };
-    this.ws.onerror = () => this.onerror?.();
+    this.ws.onerror = () => this.onerror?.('network');
   }
 
   get readyState(): number {
@@ -131,8 +133,8 @@ export class ChatTransport {
 
   private fail(): void {
     if (this.stage === 'closed') return;
-    this.onerror?.();
-    this.close(1008);
+    this.onerror?.('protocol');
+    this.close(4002);
   }
 
   private async receive(data: unknown): Promise<void> {

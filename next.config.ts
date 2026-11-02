@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       { key: 'Cache-Control', value: 'no-store' },
     ];
     return [
+      {
+        source: '/_next/static/chunks/chat-notifications-worker.:path*',
+        headers: [{ key: 'Service-Worker-Allowed', value: '/' }],
+      },
       { source: '/:locale/login', headers },
       { source: '/:locale/chat', headers },
       { source: '/:locale/account/:path*', headers },
