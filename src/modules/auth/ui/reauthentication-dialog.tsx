@@ -24,6 +24,7 @@ export function ReauthenticationDialog({
   onClose: () => void;
 }) {
   const t = useTranslations('auth.authentication');
+  const commonT = useTranslations('common');
   const flow = useAuthenticationFlow({
     purpose: 'reauthenticate',
     expectedPlayerUuid: account.playerUuid,
@@ -73,7 +74,7 @@ export function ReauthenticationDialog({
                   className="ui-action-button ui-action-button--primary"
                   href="/login?next=security"
                 >
-                  {t('signIn')}
+                  {commonT('actions.login')}
                 </Link>
               ) : null}
             </>

@@ -75,7 +75,7 @@ export function useChatNotifications(
   active: boolean,
   staff: boolean,
 ) {
-  const t = useTranslations('chat.notifications');
+  const t = useTranslations('chat');
   const [status, setStatus] = useState<'unsupported' | 'off' | 'on' | 'denied' | 'error'>('off');
   const [busy, setBusy] = useState(false);
   const [suggestion, setSuggestion] = useState(false);
@@ -249,7 +249,10 @@ export function useChatNotifications(
             title:
               message.channel === 'private'
                 ? message.senderName
-                : t('mentionTitle', { name: message.senderName, channel: t(message.channel) }),
+                : t('notifications.mentionTitle', {
+                    name: message.senderName,
+                    channel: t(`channels.${message.channel}`),
+                  }),
             body: messagePreview(message),
           });
         })

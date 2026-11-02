@@ -30,7 +30,7 @@ import {
 export default function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
-  const t = useTranslations('nav');
+  const t = useTranslations();
   const locale = useLocale();
   const { authenticated, isLoading: isLoadingAuth } = useAuth();
   const {
@@ -61,19 +61,24 @@ export default function SiteHeader() {
 
   const navItems = useMemo<SiteHeaderNavItem[]>(() => {
     const items: SiteHeaderNavItem[] = [
-      { id: 'home', icon: Home, label: t('items.home'), path: '/' },
-      { id: 'buildings', icon: Building2, label: t('items.buildings'), path: '/buildings' },
-      { id: 'wiki', icon: BookOpen, label: t('items.wiki'), path: '/wiki' },
-      { id: 'notices', icon: ClipboardList, label: t('items.notices'), path: '/community/notices' },
-      { id: 'map', icon: MapIcon, label: t('items.map'), path: '/map' },
-      { id: 'bans', icon: Shield, label: t('items.bans'), path: '/bans' },
+      { id: 'home', icon: Home, label: t('nav.items.home'), path: '/' },
+      { id: 'buildings', icon: Building2, label: t('nav.items.buildings'), path: '/buildings' },
+      { id: 'wiki', icon: BookOpen, label: t('nav.items.wiki'), path: '/wiki' },
+      {
+        id: 'notices',
+        icon: ClipboardList,
+        label: t('nav.items.notices'),
+        path: '/community/notices',
+      },
+      { id: 'map', icon: MapIcon, label: t('map.title'), path: '/map' },
+      { id: 'bans', icon: Shield, label: t('bans.title'), path: '/bans' },
     ];
 
     if (authenticated) {
       items.push({
         id: 'chat',
         icon: MessageCircle,
-        label: t('items.chat'),
+        label: t('chat.title'),
         path: '/chat',
         highlight: true,
       });
@@ -81,7 +86,7 @@ export default function SiteHeader() {
       items.push({
         id: 'apply',
         icon: Play,
-        label: t('items.join'),
+        label: t('nav.items.join'),
         link: 'https://apply.mcmik.top',
         highlight: true,
       });
@@ -233,7 +238,7 @@ export default function SiteHeader() {
       <nav className="project-navbar-card">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
           <div className="project-navbar-row flex items-center justify-between">
-            <SiteHeaderBrand subtitle={t('brand.subtitle')} />
+            <SiteHeaderBrand subtitle={t('nav.brand.subtitle')} />
 
             <DesktopSiteHeaderNavigation
               activePathname={pathname}
@@ -263,9 +268,9 @@ export default function SiteHeader() {
               playerDropdownRect={playerDropdownRect}
               playerDropdownVisible={isPlayerDropdownOpen && isPlayerDropdownVisible}
               players={players}
-              statusNetworkErrorLabel={t('status.networkError')}
-              statusOfflineLabel={t('status.offline')}
-              statusOnlineLabel={t('status.online')}
+              statusNetworkErrorLabel={t('common.states.networkError')}
+              statusOfflineLabel={t('common.states.offline')}
+              statusOnlineLabel={t('common.states.online')}
             />
           </div>
 

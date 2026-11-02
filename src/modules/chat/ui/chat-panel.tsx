@@ -105,7 +105,7 @@ export function ChatPanelSearch({
   describedBy?: string;
   enterKeyHint?: 'search' | 'go';
 }) {
-  const t = useTranslations('chat');
+  const commonT = useTranslations('common');
   const inputId = useId();
   return (
     <search aria-label={label}>
@@ -141,8 +141,8 @@ export function ChatPanelSearch({
               onChange('');
               inputRef.current?.focus();
             }}
-            aria-label={t('clearSearch')}
-            title={t('clearSearch')}
+            aria-label={commonT('actions.clearSearch')}
+            title={commonT('actions.clearSearch')}
           >
             <X size={16} aria-hidden="true" />
           </button>

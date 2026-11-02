@@ -17,13 +17,6 @@ import { ThemeProvider } from '@/site/providers/theme-provider';
 import { buildPageMetadata } from '@/site/seo/build-page-metadata';
 import StructuredData from '@/site/structured-data/ui/structured-data';
 
-interface LayoutMessages {
-  metadata: {
-    title: string;
-    description: string;
-  };
-}
-
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -45,7 +38,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const messages = (await getMessages({ locale })) as LayoutMessages;
+  const messages = await getMessages({ locale });
 
   return {
     ...buildPageMetadata({

@@ -9,6 +9,7 @@ import { KeyRound, Loader2, LogOut, MonitorSmartphone, Plus, RefreshCw } from 'l
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
+import { authenticationErrorKey } from '@/modules/auth/lib/authentication-error-key';
 import { webAuthnError } from '@/modules/auth/lib/webauthn-error';
 import type { AccountSecurityResponse, AuthAccount } from '@/modules/auth/model/auth-types';
 import { isAccountSecurityResponse } from '@/modules/auth/model/auth-types';
@@ -22,6 +23,7 @@ import {
   clearFetchValidatedJsonBrowserCache,
   fetchValidatedJson,
 } from '@/shared/api/fetch-validated-json';
+import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { useRouter } from '@/shared/i18n/routing';
 
 const SECURITY_CACHE_TTL_MS = 60_000;
@@ -42,6 +44,8 @@ export function AccountSecurityPage() {
 function AccountSecurity({ account }: { account: AuthAccount }) {
   const { playerUuid } = account;
   const t = useTranslations('auth.security');
+  const commonT = useTranslations('common');
+  const authT = useTranslations('auth');
   const authenticationT = useTranslations('auth.authentication.errors');
   const locale = useLocale();
   const router = useRouter();
@@ -192,6 +196,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
           : cause instanceof Error
             ? cause.message
             : 'request_failed';
+      const errorKey = authenticationErrorKey(code);
       if (code === 'reauthentication_required') {
         setDialog({ step: 'verify', action });
       } else if (
@@ -201,7 +206,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
         router.replace('/login?next=security');
       } else if (code === 'invalid_display_name') setMessage(t('states.invalidName'));
       else if (code === 'passkey_limit') setMessage(t('states.passkeyLimit'));
-      else if (authenticationT.has(code)) setMessage(authenticationT(code));
+      else if (hasTranslationKey(authenticationT, errorKey)) setMessage(authenticationT(errorKey));
       else
         setMessage(
           t(
@@ -244,8 +249,8 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
         <button
           type="button"
           className="security-refresh ui-floating-control"
-          aria-label={t('actions.refresh')}
-          title={t('actions.refresh')}
+          aria-label={commonT('actions.refresh')}
+          title={commonT('actions.refresh')}
           disabled={loading || isMutating}
           onClick={() => {
             setMessage(null);
@@ -327,7 +332,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
           <section className="account-section" aria-labelledby="account-passkeys-title">
             <div className="account-section__header">
               <div>
-                <h2 id="account-passkeys-title">{t('sections.passkeys')}</h2>
+                <h2 id="account-passkeys-title">{authT('fields.passkeys')}</h2>
                 <p>{t('passkey.description')}</p>
               </div>
               <button

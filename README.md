@@ -20,7 +20,8 @@ bun dev
 | `bun start` | 启动生产服务 |
 | `bun fix` | 自动修正 Biome 可处理的问题 |
 | `bun check:wiki` | 校验 Wiki 元信息、分组目录、章节结构与双语文件配对 |
-| `bun check` | 执行代码检查、类型检查和 Wiki 校验 |
+| `bun check:i18n` | 校验双语翻译键、ICU 语法与插值参数 |
+| `bun check` | 执行代码检查、类型检查、翻译校验和 Wiki 校验 |
 
 ## 结构
 
@@ -105,11 +106,13 @@ bun check
 bun run build
 ```
 
-仅修改 Wiki 或文案时，至少运行：
+仅修改 Wiki 时，至少运行：
 
 ```bash
 bun check:wiki
 ```
+
+修改界面翻译时，至少运行 `bun check:i18n`；改动翻译键时运行 `bun check`，同时检查代码中的引用。
 
 ## 网页聊天
 

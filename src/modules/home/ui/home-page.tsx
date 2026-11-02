@@ -6,23 +6,24 @@ import { HomeWorldNavigation } from '@/modules/home/ui/home-world-navigation';
 import { Link } from '@/shared/i18n/routing';
 
 export default async function HomePage() {
-  const t = await getTranslations();
+  const homeT = await getTranslations('home');
+  const mapT = await getTranslations('map');
 
   return (
     <div className="home-project-page">
       <section className="home-project-hero">
         <div className="home-project-hero__backdrop" aria-hidden="true" />
         <div className="home-project-container home-project-hero__content">
-          <h1>{t('home.hero.title')}</h1>
-          <p className="home-project-hero__description">{t('home.hero.description')}</p>
-          <nav className="home-project-hero__links" aria-label={t('home.playerHome.tools.title')}>
+          <h1>{homeT('hero.title')}</h1>
+          <p className="home-project-hero__description">{homeT('hero.description')}</p>
+          <nav className="home-project-hero__links" aria-label={homeT('playerHome.tools.title')}>
             <Link className="home-project-button" href="/map">
               <MapIcon className="h-5 w-5" aria-hidden="true" />
-              <span>{t('home.playerHome.map.title')}</span>
+              <span>{mapT('title')}</span>
             </Link>
             <Link className="home-project-button home-project-button--secondary" href="/wiki">
               <BookOpen className="h-5 w-5" aria-hidden="true" />
-              <span>{t('home.hero.wikiButton')}</span>
+              <span>{homeT('hero.wikiButton')}</span>
             </Link>
           </nav>
         </div>

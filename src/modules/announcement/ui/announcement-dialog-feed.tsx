@@ -20,7 +20,7 @@ export function AnnouncementDialogFeed({
   selectedAnnouncementKey,
 }: AnnouncementDialogFeedProps) {
   const locale = useLocale();
-  const t = useTranslations('home.announcements');
+  const t = useTranslations('announcements');
   const selectedRef = useRef<HTMLElement>(null);
   const groups = groupAnnouncementsByDate(announcements);
   const dateFormatter = new Intl.DateTimeFormat(locale, {

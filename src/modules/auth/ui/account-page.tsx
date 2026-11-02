@@ -7,17 +7,18 @@ import { Link } from '@/shared/i18n/routing';
 
 export function AccountPage() {
   const t = useTranslations('auth.account');
+  const authT = useTranslations('auth');
   const { account } = useAuth();
 
   return (
     <AccountLayout>
       <section className="account-section" aria-labelledby="account-overview-title">
         <header className="account-page-heading">
-          <h1 id="account-overview-title">{t('subtitle')}</h1>
+          <h1 id="account-overview-title">{t('overview.title')}</h1>
         </header>
         <dl className="account-facts">
           <div>
-            <dt>{t('fields.passkeys')}</dt>
+            <dt>{authT('fields.passkeys')}</dt>
             <dd>
               <span>{account?.passkeyCount ?? '—'}</span>
               <Link href="/account/security" className="account-text-link">

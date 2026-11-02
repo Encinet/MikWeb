@@ -3,10 +3,12 @@
 import { ArrowRight, Check, Copy, Gamepad2, KeyRound, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef } from 'react';
+import { authenticationErrorKey } from '@/modules/auth/lib/authentication-error-key';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import type { AuthenticationFlow } from '@/modules/auth/model/use-authentication-flow';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
+import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { InlineFeedback } from '@/shared/ui/feedback/async-state';
 
 type AuthenticationMethod = 'minecraft' | 'passkey';
@@ -109,7 +111,8 @@ export function AuthenticationFeedback({
   className?: string;
 }) {
   const t = useTranslations('auth.authentication.errors');
-  const key = error && t.has(error) ? error : 'request_failed';
+  const errorKey = authenticationErrorKey(error);
+  const key = hasTranslationKey(t, errorKey) ? errorKey : 'request_failed';
   return (
     <InlineFeedback
       className={className}
@@ -120,6 +123,7 @@ export function AuthenticationFeedback({
 
 export function AuthenticationCode({ flow }: { flow: AuthenticationFlow }) {
   const t = useTranslations('auth.authentication.codePanel');
+  const commonT = useTranslations('common');
   const id = useId();
   const challenge = flow.challenge;
   const { status, copying, copy } = useCopyFeedback(
@@ -157,7 +161,9 @@ export function AuthenticationCode({ flow }: { flow: AuthenticationFlow }) {
       )}
       <div className="auth-code-footer">
         <span id={id} role="status" aria-live="polite" aria-atomic="true">
-          {t(status === 'copied' ? 'copied' : status === 'error' ? 'copyFailed' : 'copyHint')}
+          {status === 'copied'
+            ? commonT('actions.copied')
+            : t(status === 'error' ? 'copyFailed' : 'copyHint')}
         </span>
         <time dateTime={challenge.expiresAt}>{t('remaining', { time })}</time>
       </div>

@@ -10,11 +10,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const t = await getTranslations({ locale, namespace: 'communityBoard.meta' });
+  const t = await getTranslations({ locale, namespace: 'communityBoard' });
   return buildPageMetadata({
     locale,
     title: t('title'),
-    description: t('description'),
+    description: t('meta.description'),
     pathname: '/community/notices',
   });
 }

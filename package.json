@@ -12,7 +12,8 @@
     "start": "next start",
     "fix": "biome check . --write",
     "check:wiki": "bun run scripts/wiki-check.ts",
-    "check": "biome check . && tsc --noEmit -p tsconfig.check.json && bun run check:wiki"
+    "check:i18n": "bun run scripts/i18n-check.ts",
+    "check": "biome check . && tsc --noEmit -p tsconfig.check.json && bun run check:i18n && bun run check:wiki"
   },
   "dependencies": {
     "@hpke/core": "^1.9.0",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",
+    "@formatjs/icu-messageformat-parser": "3.5.18",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",

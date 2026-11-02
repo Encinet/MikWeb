@@ -26,6 +26,7 @@ import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-conten
 import { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
 import type { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 
 const PAGE_SIZE = 100;
 export interface ChatMessageJump {
@@ -192,8 +193,10 @@ export const ChatMessageList = memo(function ChatMessageList({
       : destination.channel === 'staff'
         ? Shield
         : MessageCircle;
-  const errorText = (code: string) =>
-    t.has(`errors.${code}`) ? t(`errors.${code}`) : t('errors.default');
+  const errorText = (code: string) => {
+    const key = `errors.${code}`;
+    return hasTranslationKey(t, key) ? t(key) : t('errors.default');
+  };
 
   return (
     <div className="chat-stream">

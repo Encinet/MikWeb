@@ -20,10 +20,10 @@ export default async function SiteFooter() {
     { href: '/buildings', label: t('nav.items.buildings') },
     { href: '/wiki', label: t('nav.items.wiki') },
     { href: '/community/notices', label: t('nav.items.notices') },
-    { href: '/map', label: t('nav.items.map') },
-    { href: '/bans', label: t('nav.items.bans') },
-    { href: '/pcl2', label: t('footer.links.pcl2Homepage') },
-    { href: '/mcp', label: t('footer.links.mcpConfig') },
+    { href: '/map', label: t('map.title') },
+    { href: '/bans', label: t('bans.title') },
+    { href: '/pcl2', label: t('pcl2.title') },
+    { href: '/mcp', label: t('mcp.title') },
   ];
 
   return (

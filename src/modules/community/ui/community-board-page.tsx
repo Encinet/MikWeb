@@ -19,6 +19,7 @@ import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
 
 export function CommunityBoardPage() {
   const t = useTranslations('communityBoard');
+  const commonT = useTranslations('common');
   const locale = useLocale();
   const [entries, setEntries] = useState<CommunityNotice[]>([]);
   const entriesRef = useRef<CommunityNotice[]>([]);
@@ -152,16 +153,16 @@ export function CommunityBoardPage() {
   return (
     <div
       className="page-shell page-shell-stable community-board print-page-title"
-      data-print-title={t('meta.title')}
+      data-print-title={t('title')}
     >
       <div className="page-shell-content community-board__inner">
         <ContentBrowserHeader
-          title={t('hero.title')}
+          title={t('title')}
           search={
             <SearchField
               label={t('search.placeholder')}
               placeholder={t('search.placeholder')}
-              clearLabel={t('search.clear')}
+              clearLabel={commonT('actions.clearSearch')}
               value={query}
               onChange={(event) => updateQuery(event.target.value)}
               onClear={() => updateQuery('')}
@@ -172,8 +173,11 @@ export function CommunityBoardPage() {
           <p role="status" className="community-board__count">
             {!loading && !loadError
               ? activeQuery.trim()
-                ? t('records.resultsCount', { count: filtered.length, total: entries.length })
-                : t('records.count', { count: entries.length })
+                ? commonT('records.resultsCount', {
+                    count: filtered.length,
+                    total: entries.length,
+                  })
+                : commonT('records.count', { count: entries.length })
               : null}
           </p>
           <Link href="/wiki?section=rules" className="community-board__rules-link">
@@ -194,7 +198,7 @@ export function CommunityBoardPage() {
             <div role="alert" className="community-board__state">
               <p>{t('records.error')}</p>
               <button type="button" onClick={() => void load()}>
-                {t('records.retry')}
+                {commonT('actions.retry')}
               </button>
             </div>
           ) : entries.length === 0 ? (
@@ -202,7 +206,7 @@ export function CommunityBoardPage() {
               <p>{t(linkedMissing ? 'records.linkUnavailable' : 'records.empty')}</p>
               {linkedMissing ? (
                 <button type="button" onClick={() => void load()}>
-                  {t('records.retry')}
+                  {commonT('actions.retry')}
                 </button>
               ) : null}
             </div>
@@ -216,7 +220,7 @@ export function CommunityBoardPage() {
                     className="community-board__expand"
                     onClick={() => void load()}
                   >
-                    {t('records.retry')}
+                    {commonT('actions.retry')}
                   </button>
                 </div>
               ) : null}
@@ -224,7 +228,7 @@ export function CommunityBoardPage() {
                 <div className="community-board__state">
                   <p>{t('records.noResults')}</p>
                   <button type="button" onClick={() => updateQuery('')}>
-                    {t('search.clear')}
+                    {commonT('actions.clearSearch')}
                   </button>
                 </div>
               ) : (

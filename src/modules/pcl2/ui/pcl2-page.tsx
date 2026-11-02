@@ -13,7 +13,8 @@ interface Pcl2PageParams {
 export default async function Pcl2Page({ params }: Pcl2PageParams) {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const t = await getTranslations({ locale, namespace: 'pcl2Page' });
+  const t = await getTranslations({ locale, namespace: 'pcl2' });
+  const commonT = await getTranslations({ locale, namespace: 'common' });
   const siteOrigin = getSiteOriginFromHeaders(await headers());
   const homepagePath = getPcl2HomepagePath(locale);
   const homepageUrl = absoluteUrl(homepagePath, siteOrigin);
@@ -41,7 +42,7 @@ export default async function Pcl2Page({ params }: Pcl2PageParams) {
     >
       <Pcl2HomepageAddress
         baseUrl={homepageUrl}
-        copyLabel={t('copyAddress')}
+        copyLabel={commonT('actions.copyAddress')}
         detectingLabel={t('detectingTimeZone')}
         label={t('addressLabel')}
       />

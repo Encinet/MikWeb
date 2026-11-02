@@ -3,6 +3,33 @@
     "title": "Mik Server - Creative Casual Server",
     "description": "A creative casual Minecraft server that allows any mods, focused on building creation"
   },
+  "common": {
+    "states": {
+      "loading": "Loading...",
+      "error": "Failed to load",
+      "online": "Online",
+      "offline": "Offline",
+      "networkError": "Network Error"
+    },
+    "actions": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Copy failed",
+      "copyHelp": "Copy failed. Select the text and copy it manually.",
+      "login": "Sign in",
+      "copyAddress": "Copy URL",
+      "retry": "Retry",
+      "clearSearch": "Clear search",
+      "refresh": "Refresh",
+      "collapseDetails": "Hide details"
+    },
+    "records": {
+      "count": "{count} records",
+      "resultsCount": "{count} / {total} records"
+    }
+  },
   "nav": {
     "brand": {
       "subtitle": "Creative Casual Server"
@@ -10,26 +37,17 @@
     "items": {
       "home": "Home",
       "buildings": "Buildings",
-      "map": "Server Map",
-      "bans": "Ban List",
       "wiki": "Wiki",
       "join": "Apply to Join",
-      "chat": "Web Chat",
       "notices": "Notices"
     },
-    "status": {
-      "online": "Online",
-      "offline": "Offline",
-      "networkError": "Network Error"
-    },
     "theme": {
+      "title": "Theme color",
       "appearance": "Style",
-      "shortLabel": "Style",
       "displayMode": "Display mode",
       "light": "Light",
       "dark": "Dark",
       "system": "System",
-      "title": "Theme color",
       "daily": "Daily color",
       "reset": "Reset to daily color"
     },
@@ -40,53 +58,6 @@
       "language": "Language",
       "switchLanguage": "Switch to {language}"
     }
-  },
-  "pcl2Page": {
-    "title": "PCL2 Homepage",
-    "subtitle": "View Mik server status, announcements and buildings in your launcher.",
-    "description": "Open Settings -> Personalization -> Custom homepage, choose Online update, paste the URL above into the download address field, then return to the launcher home page.",
-    "addressLabel": "Homepage URL",
-    "detectingTimeZone": "Preparing homepage URL…",
-    "stepsTitle": "Setup",
-    "steps": {
-      "settings": {
-        "title": "Open the custom homepage settings",
-        "description": "In PCL2, open Settings, Personalization, then Custom homepage. Choose Online update."
-      },
-      "address": {
-        "title": "Paste the URL",
-        "description": "Copy the homepage URL into the download address field."
-      },
-      "done": {
-        "title": "Return home",
-        "description": "Reopen the launcher home page to see the Mik page."
-      }
-    },
-    "copyAddress": "Copy URL"
-  },
-  "mcpPage": {
-    "title": "MCP Config",
-    "subtitle": "Query Mik server information from an MCP-capable client.",
-    "description": "The Mik MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
-    "configTitle": "JSON configuration",
-    "stepsTitle": "Connect your client",
-    "steps": {
-      "client": {
-        "title": "Open MCP settings",
-        "description": "Add a remote MCP server in your client."
-      },
-      "connect": {
-        "title": "Enter the server URL",
-        "description": "Use the server URL on this page, or add the JSON configuration to your client’s config file."
-      },
-      "done": {
-        "title": "Connect and query",
-        "description": "Query online players, buildings, announcements and game guides."
-      }
-    },
-    "addressLabel": "Server URL",
-    "copyAddress": "Copy URL",
-    "copyConfig": "Copy JSON"
   },
   "home": {
     "hero": {
@@ -107,31 +78,13 @@
         "networkError": "Status unavailable"
       }
     },
-    "announcements": {
-      "section": {
-        "title": "Server Announcements"
-      },
-      "states": {
-        "loading": "Loading...",
-        "empty": "No announcements",
-        "unknownDate": "Date unavailable"
-      },
-      "actions": {
-        "viewAll": "All announcements"
-      },
-      "latest": "Latest"
-    },
     "playerHome": {
-      "map": {
-        "title": "World map"
-      },
       "tools": {
         "title": "Everyday essentials"
       },
       "shortcuts": {
         "commands": "Commands",
         "rules": "Server rules",
-        "notices": "Community notices",
         "launcher": "Launcher homepage",
         "gettingStarted": "Getting started"
       },
@@ -141,21 +94,38 @@
         "open": "View build: {name}",
         "empty": "No builds yet",
         "unavailable": "Could not load builds",
-        "retry": "Retry",
         "retrying": "Loading"
       }
     }
   },
+  "announcements": {
+    "section": {
+      "title": "Server Announcements"
+    },
+    "states": {
+      "empty": "No announcements",
+      "unknownDate": "Date unavailable"
+    },
+    "actions": {
+      "viewAll": "All announcements"
+    },
+    "latest": "Latest"
+  },
   "buildings": {
+    "title": "Building Gallery",
+    "types": {
+      "original": "Original",
+      "derivative": "Derivative",
+      "replica": "Replica"
+    },
+    "fields": {
+      "originalAuthor": "Original Author",
+      "source": "Source"
+    },
     "meta": {
-      "title": "Building Gallery",
       "description": "Showcasing amazing building works by our players"
     },
-    "hero": {
-      "title": "Building Gallery"
-    },
     "search": {
-      "clear": "Clear search",
       "placeholder": "Search buildings, builders, tags..."
     },
     "filters": {
@@ -177,60 +147,101 @@
       }
     },
     "imagesCount": "{count} images",
-    "types": {
-      "original": "Original",
-      "derivative": "Derivative",
-      "replica": "Replica"
-    },
-    "fields": {
-      "originalAuthor": "Original Author",
-      "source": "Source"
-    },
     "dialog": {
       "close": "Close building details",
       "previousImage": "Previous image",
       "nextImage": "Next image",
       "currentImage": "Current image {current} / {total}",
-      "expandDetails": "Show details",
-      "collapseDetails": "Hide details"
+      "expandDetails": "Show details"
     },
     "states": {
-      "loading": "Loading...",
       "empty": "No buildings yet",
       "end": "No more buildings to load"
     }
   },
-  "common": {
-    "states": {
-      "loading": "Loading...",
-      "error": "Failed to load"
+  "buildingSubmission": {
+    "title": "Building Submission",
+    "subtitle": "Submit a build you want added to the public showcase. It appears after admin review.",
+    "quota": "pending / {max}",
+    "sections": {
+      "basic": "Basic Info",
+      "location": "Location",
+      "builders": "Builders",
+      "images": "Images",
+      "tags": "Tags"
+    },
+    "fields": {
+      "nameZh": "Chinese name",
+      "nameEn": "English name",
+      "descriptionZh": "Chinese description",
+      "descriptionEn": "English description",
+      "buildType": "Build type",
+      "buildDate": "Build date",
+      "world": "World name",
+      "playerPlaceholder": "Type a player name, then press Space or Enter",
+      "weight": "Weight",
+      "totalWeight": "Total weight {total}",
+      "tagZh": "Chinese tag",
+      "tagEn": "English tag",
+      "sourceLink": "Original link",
+      "sourceNoteZh": "Chinese source note",
+      "sourceNoteEn": "English source note"
     },
     "actions": {
-      "close": "Close",
-      "cancel": "Cancel",
-      "copy": "Copy",
-      "copied": "Copied",
-      "copyFailed": "Copy failed",
-      "copyHelp": "Copy failed. Select the text and copy it manually.",
-      "login": "Sign in"
+      "submit": "Submit",
+      "reset": "Reset",
+      "remove": "Remove",
+      "addTag": "Add tag",
+      "uploadImages": "Select images",
+      "increaseWeight": "Increase weight",
+      "decreaseWeight": "Decrease weight",
+      "equalizeWeights": "Split evenly",
+      "normalizeWeights": "Normalize",
+      "clearBuilders": "Clear others"
+    },
+    "states": {
+      "loadFailed": "Failed to load submissions.",
+      "playerNotFound": "No player found.",
+      "tagRequired": "Tags require both Chinese and English.",
+      "imageLimit": "You can upload at most 15 images.",
+      "imageSelectFailed": "Failed to read images.",
+      "uploading": "Uploading images",
+      "uploadFailed": "Image upload failed.",
+      "imageTooSmall": "Image clarity is too low. Minimum size is 960x540.",
+      "submitting": "Submitting",
+      "submitted": "Submission created",
+      "submitFailed": "Submit failed.",
+      "pendingLimit": "You already have 10 pending submissions.",
+      "required": "Chinese and English fields are required.",
+      "buildersRequired": "At least one builder is required.",
+      "imagesRequired": "At least one image is required.",
+      "coordinatesRequired": "Enter a world name and valid coordinates.",
+      "sourceRequired": "Derivative and replica builds require complete source information.",
+      "invalid": "The form is invalid.",
+      "uploadLimited": "Uploads are busy or your upload limit has been reached. Please try again later."
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "history": {
+      "title": "My Submissions",
+      "empty": "No submissions yet.",
+      "rejectionReason": "Rejection reason: {reason}",
+      "expiresAt": "Kept until {time}"
     }
   },
-  "notFound": {
-    "hero": {
-      "title": "Page not found",
-      "description": "The page you requested may have been moved, removed, or the link is incorrect."
-    },
+  "map": {
+    "title": "World Map",
     "actions": {
-      "returnHome": "Return Home"
+      "openExternal": "Open map in new window"
     }
   },
   "wiki": {
+    "title": "Game Guide",
     "meta": {
-      "title": "Game Guide",
       "description": "Learn about server rules, commands, and gameplay tips"
-    },
-    "hero": {
-      "title": "Game Guide"
     },
     "navigation": {
       "title": "Navigation",
@@ -243,29 +254,15 @@
       "empty": {
         "title": "No matching content found",
         "description": "Try a shorter keyword, a command alias, or a different phrasing."
-      },
-      "actions": {
-        "clear": "Clear search"
       }
     }
   },
-  "map": {
-    "actions": {
-      "openExternal": "Open map in new window"
-    },
-    "frameLabel": "Mik server live map",
-    "frameTitle": "Mik Live Map"
-  },
   "bans": {
+    "title": "Ban List",
     "meta": {
-      "title": "Ban List",
       "description": "View server ban records"
     },
-    "hero": {
-      "title": "Ban List"
-    },
     "states": {
-      "loading": "Loading...",
       "empty": "No ban records",
       "error": "Ban records could not be loaded",
       "noResults": "No matching ban records",
@@ -279,18 +276,67 @@
       "record": "Time and staff"
     },
     "search": {
-      "placeholder": "Search players, UUIDs, reasons or staff",
-      "clear": "Clear search"
+      "placeholder": "Search players, UUIDs, reasons or staff"
     },
     "actions": {
       "retry": "Reload",
       "loadMore": "Show {count} more"
     },
-    "recordsCount": "{count} records",
-    "resultsCount": "{count} / {total} records",
     "shownCount": "Showing {count} of {total}"
   },
+  "communityBoard": {
+    "title": "Community notices",
+    "meta": {
+      "description": "Read build notices, impact feedback and outcomes."
+    },
+    "hero": {
+      "rules": "Read server rules"
+    },
+    "records": {
+      "title": "Recent records",
+      "loading": "Loading records…",
+      "latestLimit": "Showing the latest 300 records. Older records remain available through direct links.",
+      "error": "Could not load the notice board.",
+      "empty": "No community records yet.",
+      "by": "{author}",
+      "noticeUntil": "Notice period ends {time} (UTC+8)",
+      "relatedNotice": "Related notice",
+      "permalink": "Link",
+      "permalinkLabel": "Link to {subject}",
+      "expand": "View details",
+      "showMore": "Show more",
+      "noResults": "No matching notices",
+      "linkUnavailable": "Could not load the linked notice.",
+      "unknownTime": "Unknown time"
+    },
+    "kind": {
+      "notice": "Build notice",
+      "objection": "Impact feedback"
+    },
+    "status": {
+      "ruled": "Ruled",
+      "elapsed": "Notice period ended",
+      "withdrawn": "Feedback withdrawn",
+      "noticeOpen": "Notice period open",
+      "objectionOpen": "Awaiting discussion"
+    },
+    "detailLabels": {
+      "contact": "Contact",
+      "scope": "Scope",
+      "impact": "Impact",
+      "proposal": "Proposal"
+    },
+    "ruling": {
+      "title": "Outcome"
+    },
+    "search": {
+      "placeholder": "Search notices, players or locations"
+    }
+  },
   "auth": {
+    "fields": {
+      "passkeys": "Passkeys"
+    },
     "login": {
       "title": "Player Login",
       "subtitle": "Sign in with your game account. Members only.",
@@ -300,21 +346,15 @@
     },
     "account": {
       "title": "Account",
-      "subtitle": "Overview",
       "loading": "Loading",
       "navigation": {
-        "label": "Account navigation",
-        "overview": "Overview",
-        "buildingSubmission": "Building submission",
-        "security": "Login and security",
-        "chat": "Web chat"
+        "label": "Account navigation"
       },
       "signedOut": {
         "title": "Not signed in",
         "description": "Sign in with an in-game code or Passkey first."
       },
       "fields": {
-        "passkeys": "Passkeys",
         "uuid": "Player UUID"
       },
       "actions": {
@@ -326,25 +366,26 @@
         "moderator": "Moderator",
         "custodian": "Custodian"
       },
-      "logoutFailed": "Sign-out failed. Please try again."
+      "logoutFailed": "Sign-out failed. Please try again.",
+      "overview": {
+        "title": "Overview"
+      }
     },
     "security": {
       "title": "Login and Security",
+      "subtitle": "Manage your sign-in Passkeys and browser sessions.",
       "actions": {
         "addPasskey": "Add Passkey",
         "delete": "Delete",
         "revokeSession": "Revoke",
         "signOutAllSessions": "Sign out all browsers",
-        "cancel": "Cancel",
         "createPasskey": "Create Passkey",
         "rename": "Rename",
         "renameItem": "Rename {name}",
-        "save": "Save",
-        "refresh": "Refresh"
+        "save": "Save"
       },
       "sections": {
-        "sessions": "Browser Sessions",
-        "passkeys": "Passkeys"
+        "sessions": "Browser Sessions"
       },
       "session": {
         "description": "Review active browser sign-ins and revoke browsers you no longer use.",
@@ -399,7 +440,6 @@
       "passkeyStarting": "Confirm with your Passkey",
       "creating": "Generating code",
       "otherMethod": "Use another method",
-      "signIn": "Sign in",
       "minecraft": {
         "title": "In-game Code",
         "description": "Confirm your identity with a command on the server."
@@ -415,8 +455,7 @@
         "remaining": "Expires in {time}",
         "instructions": "Run this command on the server and confirm.",
         "copyHint": "Click to copy command",
-        "copyFailed": "Copy failed. Copy the command above manually.",
-        "copied": "Copied"
+        "copyFailed": "Copy failed. Copy the command above manually."
       },
       "errors": {
         "request_failed": "Unable to complete verification. Please retry.",
@@ -430,167 +469,17 @@
         "authentication_invalidated": "Account security has changed. Verify again.",
         "passkey_unavailable": "No Passkey is available. Use in-game verification.",
         "passkey_verification_failed": "Passkey verification failed. Please retry.",
-        "invalid_challenge": "This verification expired. Start again.",
-        "invalid_browser_nonce": "This verification expired. Start again.",
         "cancelled": "Passkey operation was cancelled.",
         "passkey_already_registered": "This Passkey is already bound.",
         "passkey_domain_mismatch": "This domain does not support Passkeys. Use mcmik.top.",
         "passkey_unsupported_authenticator": "This device does not support a sign-in Passkey.",
-        "passkey_browser_unsupported": "This browser does not support Passkeys."
+        "passkey_browser_unsupported": "This browser does not support Passkeys.",
+        "verificationInvalid": "This verification expired. Start again."
       }
-    }
-  },
-  "buildingSubmission": {
-    "title": "Building Submission",
-    "subtitle": "Submit a build you want added to the public showcase. It appears after admin review.",
-    "quota": "pending / {max}",
-    "sections": {
-      "basic": "Basic Info",
-      "location": "Location",
-      "builders": "Builders",
-      "images": "Images",
-      "tags": "Tags",
-      "source": "Source"
-    },
-    "fields": {
-      "nameZh": "Chinese name",
-      "nameEn": "English name",
-      "descriptionZh": "Chinese description",
-      "descriptionEn": "English description",
-      "buildType": "Build type",
-      "buildDate": "Build date",
-      "world": "World name",
-      "playerPlaceholder": "Type a player name, then press Space or Enter",
-      "weight": "Weight",
-      "totalWeight": "Total weight {total}",
-      "tagZh": "Chinese tag",
-      "tagEn": "English tag",
-      "sourceAuthor": "Original author",
-      "sourceLink": "Original link",
-      "sourceNoteZh": "Chinese source note",
-      "sourceNoteEn": "English source note"
-    },
-    "types": {
-      "original": "Original",
-      "derivative": "Derivative",
-      "replica": "Replica"
-    },
-    "actions": {
-      "submit": "Submit",
-      "reset": "Reset",
-      "refresh": "Refresh",
-      "remove": "Remove",
-      "addTag": "Add tag",
-      "uploadImages": "Select images",
-      "increaseWeight": "Increase weight",
-      "decreaseWeight": "Decrease weight",
-      "equalizeWeights": "Split evenly",
-      "normalizeWeights": "Normalize",
-      "clearBuilders": "Clear others"
-    },
-    "states": {
-      "loadFailed": "Failed to load submissions.",
-      "playerNotFound": "No player found.",
-      "tagRequired": "Tags require both Chinese and English.",
-      "imageLimit": "You can upload at most 15 images.",
-      "imageSelectFailed": "Failed to read images.",
-      "uploading": "Uploading images",
-      "uploadFailed": "Image upload failed.",
-      "imageTooSmall": "Image clarity is too low. Minimum size is 960x540.",
-      "submitting": "Submitting",
-      "submitted": "Submission created",
-      "submitFailed": "Submit failed.",
-      "pendingLimit": "You already have 10 pending submissions.",
-      "required": "Chinese and English fields are required.",
-      "buildersRequired": "At least one builder is required.",
-      "imagesRequired": "At least one image is required.",
-      "coordinatesRequired": "Enter a world name and valid coordinates.",
-      "sourceRequired": "Derivative and replica builds require complete source information.",
-      "invalid": "The form is invalid.",
-      "uploadLimited": "Uploads are busy or your upload limit has been reached. Please try again later."
-    },
-    "status": {
-      "pending": "Pending",
-      "approved": "Approved",
-      "rejected": "Rejected"
-    },
-    "history": {
-      "title": "My Submissions",
-      "empty": "No submissions yet.",
-      "rejectionReason": "Rejection reason: {reason}",
-      "expiresAt": "Kept until {time}"
-    }
-  },
-  "footer": {
-    "navigation": "Site Navigation",
-    "siteInfo": "Site Info",
-    "links": {
-      "pcl2Homepage": "PCL2 Homepage",
-      "mcpConfig": "MCP Config"
-    },
-    "legal": {
-      "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
-      "eula": "Mojang's EULA"
-    }
-  },
-  "communityBoard": {
-    "meta": {
-      "title": "Community Notices",
-      "description": "Read build notices, impact feedback and outcomes."
-    },
-    "hero": {
-      "title": "Community notices",
-      "rules": "Read server rules"
-    },
-    "records": {
-      "title": "Recent records",
-      "loading": "Loading records…",
-      "latestLimit": "Showing the latest 300 records. Older records remain available through direct links.",
-      "error": "Could not load the notice board.",
-      "retry": "Retry",
-      "empty": "No community records yet.",
-      "by": "{author}",
-      "noticeUntil": "Notice period ends {time} (UTC+8)",
-      "relatedNotice": "Related notice",
-      "permalink": "Link",
-      "permalinkLabel": "Link to {subject}",
-      "expand": "View details",
-      "collapse": "Hide details",
-      "showMore": "Show more",
-      "count": "{count} records",
-      "resultsCount": "{count} / {total} records",
-      "noResults": "No matching notices",
-      "linkUnavailable": "Could not load the linked notice.",
-      "unknownTime": "Unknown time"
-    },
-    "kind": {
-      "notice": "Build notice",
-      "objection": "Impact feedback"
-    },
-    "status": {
-      "ruled": "Ruled",
-      "elapsed": "Notice period ended",
-      "withdrawn": "Feedback withdrawn",
-      "noticeOpen": "Notice period open",
-      "objectionOpen": "Awaiting discussion"
-    },
-    "detailLabels": {
-      "contact": "Contact",
-      "scope": "Scope",
-      "impact": "Impact",
-      "proposal": "Proposal"
-    },
-    "ruling": {
-      "title": "Outcome"
-    },
-    "search": {
-      "placeholder": "Search notices, players or locations",
-      "clear": "Clear search"
     }
   },
   "chat": {
     "title": "Web chat",
-    "retry": "Retry",
     "send": "Send",
     "you": "you",
     "game": "In game",
@@ -632,7 +521,6 @@
       "idle": "Not connected",
       "connecting": "Connecting",
       "authorizing": "Verifying",
-      "online": "Online",
       "reconnecting": "Reconnecting",
       "error": "Disconnected"
     },
@@ -678,7 +566,6 @@
     "searchMessages": "Search messages",
     "searchPlaceholder": "Message or player name",
     "searchHint": "Find messages saved in this browser",
-    "clearSearch": "Clear search",
     "searchScope": "Search scope",
     "searchCurrent": "This conversation",
     "searchAll": "All conversations",
@@ -696,11 +583,71 @@
       "unsupported": "Notifications are unavailable in this browser",
       "denied": "Notifications are blocked by your browser",
       "error": "Could not enable notifications. Click to retry",
-      "mentionTitle": "{name} mentioned you in {channel}",
-      "public": "Public",
-      "staff": "Staff"
+      "mentionTitle": "{name} mentioned you in {channel}"
     },
     "disableHistoryConfirm": "Stop saving and clear local history?",
     "messagePlaceholder": "Message…"
+  },
+  "pcl2": {
+    "title": "PCL2 Homepage",
+    "subtitle": "View Mik server status, announcements and buildings in your launcher.",
+    "description": "Open Settings -> Personalization -> Custom homepage, choose Online update, paste the URL above into the download address field, then return to the launcher home page.",
+    "addressLabel": "Homepage URL",
+    "detectingTimeZone": "Preparing homepage URL…",
+    "stepsTitle": "Setup",
+    "steps": {
+      "settings": {
+        "title": "Open the custom homepage settings",
+        "description": "In PCL2, open Settings, Personalization, then Custom homepage. Choose Online update."
+      },
+      "address": {
+        "title": "Paste the URL",
+        "description": "Copy the homepage URL into the download address field."
+      },
+      "done": {
+        "title": "Return home",
+        "description": "Reopen the launcher home page to see the Mik page."
+      }
+    }
+  },
+  "mcp": {
+    "title": "MCP Config",
+    "subtitle": "Query Mik server information from an MCP-capable client.",
+    "description": "The Mik MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
+    "configTitle": "JSON configuration",
+    "stepsTitle": "Connect your client",
+    "steps": {
+      "client": {
+        "title": "Open MCP settings",
+        "description": "Add a remote MCP server in your client."
+      },
+      "connect": {
+        "title": "Enter the server URL",
+        "description": "Use the server URL on this page, or add the JSON configuration to your client’s config file."
+      },
+      "done": {
+        "title": "Connect and query",
+        "description": "Query online players, buildings, announcements and game guides."
+      }
+    },
+    "addressLabel": "Server URL",
+    "copyConfig": "Copy JSON"
+  },
+  "notFound": {
+    "hero": {
+      "title": "Page not found",
+      "description": "The page you requested may have been moved, removed, or the link is incorrect."
+    },
+    "actions": {
+      "returnHome": "Return Home"
+    }
+  },
+  "footer": {
+    "navigation": "Site Navigation",
+    "siteInfo": "Site Info",
+    "legal": {
+      "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
+      "eula": "Mojang's EULA"
+    }
   }
 }

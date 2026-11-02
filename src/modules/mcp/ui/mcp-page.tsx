@@ -13,7 +13,8 @@ interface McpPageParams {
 export default async function McpPage({ params }: McpPageParams) {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const t = await getTranslations({ locale, namespace: 'mcpPage' });
+  const t = await getTranslations({ locale, namespace: 'mcp' });
+  const commonT = await getTranslations({ locale, namespace: 'common' });
   const mcpUrl = `${SITE_URL}${MCP_API_ROUTE}`;
   const configJson = JSON.stringify(
     {
@@ -54,7 +55,7 @@ export default async function McpPage({ params }: McpPageParams) {
         configJson={configJson}
         addressLabel={t('addressLabel')}
         configLabel={t('configTitle')}
-        copyAddressLabel={t('copyAddress')}
+        copyAddressLabel={commonT('actions.copyAddress')}
         copyConfigLabel={t('copyConfig')}
       />
     </ArtGuidePage>

@@ -27,7 +27,7 @@ export function ThemeSettings() {
         aria-haspopup="dialog"
       >
         <span className="project-appearance-label">{t('appearance')}</span>
-        <span className="project-appearance-label-compact">{t('shortLabel')}</span>
+        <span className="project-appearance-label-compact">{t('appearance')}</span>
         <ChevronDown className="project-appearance-chevron h-3 w-3" aria-hidden="true" />
       </button>
       {isOpen &&

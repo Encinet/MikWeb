@@ -19,7 +19,8 @@ import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
 export default function HomeLiveOverview({ children }: { children: ReactNode }) {
   const locale = useLocale();
-  const t = useTranslations();
+  const homeT = useTranslations('home');
+  const announcementsT = useTranslations('announcements');
   const commonT = useTranslations('common');
   const {
     players,
@@ -40,21 +41,21 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
   };
 
   return (
-    <section id="server-updates" className="home-daily" aria-label={t('home.live.statusTitle')}>
+    <section id="server-updates" className="home-daily" aria-label={homeT('live.statusTitle')}>
       <HomeServerStatus />
       {children}
       <div className="home-daily-columns">
         <section className="home-live-announcements" aria-labelledby="home-announcements-title">
           <div className="home-live-announcements__head">
-            <h2 id="home-announcements-title">{t('home.announcements.section.title')}</h2>
+            <h2 id="home-announcements-title">{announcementsT('section.title')}</h2>
             <button type="button" aria-haspopup="dialog" onClick={() => openAnnouncements()}>
-              {t('home.announcements.actions.viewAll')}
+              {announcementsT('actions.viewAll')}
             </button>
           </div>
           <div className="home-live-announcements__list">
             {isLoading ? (
               <div className="home-announcements-loading" role="status">
-                <span className="sr-only">{t('home.announcements.states.loading')}</span>
+                <span className="sr-only">{commonT('states.loading')}</span>
                 <div aria-hidden="true">
                   <SkeletonLine width="28%" />
                   <SkeletonLine width="95%" />
@@ -80,7 +81,7 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
                 </button>
               ))
             ) : (
-              <p className="home-inline-state">{t('home.announcements.states.empty')}</p>
+              <p className="home-inline-state">{announcementsT('states.empty')}</p>
             )}
           </div>
         </section>

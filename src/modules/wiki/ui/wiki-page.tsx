@@ -25,6 +25,7 @@ export default async function WikiPage({
   const locale = requireRouteLocale(rawLocale);
   const { q, section } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'wiki' });
+  const commonT = await getTranslations({ locale, namespace: 'common' });
 
   const wikiDocuments: WikiSectionDocument[] = await loadWikiSectionDocuments(locale);
   const wikiSections = sortWikiSections(wikiDocuments.map((wikiDocument) => wikiDocument.section));
@@ -54,7 +55,7 @@ export default async function WikiPage({
   return (
     <Suspense>
       <WikiContentView
-        pageTitle={t('hero.title')}
+        pageTitle={t('title')}
         navigation={t('navigation.title')}
         onThisPage={t('navigation.onThisPage')}
         searchPlaceholder={t('search.placeholder')}
@@ -62,7 +63,7 @@ export default async function WikiPage({
         searchResultsCountTemplate={t('search.resultsCount', { count: '{count}' })}
         searchEmptyTitle={t('search.empty.title')}
         searchEmptyDescription={t('search.empty.description')}
-        clearSearchLabel={t('search.actions.clear')}
+        clearSearchLabel={commonT('actions.clearSearch')}
         sections={wikiSections}
         sectionGroups={wikiGroups}
         content={wikiContentBySection}

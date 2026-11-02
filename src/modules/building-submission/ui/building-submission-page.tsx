@@ -27,6 +27,8 @@ const BUILDER_COLORS = ['#79b86f', '#55a6d9', '#e0a74f', '#d86b7d', '#9b7bd8', '
 
 export function BuildingSubmissionPage() {
   const t = useTranslations('buildingSubmission');
+  const buildingT = useTranslations('buildings');
+  const commonT = useTranslations('common');
   const locale = useLocale();
   const {
     feedback,
@@ -122,7 +124,7 @@ export function BuildingSubmissionPage() {
                       type="button"
                       onClick={() => updateForm('buildType', type)}
                     >
-                      {t(`types.${type}`)}
+                      {buildingT(`types.${type}`)}
                     </button>
                   ))}
                 </div>
@@ -343,10 +345,10 @@ export function BuildingSubmissionPage() {
             </Section>
 
             {form.buildType !== 'original' ? (
-              <Section title={t('sections.source')}>
+              <Section title={buildingT('fields.source')}>
                 <TextField
                   className="building-submission-field--source"
-                  label={t('fields.sourceAuthor')}
+                  label={buildingT('fields.originalAuthor')}
                   value={form.sourceAuthor}
                   onChange={(value) => updateForm('sourceAuthor', value)}
                   required
@@ -404,7 +406,7 @@ export function BuildingSubmissionPage() {
                 onClick={() => void loadSubmissions()}
               >
                 {loadingSubmissions ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                {t('actions.refresh')}
+                {commonT('actions.refresh')}
               </button>
             </div>
             <InlineFeedback value={feedback.history} />

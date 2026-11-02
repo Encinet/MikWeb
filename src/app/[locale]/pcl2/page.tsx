@@ -12,7 +12,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const t = await getTranslations({ locale, namespace: 'pcl2Page' });
+  const t = await getTranslations({ locale, namespace: 'pcl2' });
 
   return buildPageMetadata({
     locale,

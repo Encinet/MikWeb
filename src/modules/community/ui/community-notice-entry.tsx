@@ -23,6 +23,7 @@ export function CommunityNoticeEntry({
   onOpenRecord,
 }: CommunityNoticeEntryProps) {
   const t = useTranslations('communityBoard');
+  const commonT = useTranslations('common');
   const formatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
@@ -131,7 +132,7 @@ export function CommunityNoticeEntry({
           aria-controls={contentId}
           onClick={onToggle}
         >
-          {t(expanded ? 'records.collapse' : 'records.expand')}
+          {expanded ? commonT('actions.collapseDetails') : t('records.expand')}
         </button>
         <a
           href={`#${anchor}`}

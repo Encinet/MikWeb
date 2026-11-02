@@ -28,7 +28,8 @@ const BuildingDetailsDialog = dynamic(
 
 export function HomeBuildingUpdates() {
   const t = useTranslations('home.playerHome.buildings');
-  const mapT = useTranslations('home.playerHome.map');
+  const mapT = useTranslations('map');
+  const commonT = useTranslations('common');
   const buildingsT = useTranslations('buildings');
   const locale = useLocale();
   const mounted = useHasMounted();
@@ -134,7 +135,7 @@ export function HomeBuildingUpdates() {
                 disabled={isLoading}
                 onClick={() => void fetchBuildings({ force: true })}
               >
-                {t(isLoading ? 'retrying' : 'retry')}
+                {isLoading ? t('retrying') : commonT('actions.retry')}
               </button>
             ) : null}
           </div>

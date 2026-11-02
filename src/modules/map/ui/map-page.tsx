@@ -8,10 +8,10 @@ export default async function MapPage() {
 
   return (
     <div className="map-page">
-      <section className="map-page__frame-shell" aria-label={t('frameLabel')}>
+      <section className="map-page__frame-shell" aria-label={t('title')}>
         <iframe
           src={MAP_URL}
-          title={t('frameTitle')}
+          title={t('title')}
           className="map-page__frame"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
@@ -22,7 +22,7 @@ export default async function MapPage() {
           <div className="map-page__frame-title">
             <span className="map-page__frame-dot" />
             <MapIcon className="h-4 w-4" />
-            <span>{t('frameTitle')}</span>
+            <span>{t('title')}</span>
           </div>
           <a
             href={MAP_URL}

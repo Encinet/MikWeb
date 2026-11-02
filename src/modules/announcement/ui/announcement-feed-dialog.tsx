@@ -27,7 +27,7 @@ export function AnnouncementFeedDialog({
   onClose,
   selectedAnnouncementKey,
 }: AnnouncementFeedDialogProps) {
-  const t = useTranslations();
+  const announcementsT = useTranslations('announcements');
 
   if (!isMounted) {
     return null;
@@ -37,7 +37,7 @@ export function AnnouncementFeedDialog({
     <AppDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={t('home.announcements.section.title')}
+      title={announcementsT('section.title')}
       icon={<Bell className="h-5 w-5" />}
       className="announcement-dialog"
     >

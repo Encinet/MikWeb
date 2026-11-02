@@ -54,12 +54,12 @@ export default function BuildingsPage() {
   return (
     <div
       className="building-archive-page page-shell page-shell-stable print-page-title"
-      data-print-title={t('meta.title')}
+      data-print-title={t('title')}
     >
       <div className="building-archive-controls">
         <BuildingCatalogControls
-          title={t('hero.title')}
-          clearSearchLabel={t('search.clear')}
+          title={t('title')}
+          clearSearchLabel={commonT('actions.clearSearch')}
           activeFilter={catalog.filter}
           filterOptions={catalog.filterOptions}
           onFilterChange={catalog.handleFilterChange}
@@ -87,7 +87,7 @@ export default function BuildingsPage() {
             loadMore={catalog.loadMore}
             locale={locale}
             t={t}
-            loadingMessage={t('states.loading')}
+            loadingMessage={commonT('states.loading')}
             errorTitle={commonT('states.error')}
             emptyMessage={t('states.empty')}
             endMessage={t('states.end')}

@@ -27,7 +27,12 @@ export function ChatSettings({
   const [confirmation, setConfirmation] = useState<'clear' | 'disable' | null>(null);
   const notificationUnavailable =
     notifications.status === 'unsupported' || notifications.status === 'denied';
-  const notificationError = notificationUnavailable || notifications.status === 'error';
+  const notificationError =
+    notifications.status === 'unsupported' ||
+    notifications.status === 'denied' ||
+    notifications.status === 'error'
+      ? notifications.status
+      : null;
   const updateHistory = async (action: 'enable' | 'disable' | 'clear') => {
     setBusy(true);
     try {
@@ -51,7 +56,7 @@ export function ChatSettings({
               <strong>{t('notifications.label')}</strong>
               {notificationError ? (
                 <small id={notificationHelp} role="status">
-                  {t(`notifications.${notifications.status}`)}
+                  {t(`notifications.${notificationError}`)}
                 </small>
               ) : null}
             </div>

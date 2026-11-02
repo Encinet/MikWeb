@@ -6,34 +6,41 @@ import { useAuth } from '@/modules/auth/model/use-auth';
 import { Link } from '@/shared/i18n/routing';
 
 export function HomeWorldNavigation() {
-  const t = useTranslations('home.playerHome');
-  const navT = useTranslations('nav.items');
+  const t = useTranslations();
   const { authenticated, isLoading } = useAuth();
   const shortcuts = [
-    { href: '/wiki?section=commands', icon: ScrollText, key: 'commands' },
-    { href: '/wiki?section=rules', icon: BookOpen, key: 'rules' },
-    { href: '/community/notices', icon: ScrollText, key: 'notices' },
-    { href: '/pcl2', icon: MonitorDown, key: 'launcher' },
-    { href: '/wiki?section=getting-started', icon: Compass, key: 'gettingStarted' },
+    {
+      href: '/wiki?section=commands',
+      icon: ScrollText,
+      label: t('home.playerHome.shortcuts.commands'),
+    },
+    { href: '/wiki?section=rules', icon: BookOpen, label: t('home.playerHome.shortcuts.rules') },
+    { href: '/community/notices', icon: ScrollText, label: t('communityBoard.title') },
+    { href: '/pcl2', icon: MonitorDown, label: t('home.playerHome.shortcuts.launcher') },
+    {
+      href: '/wiki?section=getting-started',
+      icon: Compass,
+      label: t('home.playerHome.shortcuts.gettingStarted'),
+    },
   ] as const;
 
   return (
-    <nav className="home-player-shortcuts" aria-label={t('tools.title')}>
-      {shortcuts.map(({ href, icon: Icon, key }) => (
-        <Link key={key} href={href}>
+    <nav className="home-player-shortcuts" aria-label={t('home.playerHome.tools.title')}>
+      {shortcuts.map(({ href, icon: Icon, label }) => (
+        <Link key={href} href={href}>
           <Icon className="h-4 w-4" aria-hidden="true" />
-          <span>{t(`shortcuts.${key}`)}</span>
+          <span>{label}</span>
         </Link>
       ))}
       {authenticated ? (
         <Link href="/chat">
           <MessageCircle className="h-4 w-4" aria-hidden="true" />
-          <span>{navT('chat')}</span>
+          <span>{t('chat.title')}</span>
         </Link>
       ) : !isLoading ? (
         <a href="https://apply.mcmik.top" target="_blank" rel="noopener noreferrer">
           <UserPlus className="h-4 w-4" aria-hidden="true" />
-          <span>{navT('join')}</span>
+          <span>{t('nav.items.join')}</span>
         </a>
       ) : null}
     </nav>

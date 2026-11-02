@@ -70,7 +70,6 @@ const PCL2_COPY = {
       buildingsTitle: '建筑展示',
       intro: '以下入口将在浏览器中打开对应页面。',
       mapInfo: '在线地图',
-      mapTitle: '服务器地图',
       title: '网页入口',
       wikiInfo: '服务器帮助文档',
       wikiTitle: 'Wiki',
@@ -130,8 +129,7 @@ const PCL2_COPY = {
       buildingsInfo: 'View all building showcases',
       buildingsTitle: 'Buildings',
       intro: 'These links will open in your browser.',
-      mapInfo: 'Server map',
-      mapTitle: 'Map',
+      mapInfo: 'Online map',
       title: 'Web links',
       wikiInfo: 'Server help and documentation',
       wikiTitle: 'Wiki',
@@ -481,7 +479,7 @@ function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildLinksCard(locale: AppLocale, siteOrigin: string): XamlNode {
+function buildLinksCard(locale: AppLocale, siteOrigin: string, mapTitle: string): XamlNode {
   const copy = PCL2_COPY[locale].links;
   return card(
     copy.title,
@@ -489,7 +487,7 @@ function buildLinksCard(locale: AppLocale, siteOrigin: string): XamlNode {
       tb(copy.intro, [attr('Margin', '0,0,0,8')]),
       li(copy.buildingsTitle, copy.buildingsInfo, absoluteUrl(`/${locale}/buildings`, siteOrigin)),
       li(copy.wikiTitle, copy.wikiInfo, absoluteUrl(`/${locale}/wiki`, siteOrigin)),
-      li(copy.mapTitle, copy.mapInfo, absoluteUrl(`/${locale}/map`, siteOrigin)),
+      li(mapTitle, copy.mapInfo, absoluteUrl(`/${locale}/map`, siteOrigin)),
     ],
     { isSwapped: true },
   );
@@ -516,14 +514,14 @@ function buildAboutCard(locale: AppLocale, siteOrigin: string, timeZone: string)
   );
 }
 
-export function buildPcl2HomepageXml(data: Pcl2HomepageData): string {
+export function buildPcl2HomepageXml(data: Pcl2HomepageData, mapTitle: string): string {
   return renderXamlFragment([
     buildStatusCard(data),
     buildPlayerCard(data),
     buildAnnouncementCard(data),
     buildBanCard(data),
     buildBuildingCard(data),
-    buildLinksCard(data.locale, data.siteOrigin),
+    buildLinksCard(data.locale, data.siteOrigin, mapTitle),
     buildAboutCard(data.locale, data.siteOrigin, data.timeZone),
   ]);
 }

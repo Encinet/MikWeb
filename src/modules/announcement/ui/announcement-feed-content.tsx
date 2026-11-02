@@ -22,7 +22,7 @@ export function AnnouncementFeedContent({
   isLoading,
   selectedAnnouncementKey,
 }: AnnouncementFeedContentProps) {
-  const t = useTranslations();
+  const announcementsT = useTranslations('announcements');
   const commonT = useTranslations('common');
 
   if (isLoading) {
@@ -45,7 +45,7 @@ export function AnnouncementFeedContent({
   if (announcements.length === 0) {
     return (
       <SectionMessage
-        body={t('home.announcements.states.empty')}
+        body={announcementsT('states.empty')}
         className="py-12"
         icon={Bell}
         iconClassName="mx-auto mb-4 h-12 w-12"

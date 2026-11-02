@@ -43,6 +43,7 @@ import { ChatSettings } from '@/modules/chat/ui/chat-settings';
 import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { SITE_LOGO_PATH } from '@/shared/config/site-config';
+import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { Link } from '@/shared/i18n/routing';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
@@ -77,7 +78,7 @@ export function ChatPage({ appearance }: { appearance: ReactNode }) {
             onClick={() => void refresh().catch(() => undefined)}
           >
             <RotateCw size={15} aria-hidden="true" />
-            {t('retry')}
+            {commonT('actions.retry')}
           </button>
         )
       ) : null}
@@ -87,6 +88,7 @@ export function ChatPage({ appearance }: { appearance: ReactNode }) {
 
 function ChatWorkspace({ account, appearance }: { account: AuthAccount; appearance: ReactNode }) {
   const t = useTranslations('chat');
+  const commonT = useTranslations('common');
   const [selected, setSelected] = useState<ChatDestination>({ channel: 'public' });
   const [opened, setOpened] = useState<Map<string, string>>(new Map());
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -273,8 +275,10 @@ function ChatWorkspace({ account, appearance }: { account: AuthAccount; appearan
     };
   }, []);
 
-  const errorText = (code: string) =>
-    t.has(`errors.${code}`) ? t(`errors.${code}`) : t('errors.default');
+  const errorText = (code: string) => {
+    const key = `errors.${code}`;
+    return hasTranslationKey(t, key) ? t(key) : t('errors.default');
+  };
   const send = () => {
     if (available && chat.send(selected, draft)) {
       setJump({ conversation: key, messageId: null, sequence: ++jumpSequence.current });
@@ -297,7 +301,8 @@ function ChatWorkspace({ account, appearance }: { account: AuthAccount; appearan
     // Match the workspace's split-view breakpoint; narrow screens return to the message.
     if (!window.matchMedia('(min-width: 1180px)').matches) setPanel(null);
   };
-  if (!online) {
+  const connectionStatus = chat.connection.status;
+  if (connectionStatus !== 'online') {
     const { connection } = chat;
     const failed = connection.status === 'error';
     return (
@@ -306,13 +311,13 @@ function ChatWorkspace({ account, appearance }: { account: AuthAccount; appearan
         message={
           connection.error
             ? errorText(connection.error)
-            : t(`status.${connection.status === 'idle' ? 'authorizing' : connection.status}`)
+            : t(`status.${connectionStatus === 'idle' ? 'authorizing' : connectionStatus}`)
         }
       >
         {failed ? (
           <button type="button" className="chat-primary" onClick={chat.retry}>
             <RotateCw size={15} aria-hidden="true" />
-            {t('retry')}
+            {commonT('actions.retry')}
           </button>
         ) : null}
       </ChatGate>
@@ -349,7 +354,7 @@ function ChatWorkspace({ account, appearance }: { account: AuthAccount; appearan
         <strong>{account.currentName}</strong>
         <span className="chat-connection-status" role="status">
           <span className="chat-connection-dot" aria-hidden="true" />
-          {t('status.online')}
+          {commonT('states.online')}
         </span>
       </div>
     </div>

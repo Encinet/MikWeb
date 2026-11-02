@@ -4,6 +4,7 @@ import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, MapPin, X } from 
 import type { Transition } from 'motion/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -63,6 +64,7 @@ export function BuildingDetailsDialog({
   onSelectImage,
   t,
 }: BuildingDetailsDialogProps) {
+  const commonT = useTranslations('common');
   const titleId = useId();
   const detailsId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -296,7 +298,9 @@ export function BuildingDetailsDialog({
                         previousState.buildingKey === buildingKey ? !previousState.expanded : true,
                     }))
                   }
-                  aria-label={expanded ? t('dialog.collapseDetails') : t('dialog.expandDetails')}
+                  aria-label={
+                    expanded ? commonT('actions.collapseDetails') : t('dialog.expandDetails')
+                  }
                   aria-expanded={expanded}
                   aria-controls={detailsId}
                   className={`building-archive-info-bar__expand ${expanded ? 'is-expanded' : ''}`}

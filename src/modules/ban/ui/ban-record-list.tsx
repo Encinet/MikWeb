@@ -30,6 +30,7 @@ function BanDate({
 
 export function BanRecordList({ entries, locale, summary }: BanRecordListProps) {
   const t = useTranslations('bans');
+
   const formatter = useMemo(
     () =>
       new Intl.DateTimeFormat(locale, {
@@ -45,7 +46,7 @@ export function BanRecordList({ entries, locale, summary }: BanRecordListProps) 
   return (
     <table className="bans-table">
       <caption className="bans-table__summary">
-        <span className="sr-only">{t('hero.title')} </span>
+        <span className="sr-only">{t('title')} </span>
         <span role="status" aria-live="polite">
           {summary}
         </span>

@@ -36,6 +36,7 @@ import {
   fetchValidatedJson,
   writeFetchValidatedJsonBrowserCache,
 } from '@/shared/api/fetch-validated-json';
+import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import type { InlineFeedbackValue } from '@/shared/ui/feedback/async-state';
 
 type SubmissionFeedbackScope = 'form' | 'builders' | 'images' | 'tags' | 'history';
@@ -326,8 +327,9 @@ export function useBuildingSubmissionForm() {
         draftImages.map((image) => image.previewUrl),
       );
     } catch (error) {
+      const key = error instanceof Error ? `states.${error.message}` : null;
       showFeedback('form', {
-        message: error instanceof Error ? t(`states.${error.message}`) : t('states.invalid'),
+        message: hasTranslationKey(t, key) ? t(key) : t('states.invalid'),
         kind: 'error',
       });
       return;
@@ -466,7 +468,7 @@ export function useBuildingSubmissionForm() {
   };
 }
 
-function submitErrorMessageKey(error: unknown): `states.${string}` {
+function submitErrorMessageKey(error: unknown) {
   if (!(error instanceof Error)) {
     return 'states.submitFailed';
   }

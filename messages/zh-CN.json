@@ -3,6 +3,33 @@
     "title": "Mik 米客服务器 - 创造休闲服务器",
     "description": "一个创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作"
   },
+  "common": {
+    "states": {
+      "loading": "加载中...",
+      "error": "加载失败",
+      "online": "在线",
+      "offline": "离线",
+      "networkError": "网络错误"
+    },
+    "actions": {
+      "close": "关闭",
+      "cancel": "取消",
+      "copy": "复制",
+      "copied": "已复制",
+      "copyFailed": "复制失败",
+      "copyHelp": "复制失败，请选中文本手动复制。",
+      "login": "登录",
+      "copyAddress": "复制地址",
+      "retry": "重试",
+      "clearSearch": "清除搜索",
+      "refresh": "刷新",
+      "collapseDetails": "收起详情"
+    },
+    "records": {
+      "count": "{count} 条记录",
+      "resultsCount": "{count} / {total} 条记录"
+    }
+  },
   "nav": {
     "brand": {
       "subtitle": "创造休闲服务器"
@@ -10,26 +37,17 @@
     "items": {
       "home": "首页",
       "buildings": "建筑收录",
-      "map": "服务器地图",
-      "bans": "封禁列表",
       "wiki": "游戏指南",
       "join": "申请加入",
-      "chat": "网页聊天",
       "notices": "社区公示"
     },
-    "status": {
-      "online": "在线",
-      "offline": "离线",
-      "networkError": "网络错误"
-    },
     "theme": {
+      "title": "主题色",
       "appearance": "外观",
-      "shortLabel": "外观",
       "displayMode": "显示模式",
       "light": "浅色",
       "dark": "深色",
       "system": "跟随系统",
-      "title": "主题色",
       "daily": "今日配色",
       "reset": "恢复今日配色"
     },
@@ -40,53 +58,6 @@
       "language": "语言",
       "switchLanguage": "切换至 {language}"
     }
-  },
-  "pcl2Page": {
-    "title": "PCL2 主页",
-    "subtitle": "在启动器中查看 Mik 的服务器状态、公告和建筑。",
-    "description": "设置 -> 个性化 -> 自定义主页，点击“联网更新”，在“下载地址”栏输入上方地址，然后返回启动页即可完成。",
-    "addressLabel": "主页地址",
-    "detectingTimeZone": "正在准备主页地址…",
-    "stepsTitle": "设置步骤",
-    "steps": {
-      "settings": {
-        "title": "打开自定义主页",
-        "description": "在 PCL2 的设置、个性化中找到自定义主页，选择联网更新。"
-      },
-      "address": {
-        "title": "粘贴地址",
-        "description": "复制主页地址，粘贴到下载地址栏。"
-      },
-      "done": {
-        "title": "返回启动页",
-        "description": "重新打开启动页后即可看到 Mik 首页。"
-      }
-    },
-    "copyAddress": "复制地址"
-  },
-  "mcpPage": {
-    "title": "MCP 配置",
-    "subtitle": "在支持 MCP 的客户端中查询 Mik 服务器信息。",
-    "description": "Mik MCP 服务提供玩家在线状态、建筑收录、封禁记录、公告和 Wiki 搜索工具。",
-    "configTitle": "JSON 配置",
-    "stepsTitle": "接入步骤",
-    "steps": {
-      "client": {
-        "title": "打开 MCP 设置",
-        "description": "在客户端中添加远程 MCP 服务。"
-      },
-      "connect": {
-        "title": "填写服务地址",
-        "description": "使用本页的服务地址，或将 JSON 配置加入客户端配置文件。"
-      },
-      "done": {
-        "title": "连接并查询",
-        "description": "连接后可查询在线玩家、建筑、公告和游戏指南。"
-      }
-    },
-    "addressLabel": "服务地址",
-    "copyAddress": "复制地址",
-    "copyConfig": "复制 JSON"
   },
   "home": {
     "hero": {
@@ -107,31 +78,13 @@
         "networkError": "状态获取失败"
       }
     },
-    "announcements": {
-      "section": {
-        "title": "服务器公告"
-      },
-      "states": {
-        "loading": "加载中...",
-        "empty": "暂无公告",
-        "unknownDate": "日期未提供"
-      },
-      "actions": {
-        "viewAll": "全部公告"
-      },
-      "latest": "最新"
-    },
     "playerHome": {
-      "map": {
-        "title": "世界地图"
-      },
       "tools": {
         "title": "常用入口"
       },
       "shortcuts": {
         "commands": "常用指令",
         "rules": "服务器规则",
-        "notices": "社区公示",
         "launcher": "启动器主页",
         "gettingStarted": "新手入门"
       },
@@ -141,21 +94,38 @@
         "open": "查看建筑：{name}",
         "empty": "暂无建筑收录",
         "unavailable": "建筑加载失败",
-        "retry": "重试",
         "retrying": "正在加载"
       }
     }
   },
+  "announcements": {
+    "section": {
+      "title": "服务器公告"
+    },
+    "states": {
+      "empty": "暂无公告",
+      "unknownDate": "日期未提供"
+    },
+    "actions": {
+      "viewAll": "全部公告"
+    },
+    "latest": "最新"
+  },
   "buildings": {
+    "title": "建筑收录",
+    "types": {
+      "original": "原创",
+      "derivative": "二创",
+      "replica": "搬运"
+    },
+    "fields": {
+      "originalAuthor": "原作者",
+      "source": "来源"
+    },
     "meta": {
-      "title": "建筑收录",
       "description": "展示服务器内玩家的精彩建筑作品"
     },
-    "hero": {
-      "title": "建筑收录"
-    },
     "search": {
-      "clear": "清除搜索",
       "placeholder": "搜索建筑名称、建造者、标签..."
     },
     "filters": {
@@ -177,60 +147,101 @@
       }
     },
     "imagesCount": "{count} 张图片",
-    "types": {
-      "original": "原创",
-      "derivative": "二创",
-      "replica": "搬运"
-    },
-    "fields": {
-      "originalAuthor": "原作者",
-      "source": "来源"
-    },
     "dialog": {
       "close": "关闭建筑详情",
       "previousImage": "上一张图片",
       "nextImage": "下一张图片",
       "currentImage": "当前图片 {current} / {total}",
-      "expandDetails": "展开详情",
-      "collapseDetails": "收起详情"
+      "expandDetails": "展开详情"
     },
     "states": {
-      "loading": "加载中...",
       "empty": "暂无建筑收录",
       "end": "没有更多建筑了"
     }
   },
-  "common": {
-    "states": {
-      "loading": "加载中...",
-      "error": "加载失败"
+  "buildingSubmission": {
+    "title": "建筑投稿",
+    "subtitle": "提交你的作品，审核通过后将展示在建筑收录中。",
+    "quota": "待审核 / {max}",
+    "sections": {
+      "basic": "基本信息",
+      "location": "建筑坐标",
+      "builders": "参与成员",
+      "images": "图片",
+      "tags": "标签"
+    },
+    "fields": {
+      "nameZh": "中文名称",
+      "nameEn": "英文名称",
+      "descriptionZh": "中文描述",
+      "descriptionEn": "英文描述",
+      "buildType": "建筑类型",
+      "buildDate": "建造日期",
+      "world": "世界名",
+      "playerPlaceholder": "输入玩家名后按空格或 Enter",
+      "weight": "权重",
+      "totalWeight": "总权重 {total}",
+      "tagZh": "中文标签",
+      "tagEn": "英文标签",
+      "sourceLink": "原作链接",
+      "sourceNoteZh": "中文来源备注",
+      "sourceNoteEn": "英文来源备注"
     },
     "actions": {
-      "close": "关闭",
-      "cancel": "取消",
-      "copy": "复制",
-      "copied": "已复制",
-      "copyFailed": "复制失败",
-      "copyHelp": "复制失败，请选中文本手动复制。",
-      "login": "登录"
+      "submit": "提交申请",
+      "reset": "清空",
+      "remove": "移除",
+      "addTag": "添加标签",
+      "uploadImages": "选择图片",
+      "increaseWeight": "增加权重",
+      "decreaseWeight": "减少权重",
+      "equalizeWeights": "平均分配",
+      "normalizeWeights": "归一化",
+      "clearBuilders": "清空其他"
+    },
+    "states": {
+      "loadFailed": "申请加载失败",
+      "playerNotFound": "没有找到该玩家",
+      "tagRequired": "标签需要同时填写中文和英文",
+      "imageLimit": "最多上传 15 张图片",
+      "imageSelectFailed": "图片读取失败",
+      "uploading": "正在上传图片",
+      "uploadFailed": "图片上传失败",
+      "imageTooSmall": "图片清晰度不足，至少需要 960x540",
+      "submitting": "正在提交",
+      "submitted": "申请已提交",
+      "submitFailed": "提交失败",
+      "pendingLimit": "待审核申请已达到 10 个",
+      "required": "中文和英文内容都需要填写",
+      "buildersRequired": "至少需要一个建造者",
+      "imagesRequired": "至少需要一张图片",
+      "coordinatesRequired": "请填写世界名和有效坐标",
+      "sourceRequired": "二创和复刻需要填写完整来源",
+      "invalid": "表单内容有误",
+      "uploadLimited": "上传过于频繁或已有上传正在处理，请稍后重试。"
+    },
+    "status": {
+      "pending": "待审核",
+      "approved": "已收入",
+      "rejected": "已拒绝"
+    },
+    "history": {
+      "title": "我的申请",
+      "empty": "还没有提交记录",
+      "rejectionReason": "拒绝原因：{reason}",
+      "expiresAt": "保留至 {time}"
     }
   },
-  "notFound": {
-    "hero": {
-      "title": "页面不存在",
-      "description": "你访问的页面可能已被移动、删除，或者链接地址有误。"
-    },
+  "map": {
+    "title": "世界地图",
     "actions": {
-      "returnHome": "返回首页"
+      "openExternal": "新窗口打开地图"
     }
   },
   "wiki": {
+    "title": "游戏指南",
     "meta": {
-      "title": "游戏指南",
       "description": "了解服务器规则、指令和游戏技巧"
-    },
-    "hero": {
-      "title": "游戏指南"
     },
     "navigation": {
       "title": "导航",
@@ -243,29 +254,15 @@
       "empty": {
         "title": "没有找到匹配内容",
         "description": "试试更短的关键词、指令别名，或换一种中英文说法。"
-      },
-      "actions": {
-        "clear": "清除搜索"
       }
     }
   },
-  "map": {
-    "actions": {
-      "openExternal": "新窗口打开地图"
-    },
-    "frameLabel": "Mik 服务器实时地图",
-    "frameTitle": "Mik Live Map"
-  },
   "bans": {
+    "title": "封禁列表",
     "meta": {
-      "title": "封禁列表",
       "description": "查看服务器封禁记录"
     },
-    "hero": {
-      "title": "封禁列表"
-    },
     "states": {
-      "loading": "加载中...",
       "empty": "暂无封禁记录",
       "error": "暂时无法加载封禁记录",
       "noResults": "没有匹配的封禁记录",
@@ -279,18 +276,67 @@
       "record": "时间与执行者"
     },
     "search": {
-      "placeholder": "搜索玩家、UUID、原因或执行者",
-      "clear": "清除搜索"
+      "placeholder": "搜索玩家、UUID、原因或执行者"
     },
     "actions": {
       "retry": "重新加载",
       "loadMore": "再显示 {count} 条"
     },
-    "recordsCount": "{count} 条记录",
-    "resultsCount": "{count} / {total} 条记录",
     "shownCount": "已显示 {count} / {total} 条"
   },
+  "communityBoard": {
+    "title": "社区公示",
+    "meta": {
+      "description": "查看施工告知、影响反馈和处理结果。"
+    },
+    "hero": {
+      "rules": "阅读服务器规则"
+    },
+    "records": {
+      "title": "最近记录",
+      "loading": "正在加载记录…",
+      "latestLimit": "这里显示最近 300 条；更早的记录可通过直达链接查看。",
+      "error": "暂时无法加载公示记录。",
+      "empty": "暂无公示记录。",
+      "by": "{author}",
+      "noticeUntil": "告知期至 {time}（UTC+8）",
+      "relatedNotice": "关联告知",
+      "permalink": "链接",
+      "permalinkLabel": "「{subject}」的记录链接",
+      "expand": "查看详情",
+      "showMore": "显示更多",
+      "noResults": "没有匹配的公示记录",
+      "linkUnavailable": "无法加载链接中的公示。",
+      "unknownTime": "时间未知"
+    },
+    "kind": {
+      "notice": "施工告知",
+      "objection": "影响反馈"
+    },
+    "status": {
+      "ruled": "已裁决",
+      "elapsed": "告知期已满",
+      "withdrawn": "反馈已撤回",
+      "noticeOpen": "告知期内",
+      "objectionOpen": "待沟通"
+    },
+    "detailLabels": {
+      "contact": "联系对象",
+      "scope": "范围",
+      "impact": "影响",
+      "proposal": "方案"
+    },
+    "ruling": {
+      "title": "处理结果"
+    },
+    "search": {
+      "placeholder": "搜索公示、玩家或位置"
+    }
+  },
   "auth": {
+    "fields": {
+      "passkeys": "Passkey"
+    },
     "login": {
       "title": "玩家登录",
       "subtitle": "使用游戏账号登录，仅限正式成员。",
@@ -300,21 +346,15 @@
     },
     "account": {
       "title": "个人中心",
-      "subtitle": "个人概览",
       "loading": "加载中",
       "navigation": {
-        "label": "个人中心导航",
-        "overview": "个人概览",
-        "buildingSubmission": "建筑投稿",
-        "security": "登录与安全",
-        "chat": "网页聊天"
+        "label": "个人中心导航"
       },
       "signedOut": {
         "title": "尚未登录",
         "description": "请先通过游戏内验证码或 Passkey 登录"
       },
       "fields": {
-        "passkeys": "Passkey",
         "uuid": "玩家 UUID"
       },
       "actions": {
@@ -326,25 +366,26 @@
         "moderator": "管理",
         "custodian": "维护者"
       },
-      "logoutFailed": "退出登录失败，请重试。"
+      "logoutFailed": "退出登录失败，请重试。",
+      "overview": {
+        "title": "个人概览"
+      }
     },
     "security": {
       "title": "登录与安全",
+      "subtitle": "管理用于登录的 Passkey 和浏览器会话。",
       "actions": {
         "addPasskey": "添加 Passkey",
         "delete": "删除",
         "revokeSession": "注销",
         "signOutAllSessions": "退出所有网页会话",
-        "cancel": "取消",
         "createPasskey": "创建 Passkey",
         "rename": "重命名",
         "renameItem": "重命名 {name}",
-        "save": "保存",
-        "refresh": "刷新"
+        "save": "保存"
       },
       "sections": {
-        "sessions": "浏览器会话",
-        "passkeys": "Passkey"
+        "sessions": "浏览器会话"
       },
       "session": {
         "description": "查看当前登录状态，并注销不再使用的浏览器",
@@ -399,7 +440,6 @@
       "passkeyStarting": "请完成 Passkey 验证",
       "creating": "正在生成验证码",
       "otherMethod": "使用其他方式",
-      "signIn": "登录",
       "minecraft": {
         "title": "游戏内验证码",
         "description": "在服务器内执行命令确认身份"
@@ -415,8 +455,7 @@
         "remaining": "有效期剩余 {time}",
         "instructions": "在服务器内执行下方命令并确认。",
         "copyHint": "点击复制命令",
-        "copyFailed": "复制失败，请手动复制上方命令。",
-        "copied": "已复制"
+        "copyFailed": "复制失败，请手动复制上方命令。"
       },
       "errors": {
         "request_failed": "暂时无法完成验证，请重试。",
@@ -430,167 +469,17 @@
         "authentication_invalidated": "账号安全信息已变更，请重新验证。",
         "passkey_unavailable": "没有可用的 Passkey，请使用游戏内确认。",
         "passkey_verification_failed": "Passkey 验证失败，请重试。",
-        "invalid_challenge": "本次验证已失效，请重新开始。",
-        "invalid_browser_nonce": "本次验证已失效，请重新开始。",
         "cancelled": "Passkey 操作已取消",
         "passkey_already_registered": "这个 Passkey 已经绑定过",
         "passkey_domain_mismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
         "passkey_unsupported_authenticator": "当前设备不支持可用于登录的 Passkey",
-        "passkey_browser_unsupported": "当前浏览器不支持 Passkey"
+        "passkey_browser_unsupported": "当前浏览器不支持 Passkey",
+        "verificationInvalid": "本次验证已失效，请重新开始。"
       }
-    }
-  },
-  "buildingSubmission": {
-    "title": "建筑投稿",
-    "subtitle": "提交你的作品，审核通过后将展示在建筑收录中。",
-    "quota": "待审核 / {max}",
-    "sections": {
-      "basic": "基本信息",
-      "location": "建筑坐标",
-      "builders": "参与成员",
-      "images": "图片",
-      "tags": "标签",
-      "source": "来源"
-    },
-    "fields": {
-      "nameZh": "中文名称",
-      "nameEn": "英文名称",
-      "descriptionZh": "中文描述",
-      "descriptionEn": "英文描述",
-      "buildType": "建筑类型",
-      "buildDate": "建造日期",
-      "world": "世界名",
-      "playerPlaceholder": "输入玩家名后按空格或 Enter",
-      "weight": "权重",
-      "totalWeight": "总权重 {total}",
-      "tagZh": "中文标签",
-      "tagEn": "英文标签",
-      "sourceAuthor": "原作者",
-      "sourceLink": "原作链接",
-      "sourceNoteZh": "中文来源备注",
-      "sourceNoteEn": "英文来源备注"
-    },
-    "types": {
-      "original": "原创",
-      "derivative": "二创",
-      "replica": "复刻"
-    },
-    "actions": {
-      "submit": "提交申请",
-      "reset": "清空",
-      "refresh": "刷新",
-      "remove": "移除",
-      "addTag": "添加标签",
-      "uploadImages": "选择图片",
-      "increaseWeight": "增加权重",
-      "decreaseWeight": "减少权重",
-      "equalizeWeights": "平均分配",
-      "normalizeWeights": "归一化",
-      "clearBuilders": "清空其他"
-    },
-    "states": {
-      "loadFailed": "申请加载失败",
-      "playerNotFound": "没有找到该玩家",
-      "tagRequired": "标签需要同时填写中文和英文",
-      "imageLimit": "最多上传 15 张图片",
-      "imageSelectFailed": "图片读取失败",
-      "uploading": "正在上传图片",
-      "uploadFailed": "图片上传失败",
-      "imageTooSmall": "图片清晰度不足，至少需要 960x540",
-      "submitting": "正在提交",
-      "submitted": "申请已提交",
-      "submitFailed": "提交失败",
-      "pendingLimit": "待审核申请已达到 10 个",
-      "required": "中文和英文内容都需要填写",
-      "buildersRequired": "至少需要一个建造者",
-      "imagesRequired": "至少需要一张图片",
-      "coordinatesRequired": "请填写世界名和有效坐标",
-      "sourceRequired": "二创和复刻需要填写完整来源",
-      "invalid": "表单内容有误",
-      "uploadLimited": "上传过于频繁或已有上传正在处理，请稍后重试。"
-    },
-    "status": {
-      "pending": "待审核",
-      "approved": "已收入",
-      "rejected": "已拒绝"
-    },
-    "history": {
-      "title": "我的申请",
-      "empty": "还没有提交记录",
-      "rejectionReason": "拒绝原因：{reason}",
-      "expiresAt": "保留至 {time}"
-    }
-  },
-  "footer": {
-    "navigation": "站内导航",
-    "siteInfo": "本站信息",
-    "links": {
-      "pcl2Homepage": "PCL2 主页",
-      "mcpConfig": "MCP 配置"
-    },
-    "legal": {
-      "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",
-      "eula": "Mojang 的 EULA"
-    }
-  },
-  "communityBoard": {
-    "meta": {
-      "title": "社区公示",
-      "description": "查看施工告知、影响反馈和处理结果。"
-    },
-    "hero": {
-      "title": "社区公示",
-      "rules": "阅读服务器规则"
-    },
-    "records": {
-      "title": "最近记录",
-      "loading": "正在加载记录…",
-      "latestLimit": "这里显示最近 300 条；更早的记录可通过直达链接查看。",
-      "error": "暂时无法加载公示记录。",
-      "retry": "重试",
-      "empty": "暂无公示记录。",
-      "by": "{author}",
-      "noticeUntil": "告知期至 {time}（UTC+8）",
-      "relatedNotice": "关联告知",
-      "permalink": "链接",
-      "permalinkLabel": "「{subject}」的记录链接",
-      "expand": "查看详情",
-      "collapse": "收起详情",
-      "showMore": "显示更多",
-      "count": "{count} 条记录",
-      "resultsCount": "{count} / {total} 条记录",
-      "noResults": "没有匹配的公示记录",
-      "linkUnavailable": "无法加载链接中的公示。",
-      "unknownTime": "时间未知"
-    },
-    "kind": {
-      "notice": "施工告知",
-      "objection": "影响反馈"
-    },
-    "status": {
-      "ruled": "已裁决",
-      "elapsed": "告知期已满",
-      "withdrawn": "反馈已撤回",
-      "noticeOpen": "告知期内",
-      "objectionOpen": "待沟通"
-    },
-    "detailLabels": {
-      "contact": "联系对象",
-      "scope": "范围",
-      "impact": "影响",
-      "proposal": "方案"
-    },
-    "ruling": {
-      "title": "处理结果"
-    },
-    "search": {
-      "placeholder": "搜索公示、玩家或位置",
-      "clear": "清除搜索"
     }
   },
   "chat": {
     "title": "网页聊天",
-    "retry": "重试",
     "send": "发送",
     "you": "你",
     "game": "游戏内",
@@ -632,7 +521,6 @@
       "idle": "未连接",
       "connecting": "连接中",
       "authorizing": "验证中",
-      "online": "在线",
       "reconnecting": "重连中",
       "error": "已断开"
     },
@@ -678,7 +566,6 @@
     "searchMessages": "搜索消息",
     "searchPlaceholder": "消息或玩家名",
     "searchHint": "查找此浏览器保存的消息",
-    "clearSearch": "清除搜索",
     "searchScope": "搜索范围",
     "searchCurrent": "当前会话",
     "searchAll": "全部会话",
@@ -696,11 +583,71 @@
       "unsupported": "此浏览器不支持网页通知",
       "denied": "通知已被浏览器阻止",
       "error": "通知未能启用，点击重试",
-      "mentionTitle": "{name} 在{channel}频道提到了你",
-      "public": "公共",
-      "staff": "管理"
+      "mentionTitle": "{name} 在{channel}频道提到了你"
     },
     "disableHistoryConfirm": "关闭保存并清空本机记录？",
     "messagePlaceholder": "输入消息…"
+  },
+  "pcl2": {
+    "title": "PCL2 主页",
+    "subtitle": "在启动器中查看 Mik 的服务器状态、公告和建筑。",
+    "description": "设置 -> 个性化 -> 自定义主页，点击“联网更新”，在“下载地址”栏输入上方地址，然后返回启动页即可完成。",
+    "addressLabel": "主页地址",
+    "detectingTimeZone": "正在准备主页地址…",
+    "stepsTitle": "设置步骤",
+    "steps": {
+      "settings": {
+        "title": "打开自定义主页",
+        "description": "在 PCL2 的设置、个性化中找到自定义主页，选择联网更新。"
+      },
+      "address": {
+        "title": "粘贴地址",
+        "description": "复制主页地址，粘贴到下载地址栏。"
+      },
+      "done": {
+        "title": "返回启动页",
+        "description": "重新打开启动页后即可看到 Mik 首页。"
+      }
+    }
+  },
+  "mcp": {
+    "title": "MCP 配置",
+    "subtitle": "在支持 MCP 的客户端中查询 Mik 服务器信息。",
+    "description": "Mik MCP 服务提供玩家在线状态、建筑收录、封禁记录、公告和 Wiki 搜索工具。",
+    "configTitle": "JSON 配置",
+    "stepsTitle": "接入步骤",
+    "steps": {
+      "client": {
+        "title": "打开 MCP 设置",
+        "description": "在客户端中添加远程 MCP 服务。"
+      },
+      "connect": {
+        "title": "填写服务地址",
+        "description": "使用本页的服务地址，或将 JSON 配置加入客户端配置文件。"
+      },
+      "done": {
+        "title": "连接并查询",
+        "description": "连接后可查询在线玩家、建筑、公告和游戏指南。"
+      }
+    },
+    "addressLabel": "服务地址",
+    "copyConfig": "复制 JSON"
+  },
+  "notFound": {
+    "hero": {
+      "title": "页面不存在",
+      "description": "你访问的页面可能已被移动、删除，或者链接地址有误。"
+    },
+    "actions": {
+      "returnHome": "返回首页"
+    }
+  },
+  "footer": {
+    "navigation": "站内导航",
+    "siteInfo": "本站信息",
+    "legal": {
+      "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",
+      "eula": "Mojang 的 EULA"
+    }
   }
 }

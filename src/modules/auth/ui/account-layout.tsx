@@ -22,8 +22,7 @@ interface AccountLayoutProps {
 }
 
 export function AccountLayout({ children }: AccountLayoutProps) {
-  const t = useTranslations('auth.account');
-  const commonT = useTranslations('common');
+  const t = useTranslations();
   const pathname = usePathname();
   const router = useRouter();
   const [logoutFailed, setLogoutFailed] = useState(false);
@@ -37,22 +36,22 @@ export function AccountLayout({ children }: AccountLayoutProps) {
     {
       href: '/account',
       icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
-      label: t('navigation.overview'),
+      label: t('auth.account.overview.title'),
     },
     {
       href: '/chat',
       icon: <MessageCircle className="h-4 w-4" aria-hidden="true" />,
-      label: t('navigation.chat'),
+      label: t('chat.title'),
     },
     {
       href: '/account/building-submissions',
       icon: <Landmark className="h-4 w-4" aria-hidden="true" />,
-      label: t('navigation.buildingSubmission'),
+      label: t('buildingSubmission.title'),
     },
     {
       href: '/account/security',
       icon: <KeyRound className="h-4 w-4" aria-hidden="true" />,
-      label: t('navigation.security'),
+      label: t('auth.security.title'),
     },
   ];
   const currentPage = navItems.find((item) => item.href === pathname);
@@ -81,10 +80,10 @@ export function AccountLayout({ children }: AccountLayoutProps) {
       <div className="account-workspace page-shell page-shell-stable">
         <div className="page-shell-content mx-auto w-full max-w-3xl">
           <section className="account-empty-state">
-            <h1>{t('signedOut.title')}</h1>
-            <p>{t('signedOut.description')}</p>
+            <h1>{t('auth.account.signedOut.title')}</h1>
+            <p>{t('auth.account.signedOut.description')}</p>
             <Link href="/login" className="ui-action-button ui-action-button--primary">
-              {commonT('actions.login')}
+              {t('common.actions.login')}
             </Link>
           </section>
         </div>
@@ -95,7 +94,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
   return (
     <div className="account-workspace page-shell page-shell-stable">
       <div className="account-workspace__inner page-shell-content" aria-busy={isLoading}>
-        <aside className="account-sidebar" aria-label={t('title')}>
+        <aside className="account-sidebar" aria-label={t('auth.account.title')}>
           <div className="account-identity">
             <div className="account-identity__avatar">
               {account ? (
@@ -105,8 +104,8 @@ export function AccountLayout({ children }: AccountLayoutProps) {
               )}
             </div>
             <div className="account-identity__copy">
-              <strong>{account?.currentName ?? t('loading')}</strong>
-              {account ? <p>{t(`roles.${account.role}`)}</p> : null}
+              <strong>{account?.currentName ?? t('auth.account.loading')}</strong>
+              {account ? <p>{t(`auth.account.roles.${account.role}`)}</p> : null}
             </div>
           </div>
 
@@ -114,7 +113,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
             ref={navigationToggle}
             type="button"
             className="account-navigation-toggle ui-sidebar-link"
-            aria-label={`${t('navigation.label')}: ${currentPage?.label ?? ''}`}
+            aria-label={`${t('auth.account.navigation.label')}: ${currentPage?.label ?? ''}`}
             aria-expanded={navigationOpen}
             aria-controls={navigationId}
             onClick={() => setNavigationOpen((open) => !open)}
@@ -129,7 +128,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
           </button>
 
           <div id={navigationId} className="account-sidebar__body" data-expanded={navigationOpen}>
-            <nav className="account-navigation" aria-label={t('navigation.label')}>
+            <nav className="account-navigation" aria-label={t('auth.account.navigation.label')}>
               {navItems.map((item) => (
                 <Link
                   aria-current={pathname === item.href ? 'page' : undefined}
@@ -163,12 +162,12 @@ export function AccountLayout({ children }: AccountLayoutProps) {
               onKeyDown={handleNavigationKeyDown}
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
-              <span>{t('actions.logout')}</span>
+              <span>{t('auth.account.actions.logout')}</span>
             </button>
           </div>
           {logoutFailed ? (
             <p role="alert" className="ui-inline-message">
-              {t('logoutFailed')}
+              {t('auth.account.logoutFailed')}
             </p>
           ) : null}
         </aside>

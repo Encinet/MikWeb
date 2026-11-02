@@ -39,6 +39,7 @@ export function SecurityActionDialog({
   onClearMessage: () => void;
 }) {
   const t = useTranslations('auth.security');
+  const commonT = useTranslations('common');
   const editingName = action.type === 'add-passkey' || action.type === 'rename';
   const [displayName, setDisplayName] = useState(editingName ? action.displayName : '');
   const actionLabel = t(
@@ -139,7 +140,7 @@ export function SecurityActionDialog({
               data-dialog-initial-focus={!editingName || undefined}
               onClick={onClose}
             >
-              {t('actions.cancel')}
+              {commonT('actions.cancel')}
             </button>
             <button
               type="submit"

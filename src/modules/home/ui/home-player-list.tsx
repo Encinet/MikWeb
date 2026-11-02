@@ -21,14 +21,14 @@ export default function HomePlayerList({
   isLoading,
   networkError,
 }: HomePlayerListProps) {
-  const t = useTranslations();
+  const homeT = useTranslations('home');
 
   return (
-    <section className="home-player-list" aria-label={t('home.live.playerListTitle')}>
+    <section className="home-player-list" aria-label={homeT('live.playerListTitle')}>
       {/* Header */}
       <div className="home-player-list__header">
         <Users className="h-4 w-4" aria-hidden="true" />
-        <h2>{t('home.live.playerListTitle')}</h2>
+        <h2>{homeT('live.playerListTitle')}</h2>
         {isOnline && !isLoading && !networkError ? (
           <strong className="home-player-list__count">{playerCount}</strong>
         ) : null}
@@ -38,20 +38,20 @@ export default function HomePlayerList({
       {isLoading ? (
         <div className="home-player-list__state">
           <div className="home-player-list__spinner" />
-          <p>{t('home.live.status.loading')}</p>
+          <p>{homeT('live.status.loading')}</p>
         </div>
       ) : networkError ? (
         <div className="home-player-list__state">
-          <p>{t('home.live.status.networkError')}</p>
+          <p>{homeT('live.status.networkError')}</p>
         </div>
       ) : !isOnline ? (
         <div className="home-player-list__state">
           <span className="home-player-list__dot" />
-          <p>{t('home.live.status.offline')}</p>
+          <p>{homeT('live.status.offline')}</p>
         </div>
       ) : players.length === 0 ? (
         <div className="home-player-list__state">
-          <p>{t('home.live.noPlayersOnline')}</p>
+          <p>{homeT('live.noPlayersOnline')}</p>
         </div>
       ) : (
         <ul className="home-player-list__list">

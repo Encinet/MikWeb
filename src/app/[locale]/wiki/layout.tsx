@@ -15,7 +15,7 @@ export async function generateMetadata({
 
   return buildPageMetadata({
     locale,
-    title: t('meta.title'),
+    title: t('title'),
     description: t('meta.description'),
     pathname: '/wiki',
   });
