@@ -293,17 +293,18 @@
   "auth": {
     "login": {
       "title": "玩家登录",
-      "subtitle": "仅正式成员可使用网页账号功能，支持游戏内验证码和 Passkey。",
+      "subtitle": "使用游戏账号登录，仅限正式成员。",
       "minecraft": {
         "title": "游戏内验证码",
-        "description": "生成一次性数字码，在服务器内执行 /weblogin 确认"
+        "description": "在服务器内执行命令确认登录"
       },
       "passkey": {
         "title": "Passkey",
-        "description": "使用已绑定的设备、系统账号或安全密钥登录"
+        "description": "使用已绑定的设备或安全密钥"
       },
       "codePanel": {
         "title": "验证码",
+        "waiting": "等待游戏内确认",
         "copyLabel": "复制网页登录命令",
         "remaining": "有效期剩余 {time}",
         "instructions": "在服务器内执行下方命令，确认后将自动登录。",
@@ -314,13 +315,14 @@
         "account": "进入个人页"
       },
       "states": {
+        "creating": "正在生成验证码",
         "completing": "正在完成登录",
         "copied": "已复制",
         "expired": "验证码已过期，请重新生成",
         "unavailable": "暂时无法生成验证码",
+        "statusUnavailable": "暂时无法获取确认状态，正在重试。",
         "memberRequired": "此网页系统仅向正式成员开放",
-        "loginSuccess": "登录成功",
-        "passkeyStarting": "正在启动 Passkey 登录",
+        "passkeyStarting": "请完成 Passkey 验证",
         "passkeyUnavailable": "暂时无法开始 Passkey 登录",
         "passkeyFailed": "Passkey 验证失败",
         "passkeyCancelled": "Passkey 登录已取消",

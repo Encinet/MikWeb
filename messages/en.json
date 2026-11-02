@@ -293,17 +293,18 @@
   "auth": {
     "login": {
       "title": "Player Login",
-      "subtitle": "Web account features are for Members. Sign in with an in-game code or Passkey.",
+      "subtitle": "Sign in with your game account. Members only.",
       "minecraft": {
         "title": "In-game Code",
-        "description": "Generate a one-time numeric code, then confirm it in game with /weblogin."
+        "description": "Confirm sign-in with a command on the server."
       },
       "passkey": {
         "title": "Passkey",
-        "description": "Sign in with a bound device, platform account, or security key."
+        "description": "Use a linked device or security key."
       },
       "codePanel": {
         "title": "Code",
+        "waiting": "Waiting for in-game confirmation",
         "copyLabel": "Copy web login command",
         "remaining": "Expires in {time}",
         "instructions": "Run this command on the server. You’ll sign in automatically after confirming.",
@@ -314,13 +315,14 @@
         "account": "Open account"
       },
       "states": {
+        "creating": "Generating code",
         "completing": "Completing login",
         "copied": "Copied",
         "expired": "The code expired. Generate a new one.",
         "unavailable": "Code login is temporarily unavailable.",
+        "statusUnavailable": "Unable to check confirmation. Retrying…",
         "memberRequired": "This web system is only available to formal members.",
-        "loginSuccess": "Signed in",
-        "passkeyStarting": "Starting Passkey login",
+        "passkeyStarting": "Confirm with your Passkey",
         "passkeyUnavailable": "Passkey login is temporarily unavailable.",
         "passkeyFailed": "Passkey verification failed.",
         "passkeyCancelled": "Passkey login was cancelled.",

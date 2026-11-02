@@ -30,11 +30,20 @@ export function LoginPage() {
   const command = challenge ? `/weblogin ${challenge.displayCode}` : '';
   const { status: copyStatus, copying, copy } = useCopyFeedback(command);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
-  const [isCompletingChallenge, setIsCompletingChallenge] = useState(false);
-  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
+  const [pending, setPending] = useState<'creating' | 'passkey' | 'completing' | null>(null);
+  const isCompletingLogin = pending === 'completing';
+  const progressMessage = isCompletingLogin
+    ? t('states.completing')
+    : pending === 'passkey'
+      ? t('states.passkeyStarting')
+      : null;
+  const progressHeadingRef = useRef<HTMLHeadingElement>(null);
   const completingChallengeRef = useRef(false);
   const expiredChallengeRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (progressMessage) progressHeadingRef.current?.focus({ preventScroll: true });
+  }, [progressMessage]);
 
   const expireChallenge = useCallback(
     (challengeId: string) => {
@@ -51,11 +60,9 @@ export function LoginPage() {
 
   const finishLogin = useCallback(async () => {
     if (!(await refresh())) return false;
-    setChallenge(null);
-    setFeedback({ message: t('states.loginSuccess'), kind: 'success' });
     router.replace(loginDestination());
     return true;
-  }, [refresh, router, t]);
+  }, [refresh, router]);
 
   const completeChallenge = useCallback(
     async (challengeId: string) => {
@@ -64,11 +71,9 @@ export function LoginPage() {
       }
 
       completingChallengeRef.current = true;
-      setIsCompletingChallenge(true);
-      setFeedback({
-        message: t('states.completing'),
-        kind: 'loading',
-      });
+      setPending('completing');
+      setFeedback(null);
+      let completed = false;
 
       try {
         const response = await fetch(
@@ -98,15 +103,16 @@ export function LoginPage() {
           return terminal;
         }
 
-        if (await finishLogin()) return true;
         setChallenge(null);
+        completed = await finishLogin();
+        if (completed) return true;
         setFeedback({ message: t('states.loginFailed'), kind: 'error' });
         return true;
       } catch {
         setFeedback({ message: t('states.loginFailed'), kind: 'error' });
         return false;
       } finally {
-        setIsCompletingChallenge(false);
+        if (!completed) setPending(null);
         completingChallengeRef.current = false;
       }
     },
@@ -143,15 +149,29 @@ export function LoginPage() {
           if (response.status === 404 || response.status === 403) {
             finished = true;
             expireChallenge(challenge.challengeId);
+          } else {
+            setFeedback({
+              message: t(
+                response.status === 429 ? 'states.rateLimited' : 'states.statusUnavailable',
+              ),
+              kind: 'error',
+            });
           }
         } else if (payload?.status === 'confirmed') {
           finished = (await completeChallenge(challenge.challengeId)) === true;
         } else if (['expired', 'not_found', 'consumed'].includes(payload?.status ?? '')) {
           finished = true;
           expireChallenge(challenge.challengeId);
+        } else if (payload?.status === 'pending') {
+          setFeedback(null);
+        } else {
+          setFeedback({ message: t('states.statusUnavailable'), kind: 'error' });
         }
       } catch {
         delay = 10_000;
+        if (!cancelled) {
+          setFeedback({ message: t('states.statusUnavailable'), kind: 'error' });
+        }
       } finally {
         inFlight = false;
         attempts += 1;
@@ -172,10 +192,10 @@ export function LoginPage() {
       window.clearTimeout(timer);
       document.removeEventListener('visibilitychange', resume);
     };
-  }, [challenge, completeChallenge, expireChallenge]);
+  }, [challenge, completeChallenge, expireChallenge, t]);
 
   useEffect(() => {
-    if (!challenge) {
+    if (!challenge || isCompletingLogin) {
       setRemainingSeconds(0);
       return;
     }
@@ -195,11 +215,11 @@ export function LoginPage() {
     updateRemaining();
     const timer = window.setInterval(updateRemaining, 1000);
     return () => window.clearInterval(timer);
-  }, [challenge, expireChallenge]);
+  }, [challenge, expireChallenge, isCompletingLogin]);
 
   const createChallenge = async () => {
     setFeedback(null);
-    setIsCreatingChallenge(true);
+    setPending('creating');
     try {
       const response = await fetch('/api/auth/challenges', {
         method: 'POST',
@@ -218,17 +238,15 @@ export function LoginPage() {
     } catch {
       setFeedback({ message: t('states.unavailable'), kind: 'error' });
     } finally {
-      setIsCreatingChallenge(false);
+      setPending(null);
     }
   };
 
   const loginWithPasskey = async () => {
     setChallenge(null);
-    setIsPasskeyLoading(true);
-    setFeedback({
-      message: t('states.passkeyStarting'),
-      kind: 'loading',
-    });
+    setPending('passkey');
+    setFeedback(null);
+    let completed = false;
 
     try {
       const optionsResponse = await fetch('/api/auth/passkeys/options/login', {
@@ -255,6 +273,8 @@ export function LoginPage() {
         setFeedback({ message: t(passkeyAuthenticationErrorMessageKey(error)), kind: 'info' });
         return;
       }
+      setPending('completing');
+      setFeedback(null);
       const loginResponse = await fetch('/api/auth/passkeys/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -271,13 +291,14 @@ export function LoginPage() {
         return;
       }
 
-      if (!(await finishLogin())) {
+      completed = await finishLogin();
+      if (!completed) {
         setFeedback({ message: t('states.loginFailed'), kind: 'error' });
       }
     } catch {
       setFeedback({ message: t('states.passkeyFailed'), kind: 'error' });
     } finally {
-      setIsPasskeyLoading(false);
+      if (!completed) setPending(null);
     }
   };
 
@@ -285,70 +306,90 @@ export function LoginPage() {
     <div className="auth-login-page">
       <div className="auth-login-backdrop" aria-hidden="true" />
       <div className="auth-login-stage">
-        <section className="auth-login-copy">
-          <div className="auth-login-mark">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
-          <h1>{t('title')}</h1>
-          <p>{t('subtitle')}</p>
-        </section>
-
-        <fieldset className="auth-login-methods">
-          <legend className="sr-only">{t('title')}</legend>
-          <button
-            type="button"
-            className="auth-login-method auth-login-method--primary"
-            disabled={isCreatingChallenge || isCompletingChallenge || isPasskeyLoading}
-            onClick={createChallenge}
+        {progressMessage ? (
+          <section
+            className="auth-login-copy auth-login-progress"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
           >
-            <span className="auth-login-method__icon">
-              {isCreatingChallenge ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Gamepad2 className="h-5 w-5" />
-              )}
-            </span>
-            <span className="auth-login-method__copy">
-              <strong>{t('minecraft.title')}</strong>
-              <span>{t('minecraft.description')}</span>
-            </span>
-            <ArrowRight className="auth-login-method__arrow h-4 w-4" />
-          </button>
+            <div className="auth-login-mark" aria-hidden="true">
+              <Loader2 className="h-8 w-8 motion-safe:animate-spin" />
+            </div>
+            <h1 ref={progressHeadingRef} tabIndex={-1}>
+              {progressMessage}
+            </h1>
+          </section>
+        ) : (
+          <>
+            <section className="auth-login-copy">
+              <div className="auth-login-mark">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h1>{t('title')}</h1>
+              <p>{t('subtitle')}</p>
+            </section>
 
-          <button
-            type="button"
-            className="auth-login-method"
-            disabled={isPasskeyLoading || isCreatingChallenge || isCompletingChallenge}
-            onClick={loginWithPasskey}
-          >
-            <span className="auth-login-method__icon">
-              {isPasskeyLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <KeyRound className="h-5 w-5" />
-              )}
-            </span>
-            <span className="auth-login-method__copy">
-              <strong>{t('passkey.title')}</strong>
-              <span>{t('passkey.description')}</span>
-            </span>
-            <ArrowRight className="auth-login-method__arrow h-4 w-4" />
-          </button>
-        </fieldset>
+            <fieldset className="auth-login-methods">
+              <legend className="sr-only">{t('title')}</legend>
+              <button
+                type="button"
+                className="auth-login-method auth-login-method--primary"
+                disabled={pending !== null}
+                aria-busy={pending === 'creating' || undefined}
+                onClick={createChallenge}
+              >
+                <span className="auth-login-method__icon">
+                  {pending === 'creating' ? (
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Gamepad2 className="h-5 w-5" />
+                  )}
+                </span>
+                <span className="auth-login-method__copy">
+                  <strong>
+                    {t(pending === 'creating' ? 'states.creating' : 'minecraft.title')}
+                  </strong>
+                  <span>{t('minecraft.description')}</span>
+                </span>
+                <ArrowRight className="auth-login-method__arrow h-4 w-4" />
+              </button>
 
-        <InlineFeedback value={challenge ? null : feedback} className="auth-login-feedback" />
+              <button
+                type="button"
+                className="auth-login-method"
+                disabled={pending !== null}
+                onClick={loginWithPasskey}
+              >
+                <span className="auth-login-method__icon">
+                  <KeyRound className="h-5 w-5" />
+                </span>
+                <span className="auth-login-method__copy">
+                  <strong>{t('passkey.title')}</strong>
+                  <span>{t('passkey.description')}</span>
+                </span>
+                <ArrowRight className="auth-login-method__arrow h-4 w-4" />
+              </button>
+            </fieldset>
 
-        {authenticated ? (
-          <Link className="auth-login-account-link" href="/account">
-            {t('actions.account')}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        ) : null}
+            <InlineFeedback value={challenge ? null : feedback} className="auth-login-feedback" />
+
+            {authenticated ? (
+              <Link className="auth-login-account-link" href="/account">
+                {t('actions.account')}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
+          </>
+        )}
       </div>
 
       <AppDialog
-        isOpen={Boolean(challenge)}
-        onClose={() => setChallenge(null)}
+        isOpen={Boolean(challenge) && !progressMessage}
+        onClose={() => {
+          setChallenge(null);
+          setFeedback(null);
+        }}
         title={t('codePanel.title')}
         icon={<Gamepad2 className="h-5 w-5" />}
         className="auth-login-code-dialog"
@@ -376,6 +417,14 @@ export function LoginPage() {
                 <Copy className="auth-login-code-copy h-5 w-5" aria-hidden="true" />
               )}
             </button>
+            {feedback ? (
+              <InlineFeedback value={feedback} className="auth-login-code-feedback" />
+            ) : (
+              <div className="auth-login-code-status" role="status">
+                <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
+                <span>{t('codePanel.waiting')}</span>
+              </div>
+            )}
             <div className="auth-login-code-footer">
               <span
                 id="auth-login-copy-feedback"
@@ -393,7 +442,6 @@ export function LoginPage() {
                 {t('codePanel.remaining', { time: formatRemainingTime(remainingSeconds) })}
               </time>
             </div>
-            <InlineFeedback value={feedback} />
           </>
         ) : null}
       </AppDialog>
