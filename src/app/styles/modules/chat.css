@@ -142,6 +142,12 @@ body:has(.chat-workspace)
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  border: 1px solid var(--chat-line);
+  border-radius: 1.65rem;
+  background: color-mix(in srgb, var(--theme-surface-modal) 70%, var(--chat-surface));
+  box-shadow:
+    0 16px 54px color-mix(in srgb, var(--theme-shadow-modal) 18%, transparent),
+    inset 0 1px 0 var(--theme-surface-highlight);
 }
 .chat-topbar {
   display: flex;
@@ -715,6 +721,10 @@ button.chat-peer:hover {
     display: inline-flex;
     border-color: transparent;
     background: transparent;
+  }
+  .chat-conversation {
+    border-radius: 1.3rem;
+    box-shadow: none;
   }
   .chat-topbar {
     gap: 0.35rem;
