@@ -44,7 +44,19 @@ function isSafeChatHref(value: string): boolean {
   }
 }
 
-// The same schema validates live traffic and untrusted IndexedDB records.
+const rgb = z.number().int().min(0).max(0xffffff);
+const contentStyleSchema = z
+  .strictObject({
+    color: rgb.optional(),
+    gradientEndColor: rgb.optional(),
+    bold: z.literal(true).optional(),
+    italic: z.literal(true).optional(),
+    underlined: z.literal(true).optional(),
+    strikethrough: z.literal(true).optional(),
+  })
+  .refine((style) => style.gradientEndColor === undefined || style.color !== undefined);
+
+// The same allowlist validates live traffic and untrusted IndexedDB records.
 const contentPartSchema = z
   .strictObject({
     text: z.string().min(1).max(16000),
@@ -56,12 +68,13 @@ const contentPartSchema = z
       .transform((value) => (isSafeChatHref(value) ? value : undefined))
       .optional(),
     mention: z.literal(true).optional(),
+    style: contentStyleSchema.optional(),
   })
   .refine((part) => !part.href || !part.mention);
 const contentSchema = z
   .array(contentPartSchema)
   .min(1)
-  .max(128)
+  .max(256)
   .refine(
     (parts) =>
       parts.reduce((length, part) => length + part.text.length, 0) <= 16000 &&
@@ -157,6 +170,7 @@ export type ChatMessage = z.infer<typeof chatMessageSchema>;
 export type ChatPlayerMessage = z.infer<typeof playerMessageSchema>;
 export type ChatServerMessage = z.infer<typeof serverMessageSchema>;
 export type ChatContent = z.infer<typeof contentSchema>;
+export type ChatStyle = z.infer<typeof contentStyleSchema>;
 export type ChatPeer = z.infer<typeof peerSchema>;
 export type ChatPresence = z.infer<typeof presenceSchema>;
 export interface ChatAccess {
