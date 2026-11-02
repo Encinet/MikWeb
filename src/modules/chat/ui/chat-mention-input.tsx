@@ -5,6 +5,7 @@ import type { RefObject } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { completeMention, mentionQuery } from '@/modules/chat/lib/chat-mentions';
 import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
+import { CHAT_MESSAGE_MAX_LENGTH } from '@/modules/chat/model/chat-protocol';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 interface ChatMentionInputProps {
@@ -138,7 +139,10 @@ export function ChatMentionInput({
             setDismissed(true);
           } else if (event.key === 'Tab') setDismissed(true);
         }}
-        maxLength={2000}
+        maxLength={
+          // Native maxlength measures UTF-16 units; message length uses Unicode code points.
+          CHAT_MESSAGE_MAX_LENGTH * 2
+        }
         autoComplete="off"
         placeholder={placeholder}
       />

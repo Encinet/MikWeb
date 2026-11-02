@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { ChatPage } from '@/modules/chat/ui/chat-page';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { buildPageMetadata } from '@/site/seo/build-page-metadata';
+import { ThemePreferences } from '@/site/theme/ui/theme-preferences';
 
 export async function generateMetadata({
   params,
@@ -23,4 +24,6 @@ export async function generateMetadata({
   };
 }
 
-export default ChatPage;
+export default function Page() {
+  return <ChatPage appearance={<ThemePreferences />} />;
+}

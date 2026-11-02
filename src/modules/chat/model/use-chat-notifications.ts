@@ -33,6 +33,18 @@ function enabled() {
   }
 }
 
+function canSuggest() {
+  try {
+    return (
+      supported() &&
+      Notification.permission !== 'denied' &&
+      localStorage.getItem(PREFERENCE) === null
+    );
+  } catch {
+    return false;
+  }
+}
+
 function worker() {
   registration ??= registerChatNotificationWorker()
     .then(async () => navigator.serviceWorker.ready)
@@ -66,6 +78,8 @@ export function useChatNotifications(
   const t = useTranslations('chat.notifications');
   const [status, setStatus] = useState<'unsupported' | 'off' | 'on' | 'denied' | 'error'>('off');
   const [busy, setBusy] = useState(false);
+  const [suggestion, setSuggestion] = useState(false);
+  const eligible = useRef(false);
   const open = useRef(onOpen);
   const token = useRef('');
   const key = destinationKey(destination);
@@ -79,6 +93,8 @@ export function useChatNotifications(
     token.current = currentToken;
     setBusy(false);
     const sync = () => {
+      eligible.current = canSuggest();
+      if (!eligible.current) setSuggestion(false);
       if (!supported()) setStatus('unsupported');
       else if (Notification.permission === 'denied') setStatus('denied');
       else setStatus(enabled() ? 'on' : 'off');
@@ -128,6 +144,10 @@ export function useChatNotifications(
   }, [owner]);
 
   useEffect(() => {
+    if (active && destination.channel === 'private' && eligible.current) setSuggestion(true);
+  }, [active, destination.channel]);
+
+  useEffect(() => {
     let current = true;
     const request = status === 'on' ? worker() : registration;
     if (!request) return;
@@ -150,6 +170,16 @@ export function useChatNotifications(
     };
   }, [owner, key, status, active, staff]);
 
+  const dismissSuggestion = () => {
+    eligible.current = false;
+    setSuggestion(false);
+    try {
+      localStorage.setItem(PREFERENCE, 'off');
+    } catch {
+      // The dismissal still lasts for this open chat when storage is unavailable.
+    }
+  };
+
   const toggle = async () => {
     if (!supported()) return;
     const currentToken = token.current;
@@ -157,20 +187,26 @@ export function useChatNotifications(
     setBusy(true);
     try {
       if (status === 'on') {
-        localStorage.removeItem(PREFERENCE);
+        dismissSuggestion();
         setStatus('off');
         const value = await worker();
         value.active?.postMessage({ type: 'clear', owner });
       } else {
-        const permission = await Notification.requestPermission();
+        const permission =
+          Notification.permission === 'granted'
+            ? 'granted'
+            : await Notification.requestPermission();
         if (!current()) return;
         if (permission !== 'granted') {
+          dismissSuggestion();
           setStatus(permission === 'denied' ? 'denied' : 'off');
           return;
         }
         await worker();
         if (!current()) return;
         localStorage.setItem(PREFERENCE, 'on');
+        eligible.current = false;
+        setSuggestion(false);
         setStatus('on');
       }
     } catch {
@@ -182,13 +218,10 @@ export function useChatNotifications(
 
   const receive = useCallback(
     (message: ChatPlayerMessage, access: () => ChatAccess | null) => {
-      if (
-        status === 'error' ||
-        !enabled() ||
-        message.senderUuid === owner ||
-        (!message.mentioned && message.channel !== 'private')
-      )
+      if (message.senderUuid === owner || (!message.mentioned && message.channel !== 'private'))
         return;
+      if (eligible.current && access()?.owner === owner) setSuggestion(true);
+      if (status === 'error' || !enabled()) return;
       const destination: ChatDestination =
         message.channel === 'private'
           ? { channel: 'private', targetUuid: message.senderUuid, name: message.senderName }
@@ -227,5 +260,5 @@ export function useChatNotifications(
     [owner, key, status, t],
   );
 
-  return { status, busy, toggle, receive };
+  return { status, busy, toggle, receive, suggestion, dismissSuggestion };
 }

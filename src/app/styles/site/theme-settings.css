@@ -51,11 +51,16 @@
 .appearance-panel__body {
   display: grid;
   min-height: 0;
-  gap: 0.75rem;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 1rem;
   scroll-padding-block: 1rem;
+}
+
+.appearance-preferences {
+  display: grid;
+  min-width: 0;
+  gap: 0.75rem;
 }
 
 .appearance-section {

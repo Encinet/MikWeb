@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 
+export const CHAT_MESSAGE_MAX_LENGTH = 256;
+
 const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
 const name = z
   .string()

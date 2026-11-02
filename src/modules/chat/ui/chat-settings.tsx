@@ -2,6 +2,7 @@
 
 import { Bell, HardDrive, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 import { useId, useState } from 'react';
 import type { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
 import type { useWebChat } from '@/modules/chat/model/use-web-chat';
@@ -10,12 +11,14 @@ import { Switch } from '@/shared/ui/switch';
 export function ChatSettings({
   chat,
   notifications,
+  appearance,
 }: {
   chat: Pick<
     ReturnType<typeof useWebChat>,
     'persist' | 'clearHistory' | 'setPersistence' | 'storageFailed'
   >;
   notifications: Pick<ReturnType<typeof useChatNotifications>, 'status' | 'busy' | 'toggle'>;
+  appearance: ReactNode;
 }) {
   const t = useTranslations('chat');
   const common = useTranslations('common');
@@ -37,6 +40,7 @@ export function ChatSettings({
   };
   return (
     <div className="chat-settings">
+      {appearance}
       <div className="ui-settings-list">
         <div className="ui-setting-row">
           <div className="ui-setting-row__label">

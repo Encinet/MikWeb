@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
@@ -20,7 +21,11 @@ import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 import { channelPlayers } from '@/modules/chat/model/chat-presence';
 
-import { messageConversation, messageDestination } from '@/modules/chat/model/chat-protocol';
+import {
+  CHAT_MESSAGE_MAX_LENGTH,
+  messageConversation,
+  messageDestination,
+} from '@/modules/chat/model/chat-protocol';
 import { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
 import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
@@ -28,9 +33,12 @@ import { ChatGate } from '@/modules/chat/ui/chat-gate';
 import { ChatMentionInput } from '@/modules/chat/ui/chat-mention-input';
 import type { ChatMessageJump } from '@/modules/chat/ui/chat-message-list';
 import { ChatMessageList } from '@/modules/chat/ui/chat-message-list';
+import type { ChatSearchCriteria } from '@/modules/chat/ui/chat-message-search';
 import { ChatMessageSearch } from '@/modules/chat/ui/chat-message-search';
 import { ChatNavigation } from '@/modules/chat/ui/chat-navigation';
+import { ChatNotificationSuggestion } from '@/modules/chat/ui/chat-notification-suggestion';
 import { ChatPlayerList, PeerPresence } from '@/modules/chat/ui/chat-player-list';
+import { ChatPlayerPicker } from '@/modules/chat/ui/chat-player-picker';
 import { ChatSettings } from '@/modules/chat/ui/chat-settings';
 import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
@@ -38,11 +46,14 @@ import { SITE_LOGO_PATH } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/routing';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
-export function ChatPage() {
+type ChatPanelMode = 'search' | 'players' | 'participants';
+
+export function ChatPage({ appearance }: { appearance: ReactNode }) {
   const { account, isLoading, verified, refresh } = useAuth();
   const t = useTranslations('chat');
   const commonT = useTranslations('common');
-  if (account && verified) return <ChatWorkspace key={account.playerUuid} account={account} />;
+  if (account && verified)
+    return <ChatWorkspace key={account.playerUuid} account={account} appearance={appearance} />;
   return (
     <ChatGate
       state={isLoading ? 'pending' : verified ? 'signed-out' : 'error'}
@@ -74,27 +85,63 @@ export function ChatPage() {
   );
 }
 
-function ChatWorkspace({ account }: { account: AuthAccount }) {
+function ChatWorkspace({ account, appearance }: { account: AuthAccount; appearance: ReactNode }) {
   const t = useTranslations('chat');
   const [selected, setSelected] = useState<ChatDestination>({ channel: 'public' });
   const [opened, setOpened] = useState<Map<string, string>>(new Map());
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [search, setSearch] = useState('');
+  const [playerQuery, setPlayerQuery] = useState('');
   const [jump, setJump] = useState<ChatMessageJump | null>(null);
   const jumpSequence = useRef(0);
   const completeJump = useCallback((sequence: number) => {
     setJump((current) => (current?.sequence === sequence ? null : current));
   }, []);
-  const [overlay, setOverlay] = useState<
-    'channels' | 'players' | 'participants' | 'settings' | 'search' | null
-  >(null);
+  const [overlay, setOverlay] = useState<'channels' | 'settings' | null>(null);
+  const [panel, setPanel] = useState<ChatPanelMode | null>(null);
+  const searchOpen = panel === 'search';
+  const peopleOpen = panel === 'players' || panel === 'participants';
+  const [searchCriteria, setSearchCriteria] = useState<ChatSearchCriteria>({
+    query: '',
+    scope: 'current',
+  });
+  const searchTrigger = useRef<HTMLButtonElement>(null);
+  const navigationTrigger = useRef<HTMLButtonElement>(null);
+  const panelOpener = useRef<HTMLElement | null>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const playerInput = useRef<HTMLInputElement>(null);
+  const searchPanelId = useId();
+  const playerPanelId = useId();
   const input = useRef<HTMLInputElement>(null);
-  const searchId = useId();
   const composeId = useId();
   const hintId = useId();
+  const openPanel = useCallback((mode: ChatPanelMode, trigger: HTMLElement | null) => {
+    panelOpener.current = trigger;
+    setOverlay(null);
+    setPanel(mode);
+    if (mode !== 'search') setPlayerQuery('');
+    requestAnimationFrame(() => {
+      const field = mode === 'search' ? searchInput.current : playerInput.current;
+      field?.focus({ preventScroll: true });
+      field?.select();
+    });
+  }, []);
+  const openSearch = useCallback(() => openPanel('search', searchTrigger.current), [openPanel]);
+  const closePanel = useCallback(() => {
+    setPanel(null);
+    requestAnimationFrame(() => {
+      const opener = panelOpener.current;
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+      if (!opener?.isConnected || document.activeElement !== opener) {
+        const fallback = window.matchMedia('(max-width: 820px)').matches
+          ? navigationTrigger.current
+          : searchTrigger.current;
+        fallback?.focus({ preventScroll: true });
+      }
+    });
+  }, []);
   const owner = account.playerUuid;
   const key = destinationKey(selected);
-  const choose = useCallback((destination: ChatDestination, messageId?: string) => {
+  const selectConversation = useCallback((destination: ChatDestination, messageId?: string) => {
     setSelected(destination);
     setJump(
       messageId
@@ -105,6 +152,14 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     if (destination.channel === 'private')
       setOpened((previous) => new Map(previous).set(destination.targetUuid, destination.name));
   }, []);
+  const choose = useCallback(
+    (destination: ChatDestination) => {
+      selectConversation(destination);
+      setPanel(null);
+      requestAnimationFrame(() => input.current?.focus({ preventScroll: true }));
+    },
+    [selectConversation],
+  );
   const chat = useWebChat();
   const players = chat.presence.players;
   const participants = useMemo(
@@ -115,10 +170,9 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     () => participants.filter((player) => player.playerUuid !== owner),
     [participants, owner],
   );
-  const roster =
-    overlay === 'players' ? players.filter((player) => player.playerUuid !== owner) : participants;
-  const filteredRoster = roster.filter((player) =>
-    player.name.toLowerCase().includes(search.toLowerCase()),
+  const recipients = useMemo(
+    () => players.filter((player) => player.playerUuid !== owner),
+    [players, owner],
   );
   const notifications = useChatNotifications(
     owner,
@@ -133,7 +187,30 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   );
   const draft = drafts[key] ?? '';
   const length = [...draft].length;
+  const overLimit = length > CHAT_MESSAGE_MAX_LENGTH;
   const online = chat.connection.status === 'online';
+  useEffect(() => {
+    if (!online || overlay !== null) return;
+    const shortcut = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape' && panel !== null) {
+        event.preventDefault();
+        closePanel();
+        return;
+      }
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === 'f'
+      ) {
+        event.preventDefault();
+        openSearch();
+      }
+    };
+    document.addEventListener('keydown', shortcut);
+    return () => document.removeEventListener('keydown', shortcut);
+  }, [online, overlay, panel, openSearch, closePanel]);
   const isChannel = selected.channel !== 'private';
   const peer =
     selected.channel === 'private'
@@ -215,9 +292,10 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
     },
     [key, chat.dismissPending],
   );
-  const openPlayers = () => {
-    setSearch('');
-    setOverlay('players');
+  const chooseSearchResult = (destination: ChatDestination, messageId: string) => {
+    selectConversation(destination, messageId);
+    // Match the workspace's split-view breakpoint; narrow screens return to the message.
+    if (!window.matchMedia('(min-width: 1180px)').matches) setPanel(null);
   };
   if (!online) {
     const { connection } = chat;
@@ -247,7 +325,11 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
       threads={threads}
       unread={chat.unread}
       onChoose={choose}
-      onNewPrivate={openPlayers}
+      onNewPrivate={(trigger) =>
+        panel === 'players' ? closePanel() : openPanel('players', trigger)
+      }
+      privatePanelId={playerPanelId}
+      privatePanelOpen={panel === 'players'}
     />
   );
   const RoomIcon =
@@ -274,7 +356,12 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
   );
 
   return (
-    <section className="chat-workspace" data-channel={selected.channel} aria-label={t('title')}>
+    <section
+      className="chat-workspace"
+      data-channel={selected.channel}
+      data-panel-open={panel !== null || undefined}
+      aria-label={t('title')}
+    >
       <aside className="chat-sidebar">
         {brand}
         {navigation}
@@ -284,6 +371,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
       <div className="chat-conversation">
         <header className="chat-topbar">
           <button
+            ref={navigationTrigger}
             type="button"
             className="chat-icon-button chat-mobile-menu"
             aria-label={t('title')}
@@ -316,23 +404,28 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
                 className="chat-icon-button chat-online-button"
                 aria-label={t('onlinePlayers', { count: participants.length })}
                 title={t('onlinePlayers', { count: participants.length })}
-                aria-haspopup="dialog"
-                onClick={() => {
-                  setSearch('');
-                  setOverlay('participants');
-                }}
+                aria-expanded={panel === 'participants'}
+                aria-controls={playerPanelId}
+                onClick={(event) =>
+                  panel === 'participants'
+                    ? closePanel()
+                    : openPanel('participants', event.currentTarget)
+                }
               >
                 <Users size={18} aria-hidden="true" />
                 <span>{participants.length}</span>
               </button>
             ) : null}
             <button
+              ref={searchTrigger}
               type="button"
               className="chat-icon-button"
               aria-label={t('searchMessages')}
               title={t('searchMessages')}
-              aria-haspopup="dialog"
-              onClick={() => setOverlay('search')}
+              aria-expanded={searchOpen}
+              aria-controls={searchPanelId}
+              aria-keyshortcuts="Control+f Meta+f"
+              onClick={searchOpen ? closePanel : openSearch}
             >
               <Search size={19} aria-hidden="true" />
             </button>
@@ -371,7 +464,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
           pending={pending}
           unread={chat.unread.get(key)}
           jump={jump}
-          paused={overlay !== null}
+          paused={overlay !== null || panel !== null}
           scroll={scroll}
           onRead={chat.markRead}
           onRestore={restoreDraft}
@@ -379,7 +472,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
         />
         <div className="chat-compose-area">
           <form
-            className="chat-compose"
+            className="chat-compose chat-input-surface"
             onSubmit={(event) => {
               event.preventDefault();
               send();
@@ -399,12 +492,12 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               describedBy={composeHint ? hintId : undefined}
               placeholder={t('messagePlaceholder')}
             />
-            {length > 800 ? (
+            {length > CHAT_MESSAGE_MAX_LENGTH * 0.8 ? (
               <span
-                className={`chat-character-count${length > 1000 ? ' is-over-limit' : ''}`}
-                aria-live={length > 1000 ? 'polite' : 'off'}
+                className={`chat-character-count${overLimit ? ' is-over-limit' : ''}`}
+                aria-live={overLimit ? 'polite' : 'off'}
               >
-                {length}/1000
+                {length}/{CHAT_MESSAGE_MAX_LENGTH}
               </span>
             ) : null}
             <button
@@ -412,7 +505,7 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               type="submit"
               aria-label={t('send')}
               title={t('send')}
-              disabled={!available || !draft.trim() || length > 1000}
+              disabled={!available || !draft.trim() || overLimit}
             >
               <Send size={19} aria-hidden="true" />
             </button>
@@ -422,10 +515,37 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
               {composeHint}
             </p>
           ) : null}
+          {available ? <ChatNotificationSuggestion notifications={notifications} /> : null}
         </div>
       </div>
 
-      {isChannel ? (
+      <ChatMessageSearch
+        id={searchPanelId}
+        inputRef={searchInput}
+        open={searchOpen}
+        criteria={searchCriteria}
+        onCriteriaChange={setSearchCriteria}
+        messages={chat.messages}
+        owner={owner}
+        conversation={selected}
+        onChoose={chooseSearchResult}
+        onClose={closePanel}
+      />
+
+      <ChatPlayerPicker
+        id={playerPanelId}
+        inputRef={playerInput}
+        open={peopleOpen}
+        title={panel === 'participants' ? t('participants') : t('newPrivate')}
+        query={playerQuery}
+        onQueryChange={setPlayerQuery}
+        players={panel === 'participants' ? participants : recipients}
+        owner={owner}
+        onChoose={choose}
+        onClose={closePanel}
+      />
+
+      {isChannel && panel === null ? (
         <aside className="chat-participants" aria-label={t('participants')}>
           <h2>{t('onlinePlayers', { count: participants.length })}</h2>
           <ChatPlayerList
@@ -441,29 +561,9 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
         key={overlay}
         isOpen={overlay !== null}
         onClose={() => setOverlay(null)}
-        title={
-          overlay === 'players'
-            ? t('newPrivate')
-            : overlay === 'participants'
-              ? t('onlinePlayers', { count: participants.length })
-              : overlay === 'search'
-                ? t('searchMessages')
-                : overlay === 'channels'
-                  ? t('title')
-                  : t('settings')
-        }
-        icon={
-          overlay === 'players' || overlay === 'participants' ? (
-            <Users size={18} />
-          ) : overlay === 'search' ? (
-            <Search size={18} />
-          ) : overlay === 'channels' ? (
-            <MessageCircle size={18} />
-          ) : (
-            <Settings2 size={18} />
-          )
-        }
-        className={`chat-dialog${overlay === 'channels' ? ' chat-navigation-dialog' : overlay === 'settings' ? ' chat-settings-dialog' : overlay === 'search' ? ' chat-search-dialog' : ''}`}
+        title={overlay === 'channels' ? t('title') : t('settings')}
+        icon={overlay === 'channels' ? <MessageCircle size={18} /> : <Settings2 size={18} />}
+        className={`chat-dialog${overlay === 'channels' ? ' chat-navigation-dialog' : overlay === 'settings' ? ' chat-settings-dialog' : ''}`}
       >
         {overlay === 'channels' ? (
           <>
@@ -472,37 +572,9 @@ function ChatWorkspace({ account }: { account: AuthAccount }) {
             {identity}
           </>
         ) : null}
-        {overlay === 'players' || overlay === 'participants' ? (
-          <div className="chat-people">
-            <label htmlFor={searchId} className="sr-only">
-              {t('search')}
-            </label>
-            <input
-              id={searchId}
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder={t('search')}
-              maxLength={64}
-              autoComplete="off"
-            />
-            <ChatPlayerList
-              players={filteredRoster}
-              owner={owner}
-              onChoose={choose}
-              emptyText={search ? t('noPlayersFound') : t('nobodyOnline')}
-            />
-          </div>
+        {overlay === 'settings' ? (
+          <ChatSettings chat={chat} notifications={notifications} appearance={appearance} />
         ) : null}
-        {overlay === 'search' ? (
-          <ChatMessageSearch
-            messages={chat.messages}
-            owner={owner}
-            conversation={key}
-            onChoose={choose}
-          />
-        ) : null}
-        {overlay === 'settings' ? <ChatSettings chat={chat} notifications={notifications} /> : null}
       </AppDialog>
     </section>
   );

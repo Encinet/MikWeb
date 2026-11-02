@@ -6,8 +6,7 @@ import type { RefObject } from 'react';
 import { useCallback, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppearancePanel } from '@/site/theme/model/use-appearance-panel';
-import { ThemeAppearanceOptions } from '@/site/theme/ui/theme-appearance-options';
-import { ThemeColorControls } from '@/site/theme/ui/theme-color-controls';
+import { ThemePreferences } from '@/site/theme/ui/theme-preferences';
 
 export function ThemeSettings() {
   const t = useTranslations('nav.theme');
@@ -65,8 +64,7 @@ function AppearancePanel({
         <X className="h-4 w-4" aria-hidden="true" />
       </button>
       <div className="appearance-panel__body">
-        <ThemeAppearanceOptions id={id} />
-        <ThemeColorControls id={id} />
+        <ThemePreferences />
       </div>
     </dialog>
   );

@@ -15,13 +15,17 @@ export function ChatNavigation({
   unread,
   onChoose,
   onNewPrivate,
+  privatePanelId,
+  privatePanelOpen,
 }: {
   selected: ChatDestination;
   staff: boolean;
   threads: { id: string; name: string }[];
   unread: Map<string, ChatUnread>;
   onChoose: (destination: ChatDestination) => void;
-  onNewPrivate: () => void;
+  onNewPrivate: (trigger: HTMLButtonElement) => void;
+  privatePanelId: string;
+  privatePanelOpen: boolean;
 }) {
   const t = useTranslations('chat');
   const key = destinationKey(selected);
@@ -58,7 +62,13 @@ export function ChatNavigation({
           })}
       </nav>
       <nav aria-label={t('privateList')} className="chat-threads">
-        <button type="button" className="ui-sidebar-link" onClick={onNewPrivate}>
+        <button
+          type="button"
+          className="ui-sidebar-link"
+          aria-expanded={privatePanelOpen}
+          aria-controls={privatePanelId}
+          onClick={(event) => onNewPrivate(event.currentTarget)}
+        >
           <MessageCirclePlus size={18} aria-hidden="true" />
           {t('newPrivate')}
         </button>

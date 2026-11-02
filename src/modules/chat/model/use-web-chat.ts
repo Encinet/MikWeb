@@ -24,6 +24,7 @@ import type {
   ChatPresence,
 } from '@/modules/chat/model/chat-protocol';
 import {
+  CHAT_MESSAGE_MAX_LENGTH,
   chatServerEventSchema,
   isPassiveMessage,
   mayReadMessage,
@@ -539,8 +540,7 @@ export function useWebChat() {
       )
         return false;
       if (
-        [...value].length > 1000 ||
-        new TextEncoder().encode(value).length > 4096 ||
+        [...value].length > CHAT_MESSAGE_MAX_LENGTH ||
         [...value].some((character) => {
           const code = character.codePointAt(0) ?? 0;
           return code <= 31 || (code >= 127 && code <= 159) || code === 0x2028 || code === 0x2029;

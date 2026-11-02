@@ -25,7 +25,7 @@ export function ChatPlayerList({
         const content = (
           <>
             <span className="chat-peer__avatar" aria-hidden="true">
-              <MinecraftAvatar uuid={player.playerUuid} name={player.name} size={28} />
+              <MinecraftAvatar uuid={player.playerUuid} name={player.name} size={32} />
             </span>
             <span className="chat-peer__name">
               {player.name}
@@ -42,6 +42,7 @@ export function ChatPlayerList({
               <button
                 type="button"
                 className="chat-peer"
+                data-chat-panel-result
                 aria-label={t('startPrivate', { name: player.name })}
                 onClick={() =>
                   onChoose({ channel: 'private', targetUuid: player.playerUuid, name: player.name })
@@ -53,7 +54,11 @@ export function ChatPlayerList({
           </li>
         );
       })}
-      {!players.length ? <li className="chat-list-empty">{emptyText}</li> : null}
+      {!players.length ? (
+        <li className="chat-list-empty">
+          <p role="status">{emptyText}</p>
+        </li>
+      ) : null}
     </ul>
   );
 }
