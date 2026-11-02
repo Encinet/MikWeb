@@ -129,12 +129,12 @@
   pointer-events: auto;
 }
 
-.project-navbar-shell.is-reading-page {
+.project-navbar-shell.is-docked-page {
   background: var(--theme-bg-base);
 }
 
-/* Cover the safe area; the reading bar owns its spacing below the header. */
-.project-navbar-shell.is-reading-page::before {
+/* Keep the safe area covered without extending the header over docked content. */
+.project-navbar-shell.is-docked-page::before {
   top: calc(-1 * var(--viewport-top-inset));
   bottom: 0;
   height: auto;

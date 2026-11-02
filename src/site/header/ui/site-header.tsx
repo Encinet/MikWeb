@@ -228,7 +228,7 @@ export default function SiteHeader() {
   return (
     <div
       ref={headerRef}
-      className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}${pathname === '/wiki' ? ' is-reading-page' : ''}`}
+      className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}${pathname === '/wiki' || pathname === '/map' ? ' is-docked-page' : ''}`}
       style={
         {
           '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),

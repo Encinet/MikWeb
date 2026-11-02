@@ -1,4 +1,4 @@
-import { ExternalLink, MapIcon } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
 const MAP_URL = 'https://map.mcmik.top';
@@ -18,22 +18,15 @@ export default async function MapPage() {
           allowFullScreen
         />
 
-        <div className="map-page__overlay">
-          <div className="map-page__frame-title">
-            <span className="map-page__frame-dot" />
-            <MapIcon className="h-4 w-4" />
-            <span>{t('title')}</span>
-          </div>
-          <a
-            href={MAP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="map-page__external-link"
-          >
-            <ExternalLink className="h-4 w-4" />
-            <span>{t('actions.openExternal')}</span>
-          </a>
-        </div>
+        <a
+          href={MAP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="map-page__external-link"
+        >
+          <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{t('actions.openExternal')}</span>
+        </a>
       </section>
     </div>
   );

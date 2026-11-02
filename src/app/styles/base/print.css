@@ -480,7 +480,7 @@
     break-inside: avoid-page;
   }
 
-  /* The embedded map cannot be printed reliably; retain its title and URL. */
+  /* The embedded map cannot be printed reliably; retain its direct URL. */
   html:has(.map-page),
   body:has(.map-page),
   .app-body:has(.map-page) {
@@ -488,8 +488,7 @@
   }
 
   .map-page,
-  .map-page__frame-shell,
-  .map-page__overlay {
+  .map-page__frame-shell {
     position: static !important;
     width: 100%;
     min-height: 0 !important;
@@ -501,21 +500,12 @@
     display: none !important;
   }
 
-  .map-page__overlay {
-    display: block;
-  }
-
-  .map-page__frame-title,
   .map-page__external-link {
+    position: static !important;
     display: block;
     width: fit-content;
     padding: 0;
     border: 0 !important;
-  }
-
-  .map-page__frame-title {
-    margin-bottom: 0.4rem;
-    font-size: 22pt;
   }
 
   .map-page__external-link::after {
@@ -524,8 +514,7 @@
     overflow-wrap: anywhere;
   }
 
-  .map-page__frame-dot,
-  .map-page__overlay svg {
+  .map-page__external-link svg {
     display: none;
   }
 
