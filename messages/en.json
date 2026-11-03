@@ -608,7 +608,11 @@
       "private": "Start private chat"
     },
     "activity": {
-      "count": "{count, plural, one {# player activity} other {# player activities}}"
+      "count": "{count, plural, one {# player activity} other {# player activities}}",
+      "gameJoined": "<players></players> joined the game",
+      "gameLeft": "<players></players> left the game",
+      "webJoined": "<players></players> joined web chat",
+      "webLeft": "<players></players> left web chat"
     },
     "preferences": {
       "density": "Message spacing",

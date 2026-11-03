@@ -608,7 +608,11 @@
       "private": "发起私聊"
     },
     "activity": {
-      "count": "{count, plural, other {# 条玩家动态}}"
+      "count": "{count, plural, other {# 条玩家动态}}",
+      "gameJoined": "<players></players> 加入了游戏",
+      "gameLeft": "<players></players> 退出了游戏",
+      "webJoined": "<players></players> 加入了网页聊天",
+      "webLeft": "<players></players> 退出了网页聊天"
     },
     "preferences": {
       "density": "消息间距",

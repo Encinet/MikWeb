@@ -8,13 +8,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { ChatMessage, ChatServerMessage } from '@/modules/chat/model/chat-protocol';
 import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
 import { emptyChatSearch } from '@/modules/chat/model/chat-search';
+import { ChatActivityGroup } from '@/modules/chat/ui/chat-activity-group';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
 import { ChatMessageList } from '@/modules/chat/ui/chat-message-list';
 import { ChatMessageSearch } from '@/modules/chat/ui/chat-message-search';
 import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
+import englishTranslations from '../../messages/en.json';
 import translations from '../../messages/zh-CN.json';
 import { createBrowserEnvironment } from '../support/browser-environment';
-import { message, OWNER, STREAM } from './fixtures';
+import { message, OTHER, OWNER, PEER, STREAM } from './fixtures';
 
 function localized(children: ReactNode) {
   return (
@@ -22,6 +24,27 @@ function localized(children: ReactNode) {
       {children}
     </NextIntlClientProvider>
   );
+}
+
+const ACTIVITY_TIME = new Date('2026-11-03T10:00:00Z').getTime();
+function activity(
+  id: string,
+  template: 'gameJoined' | 'gameLeft' | 'webJoined' | 'webLeft',
+  name: string,
+  sequence: number,
+  playerUuid?: string,
+): ChatServerMessage {
+  return {
+    kind: 'server',
+    id,
+    channel: 'public',
+    content: { template, values: { name } },
+    subject: playerUuid ? { playerUuid, name } : undefined,
+    countsAsUnread: false,
+    createdAt: ACTIVITY_TIME + sequence * 1000,
+    sequence,
+    streamId: STREAM,
+  };
 }
 
 function Timeline({
@@ -51,6 +74,31 @@ function Timeline({
       onMention={() => undefined}
       onPrivate={() => undefined}
     />
+  );
+}
+
+function ActivityNavigation({
+  messages,
+  revealedId,
+}: {
+  messages: ChatServerMessage[];
+  revealedId: string | null;
+}) {
+  const scroll = useChatScroll('public');
+  return (
+    <>
+      <div ref={scroll.attach}>
+        <ChatActivityGroup
+          messages={messages}
+          highlighted={null}
+          revealedId={revealedId}
+          formatTime={() => '18:00'}
+        />
+      </div>
+      <button type="button" onClick={() => scroll.toMessage('leave', true)}>
+        Jump to event
+      </button>
+    </>
   );
 }
 
@@ -87,32 +135,21 @@ test('hiding a large block of presence events keeps older conversation messages 
   assert.ok(!html.includes('查看更早消息'));
 });
 
-test('consecutive presence events share a visible group without hiding player names, actions or times', () => {
-  const now = new Date('2026-11-03T10:00:00Z').getTime();
-  const activity = (
-    id: string,
-    template: 'gameJoined' | 'gameLeft' | 'webJoined',
-    name: string,
-    sequence: number,
-  ): ChatServerMessage => ({
-    kind: 'server',
-    id,
-    channel: 'public',
-    content: { template, values: { name } },
-    countsAsUnread: false,
-    createdAt: now + sequence * 1000,
-    sequence,
-    streamId: STREAM,
-  });
+test('collapsed activity groups join player names by action and retain every detailed event in order', () => {
   const html = renderToStaticMarkup(
     localized(
       <Timeline
         showActivity
         messages={[
-          activity('game-join', 'gameJoined', 'Steve', 1),
-          activity('web-join', 'webJoined', 'Alex', 2),
-          message({ id: 'conversation', createdAt: now + 3000, sequence: 3 }),
-          activity('game-leave', 'gameLeft', 'Steve', 4),
+          activity('game-join', 'gameJoined', 'Steve', 1, OWNER),
+          activity('other-game-join', 'gameJoined', 'Alex', 2, PEER),
+          activity('game-leave', 'gameLeft', 'Sam', 3),
+          activity('other-game-leave', 'gameLeft', 'Pat', 4),
+          activity('web-join', 'webJoined', 'Taylor', 5),
+          activity('web-leave', 'webLeft', 'Riley', 6),
+          activity('repeated-game-join', 'gameJoined', 'Steve', 7),
+          message({ id: 'conversation', createdAt: ACTIVITY_TIME + 8000, sequence: 8 }),
+          activity('later-game-leave', 'gameLeft', 'Steve', 9),
         ]}
       />,
     ),
@@ -120,26 +157,163 @@ test('consecutive presence events share a visible group without hiding player na
   const window = new Window();
   try {
     window.document.body.innerHTML = html;
-    const groups = window.document.querySelectorAll('.chat-activity-group');
+    const groups = window.document.querySelectorAll('details.chat-activity-group');
     assert.equal(groups.length, 2, 'conversation messages separate presence groups');
-    assert.equal(groups[0].querySelectorAll('.chat-activity-line').length, 2);
+    assert.equal(groups[0].hasAttribute('open'), false);
+    assert.deepEqual(
+      Array.from(
+        groups[0].querySelectorAll('summary .chat-activity-summary > span'),
+        (line) => line.textContent,
+      ),
+      [
+        'Steve, Alex 加入了游戏',
+        'Sam, Pat 退出了游戏',
+        'Taylor 加入了网页聊天',
+        'Riley 退出了网页聊天',
+      ],
+    );
+    const players = groups[0].querySelectorAll('summary .chat-activity-player');
+    assert.deepEqual(
+      Array.from(players, (player) => player.textContent),
+      ['Steve', 'Alex', 'Sam', 'Pat', 'Taylor', 'Riley'],
+    );
+    for (const player of players) {
+      const avatar = player.firstElementChild;
+      assert.equal(
+        avatar?.className,
+        'chat-activity-avatar',
+        'the avatar precedes its player name',
+      );
+      assert.equal(
+        avatar?.getAttribute('aria-hidden'),
+        'true',
+        'the adjacent name labels the avatar',
+      );
+      assert.equal(avatar?.querySelector('img')?.getAttribute('width'), '18');
+    }
+    assert.ok(
+      players[0].querySelector('img')?.getAttribute('src')?.includes(`/helm/${OWNER}?size=18`),
+    );
+    assert.ok(
+      players[1].querySelector('img')?.getAttribute('src')?.includes(`/helm/${PEER}?size=18`),
+    );
+    const lines = groups[0].querySelectorAll('.chat-activity-line');
+    assert.deepEqual(
+      Array.from(lines, (line) => line.getAttribute('data-chat-message')),
+      [
+        'game-join',
+        'other-game-join',
+        'game-leave',
+        'other-game-leave',
+        'web-join',
+        'web-leave',
+        'repeated-game-join',
+      ],
+    );
     assert.equal(groups[1].querySelectorAll('.chat-activity-line').length, 1);
     for (const [id, text, sequence] of [
       ['game-join', 'Steve 加入了游戏', 1],
-      ['web-join', 'Alex 加入了网页聊天', 2],
-      ['game-leave', 'Steve 退出了游戏', 4],
+      ['other-game-join', 'Alex 加入了游戏', 2],
+      ['game-leave', 'Sam 退出了游戏', 3],
+      ['other-game-leave', 'Pat 退出了游戏', 4],
+      ['web-join', 'Taylor 加入了网页聊天', 5],
+      ['web-leave', 'Riley 退出了网页聊天', 6],
+      ['repeated-game-join', 'Steve 加入了游戏', 7],
+      ['later-game-leave', 'Steve 退出了游戏', 9],
     ] as const) {
       const line = window.document.querySelector(`[data-chat-message="${id}"]`);
       assert.ok(line);
       assert.ok(line.textContent.includes(text));
-      assert.equal(line.closest('details:not([open]), [hidden]'), null);
+      assert.equal(line.querySelector('.chat-activity-avatar img')?.getAttribute('width'), '18');
       assert.equal(line.getAttribute('tabindex'), '-1', 'search can focus each activity');
       const time = line.querySelector('time');
-      assert.equal(time?.getAttribute('datetime'), new Date(now + sequence * 1000).toISOString());
+      assert.equal(
+        time?.getAttribute('datetime'),
+        new Date(ACTIVITY_TIME + sequence * 1000).toISOString(),
+      );
       assert.ok(time?.textContent.trim());
     }
   } finally {
     void window.happyDOM.close();
+  }
+});
+
+test('activity summaries use comma-space separators in English too and preserve unstructured server messages', () => {
+  const html = renderToStaticMarkup(
+    <NextIntlClientProvider locale="en" timeZone="Asia/Singapore" messages={englishTranslations}>
+      <ChatActivityGroup
+        messages={[
+          activity('join-a', 'gameJoined', 'Alex', 1),
+          activity('join-b', 'gameJoined', 'Steve', 2),
+          {
+            ...activity('notice', 'gameLeft', 'Alex', 3, OTHER),
+            content: [{ text: 'Server notice' }],
+          },
+        ]}
+        highlighted={null}
+        revealedId={null}
+        formatTime={() => '18:00'}
+      />
+    </NextIntlClientProvider>,
+  );
+  const window = new Window();
+  try {
+    window.document.body.innerHTML = html;
+    assert.deepEqual(
+      Array.from(window.document.querySelectorAll('.chat-activity-summary > span'), (line) =>
+        line.textContent.trim(),
+      ),
+      ['Alex, Steve joined the game', 'Server notice'],
+    );
+    assert.ok(
+      window.document
+        .querySelector('.chat-activity-player img')
+        ?.getAttribute('src')
+        ?.includes('/helm/Alex?size=18'),
+    );
+    assert.ok(
+      window.document
+        .querySelector('.chat-activity-summary > span:last-child img')
+        ?.getAttribute('src')
+        ?.includes(`/helm/${OTHER}?size=18`),
+    );
+  } finally {
+    void window.happyDOM.close();
+  }
+});
+
+test('activity groups expand and collapse, and navigating to an event opens its details and focuses it', async () => {
+  const browser = createBrowserEnvironment();
+  const messages = [
+    activity('join', 'gameJoined', 'Alex', 1),
+    activity('leave', 'gameLeft', 'Steve', 2),
+  ];
+  try {
+    await act(async () =>
+      browser.root.render(localized(<ActivityNavigation messages={messages} revealedId={null} />)),
+    );
+    const group = document.querySelector('details');
+    const summary = group?.querySelector('summary');
+    assert.ok(group && summary);
+    assert.equal(group.open, false);
+    await act(async () => summary.click());
+    assert.equal(group.open, true);
+    assert.equal(group.querySelectorAll('.chat-activity-line').length, 2);
+    await act(async () => summary.click());
+    assert.equal(group.open, false);
+    const jump = document.querySelector('button');
+    assert.ok(jump);
+    await act(async () => jump.click());
+    assert.equal(group.open, true);
+    assert.equal(document.activeElement?.getAttribute('data-chat-message'), 'leave');
+    await act(async () => summary.click());
+    assert.equal(group.open, false);
+    await act(async () =>
+      browser.root.render(localized(<ActivityNavigation messages={messages} revealedId="leave" />)),
+    );
+    assert.equal(group.open, true, 'a search result opens the matching event group');
+  } finally {
+    await browser.close();
   }
 });
 

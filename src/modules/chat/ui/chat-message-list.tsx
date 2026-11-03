@@ -288,6 +288,7 @@ export const ChatMessageList = memo(function ChatMessageList({
                   <ChatActivityGroup
                     messages={group.filter((message) => message.kind === 'server')}
                     highlighted={highlight}
+                    revealedId={revealedActivityId}
                     formatTime={(timestamp) => format.time.format(timestamp)}
                   />
                 ) : first.kind === 'server' ? (
