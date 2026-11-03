@@ -47,7 +47,7 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><td>Tips</td><td><code>/tip</code></td><td>Show one server tip. The server may also send tips periodically</td></tr>
 <tr><td>Main menu</td><td><code>/menu</code></td><td>Open the main menu</td></tr>
 <tr><td>Language</td><td><code>/lang</code></td><td>Open the language settings menu. You can also open it from the main menu</td></tr>
-<tr><td>Web login</td><td><code>/weblogin &lt;code&gt;</code></td><td>Confirm a website login, usually by copying the full command from the website and running it in-game. Requires Member status</td></tr>
+<tr><td>Web login</td><td><code>/weblogin &lt;code&gt;</code></td><td>Confirm a website login, usually by copying the full command from the website and running it in-game</td></tr>
 </tbody>
 </table>
 

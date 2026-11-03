@@ -1,13 +1,17 @@
 export interface AuthAccount {
   playerUuid: string;
   currentName: string;
-  role: 'member' | 'moderator' | 'custodian';
+  role: 'default' | 'member' | 'moderator' | 'custodian';
   updatedAt: string;
   passkeyCount: number;
 }
 
 export function isStaffRole(role: unknown): role is 'moderator' | 'custodian' {
   return role === 'moderator' || role === 'custodian';
+}
+
+export function isMemberRole(role: unknown): role is 'member' | 'moderator' | 'custodian' {
+  return role === 'member' || isStaffRole(role);
 }
 
 export interface AuthSession {
@@ -48,7 +52,7 @@ export function isAuthAccount(value: unknown): value is AuthAccount {
     isObjectRecord(value) &&
     typeof value.playerUuid === 'string' &&
     typeof value.currentName === 'string' &&
-    (value.role === 'member' || isStaffRole(value.role)) &&
+    (value.role === 'default' || isMemberRole(value.role)) &&
     typeof value.updatedAt === 'string' &&
     typeof value.passkeyCount === 'number' &&
     Number.isSafeInteger(value.passkeyCount) &&

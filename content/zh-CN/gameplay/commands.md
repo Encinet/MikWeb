@@ -47,7 +47,7 @@ icon: Wrench
 <tr><td>小提示</td><td><code>/tip</code></td><td>查看一条服务器小提示，服务器也会不定期推送提示</td></tr>
 <tr><td>主菜单</td><td><code>/menu</code></td><td>打开主菜单</td></tr>
 <tr><td>语言</td><td><code>/lang</code></td><td>打开语言设置菜单，也可以从主菜单进入</td></tr>
-<tr><td>网页登录</td><td><code>/weblogin &lt;验证码&gt;</code></td><td>确认网页端登录，通常从网站复制完整命令后在游戏内执行，需要成员权限</td></tr>
+<tr><td>网页登录</td><td><code>/weblogin &lt;验证码&gt;</code></td><td>确认网页端登录，通常从网站复制完整命令后在游戏内执行</td></tr>
 </tbody>
 </table>
 

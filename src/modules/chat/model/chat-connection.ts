@@ -9,7 +9,6 @@ const ACCESS_ERRORS = new Set([
   'chat_forbidden',
   'session_changed',
   'unauthenticated',
-  'member_required',
 ]);
 
 /** Network recovery preserves context; an explicitly revoked identity never does. */

@@ -4,6 +4,8 @@ import { ImagePlus, LoaderCircle, Minus, Plus, Send, Trash2, UserPlus, X } from 
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
+import { isMemberRole } from '@/modules/auth/model/auth-types';
+import { useAuth } from '@/modules/auth/model/use-auth';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
 import type { BuildType } from '@/modules/building/model/building-types';
 import { getLocalizedText } from '@/modules/building/model/building-types';
@@ -26,6 +28,22 @@ import { InlineFeedback } from '@/shared/ui/feedback/async-state';
 const BUILDER_COLORS = ['#79b86f', '#55a6d9', '#e0a74f', '#d86b7d', '#9b7bd8', '#4fb6a8'];
 
 export function BuildingSubmissionPage() {
+  const { account } = useAuth();
+  const t = useTranslations('buildingSubmission');
+
+  if (!account || isMemberRole(account.role)) return <BuildingSubmissionForm />;
+
+  return (
+    <AccountLayout>
+      <section className="account-empty-state">
+        <h1>{t('title')}</h1>
+        <p>{t('states.memberRequired')}</p>
+      </section>
+    </AccountLayout>
+  );
+}
+
+function BuildingSubmissionForm() {
   const t = useTranslations('buildingSubmission');
   const buildingT = useTranslations('buildings');
   const commonT = useTranslations('common');

@@ -201,6 +201,7 @@
     },
     "states": {
       "loadFailed": "Failed to load submissions.",
+      "memberRequired": "You can submit buildings after becoming a Member.",
       "playerNotFound": "No player found.",
       "tagRequired": "Tags require both Chinese and English.",
       "imageLimit": "You can upload at most 15 images.",
@@ -339,7 +340,7 @@
     },
     "login": {
       "title": "Player Login",
-      "subtitle": "Sign in with your game account. Members only.",
+      "subtitle": "Sign in with an in-game code or Passkey.",
       "actions": {
         "account": "Open account"
       }
@@ -362,6 +363,7 @@
         "managePasskeys": "Manage"
       },
       "roles": {
+        "default": "Newcomer",
         "member": "Member",
         "moderator": "Moderator",
         "custodian": "Custodian"
@@ -461,7 +463,7 @@
         "request_failed": "Unable to complete verification. Please retry.",
         "expired": "The code expired. Generate a new one.",
         "rate_limited": "Too many requests. Please wait and try again.",
-        "member_required": "This web system is only available to formal members.",
+        "account_banned": "This account is currently banned and cannot sign in.",
         "status_unavailable": "Unable to check confirmation. Retrying…",
         "plugin_unavailable": "The game server is unavailable. Please retry shortly.",
         "account_mismatch": "Verify with the current account.",
@@ -551,7 +553,6 @@
       "authorization_timeout": "Chat authorization timed out. Please retry.",
       "connection_timeout": "The connection stopped responding.",
       "unauthenticated": "Sign in first.",
-      "member_required": "Web chat is available to current community members.",
       "chat_capacity": "Web chat is at capacity. Please try again later."
     },
     "staffUnavailable": "Staff permission is no longer available. Choose another channel to send.",

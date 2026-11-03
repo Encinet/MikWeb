@@ -23,7 +23,6 @@ test('temporary disconnections keep the workspace, but initial connections and r
     'chat_forbidden',
     'session_changed',
     'unauthenticated',
-    'member_required',
   ])
     assert.equal(keepChatWorkspace({ status: 'error', error }, true), false);
 });

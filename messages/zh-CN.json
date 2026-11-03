@@ -201,6 +201,7 @@
     },
     "states": {
       "loadFailed": "申请加载失败",
+      "memberRequired": "成为正式成员后即可提交建筑作品。",
       "playerNotFound": "没有找到该玩家",
       "tagRequired": "标签需要同时填写中文和英文",
       "imageLimit": "最多上传 15 张图片",
@@ -339,7 +340,7 @@
     },
     "login": {
       "title": "玩家登录",
-      "subtitle": "使用游戏账号登录，仅限正式成员。",
+      "subtitle": "使用游戏内验证码或 Passkey 登录。",
       "actions": {
         "account": "进入个人页"
       }
@@ -362,6 +363,7 @@
         "managePasskeys": "管理"
       },
       "roles": {
+        "default": "新人",
         "member": "成员",
         "moderator": "管理",
         "custodian": "维护者"
@@ -461,7 +463,7 @@
         "request_failed": "暂时无法完成验证，请重试。",
         "expired": "验证码已过期，请重新生成",
         "rate_limited": "请求过于频繁，请稍后重试。",
-        "member_required": "此网页系统仅向正式成员开放",
+        "account_banned": "此账号正在封禁中，无法登录。",
         "status_unavailable": "暂时无法获取确认状态，正在重试。",
         "plugin_unavailable": "游戏服务器暂时无法连接，请稍后重试。",
         "account_mismatch": "请使用当前账号完成验证。",
@@ -551,7 +553,6 @@
       "authorization_timeout": "聊天授权超时，请重试。",
       "connection_timeout": "连接已失去响应。",
       "unauthenticated": "请先登录。",
-      "member_required": "网页聊天仅向当前社区成员开放。",
       "chat_capacity": "网页聊天连接已满，请稍后重试。"
     },
     "staffUnavailable": "管理聊天权限已失效，请选择其他频道。",

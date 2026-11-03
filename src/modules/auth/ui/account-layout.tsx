@@ -13,6 +13,7 @@ import {
 import { useTranslations } from 'next-intl';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useId, useRef, useState } from 'react';
+import { isMemberRole } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { Link, usePathname, useRouter } from '@/shared/i18n/routing';
@@ -43,11 +44,15 @@ export function AccountLayout({ children }: AccountLayoutProps) {
       icon: <MessageCircle className="h-4 w-4" aria-hidden="true" />,
       label: t('chat.title'),
     },
-    {
-      href: '/account/building-submissions',
-      icon: <Landmark className="h-4 w-4" aria-hidden="true" />,
-      label: t('buildingSubmission.title'),
-    },
+    ...(isMemberRole(account?.role)
+      ? [
+          {
+            href: '/account/building-submissions',
+            icon: <Landmark className="h-4 w-4" aria-hidden="true" />,
+            label: t('buildingSubmission.title'),
+          },
+        ]
+      : []),
     {
       href: '/account/security',
       icon: <KeyRound className="h-4 w-4" aria-hidden="true" />,
