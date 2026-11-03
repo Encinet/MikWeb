@@ -21,17 +21,18 @@ export function useCopyFeedback(value: string) {
   }, [value]);
 
   const copy = async () => {
-    if (feedback.value === value && feedback.copying) return;
+    if (feedback.value === value && feedback.copying) return false;
     const operation = ++operationRef.current;
     if (resetTimerRef.current !== null) window.clearTimeout(resetTimerRef.current);
     setFeedback({ value, status: 'idle', copying: true });
     const success = await copyText(value);
-    if (operation !== operationRef.current) return;
+    if (operation !== operationRef.current) return false;
     setFeedback({ value, status: success ? 'copied' : 'error', copying: false });
     resetTimerRef.current = window.setTimeout(
       () => setFeedback({ value, status: 'idle', copying: false }),
       success ? 1800 : 4000,
     );
+    return success;
   };
 
   return {

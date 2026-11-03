@@ -63,3 +63,21 @@ export function anchoredSurfacePosition(
     top: Math.max(top, Math.min(preferredTop, bottom - surface.height)),
   };
 }
+
+export function pointedSurfacePosition(
+  point: { x: number; y: number },
+  surface: { width: number; height: number },
+  viewport: ViewportBounds,
+  gap = 8,
+): { left: number; top: number } {
+  return {
+    left: Math.max(
+      viewport.left + gap,
+      Math.min(point.x, viewport.left + viewport.width - surface.width - gap),
+    ),
+    top: Math.max(
+      viewport.top + gap,
+      Math.min(point.y, viewport.top + viewport.height - surface.height - gap),
+    ),
+  };
+}

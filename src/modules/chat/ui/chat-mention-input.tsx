@@ -2,10 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { completeMention, mentionQuery } from '@/modules/chat/lib/chat-mentions';
+import type { ChatInputHistoryEntry } from '@/modules/chat/model/chat-input-history';
 import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/modules/chat/model/chat-protocol';
+import { useChatInputHistory } from '@/modules/chat/model/use-chat-input-history';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 interface ChatMentionInputProps {
@@ -14,6 +16,7 @@ interface ChatMentionInputProps {
   value: string;
   onChange: (value: string) => void;
   peers: ChatPeer[];
+  history: ChatInputHistoryEntry[];
   enabled: boolean;
   describedBy?: string;
   placeholder: string;
@@ -25,6 +28,7 @@ export function ChatMentionInput({
   value,
   onChange,
   peers,
+  history,
   enabled,
   describedBy,
   placeholder,
@@ -37,8 +41,11 @@ export function ChatMentionInput({
   const [composing, setComposing] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [active, setActive] = useState<string | null>(null);
+  const inputHistory = useChatInputHistory(history, value);
   const query =
-    enabled && focused && !composing && !dismissed ? mentionQuery(value, ...selection) : null;
+    enabled && focused && !composing && !dismissed && !inputHistory.active
+      ? mentionQuery(value, ...selection)
+      : null;
   const search = query?.text.trimStart().toLowerCase() ?? '';
   const candidates = query
     ? peers
@@ -59,6 +66,7 @@ export function ChatMentionInput({
     if (!query) return;
     const next = completeMention(value, query, peer.name);
     const element = inputRef.current;
+    inputHistory.reset();
     onChange(next.value);
     setDismissed(true);
     requestAnimationFrame(() => {
@@ -68,6 +76,10 @@ export function ChatMentionInput({
       updateSelection(element);
     });
   };
+
+  useLayoutEffect(() => {
+    if (inputHistory.active) inputRef.current?.setSelectionRange(value.length, value.length);
+  }, [inputHistory.active, inputRef, value]);
 
   useEffect(() => {
     const option = activeId ? document.getElementById(activeId) : null;
@@ -91,6 +103,7 @@ export function ChatMentionInput({
         aria-describedby={describedBy}
         value={value}
         onChange={(event) => {
+          inputHistory.reset();
           onChange(event.target.value);
           updateSelection(event.currentTarget);
           setDismissed(false);
@@ -119,7 +132,23 @@ export function ChatMentionInput({
             if (event.key === 'Enter') event.preventDefault();
             return;
           }
-          if (!selected) return;
+          if (!selected) {
+            if (
+              (event.key === 'ArrowUp' || event.key === 'ArrowDown') &&
+              !event.shiftKey &&
+              !event.ctrlKey &&
+              !event.metaKey &&
+              !event.altKey
+            ) {
+              const recalled = inputHistory.recall(event.key === 'ArrowUp' ? -1 : 1);
+              if (recalled !== null) {
+                event.preventDefault();
+                if (recalled !== value) onChange(recalled);
+                setDismissed(true);
+              }
+            }
+            return;
+          }
           if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             if (event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) return;
             event.preventDefault();

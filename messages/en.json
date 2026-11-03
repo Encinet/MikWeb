@@ -560,8 +560,9 @@
     "backHome": "Back to home",
     "today": "Today",
     "latest": "Latest messages",
+    "readingActions": "Message navigation",
     "readMarker": "Last read here",
-    "jumpUnread": "{count} unread",
+    "jumpUnread": "First unread ({count})",
     "unreadCount": "{count} unread messages",
     "loadEarlier": "Earlier messages",
     "searchMessages": "Search messages",
@@ -572,7 +573,7 @@
     "searchAll": "All conversations",
     "searchCount": "{count} results",
     "searchEmpty": "No matching messages",
-    "searchEmptyHint": "Try a shorter search",
+    "searchEmptyHint": "Try different keywords or filters",
     "loadMoreResults": "More results",
     "noPlayersFound": "No matching players online",
     "confirmClear": "Clear history",
@@ -589,7 +590,6 @@
     "disableHistoryConfirm": "Stop saving and clear local messages, drafts, and conversations?",
     "messagePlaceholder": "Message…",
     "composePlaceholder": "Message {channel}…",
-    "moreActions": "More actions",
     "navigationUnread": "Channels and conversations, {count} unread messages",
     "drafts": {
       "label": "Draft",
@@ -599,15 +599,7 @@
       "saved": "Draft saved on this device"
     },
     "connection": {
-      "reconnecting": "Reconnecting…",
-      "composeHint": "You can keep editing your draft while reconnecting"
-    },
-    "mentions": {
-      "title": "Mentions",
-      "search": "Search your mentions",
-      "empty": "No mentions yet",
-      "unread": "{count} unread mentions",
-      "hint": "Mentions received and saved in this browser appear here"
+      "reconnecting": "Reconnecting…"
     },
     "messageActions": {
       "label": "Actions for a message from {name}",
@@ -629,6 +621,7 @@
     },
     "filters": {
       "label": "Filters",
+      "mentionsOnly": "Only mentions of me",
       "author": "Player",
       "anyPlayer": "Any player",
       "source": "Message source",

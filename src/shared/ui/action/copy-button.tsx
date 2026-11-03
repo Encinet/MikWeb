@@ -9,6 +9,7 @@ type CopyButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' 
   value: string;
   label?: string;
   showLabel?: boolean;
+  onCopied?: () => void;
 };
 
 export function CopyButton({
@@ -16,6 +17,7 @@ export function CopyButton({
   value,
   label,
   showLabel = false,
+  onCopied,
   ...buttonProps
 }: CopyButtonProps) {
   const t = useTranslations('common');
@@ -44,7 +46,9 @@ export function CopyButton({
         ]
           .filter(Boolean)
           .join(' ')}
-        onClick={() => void copy()}
+        onClick={async () => {
+          if (await copy()) onCopied?.();
+        }}
         aria-label={statusLabel}
         title={statusLabel}
       >

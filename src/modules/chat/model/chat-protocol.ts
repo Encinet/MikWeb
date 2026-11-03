@@ -3,6 +3,18 @@ import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 
 export const CHAT_MESSAGE_MAX_LENGTH = 256;
 
+export function isValidChatInput(value: string): boolean {
+  const characters = [...value];
+  return (
+    characters.length > 0 &&
+    characters.length <= CHAT_MESSAGE_MAX_LENGTH &&
+    characters.every((character) => {
+      const code = character.codePointAt(0) ?? 0;
+      return code > 31 && (code < 127 || code > 159) && code !== 0x2028 && code !== 0x2029;
+    })
+  );
+}
+
 const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
 const name = z
   .string()

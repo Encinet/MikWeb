@@ -1,13 +1,13 @@
 'use client';
 
-import { AtSign, Hash, MessageCirclePlus, Pin, PinOff, Shield, X } from 'lucide-react';
+import { Hash, MessageCirclePlus, Pin, PinOff, Shield, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 
 import type { ChatUnread } from '@/modules/chat/model/chat-reading';
 import type { ChatThread, ChatWorkspaceState } from '@/modules/chat/model/chat-workspace';
-import { ChatActionMenu } from '@/modules/chat/ui/chat-action-menu';
+import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 export function ChatNavigation({
@@ -23,10 +23,6 @@ export function ChatNavigation({
   online,
   onPin,
   onCloseThread,
-  onMentions,
-  mentionsOpen,
-  mentionsPanelId,
-  mentionCount,
 }: {
   selected: ChatDestination;
   staff: boolean;
@@ -40,10 +36,6 @@ export function ChatNavigation({
   online: boolean;
   onPin: (thread: ChatThread) => void;
   onCloseThread: (thread: ChatThread) => void;
-  onMentions: (trigger: HTMLButtonElement) => void;
-  mentionsOpen: boolean;
-  mentionsPanelId: string;
-  mentionCount: number;
 }) {
   const t = useTranslations('chat');
   const locale = useLocale();
@@ -84,22 +76,6 @@ export function ChatNavigation({
               </button>
             );
           })}
-        <button
-          type="button"
-          className="ui-sidebar-link chat-mentions-link"
-          aria-expanded={mentionsOpen}
-          aria-controls={mentionsPanelId}
-          onClick={(event) => onMentions(event.currentTarget)}
-        >
-          <AtSign size={18} aria-hidden="true" />
-          <span className="chat-navigation-label">{t('mentions.title')}</span>
-          {mentionCount ? (
-            <span className="chat-unread-count">
-              <span aria-hidden="true">{mentionCount > 99 ? '99+' : mentionCount}</span>
-              <span className="sr-only">{t('mentions.unread', { count: mentionCount })}</span>
-            </span>
-          ) : null}
-        </button>
       </nav>
       <nav aria-label={t('privateList')} className="chat-threads">
         <button
@@ -120,75 +96,84 @@ export function ChatNavigation({
           const sameDay =
             latest && new Date(latest.createdAt).toDateString() === new Date().toDateString();
           return (
-            <div className="chat-thread-row" key={destination.targetUuid}>
-              <button
-                type="button"
-                className="ui-sidebar-link chat-thread-link"
-                aria-current={key === conversation ? 'page' : undefined}
-                onClick={() => onChoose(destination)}
-              >
-                <span className="chat-thread-avatar" aria-hidden="true">
-                  <MinecraftAvatar
-                    uuid={destination.targetUuid}
-                    name={destination.name}
-                    size={32}
-                  />
-                  {online && thread.peer ? <span className="chat-thread-online" /> : null}
-                </span>
-                <span className="chat-thread-copy">
-                  <span className="chat-thread-heading">
-                    <span>{destination.name}</span>
-                    {thread.pinned ? <Pin size={11} aria-label={t('threads.pinned')} /> : null}
-                    {latest ? (
-                      <time dateTime={new Date(latest.createdAt).toISOString()}>
-                        {(sameDay ? time : date).format(latest.createdAt)}
-                      </time>
-                    ) : null}
+            <ChatContextMenu
+              key={destination.targetUuid}
+              label={t('threads.actions', { name: destination.name })}
+              actions={() => (
+                <>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    tabIndex={-1}
+                    className="chat-popover-action"
+                    data-chat-menu-close
+                    onClick={() => onPin(thread)}
+                  >
+                    {thread.pinned ? (
+                      <PinOff size={16} aria-hidden="true" />
+                    ) : (
+                      <Pin size={16} aria-hidden="true" />
+                    )}
+                    {t(thread.pinned ? 'threads.unpin' : 'threads.pin')}
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    tabIndex={-1}
+                    className="chat-popover-action"
+                    data-chat-menu-close
+                    onClick={() => onCloseThread(thread)}
+                  >
+                    <X size={16} aria-hidden="true" />
+                    {t('threads.close')}
+                  </button>
+                </>
+              )}
+            >
+              {(target) => (
+                <button
+                  {...target}
+                  type="button"
+                  className="ui-sidebar-link chat-thread-link"
+                  aria-current={key === conversation ? 'page' : undefined}
+                  onClick={() => onChoose(destination)}
+                >
+                  <span className="chat-thread-avatar" aria-hidden="true">
+                    <MinecraftAvatar
+                      uuid={destination.targetUuid}
+                      name={destination.name}
+                      size={32}
+                    />
+                    {online && thread.peer ? <span className="chat-thread-online" /> : null}
                   </span>
-                  {preview ? (
-                    <span className="chat-thread-preview">
-                      {thread.draft ? (
-                        <span className="chat-draft-indicator">{t('drafts.label')} </span>
+                  <span className="chat-thread-copy">
+                    <span className="chat-thread-heading">
+                      <span>{destination.name}</span>
+                      {thread.pinned ? <Pin size={11} aria-label={t('threads.pinned')} /> : null}
+                      {latest ? (
+                        <time dateTime={new Date(latest.createdAt).toISOString()}>
+                          {(sameDay ? time : date).format(latest.createdAt)}
+                        </time>
                       ) : null}
-                      {preview}
                     </span>
-                  ) : null}
-                  <span className="sr-only">
-                    {online
-                      ? t(thread.peer ? 'threads.online' : 'threads.offline')
-                      : t('status.reconnecting')}
+                    {preview ? (
+                      <span className="chat-thread-preview">
+                        {thread.draft ? (
+                          <span className="chat-draft-indicator">{t('drafts.label')} </span>
+                        ) : null}
+                        {preview}
+                      </span>
+                    ) : null}
+                    <span className="sr-only">
+                      {online
+                        ? t(thread.peer ? 'threads.online' : 'threads.offline')
+                        : t('status.reconnecting')}
+                    </span>
                   </span>
-                </span>
-                {badge(conversation)}
-              </button>
-              <ChatActionMenu
-                label={t('threads.actions', { name: destination.name })}
-                className="chat-thread-actions"
-              >
-                <button
-                  type="button"
-                  className="chat-popover-action"
-                  data-chat-menu-close
-                  onClick={() => onPin(thread)}
-                >
-                  {thread.pinned ? (
-                    <PinOff size={16} aria-hidden="true" />
-                  ) : (
-                    <Pin size={16} aria-hidden="true" />
-                  )}
-                  {t(thread.pinned ? 'threads.unpin' : 'threads.pin')}
+                  {badge(conversation)}
                 </button>
-                <button
-                  type="button"
-                  className="chat-popover-action"
-                  data-chat-menu-close
-                  onClick={() => onCloseThread(thread)}
-                >
-                  <X size={16} aria-hidden="true" />
-                  {t('threads.close')}
-                </button>
-              </ChatActionMenu>
-            </div>
+              )}
+            </ChatContextMenu>
           );
         })}
       </nav>

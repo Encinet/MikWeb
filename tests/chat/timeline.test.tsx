@@ -3,14 +3,17 @@ import { test } from 'node:test';
 import { Window } from 'happy-dom';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
+import { act, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ChatMessage, ChatServerMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
 import { emptyChatSearch } from '@/modules/chat/model/chat-search';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
 import { ChatMessageList } from '@/modules/chat/ui/chat-message-list';
 import { ChatMessageSearch } from '@/modules/chat/ui/chat-message-search';
 import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import translations from '../../messages/zh-CN.json';
+import { createBrowserEnvironment } from '../support/browser-environment';
 import { message, OWNER, STREAM } from './fixtures';
 
 function localized(children: ReactNode) {
@@ -129,4 +132,64 @@ test('search highlights literal brackets and renders matching results with the f
   assert.ok(html.includes('data-chat-panel-result'));
   assert.ok(html.includes('开始日期'));
   assert.ok(html.includes('消息来源'));
+});
+
+function SearchFilters() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [criteria, setCriteria] = useState<ChatSearchCriteria>(() => ({
+    ...emptyChatSearch('all'),
+    query: 'spawn',
+    source: 'game',
+  }));
+  return (
+    <ChatMessageSearch
+      id="search"
+      inputRef={inputRef}
+      open
+      criteria={criteria}
+      onCriteriaChange={setCriteria}
+      messages={[
+        message({ id: 'mention', mentioned: true, content: [{ text: 'Meet at spawn' }] }),
+        message({ id: 'ordinary', content: [{ text: 'Spawn is ready' }] }),
+        message({ id: 'web', source: 'web', content: [{ text: 'Hello spawn' }] }),
+        message({ id: 'elsewhere', content: [{ text: 'See you at the gate' }] }),
+      ]}
+      owner={OWNER}
+      conversation={{ channel: 'public' }}
+      onChoose={() => undefined}
+      onClose={() => undefined}
+    />
+  );
+}
+
+test('mentions can be toggled within search filters and clearing filters preserves the query and scope', async () => {
+  const browser = createBrowserEnvironment();
+  try {
+    await act(async () => browser.root.render(localized(<SearchFilters />)));
+    const filters = document.querySelector('details');
+    const checkbox = document.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    assert.ok(filters && checkbox);
+    filters.open = true;
+    assert.equal(document.querySelectorAll('[data-chat-panel-result]').length, 2);
+    await act(async () => checkbox.click());
+    assert.equal(checkbox.checked, true);
+    assert.equal(document.querySelectorAll('[data-chat-panel-result]').length, 1);
+    assert.ok(document.querySelector('[data-chat-panel-result]')?.textContent?.includes('Meet at'));
+    assert.equal(document.querySelector('.chat-filter-count')?.textContent, '2');
+    const clear = document.querySelector<HTMLButtonElement>(
+      '.chat-filter-fields .chat-text-button',
+    );
+    assert.ok(clear);
+    await act(async () => clear.click());
+    assert.equal(checkbox.checked, false);
+    assert.equal(document.querySelector<HTMLInputElement>('input[type="search"]')?.value, 'spawn');
+    assert.equal(
+      document.querySelector('.chat-search-scope button:last-child')?.getAttribute('aria-pressed'),
+      'true',
+    );
+    assert.equal(document.querySelector('.chat-filter-count'), null);
+    assert.equal(document.querySelectorAll('[data-chat-panel-result]').length, 3);
+  } finally {
+    await browser.close();
+  }
 });

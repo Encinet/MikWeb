@@ -62,9 +62,6 @@
   width: 16px;
   height: 16px;
 }
-.chat-popover-action .chat-unread-count {
-  margin-inline-start: auto;
-}
 .chat-popover-hint {
   padding: 0.5rem 0.75rem;
   color: var(--theme-text-muted-strong);
@@ -74,11 +71,34 @@
   outline: 2px solid var(--theme-accent-strong);
   outline-offset: -2px;
 }
-.chat-thread-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 2.25rem;
-  align-items: center;
+.chat-context-menu {
+  padding: 0.3rem;
+  border-radius: 0.7rem;
+}
+.chat-context-menu .chat-popover-action {
+  min-height: 36px;
+  padding: 0.4rem 0.65rem;
+}
+[data-chat-context-press] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.chat-context-keyboard {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+.chat-context-keyboard:focus-visible {
+  outline: 2px solid var(--theme-accent-strong);
+  outline-offset: 3px;
+  opacity: 1;
 }
 .chat-navigation .chat-thread-link {
   min-width: 0;
@@ -143,18 +163,6 @@
   font-size: 0.75rem;
   font-weight: 500;
 }
-.chat-thread-actions .chat-menu-trigger {
-  min-width: 32px;
-  min-height: 44px;
-  padding-inline: 0.25rem;
-}
-.chat-thread-actions,
-.chat-message-actions,
-.chat-participants-heading > button {
-  opacity: 0;
-  transition: opacity 140ms ease;
-}
-
 .chat-mobile-menu {
   position: relative;
 }
@@ -179,11 +187,13 @@
 }
 .chat-participants-heading > button {
   flex-shrink: 0;
+  opacity: 1;
+  transition: opacity 140ms ease;
 }
 .chat-message-entry {
   min-height: 2rem;
   margin-top: 0.1rem;
-  padding: 0.15rem 2.25rem 0.15rem 0;
+  padding: 0.15rem 0;
 }
 .chat-message__text {
   max-inline-size: 72ch;
@@ -194,24 +204,7 @@
   unicode-bidi: plaintext;
   overflow-wrap: anywhere;
 }
-.chat-message-actions {
-  position: absolute;
-  inset: 0 0 auto auto;
-}
-.chat-message-actions .chat-menu-trigger {
-  min-width: 32px;
-  min-height: 32px;
-  padding: 0;
-}
-.chat-message-entry.is-mentioned {
-  padding-inline-start: 0.65rem;
-  background: color-mix(in srgb, var(--theme-accent-strong) 6%, transparent);
-  box-shadow: inset 2px 0 var(--theme-accent-strong);
-}
-.chat-message-entry.is-highlighted {
-  background: color-mix(in srgb, var(--theme-accent-strong) 16%, transparent);
-}
-.chat-message-entry:focus-visible,
+.chat-message__line:focus-visible,
 .chat-activity-line:focus-visible {
   outline: 2px solid var(--theme-accent-strong);
   outline-offset: 3px;
@@ -407,7 +400,7 @@
   color: var(--theme-text-muted-strong);
   font-size: 0.75rem;
 }
-.chat-filter-fields :is(input, select) {
+.chat-filter-fields :is(input:not([type="checkbox"]), select) {
   min-width: 0;
   width: 100%;
   min-height: 44px;
@@ -418,32 +411,40 @@
   color: var(--theme-text-primary);
   font-size: 1rem;
 }
+.chat-filter-fields .chat-filter-checkbox {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  min-height: 44px;
+  gap: 0.65rem;
+  color: var(--theme-text-primary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.chat-filter-checkbox input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--theme-accent-strong);
+}
 .chat-filter-fields .chat-text-button {
   grid-column: 1 / -1;
   justify-self: start;
 }
-.chat-workspace :is(summary, select):focus-visible,
-.chat-dialog :is(button, select):focus-visible {
-  outline: 2px solid var(--theme-accent-strong);
-  outline-offset: 3px;
-}
-.chat-thread-row:is(:hover, :focus-within) .chat-thread-actions,
-.chat-message-entry:is(:hover, :focus-within) .chat-message-actions,
-.chat-participants-heading:is(:hover, :focus-within) > button {
-  opacity: 1;
-}
-@media (hover: none), (pointer: coarse) {
-  .chat-thread-actions,
-  .chat-message-actions,
+@media (any-hover: hover) {
   .chat-participants-heading > button {
+    opacity: 0;
+  }
+  .chat-participants-heading:is(:hover, :focus-visible, :has(:focus-visible)) > button {
     opacity: 1;
   }
+}
+@media (pointer: coarse) {
   .chat-message-entry {
     min-height: 44px;
-    padding-inline-end: 44px;
   }
-  .chat-message-actions .chat-menu-trigger {
-    min-width: 44px;
+  .chat-context-menu .chat-popover-action {
     min-height: 44px;
   }
 }
@@ -456,8 +457,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chat-thread-actions,
-  .chat-message-actions,
   .chat-participants-heading > button {
     transition: none;
   }

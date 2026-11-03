@@ -9,7 +9,11 @@ import { destinationKey } from '@/modules/chat/model/chat-destination';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { messageDestination } from '@/modules/chat/model/chat-protocol';
 import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
-import { chatSearchFilterCount, matchesChatSearch } from '@/modules/chat/model/chat-search';
+import {
+  chatSearchFilterCount,
+  emptyChatSearch,
+  matchesChatSearch,
+} from '@/modules/chat/model/chat-search';
 import { ChatPanel, ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
@@ -57,7 +61,6 @@ export function ChatMessageSearch({
   conversation,
   onChoose,
   onClose,
-  mode = 'search',
 }: {
   id: string;
   inputRef: RefObject<HTMLInputElement | null>;
@@ -69,7 +72,6 @@ export function ChatMessageSearch({
   conversation: ChatDestination;
   onChoose: (destination: ChatDestination, messageId: string) => void;
   onClose: () => void;
-  mode?: 'search' | 'mentions';
 }) {
   const t = useTranslations('chat');
   const content = useChatMessageContent();
@@ -81,7 +83,7 @@ export function ChatMessageSearch({
   const [selected, setSelected] = useState<string | null>(null);
   const needle = query.trim();
   const filterCount = chatSearchFilterCount(criteria);
-  const searching = Boolean(needle || filterCount || mode === 'mentions');
+  const searching = Boolean(needle || filterCount);
   const key = destinationKey(conversation);
   const currentLabel =
     conversation.channel === 'private' ? conversation.name : t(`channels.${conversation.channel}`);
@@ -117,9 +119,9 @@ export function ChatMessageSearch({
   const results = useMemo(() => {
     if (!searching) return [];
     return indexed.filter(({ message, text, name }) =>
-      matchesChatSearch(message, text, name, criteria, owner, key, mode === 'mentions'),
+      matchesChatSearch(message, text, name, criteria, owner, key),
     );
-  }, [indexed, searching, criteria, owner, key, mode]);
+  }, [indexed, searching, criteria, owner, key]);
   const authors = useMemo(() => {
     const values = new Map<string, string>();
     for (const message of messages)
@@ -159,13 +161,13 @@ export function ChatMessageSearch({
       id={id}
       open={open}
       inputRef={inputRef}
-      title={t(mode === 'mentions' ? 'mentions.title' : 'searchMessages')}
+      title={t('searchMessages')}
       onClose={onClose}
     >
       <ChatPanelSearch
         inputRef={inputRef}
-        label={t(mode === 'mentions' ? 'mentions.title' : 'searchMessages')}
-        placeholder={t(mode === 'mentions' ? 'mentions.search' : 'searchPlaceholder')}
+        label={t('searchMessages')}
+        placeholder={t('searchPlaceholder')}
         query={query}
         onChange={(value) => {
           onCriteriaChange({ ...criteria, query: value });
@@ -200,6 +202,14 @@ export function ChatMessageSearch({
           {filterCount ? <span className="chat-filter-count">{filterCount}</span> : null}
         </summary>
         <div className="chat-filter-fields">
+          <label className="chat-filter-checkbox">
+            <input
+              type="checkbox"
+              checked={criteria.mentionsOnly}
+              onChange={(event) => filter({ mentionsOnly: event.target.checked })}
+            />
+            <span>{t('filters.mentionsOnly')}</span>
+          </label>
           <label>
             <span>{t('filters.author')}</span>
             <select
@@ -249,7 +259,7 @@ export function ChatMessageSearch({
             <button
               className="chat-text-button"
               type="button"
-              onClick={() => filter({ author: '', source: 'all', after: '', before: '' })}
+              onClick={() => filter({ ...emptyChatSearch(scope), query })}
             >
               {t('filters.reset')}
             </button>
@@ -262,28 +272,14 @@ export function ChatMessageSearch({
       <div ref={list} className="chat-panel-results chat-search-results">
         {!visible.length ? (
           <div className="chat-panel-empty" role={searching ? 'status' : undefined}>
-            <p>
-              {searching
-                ? t(
-                    mode === 'mentions' && !needle && !filterCount
-                      ? 'mentions.empty'
-                      : 'searchEmpty',
-                  )
-                : t('searchHint')}
-            </p>
+            <p>{t(searching ? 'searchEmpty' : 'searchHint')}</p>
             {searching ? (
               scope === 'current' ? (
                 <button type="button" onClick={() => changeScope('all')}>
                   {t('searchAll')}
                 </button>
               ) : (
-                <p>
-                  {t(
-                    mode === 'mentions' && !needle && !filterCount
-                      ? 'mentions.hint'
-                      : 'searchEmptyHint',
-                  )}
-                </p>
+                <p>{t('searchEmptyHint')}</p>
               )
             ) : null}
           </div>

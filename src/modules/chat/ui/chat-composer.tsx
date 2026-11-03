@@ -4,6 +4,7 @@ import { Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 import { useId } from 'react';
+import type { ChatInputHistoryEntry } from '@/modules/chat/model/chat-input-history';
 import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/modules/chat/model/chat-protocol';
 import type { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
@@ -11,24 +12,24 @@ import { ChatMentionInput } from '@/modules/chat/ui/chat-mention-input';
 import { ChatNotificationSuggestion } from '@/modules/chat/ui/chat-notification-suggestion';
 
 export function ChatComposer({
-  conversation,
   title,
   draft,
   inputRef,
   available,
   hint,
   peers,
+  history,
   notifications,
   onChange,
   onSend,
 }: {
-  conversation: string;
   title: string;
   draft: string;
   inputRef: RefObject<HTMLInputElement | null>;
   available: boolean;
   hint: string | null;
   peers: ChatPeer[];
+  history: ChatInputHistoryEntry[];
   notifications: ReturnType<typeof useChatNotifications>;
   onChange: (value: string) => void;
   onSend: () => void;
@@ -51,13 +52,13 @@ export function ChatComposer({
           {t('composeLabel', { channel: title })}
         </label>
         <ChatMentionInput
-          key={conversation}
           inputRef={inputRef}
           id={composeId}
           value={draft}
           onChange={onChange}
           enabled={available}
           peers={peers}
+          history={history}
           describedBy={hint ? hintId : undefined}
           placeholder={t('composePlaceholder', { channel: title })}
         />

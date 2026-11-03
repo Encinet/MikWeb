@@ -8,12 +8,21 @@ export interface ChatSearchCriteria {
   source: 'all' | 'game' | 'web';
   after: string;
   before: string;
+  mentionsOnly: boolean;
 }
 
 export function emptyChatSearch(
   scope: ChatSearchCriteria['scope'] = 'current',
 ): ChatSearchCriteria {
-  return { query: '', scope, author: '', source: 'all', after: '', before: '' };
+  return {
+    query: '',
+    scope,
+    author: '',
+    source: 'all',
+    after: '',
+    before: '',
+    mentionsOnly: false,
+  };
 }
 
 export function chatSearchFilterCount(criteria: ChatSearchCriteria) {
@@ -21,7 +30,8 @@ export function chatSearchFilterCount(criteria: ChatSearchCriteria) {
     Number(Boolean(criteria.author)) +
     Number(criteria.source !== 'all') +
     Number(Boolean(criteria.after)) +
-    Number(Boolean(criteria.before))
+    Number(Boolean(criteria.before)) +
+    Number(criteria.mentionsOnly)
   );
 }
 
@@ -43,10 +53,9 @@ export function matchesChatSearch(
   criteria: ChatSearchCriteria,
   owner: string,
   conversation: string,
-  mentionsOnly = false,
 ): boolean {
   if (
-    mentionsOnly &&
+    criteria.mentionsOnly &&
     (message.kind !== 'player' || !message.mentioned || message.senderUuid === owner)
   )
     return false;

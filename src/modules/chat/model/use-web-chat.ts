@@ -25,9 +25,9 @@ import type {
   ChatPresence,
 } from '@/modules/chat/model/chat-protocol';
 import {
-  CHAT_MESSAGE_MAX_LENGTH,
   chatServerEventSchema,
   isPassiveMessage,
+  isValidChatInput,
   mayReadMessage,
   messageConversation,
 } from '@/modules/chat/model/chat-protocol';
@@ -544,13 +544,7 @@ export function useWebChat() {
         !value
       )
         return false;
-      if (
-        [...value].length > CHAT_MESSAGE_MAX_LENGTH ||
-        [...value].some((character) => {
-          const code = character.codePointAt(0) ?? 0;
-          return code <= 31 || (code >= 127 && code <= 159) || code === 0x2028 || code === 0x2029;
-        })
-      ) {
+      if (!isValidChatInput(value)) {
         setError('invalid_message');
         return false;
       }

@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  AtSign,
   Hash,
   MessageCircle,
   PanelLeft,
@@ -18,13 +17,16 @@ import type { ReactNode } from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { closeChatActionMenus } from '@/modules/chat/lib/chat-action-menu-events';
+import { focusChatConversation } from '@/modules/chat/lib/chat-conversation-focus';
 import { keepChatWorkspace } from '@/modules/chat/model/chat-connection';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
+import { chatWorkspaceFeedback } from '@/modules/chat/model/chat-feedback';
+import { chatInputHistory } from '@/modules/chat/model/chat-input-history';
 import { channelPlayers } from '@/modules/chat/model/chat-presence';
 
 import { CHAT_MESSAGE_MAX_LENGTH, messageConversation } from '@/modules/chat/model/chat-protocol';
-import { compareCursors, messageCursor } from '@/modules/chat/model/chat-reading';
+import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
 import { emptyChatSearch } from '@/modules/chat/model/chat-search';
 import type { ChatPreferences, ChatThread } from '@/modules/chat/model/chat-workspace';
@@ -33,7 +35,6 @@ import { useChatNotifications } from '@/modules/chat/model/use-chat-notification
 import { useChatWorkspace } from '@/modules/chat/model/use-chat-workspace';
 import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
-import { ChatActionMenu } from '@/modules/chat/ui/chat-action-menu';
 import { ChatComposer } from '@/modules/chat/ui/chat-composer';
 import { ChatConnectionBanner } from '@/modules/chat/ui/chat-connection-banner';
 import { ChatGate } from '@/modules/chat/ui/chat-gate';
@@ -51,7 +52,7 @@ import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { Link } from '@/shared/i18n/routing';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
-type ChatPanelMode = 'search' | 'mentions' | 'players' | 'participants';
+type ChatPanelMode = 'search' | 'players' | 'participants';
 
 export function ChatWorkspace({
   account,
@@ -82,12 +83,9 @@ export function ChatWorkspace({
   }, []);
   const [overlay, setOverlay] = useState<'channels' | 'settings' | null>(null);
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
-  const searchOpen = panel === 'search' || panel === 'mentions';
+  const searchOpen = panel === 'search';
   const peopleOpen = panel === 'players' || panel === 'participants';
   const [searchCriteria, setSearchCriteria] = useState<ChatSearchCriteria>(emptyChatSearch);
-  const [mentionCriteria, setMentionCriteria] = useState<ChatSearchCriteria>(() =>
-    emptyChatSearch('all'),
-  );
   const searchTrigger = useRef<HTMLButtonElement>(null);
   const navigationTrigger = useRef<HTMLButtonElement>(null);
   const panelOpener = useRef<HTMLElement | null>(null);
@@ -103,8 +101,7 @@ export function ChatWorkspace({
     setPanel(mode);
     if (mode === 'players' || mode === 'participants') setPlayerQuery('');
     requestAnimationFrame(() => {
-      const field =
-        mode === 'search' || mode === 'mentions' ? searchInput.current : playerInput.current;
+      const field = mode === 'search' ? searchInput.current : playerInput.current;
       field?.focus({ preventScroll: true });
       field?.select();
     });
@@ -124,6 +121,8 @@ export function ChatWorkspace({
     });
   }, []);
   const key = destinationKey(selected);
+  const viewKey = `${chat.historyEpoch}:${key}`;
+  const scroll = useChatScroll(viewKey);
   const selectConversation = useCallback(
     (destination: ChatDestination, messageId?: string) => {
       setSelected(destination);
@@ -145,9 +144,9 @@ export function ChatWorkspace({
     (destination: ChatDestination) => {
       selectConversation(destination);
       setPanel(null);
-      requestAnimationFrame(() => input.current?.focus({ preventScroll: true }));
+      requestAnimationFrame(() => focusChatConversation(scroll.log.current, input.current));
     },
-    [selectConversation],
+    [selectConversation, scroll.log],
   );
   const players = chat.presence.players;
   const participants = useMemo(
@@ -215,13 +214,13 @@ export function ChatWorkspace({
     selected.channel === 'private'
       ? (peer?.name ?? selected.name)
       : t(`channels.${selected.channel}`);
-  const composeHint = !online
-    ? t('connection.composeHint')
-    : selected.channel === 'private' && !peer
-      ? t('privateOffline')
-      : online && selected.channel === 'staff' && !chat.staff
-        ? t('staffUnavailable')
-        : null;
+  const feedback = chatWorkspaceFeedback({
+    connection: chat.connection,
+    error: chat.error,
+    channel: selected.channel,
+    recipientOnline: Boolean(peer),
+    staff: chat.staff,
+  });
   const visible = useMemo(
     () => chat.messages.filter((message) => messageConversation(message, owner) === key),
     [chat.messages, owner, key],
@@ -230,27 +229,12 @@ export function ChatWorkspace({
     () => chat.pending.filter((message) => destinationKey(message.destination) === key),
     [chat.pending, key],
   );
-  const viewKey = `${chat.historyEpoch}:${key}`;
-  const scroll = useChatScroll(viewKey);
+  const inputHistory = useMemo(() => chatInputHistory(visible, owner, key), [visible, owner, key]);
   const threads = useMemo(
     () => chatThreads(chat.messages, players, owner, workspace),
     [chat.messages, players, owner, workspace],
   );
   const unreadCount = [...chat.unread.values()].reduce((total, unread) => total + unread.count, 0);
-  const mentionCount = useMemo(() => {
-    const firstUnread = new Map(
-      [...chat.unread].map(([key, unread]) => [
-        key,
-        chat.messages.find((message) => message.id === unread.firstId),
-      ]),
-    );
-    return chat.messages.filter((message) => {
-      if (message.kind !== 'player' || !message.mentioned || message.senderUuid === owner)
-        return false;
-      const first = firstUnread.get(messageConversation(message, owner));
-      return first && compareCursors(messageCursor(message), messageCursor(first)) >= 0;
-    }).length;
-  }, [chat.messages, chat.unread, owner]);
   const changePreferences = useCallback(
     (value: Partial<ChatPreferences>) => mutate({ type: 'preferences', value }),
     [mutate],
@@ -364,12 +348,6 @@ export function ChatWorkspace({
         })
       }
       onCloseThread={closeThread}
-      onMentions={(trigger) =>
-        panel === 'mentions' ? closePanel() : openPanel('mentions', trigger)
-      }
-      mentionsOpen={panel === 'mentions'}
-      mentionsPanelId={searchPanelId}
-      mentionCount={mentionCount}
     />
   );
   const RoomIcon =
@@ -486,27 +464,19 @@ export function ChatWorkspace({
             >
               <Search size={19} aria-hidden="true" />
             </button>
-            <ChatActionMenu label={t('moreActions')}>
-              <button
-                type="button"
-                className="chat-popover-action"
-                data-chat-menu-close
-                onClick={() => openPanel('mentions', searchTrigger.current)}
-              >
-                <AtSign size={16} aria-hidden="true" />
-                {t('mentions.title')}
-                {mentionCount ? <span className="chat-unread-count">{mentionCount}</span> : null}
-              </button>
-              <button
-                type="button"
-                className="chat-popover-action"
-                data-chat-menu-close
-                onClick={() => setOverlay('settings')}
-              >
-                <Settings2 size={16} aria-hidden="true" />
-                {t('settings')}
-              </button>
-            </ChatActionMenu>
+            <button
+              type="button"
+              className="chat-icon-button"
+              aria-label={t('settings')}
+              title={t('settings')}
+              aria-haspopup="dialog"
+              onClick={() => {
+                closeChatActionMenus();
+                setOverlay('settings');
+              }}
+            >
+              <Settings2 size={19} aria-hidden="true" />
+            </button>
           </div>
         </header>
 
@@ -519,9 +489,9 @@ export function ChatWorkspace({
           </p>
         ) : null}
 
-        {chat.error ? (
+        {feedback.error ? (
           <p className="chat-feedback" role="alert">
-            {errorText(chat.error)}
+            {errorText(feedback.error)}
           </p>
         ) : null}
         {(chat.storageFailed || workspaceStorageFailed) && overlay !== 'settings' ? (
@@ -551,13 +521,14 @@ export function ChatWorkspace({
           onPrivate={startPrivate}
         />
         <ChatComposer
-          conversation={key}
+          key={viewKey}
           title={title}
           draft={draft}
           inputRef={input}
           available={available}
-          hint={composeHint}
+          hint={feedback.composeHint ? t(feedback.composeHint) : null}
           peers={mentionPlayers}
+          history={inputHistory}
           notifications={notifications}
           onChange={changeDraft}
           onSend={send}
@@ -568,9 +539,8 @@ export function ChatWorkspace({
         id={searchPanelId}
         inputRef={searchInput}
         open={searchOpen}
-        mode={panel === 'mentions' ? 'mentions' : 'search'}
-        criteria={panel === 'mentions' ? mentionCriteria : searchCriteria}
-        onCriteriaChange={panel === 'mentions' ? setMentionCriteria : setSearchCriteria}
+        criteria={searchCriteria}
+        onCriteriaChange={setSearchCriteria}
         messages={chat.messages}
         owner={owner}
         conversation={selected}

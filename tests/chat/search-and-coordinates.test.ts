@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { findChatCoordinates } from '@/modules/chat/lib/chat-coordinates';
-import { emptyChatSearch, matchesChatSearch } from '@/modules/chat/model/chat-search';
+import {
+  chatSearchFilterCount,
+  emptyChatSearch,
+  matchesChatSearch,
+} from '@/modules/chat/model/chat-search';
 import type { MapWorld } from '@/modules/map/model/map-world';
 import { coordinateMapWorld, mapPositionUrl } from '@/modules/map/model/map-world';
 import { message, OTHER, OWNER, PEER } from './fixtures';
@@ -67,15 +71,53 @@ test('date filtering includes the full end date and rejects reversed and invalid
 });
 
 test('mentions show only messages addressed to this account, with all-conversation support', () => {
-  const criteria = emptyChatSearch('all');
+  const criteria = { ...emptyChatSearch('all'), mentionsOnly: true };
   const mention = message({ mentioned: true, channel: 'private', targetUuid: OWNER });
-  assert.equal(matchesChatSearch(mention, '', '', criteria, OWNER, 'public', true), true);
+  assert.equal(matchesChatSearch(mention, '', '', criteria, OWNER, 'public'), true);
+  assert.equal(chatSearchFilterCount(criteria), 1);
   assert.equal(
-    matchesChatSearch({ ...mention, mentioned: false }, '', '', criteria, OWNER, 'public', true),
+    matchesChatSearch({ ...mention, mentioned: false }, '', '', criteria, OWNER, 'public'),
     false,
   );
   assert.equal(
-    matchesChatSearch({ ...mention, senderUuid: OWNER }, '', '', criteria, OWNER, 'public', true),
+    matchesChatSearch({ ...mention, senderUuid: OWNER }, '', '', criteria, OWNER, 'public'),
+    false,
+  );
+  assert.equal(
+    matchesChatSearch(mention, '', '', { ...criteria, scope: 'current' }, OWNER, 'public'),
+    false,
+  );
+});
+
+test('the mentions filter combines with text, author, source and date conditions', () => {
+  const criteria = {
+    ...emptyChatSearch(),
+    mentionsOnly: true,
+    query: 'spawn',
+    author: PEER,
+    source: 'game' as const,
+    after: '2026-11-03',
+    before: '2026-11-03',
+  };
+  const mention = message({ mentioned: true, createdAt: new Date(2026, 10, 3, 12).getTime() });
+  assert.equal(
+    matchesChatSearch(mention, 'Meet at spawn', 'Alex', criteria, OWNER, 'public'),
+    true,
+  );
+  assert.equal(chatSearchFilterCount(criteria), 5);
+  const rejected = [
+    { ...mention, mentioned: false },
+    { ...mention, senderUuid: OWNER },
+    { ...mention, source: 'web' as const },
+    { ...mention, createdAt: new Date(2026, 10, 4).getTime() },
+  ];
+  for (const candidate of rejected)
+    assert.equal(
+      matchesChatSearch(candidate, 'Meet at spawn', 'Alex', criteria, OWNER, 'public'),
+      false,
+    );
+  assert.equal(
+    matchesChatSearch(mention, 'Meet at the gate', 'Alex', criteria, OWNER, 'public'),
     false,
   );
 });

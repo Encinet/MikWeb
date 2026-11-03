@@ -1,12 +1,13 @@
 'use client';
 
-import { ArrowDown, Gamepad2, Globe, Hash, MessageCircle, Server, Shield } from 'lucide-react';
+import { Gamepad2, Globe, Hash, MessageCircle, Server, Shield } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   Fragment,
   memo,
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -23,9 +24,11 @@ import type { ChatReadCursor, ChatUnread } from '@/modules/chat/model/chat-readi
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { ChatActivityGroup } from '@/modules/chat/ui/chat-activity-group';
+import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
 import type { ChatMessageActionHandlers } from '@/modules/chat/ui/chat-message-actions';
 import { ChatMessageActions } from '@/modules/chat/ui/chat-message-actions';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
+import { ChatScrollActions } from '@/modules/chat/ui/chat-scroll-actions';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
 import type { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
@@ -229,6 +232,7 @@ export const ChatMessageList = memo(function ChatMessageList({
         ref={scroll.attach}
         className="chat-log"
         role="log"
+        tabIndex={-1}
         aria-label={title}
         aria-live="polite"
         aria-relevant="additions text"
@@ -363,23 +367,14 @@ export const ChatMessageList = memo(function ChatMessageList({
         </div>
       </div>
       {!scroll.atBottom ? (
-        <div className="chat-scroll-actions">
-          {unread ? (
-            <button className="chat-latest" type="button" onClick={jumpToUnread}>
-              {t('jumpUnread', { count: unread.count })}
-            </button>
-          ) : null}
-          <button
-            className="chat-latest"
-            type="button"
-            aria-label={t('latest')}
-            title={t('latest')}
-            onClick={scroll.toLatest}
-          >
-            <ArrowDown size={14} aria-hidden="true" />
-            {!unread ? t('latest') : null}
-          </button>
-        </div>
+        <ChatScrollActions
+          unreadCount={unread?.count ?? 0}
+          onUnread={jumpToUnread}
+          onLatest={() => {
+            scroll.toLatest();
+            scroll.log.current?.focus({ preventScroll: true });
+          }}
+        />
       ) : null}
     </div>
   );
@@ -400,28 +395,41 @@ const MessageLine = memo(function MessageLine({
   track: ReturnType<typeof useChatReadTracker>;
   owner: string;
 }) {
+  const t = useTranslations('chat');
+  const contentId = useId();
   const attach = useCallback(
     (element: HTMLSpanElement | null) => track(element, messageCursor(message)),
     [track, message],
   );
   return (
-    <div
-      className={`chat-message__line chat-message-entry${highlight ? ' is-highlighted' : ''}${message.mentioned && message.senderUuid !== owner ? ' is-mentioned' : ''}`}
-      data-chat-message={message.id}
-      tabIndex={-1}
-      title={title}
+    <ChatContextMenu
+      label={t('messageActions.label', { name: message.senderName })}
+      actions={(close) => (
+        <ChatMessageActions
+          message={message}
+          owner={owner}
+          onMention={onMention}
+          onPrivate={onPrivate}
+          onCopied={close}
+        />
+      )}
     >
-      <p className="chat-message__text">
-        <ChatMessageContent content={message.content} />
-        <span ref={attach} className="chat-read-sentinel" aria-hidden="true" />
-      </p>
-      <ChatMessageActions
-        message={message}
-        owner={owner}
-        onMention={onMention}
-        onPrivate={onPrivate}
-      />
-    </div>
+      {(target, keyboard) => (
+        <div
+          {...target}
+          className={`chat-message__line chat-message-entry${highlight ? ' is-highlighted' : ''}${message.mentioned && message.senderUuid !== owner ? ' is-mentioned' : ''}`}
+          data-chat-message={message.id}
+          tabIndex={-1}
+          title={title}
+        >
+          <button {...keyboard} className="chat-context-keyboard" aria-describedby={contentId} />
+          <p className="chat-message__text" id={contentId}>
+            <ChatMessageContent content={message.content} />
+            <span ref={attach} className="chat-read-sentinel" aria-hidden="true" />
+          </p>
+        </div>
+      )}
+    </ChatContextMenu>
   );
 });
 

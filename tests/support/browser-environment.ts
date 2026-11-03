@@ -17,6 +17,7 @@ export function createBrowserEnvironment() {
     ['EventTarget', window.EventTarget],
     ['CustomEvent', window.CustomEvent],
     ['ResizeObserver', window.ResizeObserver],
+    ['IntersectionObserver', window.IntersectionObserver],
     ['IS_REACT_ACT_ENVIRONMENT', true],
   ];
   for (const [key, value] of globals) {

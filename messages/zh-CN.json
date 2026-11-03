@@ -560,8 +560,9 @@
     "backHome": "返回首页",
     "today": "今天",
     "latest": "回到最新",
+    "readingActions": "消息导航",
     "readMarker": "上次读到这里",
-    "jumpUnread": "未读消息（{count}）",
+    "jumpUnread": "首条未读（{count}）",
     "unreadCount": "{count} 条未读消息",
     "loadEarlier": "查看更早消息",
     "searchMessages": "搜索消息",
@@ -572,7 +573,7 @@
     "searchAll": "全部会话",
     "searchCount": "{count} 条结果",
     "searchEmpty": "没有找到相关消息",
-    "searchEmptyHint": "试试更短的关键词",
+    "searchEmptyHint": "试试调整关键词或筛选条件",
     "loadMoreResults": "更多结果",
     "noPlayersFound": "没有匹配的在线玩家",
     "confirmClear": "确认清空",
@@ -589,7 +590,6 @@
     "disableHistoryConfirm": "关闭保存并清空本机消息、草稿和会话列表？",
     "messagePlaceholder": "输入消息…",
     "composePlaceholder": "发送到{channel}…",
-    "moreActions": "更多操作",
     "navigationUnread": "频道与私聊，{count} 条未读消息",
     "drafts": {
       "label": "草稿",
@@ -599,15 +599,7 @@
       "saved": "草稿已保存在本机"
     },
     "connection": {
-      "reconnecting": "正在重新连接…",
-      "composeHint": "连接恢复前可继续编辑草稿"
-    },
-    "mentions": {
-      "title": "提及我的",
-      "search": "搜索提及我的消息",
-      "empty": "还没有提及你的消息",
-      "unread": "{count} 条未读提及",
-      "hint": "这里显示此浏览器收到并保存的提及"
+      "reconnecting": "正在重新连接…"
     },
     "messageActions": {
       "label": "{name} 的消息操作",
@@ -629,6 +621,7 @@
     },
     "filters": {
       "label": "筛选",
+      "mentionsOnly": "只看提及我的",
       "author": "玩家",
       "anyPlayer": "任意玩家",
       "source": "消息来源",
