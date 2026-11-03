@@ -45,7 +45,7 @@ function summarizeActivities(messages: ChatServerMessage[]): ActivitySummary[] {
 function ActivityAvatar({ name, uuid }: ActivityPlayer) {
   return (
     <span className="chat-activity-avatar" aria-hidden="true">
-      <MinecraftAvatar uuid={uuid ?? encodeURIComponent(name)} name={name} size={18} />
+      <MinecraftAvatar uuid={uuid} name={name} size={18} />
     </span>
   );
 }

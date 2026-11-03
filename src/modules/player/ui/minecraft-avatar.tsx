@@ -2,22 +2,18 @@
 
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
-import { useState } from 'react';
+import { usePlayerAvatar } from '@/modules/player/model/use-player-avatar';
 
 interface MinecraftAvatarProps {
-  uuid: string;
+  /** Preferred player identity. Legacy records may fall back to the raw name. */
+  uuid?: string;
   name: string;
   size: number;
   className?: string;
   style?: CSSProperties;
 }
 
-const AVATAR_SERVICES = [
-  (uuid: string, size: number) => `https://mineskin.eu/helm/${uuid}?size=${size}`,
-  (uuid: string, size: number) => `https://minotar.net/avatar/${uuid}/${size}`,
-  (uuid: string, size: number) => `https://mc-heads.net/avatar/${uuid}/${size}`,
-];
-
+/** Size controls the display; all placements of a player share one image resource. */
 export default function MinecraftAvatar({
   uuid,
   name,
@@ -25,17 +21,10 @@ export default function MinecraftAvatar({
   className = '',
   style = {},
 }: MinecraftAvatarProps) {
-  const [serviceIndex, setServiceIndex] = useState(0);
-
-  const handleError = () => {
-    setServiceIndex((currentIndex) => Math.min(currentIndex + 1, AVATAR_SERVICES.length));
-  };
-
+  const avatar = usePlayerAvatar({ uuid, name });
   const normalizedName = name.trim();
   const fallbackLabel = normalizedName ? normalizedName.charAt(0).toUpperCase() : '?';
-  const hasFallback = serviceIndex >= AVATAR_SERVICES.length;
-
-  if (hasFallback) {
+  if (!avatar.src) {
     return (
       <div
         role="img"
@@ -67,11 +56,10 @@ export default function MinecraftAvatar({
     );
   }
 
-  const avatarUrl = AVATAR_SERVICES[serviceIndex](uuid, size);
-
   return (
     <Image
-      src={avatarUrl}
+      key={avatar.src}
+      src={avatar.src}
       alt={name}
       width={size}
       height={size}
@@ -81,7 +69,9 @@ export default function MinecraftAvatar({
         ...style,
       }}
       unoptimized
-      onError={handleError}
+      loading={avatar.loaded ? 'eager' : 'lazy'}
+      onLoad={avatar.onLoad}
+      onError={avatar.onError}
     />
   );
 }

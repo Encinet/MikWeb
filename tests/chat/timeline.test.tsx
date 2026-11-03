@@ -192,10 +192,16 @@ test('collapsed activity groups join player names by action and retain every det
       assert.equal(avatar?.querySelector('img')?.getAttribute('width'), '18');
     }
     assert.ok(
-      players[0].querySelector('img')?.getAttribute('src')?.includes(`/helm/${OWNER}?size=18`),
+      players[0]
+        .querySelector('img')
+        ?.getAttribute('src')
+        ?.includes(`/helm/${OWNER.replaceAll('-', '')}/64`),
     );
     assert.ok(
-      players[1].querySelector('img')?.getAttribute('src')?.includes(`/helm/${PEER}?size=18`),
+      players[1]
+        .querySelector('img')
+        ?.getAttribute('src')
+        ?.includes(`/helm/${PEER.replaceAll('-', '')}/64`),
     );
     const lines = groups[0].querySelectorAll('.chat-activity-line');
     assert.deepEqual(
@@ -269,13 +275,13 @@ test('activity summaries use comma-space separators in English too and preserve 
       window.document
         .querySelector('.chat-activity-player img')
         ?.getAttribute('src')
-        ?.includes('/helm/Alex?size=18'),
+        ?.includes('/helm/Alex/64'),
     );
     assert.ok(
       window.document
         .querySelector('.chat-activity-summary > span:last-child img')
         ?.getAttribute('src')
-        ?.includes(`/helm/${OTHER}?size=18`),
+        ?.includes(`/helm/${OTHER.replaceAll('-', '')}/64`),
     );
   } finally {
     void window.happyDOM.close();
