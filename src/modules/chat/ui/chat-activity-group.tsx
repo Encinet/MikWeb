@@ -95,6 +95,22 @@ export function ChatActivityGroup({
         ),
       })
     );
+  const lines = messages.map((message) => (
+    <li
+      key={message.id}
+      data-chat-message={message.id}
+      tabIndex={-1}
+      className={`chat-activity-line${highlighted === message.id ? ' is-highlighted' : ''}`}
+    >
+      <span>{renderActivity(message)}</span>
+      <time dateTime={new Date(message.createdAt).toISOString()}>
+        {formatTime(message.createdAt)}
+      </time>
+    </li>
+  ));
+  if (messages.length === 1)
+    return <ul className="chat-activity-group chat-activity-single">{lines}</ul>;
+
   return (
     <details className="chat-activity-group" open={forcedOpen || undefined}>
       <summary>
@@ -127,19 +143,7 @@ export function ChatActivityGroup({
         className="chat-activity-details"
         aria-label={t('activity.count', { count: messages.length })}
       >
-        {messages.map((message) => (
-          <li
-            key={message.id}
-            data-chat-message={message.id}
-            tabIndex={-1}
-            className={`chat-activity-line${highlighted === message.id ? ' is-highlighted' : ''}`}
-          >
-            <span>{renderActivity(message)}</span>
-            <time dateTime={new Date(message.createdAt).toISOString()}>
-              {formatTime(message.createdAt)}
-            </time>
-          </li>
-        ))}
+        {lines}
       </ul>
     </details>
   );

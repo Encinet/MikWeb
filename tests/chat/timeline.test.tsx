@@ -157,8 +157,9 @@ test('collapsed activity groups join player names by action and retain every det
   const window = new Window();
   try {
     window.document.body.innerHTML = html;
-    const groups = window.document.querySelectorAll('details.chat-activity-group');
+    const groups = window.document.querySelectorAll('.chat-activity-group');
     assert.equal(groups.length, 2, 'conversation messages separate presence groups');
+    assert.equal(groups[0].tagName, 'DETAILS');
     assert.equal(groups[0].hasAttribute('open'), false);
     assert.deepEqual(
       Array.from(
@@ -217,6 +218,8 @@ test('collapsed activity groups join player names by action and retain every det
       ],
     );
     assert.equal(groups[1].querySelectorAll('.chat-activity-line').length, 1);
+    assert.equal(groups[1].tagName, 'UL', 'a single event is shown without a disclosure');
+    assert.equal(groups[1].querySelector('summary'), null);
     for (const [id, text, sequence] of [
       ['game-join', 'Steve 加入了游戏', 1],
       ['other-game-join', 'Alex 加入了游戏', 2],
@@ -288,13 +291,29 @@ test('activity summaries use comma-space separators in English too and preserve 
   }
 });
 
-test('activity groups expand and collapse, and navigating to an event opens its details and focuses it', async () => {
+test('single activities stay visible while multiple activities expand, collapse and reveal search targets', async () => {
   const browser = createBrowserEnvironment();
   const messages = [
     activity('join', 'gameJoined', 'Alex', 1),
     activity('leave', 'gameLeft', 'Steve', 2),
   ];
   try {
+    await act(async () =>
+      browser.root.render(
+        localized(<ActivityNavigation messages={messages.slice(1)} revealedId="leave" />),
+      ),
+    );
+    assert.equal(document.querySelector('details'), null);
+    assert.equal(document.querySelector('summary'), null);
+    const single = document.querySelector('[data-chat-message="leave"]');
+    assert.ok(single);
+    assert.ok(single.textContent.includes('Steve 退出了游戏'));
+    assert.ok(single.querySelector('.chat-activity-avatar img'));
+    assert.ok(single.querySelector('time'));
+    const singleJump = document.querySelector('button');
+    assert.ok(singleJump);
+    await act(async () => singleJump.click());
+    assert.equal(document.activeElement, single, 'a single event can be focused without expanding');
     await act(async () =>
       browser.root.render(localized(<ActivityNavigation messages={messages} revealedId={null} />)),
     );
@@ -318,6 +337,17 @@ test('activity groups expand and collapse, and navigating to an event opens its 
       browser.root.render(localized(<ActivityNavigation messages={messages} revealedId="leave" />)),
     );
     assert.equal(group.open, true, 'a search result opens the matching event group');
+    await act(async () =>
+      browser.root.render(
+        localized(<ActivityNavigation messages={messages.slice(1)} revealedId="leave" />),
+      ),
+    );
+    assert.equal(
+      document.querySelector('details'),
+      null,
+      'returning to one event removes the disclosure',
+    );
+    assert.equal(document.querySelectorAll('[data-chat-message]').length, 1);
   } finally {
     await browser.close();
   }

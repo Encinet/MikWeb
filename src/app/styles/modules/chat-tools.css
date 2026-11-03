@@ -260,6 +260,10 @@
   color: var(--theme-text-muted-strong);
   font-size: 0.8125rem;
 }
+.chat-activity-single {
+  padding: 0;
+  list-style: none;
+}
 .chat-activity-group > summary {
   display: grid;
   grid-template-columns: 13px minmax(0, 1fr) auto;
