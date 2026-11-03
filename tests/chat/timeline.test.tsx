@@ -24,7 +24,13 @@ function localized(children: ReactNode) {
   );
 }
 
-function Timeline({ messages }: { messages: ChatMessage[] }) {
+function Timeline({
+  messages,
+  showActivity = false,
+}: {
+  messages: ChatMessage[];
+  showActivity?: boolean;
+}) {
   const scroll = useChatScroll('public');
   return (
     <ChatMessageList
@@ -41,7 +47,7 @@ function Timeline({ messages }: { messages: ChatMessage[] }) {
       onRead={() => undefined}
       onRestore={() => undefined}
       onJumpComplete={() => undefined}
-      showActivity={false}
+      showActivity={showActivity}
       onMention={() => undefined}
       onPrivate={() => undefined}
     />
@@ -79,6 +85,62 @@ test('hiding a large block of presence events keeps older conversation messages 
   assert.ok(html.includes('Older conversation is still visible'));
   assert.ok(!html.includes('条玩家动态'));
   assert.ok(!html.includes('查看更早消息'));
+});
+
+test('consecutive presence events share a visible group without hiding player names, actions or times', () => {
+  const now = new Date('2026-11-03T10:00:00Z').getTime();
+  const activity = (
+    id: string,
+    template: 'gameJoined' | 'gameLeft' | 'webJoined',
+    name: string,
+    sequence: number,
+  ): ChatServerMessage => ({
+    kind: 'server',
+    id,
+    channel: 'public',
+    content: { template, values: { name } },
+    countsAsUnread: false,
+    createdAt: now + sequence * 1000,
+    sequence,
+    streamId: STREAM,
+  });
+  const html = renderToStaticMarkup(
+    localized(
+      <Timeline
+        showActivity
+        messages={[
+          activity('game-join', 'gameJoined', 'Steve', 1),
+          activity('web-join', 'webJoined', 'Alex', 2),
+          message({ id: 'conversation', createdAt: now + 3000, sequence: 3 }),
+          activity('game-leave', 'gameLeft', 'Steve', 4),
+        ]}
+      />,
+    ),
+  );
+  const window = new Window();
+  try {
+    window.document.body.innerHTML = html;
+    const groups = window.document.querySelectorAll('.chat-activity-group');
+    assert.equal(groups.length, 2, 'conversation messages separate presence groups');
+    assert.equal(groups[0].querySelectorAll('.chat-activity-line').length, 2);
+    assert.equal(groups[1].querySelectorAll('.chat-activity-line').length, 1);
+    for (const [id, text, sequence] of [
+      ['game-join', 'Steve 加入了游戏', 1],
+      ['web-join', 'Alex 加入了网页聊天', 2],
+      ['game-leave', 'Steve 退出了游戏', 4],
+    ] as const) {
+      const line = window.document.querySelector(`[data-chat-message="${id}"]`);
+      assert.ok(line);
+      assert.ok(line.textContent.includes(text));
+      assert.equal(line.closest('details:not([open]), [hidden]'), null);
+      assert.equal(line.getAttribute('tabindex'), '-1', 'search can focus each activity');
+      const time = line.querySelector('time');
+      assert.equal(time?.getAttribute('datetime'), new Date(now + sequence * 1000).toISOString());
+      assert.ok(time?.textContent.trim());
+    }
+  } finally {
+    void window.happyDOM.close();
+  }
 });
 
 test('coordinate menus preserve valid paragraph structure and do not replace links or mention parts', () => {

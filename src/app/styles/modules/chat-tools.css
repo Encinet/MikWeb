@@ -255,40 +255,22 @@
   font-size: 1rem;
 }
 .chat-activity-group {
-  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.75rem 0 0;
+  padding: 0.25rem 0.75rem;
+  border-inline-start: 2px solid var(--chat-line);
   color: var(--theme-text-muted-strong);
-  font-size: 0.75rem;
-}
-.chat-activity-group > summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 32px;
-  border-radius: 0.5rem;
+  font-size: 0.8125rem;
   list-style: none;
-  cursor: pointer;
-}
-.chat-activity-group > summary::-webkit-details-marker {
-  display: none;
-}
-.chat-activity-group > summary > svg {
-  transform: rotate(-90deg);
-}
-.chat-activity-group[open] > summary > svg {
-  transform: none;
 }
 .chat-activity-group time {
-  margin-inline-start: auto;
-  flex-shrink: 0;
   font-variant-numeric: tabular-nums;
-}
-.chat-activity-group > div {
-  display: grid;
-  gap: 0.4rem;
-  padding: 0.4rem 0 0.5rem 1.3rem;
+  white-space: nowrap;
 }
 .chat-activity-line {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 0.75rem;
   border-radius: 0.35rem;
