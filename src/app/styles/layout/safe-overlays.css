@@ -1,6 +1,9 @@
 .safe-fixed-overlay {
   --overlay-gap: 1rem;
-  min-height: var(--viewport-height-dynamic);
+  inset: var(--visual-viewport-top, 0px) auto auto var(--visual-viewport-left, 0px);
+  width: var(--visual-viewport-width, 100%);
+  height: var(--visual-viewport-height, var(--viewport-height-dynamic));
+  min-height: 0;
   padding: calc(1rem + var(--viewport-top-inset)) calc(1rem + var(--viewport-right-inset))
     calc(1rem + var(--viewport-bottom-inset)) calc(1rem + var(--viewport-left-inset));
 }

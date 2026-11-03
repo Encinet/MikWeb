@@ -212,6 +212,58 @@
   margin-left: auto;
 }
 
+.mobile-menu-frame {
+  position: fixed;
+  z-index: 60;
+  top: calc(var(--viewport-top-inset) + 3.5rem);
+  right: max(1rem, var(--viewport-right-inset));
+  left: max(1rem, var(--viewport-left-inset));
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.mobile-menu-panel {
+  border: 1px solid var(--theme-border-glass);
+  border-radius: 1.5rem;
+  background: var(--theme-bg-base);
+  padding: 0.75rem;
+}
+
+[data-theme="light"] .mobile-menu-panel {
+  background: var(--theme-surface-modal);
+  border-color: var(--theme-border-glass);
+  box-shadow: 0 18px 44px var(--theme-shadow-modal);
+}
+
+.mobile-menu-panel .ui-nav-link,
+.mobile-menu-panel .ui-nav-chip {
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mobile-menu-panel .ui-nav-link:hover {
+  background: var(--theme-surface-hover);
+}
+
+.mobile-menu-panel .ui-nav-chip--highlight {
+  margin: 0.15rem 0;
+  padding: 0.6rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: var(--theme-accent);
+  color: var(--theme-on-accent);
+  font-weight: 800;
+  font-size: 0.875rem;
+  box-shadow: none;
+}
+
+.mobile-menu-panel .ui-nav-chip--highlight:hover {
+  background: var(--theme-accent-hover);
+  color: var(--theme-on-accent);
+  box-shadow: none;
+}
+
 .project-navbar-links .ui-nav-link,
 .project-navbar-links .ui-nav-chip {
   border: 0;
@@ -531,6 +583,77 @@
   }
 }
 
+.project-navbar-controls > button:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+
+[data-theme="light"] .project-navbar-controls > button:first-child {
+  color: var(--theme-text-heading);
+  background: var(--theme-surface-icon);
+  border-color: var(--theme-border-glass);
+}
+
+@media (min-width: 1280px) {
+  .project-navbar-controls > button:first-child {
+    display: none;
+  }
+}
+
+/* Login remains a dark, image-backed scene in either theme. */
+[data-theme="light"]:has(.auth-login-page) .project-navbar-brand,
+[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link,
+[data-theme="light"]:has(.auth-login-page)
+  .project-navbar-links
+  .ui-nav-chip:not(.ui-nav-chip--highlight) {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link:hover,
+[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link--active,
+[data-theme="light"]:has(.auth-login-page)
+  .project-navbar-links
+  .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
+  color: #fff;
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-control-cluster,
+[data-theme="light"]:has(.auth-login-page) .project-account-link {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.26);
+  color: #fff;
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-account-login-icon {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-controls .project-locale-toggle {
+  border-left-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-navbar-controls > button:first-child {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.32);
+  color: #fff;
+}
+
+[data-theme="light"]:has(.auth-login-page) .project-account-avatar {
+  border-color: rgba(243, 239, 231, 0.24);
+  background: color-mix(in srgb, var(--theme-bg-dark) 82%, transparent);
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
 /* Homepage transparent state: white text on dark hero */
 [data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
   .project-navbar-shell:not(.is-scrolled)
@@ -591,30 +714,6 @@
   border-left-color: rgba(255, 255, 255, 0.14);
 }
 
-.project-navbar-controls > button:first-child {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.8rem;
-  height: 1.8rem;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-}
-
-[data-theme="light"] .project-navbar-controls > button:first-child {
-  color: var(--theme-text-heading);
-  background: var(--theme-surface-icon);
-  border-color: var(--theme-border-glass);
-}
-
-@media (min-width: 1280px) {
-  .project-navbar-controls > button:first-child {
-    display: none;
-  }
-}
-
 [data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-controls
@@ -622,103 +721,4 @@
   color: #fff;
   background: rgba(0, 0, 0, 0.32);
   border-color: rgba(255, 255, 255, 0.18);
-}
-
-/* Login remains a dark, image-backed scene in either theme. */
-[data-theme="light"]:has(.auth-login-page) .project-navbar-brand,
-[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link,
-[data-theme="light"]:has(.auth-login-page)
-  .project-navbar-links
-  .ui-nav-chip:not(.ui-nav-chip--highlight) {
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
-}
-
-[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link:hover,
-[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link--active,
-[data-theme="light"]:has(.auth-login-page)
-  .project-navbar-links
-  .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
-  color: #fff;
-}
-
-[data-theme="light"]:has(.auth-login-page) .project-navbar-control-cluster,
-[data-theme="light"]:has(.auth-login-page) .project-account-link {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.26);
-  color: #fff;
-}
-
-[data-theme="light"]:has(.auth-login-page) .project-account-login-icon {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="light"]:has(.auth-login-page) .project-navbar-controls .project-locale-toggle {
-  border-left-color: rgba(255, 255, 255, 0.14);
-}
-
-[data-theme="light"]:has(.auth-login-page) .project-navbar-controls > button:first-child {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.32);
-  color: #fff;
-}
-
-[data-theme="light"]:has(.auth-login-page) .project-account-avatar {
-  border-color: rgba(243, 239, 231, 0.24);
-  background: color-mix(in srgb, var(--theme-bg-dark) 82%, transparent);
-  box-shadow:
-    0 5px 14px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-}
-
-.mobile-menu-frame {
-  position: fixed;
-  z-index: 60;
-  top: calc(var(--viewport-top-inset) + 3.5rem);
-  right: max(1rem, var(--viewport-right-inset));
-  left: max(1rem, var(--viewport-left-inset));
-  overflow: hidden;
-  pointer-events: auto;
-}
-
-.mobile-menu-panel {
-  border: 1px solid var(--theme-border-glass);
-  border-radius: 1.5rem;
-  background: var(--theme-bg-base);
-  padding: 0.75rem;
-}
-
-[data-theme="light"] .mobile-menu-panel {
-  background: var(--theme-surface-modal);
-  border-color: var(--theme-border-glass);
-  box-shadow: 0 18px 44px var(--theme-shadow-modal);
-}
-
-.mobile-menu-panel .ui-nav-link,
-.mobile-menu-panel .ui-nav-chip {
-  border-radius: 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.mobile-menu-panel .ui-nav-link:hover {
-  background: var(--theme-surface-hover);
-}
-
-.mobile-menu-panel .ui-nav-chip--highlight {
-  margin: 0.15rem 0;
-  padding: 0.6rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  background: var(--theme-accent);
-  color: var(--theme-on-accent);
-  font-weight: 800;
-  font-size: 0.875rem;
-  box-shadow: none;
-}
-
-.mobile-menu-panel .ui-nav-chip--highlight:hover {
-  background: var(--theme-accent-hover);
-  color: var(--theme-on-accent);
-  box-shadow: none;
 }

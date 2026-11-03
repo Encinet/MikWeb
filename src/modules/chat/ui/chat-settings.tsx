@@ -1,9 +1,10 @@
 'use client';
 
-import { Bell, HardDrive, Trash2 } from 'lucide-react';
+import { Activity, AlignJustify, Bell, HardDrive, Trash2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useId, useState } from 'react';
+import type { ChatPreferences } from '@/modules/chat/model/chat-workspace';
 import type { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
 import type { useWebChat } from '@/modules/chat/model/use-web-chat';
 import { Switch } from '@/shared/ui/switch';
@@ -12,6 +13,8 @@ export function ChatSettings({
   chat,
   notifications,
   appearance,
+  preferences,
+  onPreferenceChange,
 }: {
   chat: Pick<
     ReturnType<typeof useWebChat>,
@@ -19,6 +22,8 @@ export function ChatSettings({
   >;
   notifications: Pick<ReturnType<typeof useChatNotifications>, 'status' | 'busy' | 'toggle'>;
   appearance: ReactNode;
+  preferences: ChatPreferences;
+  onPreferenceChange: (preferences: Partial<ChatPreferences>) => void;
 }) {
   const t = useTranslations('chat');
   const common = useTranslations('common');
@@ -50,6 +55,53 @@ export function ChatSettings({
         <div className="ui-setting-row">
           <div className="ui-setting-row__label">
             <span>
+              <AlignJustify size={18} aria-hidden="true" />
+            </span>
+            <strong>{t('preferences.density')}</strong>
+          </div>
+          <fieldset className="chat-density-control">
+            <legend className="sr-only">{t('preferences.density')}</legend>
+            {(['comfortable', 'compact'] as const).map((density) => (
+              <button
+                key={density}
+                type="button"
+                aria-pressed={preferences.density === density}
+                onClick={() => onPreferenceChange({ density })}
+              >
+                {t(`preferences.${density}`)}
+              </button>
+            ))}
+          </fieldset>
+        </div>
+        <div className="ui-setting-row">
+          <div className="ui-setting-row__label">
+            <span>
+              <Users size={18} aria-hidden="true" />
+            </span>
+            <strong>{t('preferences.members')}</strong>
+          </div>
+          <Switch
+            label={t('preferences.members')}
+            checked={preferences.membersVisible}
+            onChange={(membersVisible) => onPreferenceChange({ membersVisible })}
+          />
+        </div>
+        <div className="ui-setting-row">
+          <div className="ui-setting-row__label">
+            <span>
+              <Activity size={18} aria-hidden="true" />
+            </span>
+            <strong>{t('preferences.activity')}</strong>
+          </div>
+          <Switch
+            label={t('preferences.activity')}
+            checked={preferences.showActivity}
+            onChange={(showActivity) => onPreferenceChange({ showActivity })}
+          />
+        </div>
+        <div className="ui-setting-row">
+          <div className="ui-setting-row__label">
+            <span>
               <Bell size={18} aria-hidden="true" />
             </span>
             <div>
@@ -76,7 +128,10 @@ export function ChatSettings({
             <span>
               <HardDrive size={18} aria-hidden="true" />
             </span>
-            <strong>{t('saveLocally')}</strong>
+            <div>
+              <strong>{t('saveLocally')}</strong>
+              <small>{t('drafts.persistenceHint')}</small>
+            </div>
           </div>
           <Switch
             label={t('saveLocally')}

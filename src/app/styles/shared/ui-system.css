@@ -204,8 +204,6 @@
   align-items: center;
   justify-content: center;
   background: rgba(4, 12, 9, 0.46);
-  -webkit-backdrop-filter: blur(14px) saturate(115%);
-  backdrop-filter: blur(14px) saturate(115%);
   animation: dialogBackdropEnter 180ms ease-out both;
 }
 
@@ -218,6 +216,9 @@
   inset: 0;
   border: 0;
   background: transparent;
+  /* Keep the overlay free of containing blocks so fixed descendant menus can escape clipping. */
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  backdrop-filter: blur(14px) saturate(115%);
   cursor: default;
 }
 
@@ -244,7 +245,7 @@
 
 .app-dialog-window {
   --app-dialog-viewport-max-height: calc(
-    var(--viewport-height-dynamic) -
+    var(--visual-viewport-height, var(--viewport-height-dynamic)) -
     var(--viewport-top-inset) -
     var(--viewport-bottom-inset) -
     2 *
@@ -335,11 +336,9 @@
 @keyframes dialogWindowEnter {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.985);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 

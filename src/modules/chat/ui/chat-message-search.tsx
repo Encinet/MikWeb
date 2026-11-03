@@ -1,23 +1,20 @@
 'use client';
 
-import { Hash, MessageCircle, Server, Shield } from 'lucide-react';
+import { Hash, MessageCircle, Server, Shield, SlidersHorizontal } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 import { useId, useMemo, useRef, useState } from 'react';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
-import { messageConversation, messageDestination } from '@/modules/chat/model/chat-protocol';
+import { messageDestination } from '@/modules/chat/model/chat-protocol';
+import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
+import { chatSearchFilterCount, matchesChatSearch } from '@/modules/chat/model/chat-search';
 import { ChatPanel, ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 const PAGE_SIZE = 30;
-
-export interface ChatSearchCriteria {
-  query: string;
-  scope: 'current' | 'all';
-}
 
 function searchPattern(value: string, global = false): RegExp {
   return new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), global ? 'giu' : 'iu');
@@ -60,6 +57,7 @@ export function ChatMessageSearch({
   conversation,
   onChoose,
   onClose,
+  mode = 'search',
 }: {
   id: string;
   inputRef: RefObject<HTMLInputElement | null>;
@@ -71,6 +69,7 @@ export function ChatMessageSearch({
   conversation: ChatDestination;
   onChoose: (destination: ChatDestination, messageId: string) => void;
   onClose: () => void;
+  mode?: 'search' | 'mentions';
 }) {
   const t = useTranslations('chat');
   const content = useChatMessageContent();
@@ -81,6 +80,8 @@ export function ChatMessageSearch({
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<string | null>(null);
   const needle = query.trim();
+  const filterCount = chatSearchFilterCount(criteria);
+  const searching = Boolean(needle || filterCount || mode === 'mentions');
   const key = destinationKey(conversation);
   const currentLabel =
     conversation.channel === 'private' ? conversation.name : t(`channels.${conversation.channel}`);
@@ -109,19 +110,22 @@ export function ChatMessageSearch({
                 },
               ];
             })
-            .toReversed()
+            .reverse()
         : [],
     [messages, owner, content, open],
   );
   const results = useMemo(() => {
-    if (!needle) return [];
-    const pattern = searchPattern(needle);
-    return indexed.filter(
-      ({ message, text, name }) =>
-        (scope === 'all' || messageConversation(message, owner) === key) &&
-        (pattern.test(text) || pattern.test(name)),
+    if (!searching) return [];
+    return indexed.filter(({ message, text, name }) =>
+      matchesChatSearch(message, text, name, criteria, owner, key, mode === 'mentions'),
     );
-  }, [indexed, needle, scope, owner, key]);
+  }, [indexed, searching, criteria, owner, key, mode]);
+  const authors = useMemo(() => {
+    const values = new Map<string, string>();
+    for (const message of messages)
+      if (message.kind === 'player') values.set(message.senderUuid, message.senderName);
+    return [...values].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [messages]);
   const format = useMemo(
     () => ({
       date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }),
@@ -143,6 +147,10 @@ export function ChatMessageSearch({
     onCriteriaChange({ ...criteria, scope: value });
     resetResults();
   };
+  const filter = (value: Partial<ChatSearchCriteria>) => {
+    onCriteriaChange({ ...criteria, ...value });
+    resetResults();
+  };
   const visible = results.slice(0, limit);
   const today = format.date.format(Date.now());
 
@@ -151,13 +159,13 @@ export function ChatMessageSearch({
       id={id}
       open={open}
       inputRef={inputRef}
-      title={t('searchMessages')}
+      title={t(mode === 'mentions' ? 'mentions.title' : 'searchMessages')}
       onClose={onClose}
     >
       <ChatPanelSearch
         inputRef={inputRef}
-        label={t('searchMessages')}
-        placeholder={t('searchPlaceholder')}
+        label={t(mode === 'mentions' ? 'mentions.title' : 'searchMessages')}
+        placeholder={t(mode === 'mentions' ? 'mentions.search' : 'searchPlaceholder')}
         query={query}
         onChange={(value) => {
           onCriteriaChange({ ...criteria, query: value });
@@ -167,7 +175,7 @@ export function ChatMessageSearch({
           if (results[0]) choose(results[0]);
         }}
         maxLength={128}
-        describedBy={needle && results.length ? summaryId : undefined}
+        describedBy={searching && results.length ? summaryId : undefined}
       />
       <fieldset className="chat-search-scope">
         <legend className="sr-only">{t('searchScope')}</legend>
@@ -185,20 +193,97 @@ export function ChatMessageSearch({
           {t('searchAll')}
         </button>
       </fieldset>
+      <details className="chat-search-filters">
+        <summary>
+          <SlidersHorizontal size={15} aria-hidden="true" />
+          {t('filters.label')}
+          {filterCount ? <span className="chat-filter-count">{filterCount}</span> : null}
+        </summary>
+        <div className="chat-filter-fields">
+          <label>
+            <span>{t('filters.author')}</span>
+            <select
+              value={criteria.author}
+              onChange={(event) => filter({ author: event.target.value })}
+            >
+              <option value="">{t('filters.anyPlayer')}</option>
+              {authors.map(([uuid, name]) => (
+                <option key={uuid} value={uuid}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>{t('filters.source')}</span>
+            <select
+              value={criteria.source}
+              onChange={(event) =>
+                filter({ source: event.target.value as ChatSearchCriteria['source'] })
+              }
+            >
+              <option value="all">{t('filters.anySource')}</option>
+              <option value="game">{t('source.game')}</option>
+              <option value="web">{t('source.web')}</option>
+            </select>
+          </label>
+          <label>
+            <span>{t('filters.after')}</span>
+            <input
+              type="date"
+              value={criteria.after}
+              max={criteria.before || undefined}
+              onChange={(event) => filter({ after: event.target.value })}
+            />
+          </label>
+          <label>
+            <span>{t('filters.before')}</span>
+            <input
+              type="date"
+              value={criteria.before}
+              min={criteria.after || undefined}
+              onChange={(event) => filter({ before: event.target.value })}
+            />
+          </label>
+          {filterCount ? (
+            <button
+              className="chat-text-button"
+              type="button"
+              onClick={() => filter({ author: '', source: 'all', after: '', before: '' })}
+            >
+              {t('filters.reset')}
+            </button>
+          ) : null}
+        </div>
+      </details>
       <div className="chat-panel-summary" id={summaryId} role="status">
-        {needle && results.length ? t('searchCount', { count: results.length }) : null}
+        {searching && results.length ? t('searchCount', { count: results.length }) : null}
       </div>
       <div ref={list} className="chat-panel-results chat-search-results">
         {!visible.length ? (
-          <div className="chat-panel-empty" role={needle ? 'status' : undefined}>
-            <p>{needle ? t('searchEmpty') : t('searchHint')}</p>
-            {needle ? (
+          <div className="chat-panel-empty" role={searching ? 'status' : undefined}>
+            <p>
+              {searching
+                ? t(
+                    mode === 'mentions' && !needle && !filterCount
+                      ? 'mentions.empty'
+                      : 'searchEmpty',
+                  )
+                : t('searchHint')}
+            </p>
+            {searching ? (
               scope === 'current' ? (
                 <button type="button" onClick={() => changeScope('all')}>
                   {t('searchAll')}
                 </button>
               ) : (
-                <p>{t('searchEmptyHint')}</p>
+                <p>
+                  {t(
+                    mode === 'mentions' && !needle && !filterCount
+                      ? 'mentions.hint'
+                      : 'searchEmptyHint',
+                  )}
+                </p>
               )
             ) : null}
           </div>

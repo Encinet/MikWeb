@@ -498,8 +498,8 @@
     "saveLocally": "Save local history",
     "clearHistory": "Clear local history",
     "clearAction": "Clear",
-    "clearConfirm": "Clear local history? This cannot be undone.",
-    "storageFailed": "Messages cannot be saved locally and may be lost when you close this page.",
+    "clearConfirm": "Clear local messages, drafts, and conversations? This cannot be undone.",
+    "storageFailed": "Messages or drafts could not be saved locally and may be lost when this page closes.",
     "restoreDraft": "Restore draft",
     "server": {
       "label": "Server",
@@ -585,8 +585,77 @@
       "error": "Could not enable notifications. Click to retry",
       "mentionTitle": "{name} mentioned you in {channel}"
     },
-    "disableHistoryConfirm": "Stop saving and clear local history?",
-    "messagePlaceholder": "Message…"
+    "disableHistoryConfirm": "Stop saving and clear local messages, drafts, and conversations?",
+    "messagePlaceholder": "Message…",
+    "composePlaceholder": "Message {channel}…",
+    "moreActions": "More actions",
+    "navigationUnread": "Channels and conversations, {count} unread messages",
+    "drafts": {
+      "label": "Draft",
+      "persistenceHint": "Also saves drafts and your conversation list",
+      "restoreTooLong": "Your current draft is too long. Finish or shorten it before restoring this message.",
+      "restored": "Restored drafts for {count} conversations",
+      "saved": "Draft saved on this device"
+    },
+    "connection": {
+      "reconnecting": "Reconnecting…",
+      "composeHint": "You can keep editing your draft while reconnecting"
+    },
+    "mentions": {
+      "title": "Mentions",
+      "search": "Search your mentions",
+      "empty": "No mentions yet",
+      "unread": "{count} unread mentions",
+      "hint": "Mentions received and saved in this browser appear here"
+    },
+    "messageActions": {
+      "label": "Actions for a message from {name}",
+      "copy": "Copy message",
+      "mention": "Mention player",
+      "private": "Start private chat"
+    },
+    "activity": {
+      "count": "{count, plural, one {# player activity} other {# player activities}}"
+    },
+    "preferences": {
+      "density": "Message spacing",
+      "comfortable": "Comfortable",
+      "compact": "Compact",
+      "members": "Show member sidebar",
+      "hideMembers": "Hide member sidebar",
+      "activity": "Show joins and leaves",
+      "saved": "Chat preferences saved"
+    },
+    "filters": {
+      "label": "Filters",
+      "author": "Player",
+      "anyPlayer": "Any player",
+      "source": "Message source",
+      "anySource": "All sources",
+      "after": "From date",
+      "before": "Through date",
+      "reset": "Clear filters"
+    },
+    "coordinates": {
+      "actions": "Location actions: {coordinates}",
+      "copy": "Copy coordinates",
+      "world": "Map world",
+      "chooseWorld": "Choose a world",
+      "unavailable": "Map unavailable",
+      "loading": "Loading worlds…",
+      "retry": "Retry loading map",
+      "chooseWorldHint": "Confirm the world before opening the map",
+      "viewMap": "View on map"
+    },
+    "threads": {
+      "actions": "Conversation actions for {name}",
+      "pinned": "Pinned",
+      "pin": "Pin conversation",
+      "unpin": "Unpin conversation",
+      "close": "Close conversation",
+      "online": "Online",
+      "offline": "Offline"
+    }
   },
   "pcl2": {
     "title": "PCL2 Homepage",

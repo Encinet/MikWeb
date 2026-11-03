@@ -14,6 +14,15 @@ import {
   messageCursor,
   readStoredPositions,
 } from '@/modules/chat/model/chat-reading';
+import type {
+  ChatWorkspaceMutation,
+  ChatWorkspaceState,
+} from '@/modules/chat/model/chat-workspace';
+import {
+  emptyChatWorkspace,
+  readChatWorkspace,
+  updateChatWorkspace,
+} from '@/modules/chat/model/chat-workspace';
 
 export interface HistoryLease {
   owner: string | null;
@@ -83,6 +92,7 @@ function storedMessage(owner: string, message: ChatMessage) {
 interface StoredState extends HistoryLease {
   staff: boolean;
   readPositions: ChatReadPositions;
+  workspace?: ChatWorkspaceState;
 }
 
 function readState(value: unknown): StoredState | null {
@@ -170,6 +180,9 @@ export async function resetHistory(owner: string, persist?: false): Promise<Hist
         epoch: crypto.randomUUID(),
         persist: persist ?? previous.persist,
         readPositions: new Map(),
+        workspace: emptyChatWorkspace(
+          readChatWorkspace(previous.workspace, previous.staff).preferences,
+        ),
       };
       state.put(next, 'current');
       messages.clear();
@@ -184,6 +197,7 @@ export async function enableHistory(
   owner: string,
   records: ChatMessage[],
   readPositions: ChatReadPositions,
+  workspace?: ChatWorkspaceState,
 ): Promise<HistoryLease | null> {
   const db = await openDatabase();
   const lease = await transaction<HistoryLease | null>(db, 'readwrite', (state, messages, done) => {
@@ -194,7 +208,12 @@ export async function enableHistory(
         done(null);
         return;
       }
-      const next = { ...previous, persist: true, readPositions: new Map(readPositions) };
+      const next = {
+        ...previous,
+        persist: true,
+        readPositions: new Map(readPositions),
+        workspace: readChatWorkspace(workspace ?? previous.workspace, previous.staff),
+      };
       if (!next.staff) next.readPositions.delete('staff');
       state.put(next, 'current');
       for (const message of records) {
@@ -369,7 +388,10 @@ export async function setStaffHistoryPermission(owner: string, allowed: boolean)
       if (!active || active.owner !== owner) return;
       if (active.staff === allowed) return;
       if (!allowed) active.readPositions.delete('staff');
-      state.put({ ...active, staff: allowed }, 'current');
+      state.put(
+        { ...active, staff: allowed, workspace: readChatWorkspace(active.workspace, allowed) },
+        'current',
+      );
       if (allowed) return;
       const request = messages.index('ownerTime').openCursor(range(owner));
       request.onsuccess = () => {
@@ -382,6 +404,68 @@ export async function setStaffHistoryPermission(owner: string, allowed: boolean)
       };
     };
   });
+}
+
+export async function loadChatWorkspace(lease: HistoryLease): Promise<ChatWorkspaceState | null> {
+  const db = await openDatabase();
+  return transaction(db, 'readonly', (state, _messages, done) => {
+    const request = state.get('current');
+    request.onsuccess = () => {
+      const active = readState(request.result);
+      done(
+        active?.owner === lease.owner && active.epoch === lease.epoch
+          ? readChatWorkspace(active.workspace, active.staff)
+          : null,
+      );
+    };
+  });
+}
+
+/** Mutate one field in a transaction so drafts in other tabs/conversations cannot overwrite it. */
+export async function saveChatWorkspace(
+  lease: HistoryLease,
+  mutation: ChatWorkspaceMutation,
+): Promise<void> {
+  const db = await openDatabase();
+  await transaction<void>(db, 'readwrite', (state, _messages, done) => {
+    done(undefined);
+    const request = state.get('current');
+    request.onsuccess = () => {
+      const active = readState(request.result);
+      if (!active?.owner || active.owner !== lease.owner || active.epoch !== lease.epoch) return;
+      if (!active.persist && mutation.type !== 'preferences') return;
+      let workspace = updateChatWorkspace(
+        readChatWorkspace(active.workspace, active.staff),
+        mutation,
+      );
+      workspace = readChatWorkspace(workspace, active.staff);
+      if (!active.persist) workspace = emptyChatWorkspace(workspace.preferences);
+      state.put({ ...active, workspace }, 'current');
+    };
+  });
+  announceWorkspaceChange();
+}
+
+const WORKSPACE_CHANGE_EVENT = 'mik-chat-workspace-change';
+function announceWorkspaceChange() {
+  window.dispatchEvent(new Event(WORKSPACE_CHANGE_EVENT));
+  try {
+    localStorage.setItem(WORKSPACE_CHANGE_EVENT, crypto.randomUUID());
+  } catch {
+    /* The IndexedDB write can succeed while localStorage is unavailable. */
+  }
+}
+
+export function onWorkspaceChange(listener: () => void): () => void {
+  const storage = (event: StorageEvent) => {
+    if (event.key === WORKSPACE_CHANGE_EVENT || event.key === null) listener();
+  };
+  window.addEventListener(WORKSPACE_CHANGE_EVENT, listener);
+  window.addEventListener('storage', storage);
+  return () => {
+    window.removeEventListener(WORKSPACE_CHANGE_EVENT, listener);
+    window.removeEventListener('storage', storage);
+  };
 }
 
 export function announceHistoryChange(reading?: HistoryReadChange): void {

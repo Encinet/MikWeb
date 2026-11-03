@@ -1,11 +1,13 @@
 'use client';
 
-import { Hash, MessageCirclePlus, Shield } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { AtSign, Hash, MessageCirclePlus, Pin, PinOff, Shield, X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 
 import type { ChatUnread } from '@/modules/chat/model/chat-reading';
+import type { ChatThread, ChatWorkspaceState } from '@/modules/chat/model/chat-workspace';
+import { ChatActionMenu } from '@/modules/chat/ui/chat-action-menu';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 export function ChatNavigation({
@@ -17,17 +19,36 @@ export function ChatNavigation({
   onNewPrivate,
   privatePanelId,
   privatePanelOpen,
+  drafts,
+  online,
+  onPin,
+  onCloseThread,
+  onMentions,
+  mentionsOpen,
+  mentionsPanelId,
+  mentionCount,
 }: {
   selected: ChatDestination;
   staff: boolean;
-  threads: { id: string; name: string }[];
+  threads: ChatThread[];
   unread: Map<string, ChatUnread>;
   onChoose: (destination: ChatDestination) => void;
   onNewPrivate: (trigger: HTMLButtonElement) => void;
   privatePanelId: string;
   privatePanelOpen: boolean;
+  drafts: ChatWorkspaceState['drafts'];
+  online: boolean;
+  onPin: (thread: ChatThread) => void;
+  onCloseThread: (thread: ChatThread) => void;
+  onMentions: (trigger: HTMLButtonElement) => void;
+  mentionsOpen: boolean;
+  mentionsPanelId: string;
+  mentionCount: number;
 }) {
   const t = useTranslations('chat');
+  const locale = useLocale();
+  const time = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
+  const date = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' });
   const key = destinationKey(selected);
   const badge = (conversation: string) => {
     const count = unread.get(conversation)?.count;
@@ -56,10 +77,29 @@ export function ChatNavigation({
               >
                 <Icon size={18} aria-hidden="true" />
                 <span className="chat-navigation-label">{t(`channels.${channel}`)}</span>
+                {drafts[channel]?.text ? (
+                  <span className="chat-draft-indicator">{t('drafts.label')}</span>
+                ) : null}
                 {badge(channel)}
               </button>
             );
           })}
+        <button
+          type="button"
+          className="ui-sidebar-link chat-mentions-link"
+          aria-expanded={mentionsOpen}
+          aria-controls={mentionsPanelId}
+          onClick={(event) => onMentions(event.currentTarget)}
+        >
+          <AtSign size={18} aria-hidden="true" />
+          <span className="chat-navigation-label">{t('mentions.title')}</span>
+          {mentionCount ? (
+            <span className="chat-unread-count">
+              <span aria-hidden="true">{mentionCount > 99 ? '99+' : mentionCount}</span>
+              <span className="sr-only">{t('mentions.unread', { count: mentionCount })}</span>
+            </span>
+          ) : null}
+        </button>
       </nav>
       <nav aria-label={t('privateList')} className="chat-threads">
         <button
@@ -72,23 +112,85 @@ export function ChatNavigation({
           <MessageCirclePlus size={18} aria-hidden="true" />
           {t('newPrivate')}
         </button>
-        {threads.map((thread) => (
-          <button
-            type="button"
-            key={thread.id}
-            className="ui-sidebar-link"
-            aria-current={key === `private:${thread.id}` ? 'page' : undefined}
-            onClick={() =>
-              onChoose({ channel: 'private', targetUuid: thread.id, name: thread.name })
-            }
-          >
-            <span className="chat-thread-avatar" aria-hidden="true">
-              <MinecraftAvatar uuid={thread.id} name={thread.name} size={24} />
-            </span>
-            <span className="chat-navigation-label">{thread.name}</span>
-            {badge(`private:${thread.id}`)}
-          </button>
-        ))}
+        {threads.map((thread) => {
+          const destination = thread.destination;
+          const conversation = destinationKey(destination);
+          const latest = thread.latest;
+          const preview = thread.draft || latest?.content.map((part) => part.text).join('') || '';
+          const sameDay =
+            latest && new Date(latest.createdAt).toDateString() === new Date().toDateString();
+          return (
+            <div className="chat-thread-row" key={destination.targetUuid}>
+              <button
+                type="button"
+                className="ui-sidebar-link chat-thread-link"
+                aria-current={key === conversation ? 'page' : undefined}
+                onClick={() => onChoose(destination)}
+              >
+                <span className="chat-thread-avatar" aria-hidden="true">
+                  <MinecraftAvatar
+                    uuid={destination.targetUuid}
+                    name={destination.name}
+                    size={32}
+                  />
+                  {online && thread.peer ? <span className="chat-thread-online" /> : null}
+                </span>
+                <span className="chat-thread-copy">
+                  <span className="chat-thread-heading">
+                    <span>{destination.name}</span>
+                    {thread.pinned ? <Pin size={11} aria-label={t('threads.pinned')} /> : null}
+                    {latest ? (
+                      <time dateTime={new Date(latest.createdAt).toISOString()}>
+                        {(sameDay ? time : date).format(latest.createdAt)}
+                      </time>
+                    ) : null}
+                  </span>
+                  {preview ? (
+                    <span className="chat-thread-preview">
+                      {thread.draft ? (
+                        <span className="chat-draft-indicator">{t('drafts.label')} </span>
+                      ) : null}
+                      {preview}
+                    </span>
+                  ) : null}
+                  <span className="sr-only">
+                    {online
+                      ? t(thread.peer ? 'threads.online' : 'threads.offline')
+                      : t('status.reconnecting')}
+                  </span>
+                </span>
+                {badge(conversation)}
+              </button>
+              <ChatActionMenu
+                label={t('threads.actions', { name: destination.name })}
+                className="chat-thread-actions"
+              >
+                <button
+                  type="button"
+                  className="chat-popover-action"
+                  data-chat-menu-close
+                  onClick={() => onPin(thread)}
+                >
+                  {thread.pinned ? (
+                    <PinOff size={16} aria-hidden="true" />
+                  ) : (
+                    <Pin size={16} aria-hidden="true" />
+                  )}
+                  {t(thread.pinned ? 'threads.unpin' : 'threads.pin')}
+                </button>
+                <button
+                  type="button"
+                  className="chat-popover-action"
+                  data-chat-menu-close
+                  onClick={() => onCloseThread(thread)}
+                >
+                  <X size={16} aria-hidden="true" />
+                  {t('threads.close')}
+                </button>
+              </ChatActionMenu>
+            </div>
+          );
+        })}
       </nav>
     </div>
   );

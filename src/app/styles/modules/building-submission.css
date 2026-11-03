@@ -281,7 +281,7 @@
 }
 
 .building-submission-builder-remove,
-.building-submission-images figure button,
+.building-submission-images :where(figure) button,
 .building-submission-tags button {
   display: inline-flex;
   align-items: center;
@@ -292,7 +292,7 @@
 }
 
 .building-submission-builder-remove,
-.building-submission-images figure button {
+.building-submission-images :where(figure) button {
   width: 1.55rem;
   height: 1.55rem;
 }
@@ -407,7 +407,7 @@
   font-weight: 720;
 }
 
-.building-submission-images figure button {
+.building-submission-images :where(figure) button {
   position: absolute;
   top: 0.34rem;
   right: 0.34rem;

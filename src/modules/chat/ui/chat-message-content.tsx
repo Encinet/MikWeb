@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react';
 import { Fragment } from 'react';
+import { findChatCoordinates } from '@/modules/chat/lib/chat-coordinates';
 import type { ChatContent, ChatStyle } from '@/modules/chat/model/chat-protocol';
+import { ChatCoordinate } from '@/modules/chat/ui/chat-coordinate';
 
 /** Fixed CSS properties, RGB integers and decoration flags; never accept CSS from a message. */
 function textStyle(style: ChatStyle): CSSProperties {
@@ -28,7 +30,27 @@ export function ChatMessageContent({ content }: { content: ChatContent }) {
   return content.map((part) => {
     const start = offset;
     offset += part.text.length;
-    const text = part.style ? <span style={textStyle(part.style)}>{part.text}</span> : part.text;
+    const matches = !part.href && !part.mention ? findChatCoordinates(part.text) : [];
+    let cursor = 0;
+    const pieces = matches.map((coordinate) => {
+      const before = part.text.slice(cursor, coordinate.start);
+      cursor = coordinate.end;
+      return (
+        <Fragment key={coordinate.start}>
+          {before}
+          <ChatCoordinate coordinate={coordinate} />
+        </Fragment>
+      );
+    });
+    const value = matches.length ? (
+      <>
+        {pieces}
+        {part.text.slice(cursor)}
+      </>
+    ) : (
+      part.text
+    );
+    const text = part.style ? <span style={textStyle(part.style)}>{value}</span> : value;
     return (
       <Fragment key={start}>
         {part.href ? (

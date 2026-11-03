@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
@@ -14,6 +14,7 @@ import SiteHeader from '@/site/header/ui/site-header';
 import { PrintFooter, PrintHeader } from '@/site/print/ui/print-chrome';
 import { ThemeColor } from '@/site/providers/theme-color';
 import { ThemeProvider } from '@/site/providers/theme-provider';
+import { ViewportMetrics } from '@/site/providers/viewport-metrics';
 import { buildPageMetadata } from '@/site/seo/build-page-metadata';
 import StructuredData from '@/site/structured-data/ui/structured-data';
 
@@ -21,13 +22,14 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export function generateViewport() {
+export function generateViewport(): Viewport {
   return {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 5,
     userScalable: true,
     viewportFit: 'cover',
+    interactiveWidget: 'resizes-content',
   };
 }
 
@@ -74,6 +76,7 @@ export default async function LocaleLayout({
 
   return (
     <ThemeProvider>
+      <ViewportMetrics />
       <NextIntlClientProvider messages={messages}>
         <PlayerStatusProvider>
           <AuthProvider initialSessionPresent={initialSessionPresent}>

@@ -1,7 +1,7 @@
 import { ExternalLink } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
-const MAP_URL = 'https://map.mcmik.top';
+import { MAP_URL } from '@/modules/map/model/map-world';
 
 export default async function MapPage() {
   const t = await getTranslations('map');

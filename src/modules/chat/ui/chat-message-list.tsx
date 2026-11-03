@@ -18,9 +18,13 @@ import type {
   ChatPlayerMessage,
   ChatServerMessage,
 } from '@/modules/chat/model/chat-protocol';
+import { isPassiveMessage } from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor, ChatUnread } from '@/modules/chat/model/chat-reading';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
+import { ChatActivityGroup } from '@/modules/chat/ui/chat-activity-group';
+import type { ChatMessageActionHandlers } from '@/modules/chat/ui/chat-message-actions';
+import { ChatMessageActions } from '@/modules/chat/ui/chat-message-actions';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
@@ -34,7 +38,7 @@ export interface ChatMessageJump {
   messageId: string | null;
   sequence: number;
 }
-interface Props {
+interface Props extends ChatMessageActionHandlers {
   conversation: string;
   destination: ChatDestination;
   title: string;
@@ -49,6 +53,7 @@ interface Props {
   onRead: (conversation: string, cursor: ChatReadCursor) => void;
   onRestore: (message: PendingChatMessage) => void;
   onJumpComplete: (sequence: number) => void;
+  showActivity: boolean;
 }
 function dayKey(timestamp: number) {
   const date = new Date(timestamp);
@@ -60,12 +65,15 @@ function groupMessages(messages: ChatMessage[], boundary?: string) {
     const last = groups.at(-1)?.at(-1);
     if (
       last &&
-      last.kind === 'player' &&
-      message.kind === 'player' &&
       message.id !== boundary &&
-      last.senderUuid === message.senderUuid &&
-      last.source === message.source &&
-      message.createdAt - last.createdAt < 180_000 &&
+      ((last.kind === 'player' &&
+        message.kind === 'player' &&
+        last.senderUuid === message.senderUuid &&
+        last.source === message.source &&
+        message.createdAt - last.createdAt < 180_000) ||
+        (isPassiveMessage(last) &&
+          isPassiveMessage(message) &&
+          message.createdAt - last.createdAt < 300_000)) &&
       dayKey(last.createdAt) === dayKey(message.createdAt)
     )
       groups.at(-1)?.push(message);
@@ -89,22 +97,37 @@ export const ChatMessageList = memo(function ChatMessageList({
   onRead,
   onRestore,
   onJumpComplete,
+  showActivity,
+  onMention,
+  onPrivate,
 }: Props) {
   const t = useTranslations('chat');
   const locale = useLocale();
   const [boundary, setBoundary] = useState(unread?.firstId);
+  const [revealedActivityId, setRevealedActivityId] = useState(jump?.messageId ?? null);
+  const timeline = useMemo(
+    () =>
+      messages.filter(
+        (message) =>
+          showActivity ||
+          !isPassiveMessage(message) ||
+          message.id === revealedActivityId ||
+          message.id === jump?.messageId,
+      ),
+    [messages, showActivity, revealedActivityId, jump?.messageId],
+  );
   const [startId, setStartId] = useState(() => {
     const previous = scroll.initialView();
     const target =
       jump?.conversation === conversation ? jump.messageId : !previous ? unread?.firstId : null;
-    const index = target ? messages.findIndex((message) => message.id === target) : -1;
+    const index = target ? timeline.findIndex((message) => message.id === target) : -1;
     return (
-      messages[
+      timeline[
         Math.max(
           0,
           Math.min(
-            messages.length - (previous?.count || PAGE_SIZE),
-            index < 0 ? messages.length : index - 5,
+            timeline.length - (previous?.count || PAGE_SIZE),
+            index < 0 ? timeline.length : index - 5,
           ),
         )
       ]?.id ?? null
@@ -112,13 +135,13 @@ export const ChatMessageList = memo(function ChatMessageList({
   });
   const start = Math.max(
     0,
-    messages.findIndex((message) => message.id === startId),
-  );
-  const groups = useMemo(
-    () => groupMessages(messages.slice(start), boundary),
-    [messages, start, boundary],
+    timeline.findIndex((message) => message.id === startId),
   );
   const [highlight, setHighlight] = useState<string | null>(null);
+  const groups = useMemo(
+    () => groupMessages(timeline.slice(start), boundary),
+    [timeline, start, boundary],
+  );
   const initial = useRef(true);
   const prepend = useRef<{ top: number; height: number; start: number } | null>(null);
   const track = useChatReadTracker(scroll.log, (cursor) => onRead(conversation, cursor), paused);
@@ -132,10 +155,10 @@ export const ChatMessageList = memo(function ChatMessageList({
   );
   const reveal = useCallback(
     (id: string) => {
-      const index = messages.findIndex((message) => message.id === id);
-      if (index >= 0 && index < start) setStartId(messages[Math.max(0, index - 5)]?.id ?? null);
+      const index = timeline.findIndex((message) => message.id === id);
+      if (index >= 0 && index < start) setStartId(timeline[Math.max(0, index - 5)]?.id ?? null);
     },
-    [messages, start],
+    [timeline, start],
   );
 
   useLayoutEffect(() => {
@@ -154,18 +177,20 @@ export const ChatMessageList = memo(function ChatMessageList({
   useEffect(() => {
     if (jump?.conversation === conversation) {
       if (jump.messageId) {
-        const index = messages.findIndex((message) => message.id === jump.messageId);
+        const index = timeline.findIndex((message) => message.id === jump.messageId);
         if (index >= 0 && index < start) {
           reveal(jump.messageId);
           return;
         }
-        scroll.toMessage(jump.messageId, true);
         setHighlight(jump.messageId);
+        setRevealedActivityId(jump.messageId);
+        const id = jump.messageId;
+        requestAnimationFrame(() => scroll.toMessage(id, true));
       } else scroll.toLatest();
       initial.current = false;
       onJumpComplete(jump.sequence);
     }
-  }, [conversation, jump, messages, start, reveal, scroll, onJumpComplete]);
+  }, [conversation, jump, timeline, start, reveal, scroll, onJumpComplete]);
 
   useEffect(() => {
     if (!boundary && unread && !scroll.atBottom) setBoundary(unread.firstId);
@@ -183,10 +208,10 @@ export const ChatMessageList = memo(function ChatMessageList({
     setLocalJump(unread.firstId);
   };
   useLayoutEffect(() => {
-    if (!localJump || messages.findIndex((message) => message.id === localJump) < start) return;
+    if (!localJump || timeline.findIndex((message) => message.id === localJump) < start) return;
     scroll.toMessage(localJump, true);
     setLocalJump(null);
-  }, [localJump, messages, start, scroll]);
+  }, [localJump, timeline, start, scroll]);
   const RoomIcon =
     destination.channel === 'public'
       ? Hash
@@ -218,13 +243,13 @@ export const ChatMessageList = memo(function ChatMessageList({
                 const root = scroll.log.current;
                 if (root)
                   prepend.current = { top: root.scrollTop, height: root.scrollHeight, start };
-                setStartId(messages[Math.max(0, start - PAGE_SIZE)]?.id ?? null);
+                setStartId(timeline[Math.max(0, start - PAGE_SIZE)]?.id ?? null);
               }}
             >
               {t('loadEarlier')}
             </button>
           ) : null}
-          {!messages.length && !pending.length ? (
+          {!timeline.length && !pending.length ? (
             <div className="chat-empty">
               <span className="chat-empty__mark" aria-hidden="true">
                 <RoomIcon size={32} strokeWidth={1.25} />
@@ -255,7 +280,14 @@ export const ChatMessageList = memo(function ChatMessageList({
                     <span>{t('readMarker')}</span>
                   </div>
                 ) : null}
-                {first.kind === 'server' ? (
+                {first.kind === 'server' && isPassiveMessage(first) ? (
+                  <ChatActivityGroup
+                    messages={group.filter((message) => message.kind === 'server')}
+                    highlighted={highlight}
+                    revealedId={revealedActivityId}
+                    formatTime={(timestamp) => format.time.format(timestamp)}
+                  />
+                ) : first.kind === 'server' ? (
                   <ServerMessageLine
                     message={first}
                     title={format.full.format(first.createdAt)}
@@ -291,6 +323,9 @@ export const ChatMessageList = memo(function ChatMessageList({
                             title={format.full.format(message.createdAt)}
                             highlight={highlight === message.id}
                             track={track}
+                            owner={owner}
+                            onMention={onMention}
+                            onPrivate={onPrivate}
                           />
                         ))}
                     </div>
@@ -355,26 +390,38 @@ const MessageLine = memo(function MessageLine({
   title,
   highlight,
   track,
-}: {
+  owner,
+  onMention,
+  onPrivate,
+}: ChatMessageActionHandlers & {
   message: ChatPlayerMessage;
   title: string;
   highlight: boolean;
   track: ReturnType<typeof useChatReadTracker>;
+  owner: string;
 }) {
   const attach = useCallback(
     (element: HTMLSpanElement | null) => track(element, messageCursor(message)),
     [track, message],
   );
   return (
-    <p
-      className={`chat-message__line${highlight ? ' is-highlighted' : ''}`}
+    <div
+      className={`chat-message__line chat-message-entry${highlight ? ' is-highlighted' : ''}${message.mentioned && message.senderUuid !== owner ? ' is-mentioned' : ''}`}
       data-chat-message={message.id}
       tabIndex={-1}
       title={title}
     >
-      <ChatMessageContent content={message.content} />
-      <span ref={attach} className="chat-read-sentinel" aria-hidden="true" />
-    </p>
+      <p className="chat-message__text">
+        <ChatMessageContent content={message.content} />
+        <span ref={attach} className="chat-read-sentinel" aria-hidden="true" />
+      </p>
+      <ChatMessageActions
+        message={message}
+        owner={owner}
+        onMention={onMention}
+        onPrivate={onPrivate}
+      />
+    </div>
   );
 });
 

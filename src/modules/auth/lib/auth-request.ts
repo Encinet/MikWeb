@@ -16,23 +16,29 @@ export async function authRequest<T>(
     signal?: AbortSignal;
   } = {},
 ): Promise<T> {
-  const response = await fetch(path, {
-    method: options.method ?? 'POST',
-    headers: options.body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
-    cache: 'no-store',
-    signal: options.signal
-      ? AbortSignal.any([options.signal, AbortSignal.timeout(10_000)])
-      : AbortSignal.timeout(10_000),
-  });
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new AuthRequestError(
-      typeof payload?.error === 'string' ? payload.error : 'request_failed',
-      response.status,
-    );
-  }
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload))
-    throw new AuthRequestError('invalid_response', 502);
-  return payload as T;
+  return withRequestTimeout(
+    10_000,
+    async (signal) => {
+      const response = await fetch(path, {
+        method: options.method ?? 'POST',
+        headers: options.body === undefined ? undefined : { 'Content-Type': 'application/json' },
+        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        cache: 'no-store',
+        signal,
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new AuthRequestError(
+          typeof payload?.error === 'string' ? payload.error : 'request_failed',
+          response.status,
+        );
+      }
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload))
+        throw new AuthRequestError('invalid_response', 502);
+      return payload as T;
+    },
+    options.signal,
+  );
 }
+
+import { withRequestTimeout } from '@/shared/lib/request-timeout';

@@ -3,6 +3,7 @@
 import type { RefObject } from 'react';
 import { useLayoutEffect } from 'react';
 import { captureFocusReturn } from '@/shared/lib/focus-return';
+import { anchoredSurfacePosition, readSafeViewportBounds } from '@/shared/lib/viewport-bounds';
 
 export function useAppearancePanel(
   ref: RefObject<HTMLDialogElement | null>,
@@ -21,20 +22,19 @@ export function useAppearancePanel(
 
     const position = () => {
       const anchor = anchorRef.current?.getBoundingClientRect();
-      if (!anchor || modal) return;
-      const viewport = window.visualViewport;
-      const viewportTop = viewport?.offsetTop ?? 0;
-      const viewportLeft = viewport?.offsetLeft ?? 0;
-      const height = viewport?.height ?? window.innerHeight;
-      const width = viewport?.width ?? window.innerWidth;
-      dialog.style.setProperty(
-        '--appearance-panel-top',
-        `${Math.max(viewportTop + 12, Math.min(anchor.bottom + 8, viewportTop + height - dialog.offsetHeight - 12))}px`,
+      if (!anchor) return;
+      const viewport = readSafeViewportBounds();
+      dialog.style.setProperty('--appearance-viewport-width', `${viewport.width}px`);
+      dialog.style.setProperty('--appearance-viewport-height', `${viewport.height}px`);
+      if (modal) return;
+      const { top, left } = anchoredSurfacePosition(
+        anchor,
+        { width: dialog.offsetWidth, height: dialog.offsetHeight },
+        viewport,
+        12,
       );
-      dialog.style.setProperty(
-        '--appearance-panel-left',
-        `${Math.max(viewportLeft + 12, Math.min(anchor.right - dialog.offsetWidth, viewportLeft + width - dialog.offsetWidth - 12))}px`,
-      );
+      dialog.style.setProperty('--appearance-panel-top', `${top}px`);
+      dialog.style.setProperty('--appearance-panel-left', `${left}px`);
     };
     const present = () => {
       if (dialog.open) dialog.close();
@@ -84,6 +84,7 @@ export function useAppearancePanel(
     window.addEventListener('scroll', position, true);
     window.addEventListener('resize', position);
     window.visualViewport?.addEventListener('resize', position);
+    window.visualViewport?.addEventListener('scroll', position);
     sheetQuery.addEventListener('change', present);
     shortQuery.addEventListener('change', present);
     return () => {
@@ -95,6 +96,7 @@ export function useAppearancePanel(
       window.removeEventListener('scroll', position, true);
       window.removeEventListener('resize', position);
       window.visualViewport?.removeEventListener('resize', position);
+      window.visualViewport?.removeEventListener('scroll', position);
       sheetQuery.removeEventListener('change', present);
       shortQuery.removeEventListener('change', present);
       const shouldRestoreFocus =

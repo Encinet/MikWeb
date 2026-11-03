@@ -62,6 +62,8 @@ export function useChatScroll(conversation: string) {
       element?.querySelectorAll<HTMLElement>('[data-chat-message]') ?? [],
     ).find((node) => node.dataset.chatMessage === id);
     if (!element || !message) return;
+    const disclosure = message.closest('details');
+    if (disclosure) disclosure.open = true;
     const top =
       element.scrollTop +
       message.getBoundingClientRect().top -

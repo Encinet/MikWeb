@@ -16,6 +16,7 @@ import {
   syncHistoryAccount,
 } from '@/modules/chat/lib/chat-history';
 import { ChatTransport } from '@/modules/chat/lib/chat-transport';
+import type { ChatConnection } from '@/modules/chat/model/chat-connection';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import type {
   ChatAccess,
@@ -43,6 +44,7 @@ import {
   retainChatHistory,
   unreadMessages,
 } from '@/modules/chat/model/chat-reading';
+import type { ChatWorkspaceState } from '@/modules/chat/model/chat-workspace';
 
 export interface PendingChatMessage {
   requestId: string;
@@ -51,10 +53,6 @@ export interface PendingChatMessage {
   status: 'sending' | 'unknown' | 'failed';
   error?: string;
 }
-type ChatConnection =
-  | { status: 'idle' | 'connecting' | 'authorizing' | 'online'; error?: never }
-  | { status: 'reconnecting'; error?: string }
-  | { status: 'error'; error: string };
 const EMPTY_PRESENCE: ChatPresence = { players: [], staffPlayers: [] };
 
 function mergeMessages(existing: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
@@ -72,12 +70,14 @@ export function useWebChat() {
   const owner = account?.playerUuid ?? null;
   const accountStaff = isStaffRole(account?.role);
   const [connection, setConnection] = useState<ChatConnection>({ status: 'idle' });
+  const [hasConnected, setHasConnected] = useState(false);
   const status = connection.status;
   const [error, setError] = useState<string | null>(null);
   const [presence, setPresence] = useState<ChatPresence>(EMPTY_PRESENCE);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [readPositions, setReadPositions] = useState<ChatReadPositions>(new Map());
   const [historyEpoch, setHistoryEpoch] = useState('');
+  const [historyLease, setHistoryLease] = useState<HistoryLease | null>(null);
   const [pending, setPending] = useState<PendingChatMessage[]>([]);
   const [staff, setStaff] = useState(accountStaff);
   const [persist, setPersist] = useState(true);
@@ -285,6 +285,7 @@ export function useWebChat() {
         attempt.current = 0;
         applyPermissions(message.staff, current);
         setConnection({ status: 'online' });
+        setHasConnected(true);
         setError(null);
         expire(65_000);
         return;
@@ -300,6 +301,7 @@ export function useWebChat() {
           updateReading(() => new Map());
           setPending([]);
           lease.current = null;
+          setHistoryLease(null);
           void syncHistoryAccount(null, () => generation.current === currentGeneration).catch(
             () => undefined,
           );
@@ -440,9 +442,11 @@ export function useWebChat() {
     stop();
     historyOwner.current = null;
     lease.current = null;
+    setHistoryLease(null);
     setMessages([]);
     updateReading(() => new Map());
     setHistoryEpoch('');
+    setHasConnected(false);
     setPending([]);
     setError(null);
     allowedStaff.current = false;
@@ -462,6 +466,7 @@ export function useWebChat() {
           updateReading(() => new Map());
         }
         lease.current = next;
+        setHistoryLease(next);
         setHistoryEpoch(next?.epoch ?? '');
         if (!next) {
           stop();
@@ -603,6 +608,7 @@ export function useWebChat() {
     (next: HistoryLease | null, clear: boolean) => {
       if (!next || next.owner !== historyOwner.current) return;
       lease.current = next;
+      setHistoryLease(next);
       setHistoryEpoch(next.epoch);
       setPersist(next.persist);
       if (clear) {
@@ -624,11 +630,11 @@ export function useWebChat() {
   }, [owner, applyHistoryLease]);
 
   const setPersistence = useCallback(
-    async (enabled: boolean) => {
+    async (enabled: boolean, workspace?: ChatWorkspaceState) => {
       if (!owner) return;
       try {
         const next = enabled
-          ? await enableHistory(owner, messages, reading.current)
+          ? await enableHistory(owner, messages, reading.current, workspace)
           : await resetHistory(owner, false);
         applyHistoryLease(next, !enabled);
       } catch {
@@ -665,10 +671,12 @@ export function useWebChat() {
 
   return {
     connection,
+    hasConnected,
     error,
     presence,
     messages,
     historyEpoch,
+    historyLease,
     unread,
     markRead,
     pending,

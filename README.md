@@ -22,6 +22,16 @@ bun dev
 | `bun check:wiki` | 校验 Wiki 元信息、分组目录、章节结构与双语文件配对 |
 | `bun check:i18n` | 校验双语翻译键、ICU 语法与插值参数 |
 | `bun check` | 执行代码检查、类型检查、翻译校验和 Wiki 校验 |
+| `bun test` | 执行聊天及浏览器兼容逻辑回归测试 |
+| `bun test:compat` | 执行浏览器 API 缺失时的菜单、焦点和请求取消回归测试 |
+
+## 浏览器兼容
+
+构建目标为 Chrome / Edge 111+、Firefox 128+、Safari / iOS Safari 16.4+，与 [Next.js](https://nextjs.org/docs/architecture/supported-browsers) 和 [Tailwind CSS v4](https://tailwindcss.com/docs/compatibility) 的支持范围一致。旧版目标配置不能让框架本身兼容更旧的浏览器。
+
+聊天菜单优先使用原生 Popover；缺少接口时使用 Portal，保留键盘导航、外部点击关闭和焦点返回。登录请求取消不依赖 `AbortSignal.any()`。`bun check` 将警告视为失败，避免 CSS 优先级警告重新进入代码。兼容逻辑测试使用 DOM 模拟环境，真实布局和系统键盘行为仍需在 Firefox、macOS Safari 和 iOS Safari 中验收。
+
+页面启用 `viewport-fit=cover`，通过 `env(safe-area-inset-*)` 处理四边安全区域。固定聊天界面和共享弹窗使用 `VisualViewport` 的可见尺寸与偏移应对键盘、地址栏和横竖屏变化；缺少该接口时回退到窗口尺寸，首屏 CSS 按 `dvh/svh/lvh → vh` 降级。浮动菜单在安全区内定位，页面保留手动缩放。
 
 ## 结构
 
@@ -52,6 +62,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 - `GET|POST|DELETE /api/auth/*`：网页登录 BFF，只在服务端转发到 Mik Data
 - `POST /api/account/*`：玩家账号 BFF，只在服务端转发到 Mik Data
 - `POST /api/account/images/upload`：玩家建筑申请图片上传代理，只接受已登录成员上传的 WebP，并在服务端转发到 ImgBB
+- `GET /api/map/worlds`：读取公开地图的世界目录，校验并仅返回坐标定位所需的名称、显示名和维度类型，缓存 5 分钟
 - `GET /:locale/pcl2`：PCL2 主页；浏览器访问显示说明页，PCL2 请求返回对应语言的 XAML
 
 ## 登录配置
@@ -120,6 +131,10 @@ bun check:wiki
 
 首次接入时，将插件启动日志的 `Web chat public key` 配置为 Vercel 的 `NEXT_PUBLIC_WEB_CHAT_PUBLIC_KEY` 后重新部署；正常重启沿用原密钥。聊天内容通过浏览器到插件的 HPKE 加密传输。
 
-历史记录仅保存在当前浏览器，可在聊天设置中关闭或清空；私聊和提及通知需主动开启。
+历史记录、草稿和私聊会话列表仅保存在当前浏览器，可在聊天设置中关闭或清空；切换账号时会清除上一账号的数据。断线重连期间保留聊天界面和草稿，私聊和提及通知需主动开启。
+
+会话支持消息预览、置顶和关闭，新消息会重新打开已关闭的会话。消息菜单提供复制、提及和发起私聊；「提及我的」和消息搜索支持玩家、来源与日期筛选。坐标可复制，也可选择真实地图世界后定位。设置中可以调整消息间距、成员栏和上下线动态的显示。
+
+聊天的存储、筛选、坐标识别与 DOM 交互回归测试：`bun run test:chat`。
 
 部署时，将 `chat.mcmik.top/ws` 通过 Cloudflare Tunnel 转发到插件的 `127.0.0.1:35354`，其他路径拒绝。仅允许正式网站 Origin `https://mcmik.top`；完整配置见 mik 项目的 `docs/web-chat.md`。

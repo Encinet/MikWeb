@@ -1,10 +1,12 @@
 [production]
-chrome >= 107
-edge >= 107
-firefox >= 104
-safari >= 15.6
+chrome >= 111
+edge >= 111
+firefox >= 128
+safari >= 16.4
+ios_saf >= 16.4
 
 [development]
 last 1 chrome version
 last 1 firefox version
 last 1 safari version
+last 1 ios_saf version

@@ -498,8 +498,8 @@
     "saveLocally": "保存本机记录",
     "clearHistory": "清空本机记录",
     "clearAction": "清空",
-    "clearConfirm": "清空本机记录？此操作无法撤销。",
-    "storageFailed": "无法保存本机记录，关闭页面后可能丢失。",
+    "clearConfirm": "清空本机消息、草稿和会话列表？此操作无法撤销。",
+    "storageFailed": "无法保存本机记录或草稿，关闭页面后可能丢失。",
     "restoreDraft": "恢复到输入框",
     "server": {
       "label": "服务器",
@@ -585,8 +585,77 @@
       "error": "通知未能启用，点击重试",
       "mentionTitle": "{name} 在{channel}频道提到了你"
     },
-    "disableHistoryConfirm": "关闭保存并清空本机记录？",
-    "messagePlaceholder": "输入消息…"
+    "disableHistoryConfirm": "关闭保存并清空本机消息、草稿和会话列表？",
+    "messagePlaceholder": "输入消息…",
+    "composePlaceholder": "发送到{channel}…",
+    "moreActions": "更多操作",
+    "navigationUnread": "频道与私聊，{count} 条未读消息",
+    "drafts": {
+      "label": "草稿",
+      "persistenceHint": "同时保存草稿与会话列表",
+      "restoreTooLong": "输入框中的草稿过长，请先处理当前草稿，再恢复这条消息。",
+      "restored": "已恢复 {count} 个会话的草稿",
+      "saved": "草稿已保存在本机"
+    },
+    "connection": {
+      "reconnecting": "正在重新连接…",
+      "composeHint": "连接恢复前可继续编辑草稿"
+    },
+    "mentions": {
+      "title": "提及我的",
+      "search": "搜索提及我的消息",
+      "empty": "还没有提及你的消息",
+      "unread": "{count} 条未读提及",
+      "hint": "这里显示此浏览器收到并保存的提及"
+    },
+    "messageActions": {
+      "label": "{name} 的消息操作",
+      "copy": "复制消息",
+      "mention": "提及此人",
+      "private": "发起私聊"
+    },
+    "activity": {
+      "count": "{count, plural, other {# 条玩家动态}}"
+    },
+    "preferences": {
+      "density": "消息间距",
+      "comfortable": "舒适",
+      "compact": "紧凑",
+      "members": "显示成员栏",
+      "hideMembers": "收起成员栏",
+      "activity": "显示上下线动态",
+      "saved": "聊天偏好已保存"
+    },
+    "filters": {
+      "label": "筛选",
+      "author": "玩家",
+      "anyPlayer": "任意玩家",
+      "source": "消息来源",
+      "anySource": "全部来源",
+      "after": "开始日期",
+      "before": "结束日期",
+      "reset": "清除筛选"
+    },
+    "coordinates": {
+      "actions": "位置操作：{coordinates}",
+      "copy": "复制坐标",
+      "world": "地图世界",
+      "chooseWorld": "选择世界",
+      "unavailable": "地图暂时不可用",
+      "loading": "正在读取世界…",
+      "retry": "重新读取地图",
+      "chooseWorldHint": "请确认世界后查看地图",
+      "viewMap": "在地图查看"
+    },
+    "threads": {
+      "actions": "与 {name} 的会话操作",
+      "pinned": "已置顶",
+      "pin": "置顶会话",
+      "unpin": "取消置顶",
+      "close": "关闭会话",
+      "online": "在线",
+      "offline": "离线"
+    }
   },
   "pcl2": {
     "title": "PCL2 主页",

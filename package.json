@@ -13,7 +13,10 @@
     "fix": "biome check . --write",
     "check:wiki": "bun run scripts/wiki-check.ts",
     "check:i18n": "bun run scripts/i18n-check.ts",
-    "check": "biome check . && tsc --noEmit -p tsconfig.check.json && bun run check:i18n && bun run check:wiki"
+    "check": "biome check . --error-on-warnings && tsc --noEmit -p tsconfig.check.json && bun run check:i18n && bun run check:wiki",
+    "test": "bun test tests",
+    "test:chat": "bun test tests/chat",
+    "test:compat": "bun test tests/compatibility"
   },
   "dependencies": {
     "@hpke/core": "^1.9.0",
@@ -46,6 +49,8 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "fake-indexeddb": "^6.2.7",
+    "happy-dom": "^21.0.4",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2"
   }

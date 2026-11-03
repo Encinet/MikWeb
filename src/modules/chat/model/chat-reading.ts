@@ -12,14 +12,14 @@ export const CHAT_ACTIVITY_LIMIT = 200;
 export function retainChatHistory(messages: ChatMessage[]): ChatMessage[] {
   let activity = 0;
   let conversation = 0;
-  return messages
-    .toReversed()
+  return [...messages]
+    .reverse()
     .filter((message) =>
       isPassiveMessage(message)
         ? ++activity <= CHAT_ACTIVITY_LIMIT
         : ++conversation <= CHAT_HISTORY_LIMIT,
     )
-    .toReversed();
+    .reverse();
 }
 
 export interface ChatReadCursor {

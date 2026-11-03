@@ -16,7 +16,8 @@ body:has(.chat-workspace)
 }
 
 .chat-workspace,
-.chat-dialog {
+.chat-dialog,
+.chat-action-popover {
   --chat-line: color-mix(in srgb, var(--theme-border-light) 85%, transparent);
   --chat-surface: var(--theme-bg-base);
   --chat-soft: color-mix(in srgb, var(--theme-surface-glass-light) 64%, var(--theme-bg-base));
@@ -26,10 +27,11 @@ body:has(.chat-workspace)
   --chat-frame: clamp(0.75rem, 1.8vw, 1.75rem);
   position: fixed;
   z-index: 40;
-  inset: var(--chat-viewport-top, 0px) 0 auto;
-  height: var(--chat-viewport-height, var(--viewport-height-dynamic));
+  inset: var(--visual-viewport-top, 0px) auto auto var(--visual-viewport-left, 0px);
+  width: var(--visual-viewport-width, 100%);
+  height: var(--visual-viewport-height, var(--viewport-height-dynamic));
   display: grid;
-  grid-template-columns: 13rem minmax(0, 1fr);
+  grid-template-columns: 15rem minmax(0, 1fr);
   gap: clamp(0.75rem, 1.6vw, 1.5rem);
   min-width: 0;
   padding: calc(var(--chat-frame) + var(--viewport-top-inset))
@@ -38,6 +40,7 @@ body:has(.chat-workspace)
     calc(var(--chat-frame) + var(--viewport-left-inset));
   background: var(--chat-surface);
   isolation: isolate;
+  container: chat-frame / size;
 }
 .chat-workspace :is(button, a, input):focus-visible,
 .chat-dialog :is(button, a, input, summary):focus-visible {
@@ -630,7 +633,7 @@ body:has(.chat-workspace)
   inset-inline-start: 0;
   bottom: calc(100% + 0.5rem);
   width: min(100%, 23rem);
-  max-height: min(20rem, calc(var(--chat-viewport-height, 100dvh) * 0.4));
+  max-height: min(20rem, calc(var(--visual-viewport-height, var(--viewport-height-dynamic)) * 0.4));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0.45rem;
@@ -714,20 +717,7 @@ body:has(.chat-workspace)
   font-size: 0.75rem;
   line-height: 1.6;
 }
-.ui-dialog-overlay:has(.chat-dialog) {
-  top: var(--chat-viewport-top, 0px);
-  bottom: auto;
-  height: var(--chat-viewport-height, var(--viewport-height-dynamic));
-  min-height: 0;
-}
 .chat-dialog.app-dialog-window {
-  --app-dialog-viewport-max-height: calc(
-    var(--chat-viewport-height, var(--viewport-height-dynamic)) -
-    var(--viewport-top-inset) -
-    var(--viewport-bottom-inset) -
-    2 *
-    var(--overlay-gap, 1rem)
-  );
   --app-dialog-width: 26rem;
 }
 .chat-settings-dialog.app-dialog-window {
@@ -1050,7 +1040,7 @@ button.chat-peer:hover {
   min-height: 0;
   padding-top: 1.25rem;
 }
-.chat-participants > h2 {
+.chat-participants-heading > h2 {
   flex-shrink: 0;
   padding: 0.5rem 0.65rem;
   color: var(--theme-text-muted-strong);
@@ -1129,11 +1119,10 @@ button.chat-peer:hover {
 }
 
 @media (min-width: 1180px) {
-  .chat-workspace[data-channel="public"],
-  .chat-workspace[data-channel="staff"] {
-    grid-template-columns: 13rem minmax(0, 1fr) 14rem;
+  .chat-workspace[data-members-visible="true"] {
+    grid-template-columns: 15rem minmax(0, 1fr) 14rem;
   }
-  .chat-online-button {
+  .chat-workspace[data-members-visible="true"] .chat-online-button {
     display: none;
   }
   .chat-participants {
@@ -1141,7 +1130,7 @@ button.chat-peer:hover {
     flex-direction: column;
   }
   .chat-workspace[data-panel-open="true"] {
-    grid-template-columns: 13rem minmax(0, 1fr) clamp(21rem, 27vw, 26rem);
+    grid-template-columns: 15rem minmax(0, 1fr) clamp(21rem, 27vw, 26rem);
   }
   .chat-workspace[data-panel-open="true"] > .chat-conversation {
     visibility: visible;
@@ -1240,15 +1229,42 @@ button.chat-peer:hover {
   }
   .chat-dialog.chat-navigation-dialog {
     height: 100%;
-    max-height: var(--chat-viewport-height, var(--viewport-height-dynamic));
-    width: min(19rem, calc(100% - 2.5rem));
+    max-height: var(--visual-viewport-height, var(--viewport-height-dynamic));
+    width: min(
+      calc(19rem + var(--viewport-left-inset)),
+      calc(100% - 2.5rem - var(--viewport-right-inset))
+    );
     border-radius: 0 1.4rem 1.4rem 0;
   }
   .chat-navigation-dialog .app-dialog-body {
     flex: 1;
+    padding-inline-start: calc(1.25rem + var(--viewport-left-inset));
+    padding-inline-end: calc(1.25rem + var(--viewport-right-inset));
+    padding-bottom: calc(1.25rem + var(--viewport-bottom-inset));
   }
   .chat-navigation-dialog .app-dialog-chrome {
     padding-top: calc(1rem + var(--viewport-top-inset));
+    padding-inline-start: calc(1rem + var(--viewport-left-inset));
+    padding-inline-end: calc(1rem + var(--viewport-right-inset));
+  }
+}
+
+/* Safari's keyboard can shrink the visible frame without changing viewport media queries. */
+@container chat-frame (max-height: 28rem) {
+  .chat-conversation,
+  .chat-panel {
+    overflow-y: auto;
+  }
+  .chat-topbar {
+    min-height: 52px;
+    padding-block: 0.25rem;
+  }
+  .chat-compose-area,
+  .chat-compose {
+    padding-block: 0.25rem;
+  }
+  .chat-notification-suggestion {
+    display: none;
   }
 }
 

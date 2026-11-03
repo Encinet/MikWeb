@@ -10,6 +10,7 @@ import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
 import { webAuthnError } from '@/modules/auth/lib/webauthn-error';
 import { isAuthMeResponse } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
+import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 export interface GameAuthenticationChallenge {
   challengeId: string;
@@ -139,17 +140,21 @@ export function useAuthenticationFlow({
       let finished = false;
       let delay = Math.min(10_000, 5000 + attempts * 2500);
       try {
-        const response = await fetch(
-          `/api/auth/challenges/${encodeURIComponent(challenge.challengeId)}`,
-          {
-            cache: 'no-store',
-            signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]),
+        const { response, payload } = await withRequestTimeout(
+          10_000,
+          async (signal) => {
+            const response = await fetch(
+              `/api/auth/challenges/${encodeURIComponent(challenge.challengeId)}`,
+              { cache: 'no-store', signal },
+            );
+            const payload = (await response.json().catch(() => null)) as {
+              status?: string;
+              error?: string;
+            } | null;
+            return { response, payload };
           },
+          controller.signal,
         );
-        const payload = (await response.json().catch(() => null)) as {
-          status?: string;
-          error?: string;
-        } | null;
         if (cancelled) return;
         if (!response.ok) {
           delay = Math.max(
