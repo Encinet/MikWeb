@@ -501,7 +501,7 @@ export function ChatWorkspace({
         ) : null}
 
         <ChatMessageList
-          key={viewKey}
+          key={`messages:${viewKey}`}
           conversation={key}
           destination={selected}
           title={title}
@@ -521,7 +521,7 @@ export function ChatWorkspace({
           onPrivate={startPrivate}
         />
         <ChatComposer
-          key={viewKey}
+          key={`composer:${viewKey}`}
           title={title}
           draft={draft}
           inputRef={input}
