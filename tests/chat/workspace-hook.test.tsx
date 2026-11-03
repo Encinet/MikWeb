@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import { Window } from 'happy-dom';
 import { act } from 'react';
+import { flushSync } from 'react-dom';
 import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
 import type { HistoryLease } from '@/modules/chat/lib/chat-history';
@@ -15,6 +16,7 @@ import {
 } from '@/modules/chat/lib/chat-history';
 import { useChatWorkspace } from '@/modules/chat/model/use-chat-workspace';
 import { ChatActionMenu } from '@/modules/chat/ui/chat-action-menu';
+import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
 import { OWNER, PEER } from './fixtures';
 
 let environment: Window;
@@ -266,7 +268,7 @@ test('unsaved in-memory drafts survive preference writes while saving is disable
   assert.equal((await loadChatWorkspace(lease))?.preferences.membersVisible, false);
 });
 
-test('action popovers support keyboard navigation and Escape returns focus without closing the workspace', async () => {
+function enableNativePopovers() {
   // DOM emulation supplies geometry-independent popover behavior; actual top-layer layout is browser-owned.
   const prototype = environment.HTMLElement.prototype;
   const nativeMatches = prototype.matches;
@@ -293,6 +295,62 @@ test('action popovers support keyboard navigation and Escape returns focus witho
       toggle(this, false);
     },
   });
+}
+
+for (const native of [false, true]) {
+  test(`context menu actions run before dismissal (${native ? 'native' : 'fallback'})`, async () => {
+    if (native) enableNativePopovers();
+    let selected = 0;
+    const events: string[] = [];
+    await act(async () =>
+      root.render(
+        <ChatContextMenu
+          label="Conversation actions"
+          actions={() => (
+            <button
+              type="button"
+              data-chat-menu-close
+              onClick={() => {
+                selected++;
+                events.push('action');
+              }}
+            >
+              Close conversation
+            </button>
+          )}
+        >
+          {(target) => <button {...target}>Private conversation</button>}
+        </ChatContextMenu>,
+      ),
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('[data-chat-context-target]');
+    assert.ok(trigger);
+    await act(async () => {
+      Reflect.apply(trigger.dispatchEvent, trigger, [
+        new environment.MouseEvent('contextmenu', { bubbles: true, button: 2 }),
+      ]);
+    });
+    const action = document.querySelector<HTMLButtonElement>('[data-chat-menu-close]');
+    assert.ok(action);
+    trigger.addEventListener('focus', () => events.push('return focus'));
+    // A browser may flush capture-phase updates before the click reaches its target.
+    // DOM .click() runs in one JS call, so force that boundary in this emulation.
+    action.addEventListener('click', () => flushSync(() => {}), { capture: true });
+    let connectedAtTarget = false;
+    action.addEventListener('click', () => {
+      connectedAtTarget = action.isConnected;
+    });
+    await act(async () => action.click());
+    assert.equal(connectedAtTarget, true, 'The action must remain mounted until its click runs');
+    assert.equal(selected, 1);
+    assert.deepEqual(events, ['action', 'return focus']);
+    assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+    assert.equal(document.activeElement, trigger);
+  });
+}
+
+test('action popovers support keyboard navigation and Escape returns focus without closing the workspace', async () => {
+  enableNativePopovers();
   const press = (element: HTMLElement, key: string) => {
     Reflect.apply(element.dispatchEvent, element, [
       new environment.KeyboardEvent('keydown', { key, bubbles: true }),

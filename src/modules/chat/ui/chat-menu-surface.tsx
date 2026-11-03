@@ -25,7 +25,8 @@ export function ChatMenuSurface({
     className: `chat-action-popover${role === 'menu' ? ' chat-context-menu' : ''}`,
     'aria-label': label,
     onToggle: (event) => menu.toggle((event.nativeEvent as ToggleEvent).newState === 'open'),
-    onClickCapture: (event) => {
+    // Let the button action run before closing can unmount it or move focus.
+    onClick: (event) => {
       if ((event.target as HTMLElement).closest('[data-chat-menu-close]')) menu.close(true);
     },
     onKeyDown: (event) => {
