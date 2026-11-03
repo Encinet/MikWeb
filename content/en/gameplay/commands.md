@@ -1,6 +1,6 @@
 ---
 title: Common Commands
-description: A practical command reference for travel, building, decoration, and server-side tools.
+description: A practical player command reference for travel, building, chat, accounts, and server features.
 order: 20
 icon: Wrench
 ---
@@ -18,12 +18,13 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tbody>
 <tr><td>Spawn</td><td><code>/spawn</code> or <code>/lobby</code></td><td>Return to the main city</td></tr>
 <tr><td>Vanilla teleport</td><td><a href="https://minecraft.wiki/w/Commands/tp"><code>/tp</code></a></td><td>Teleport to specific coordinates or another player</td></tr>
-<tr><td rowspan="5">Homes</td><td><code>/sethome &lt;name&gt;</code></td><td>Save your current position as a home.</td></tr>
-<tr><td><code>/home</code> or <code>/home gui</code></td><td>Open the home menu to teleport</td></tr>
+<tr><td rowspan="4">Homes</td><td><code>/sethome &lt;name&gt;</code></td><td>Save your current position as a home.</td></tr>
+<tr><td><code>/home</code></td><td>Open the home menu to teleport</td></tr>
 <tr><td><code>/home &lt;name&gt;</code></td><td>Return directly to a saved home</td></tr>
-<tr><td><code>/home icon &lt;material&gt; &lt;name&gt;</code></td><td>Set a custom home icon, for example <code>/home icon diamond_block home</code></td></tr>
 <tr><td><code>/delhome &lt;name&gt;</code></td><td>Delete a saved home. Newcomers can save up to 2 homes; Members can save up to 20</td></tr>
 <tr><td>Teleport protection</td><td><code>/menu</code> → Teleport Protection</td><td>Choose whether normal players can move you with <code>/tp</code>, and whether teleport attempts are rejected while you are AFK</td></tr>
+<tr><td rowspan="2">Teleport requests</td><td><code>/tpaccept</code></td><td>Accept a pending teleport request</td></tr>
+<tr><td><code>/tpdeny</code></td><td>Reject a pending teleport request</td></tr>
 <tr><td rowspan="3">Back history</td><td><code>/back</code></td><td>Return to your previous teleport or death location</td></tr>
 <tr><td><code>/back [times]</code></td><td>Go back multiple history entries at once</td></tr>
 <tr><td><code>/back undo</code> or <code>/reback</code></td><td>Undo your last back step and return to where you just were</td></tr>
@@ -37,17 +38,40 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="4">Personal flight</td><td><code>/fly</code>, <code>/fly on</code>, or <code>/fly off</code></td><td>Toggle, enable, or disable personal flight. <code>/flight</code> is an alias</td></tr>
+<tr><td rowspan="4">Personal flight</td><td><code>/fly</code>, <code>/fly on</code>, or <code>/fly off</code></td><td>Toggle, enable, or disable personal flight</td></tr>
 <tr><td><code>/fly status</code></td><td>Show your current flight status and speed</td></tr>
-<tr><td><code>/flyspeed [speed]</code> or <code>/fly speed [speed]</code></td><td>Omit the speed to show the current value, or set it from <code>0.1x</code> to <code>10x</code>. The command output also provides clickable presets</td></tr>
-<tr><td><code>/flyspeed reset</code> or <code>/fly speed reset</code></td><td>Reset flight speed to <code>1x</code>. <code>/flightspeed</code> is an alias for <code>/flyspeed</code></td></tr>
-<tr><td rowspan="2">Idle status</td><td><code>/afk</code> or <code>/away</code></td><td>Toggle idle status. Long inactivity also marks you as AFK automatically</td></tr>
+<tr><td><code>/fly speed [speed]</code></td><td>Omit the speed to show the current value, or set it from <code>0.1x</code> to <code>10x</code></td></tr>
+<tr><td><code>/fly speed reset</code></td><td>Reset flight speed to <code>1x</code></td></tr>
+<tr><td rowspan="2">Idle status</td><td><code>/afk</code></td><td>Toggle idle status. Long inactivity also marks you as AFK automatically</td></tr>
 <tr><td><code>/afk &lt;status&gt;</code></td><td>Go idle and show a custom status above your head and in the tab list, up to 20 characters</td></tr>
 <tr><td>Announcements</td><td><code>/announcements</code></td><td>Open the server announcements menu. Unread announcements are shown when you join, and opening the menu marks them as seen</td></tr>
-<tr><td>Tips</td><td><code>/tip</code></td><td>Show one server tip. The server may also send tips periodically</td></tr>
+<tr><td>Performance bar</td><td><code>/tpsbar</code></td><td>Toggle the TPS, MSPT, and latency bar. The <code>mik.tpsbar</code> permission must be enabled for your account</td></tr>
 <tr><td>Main menu</td><td><code>/menu</code></td><td>Open the main menu</td></tr>
 <tr><td>Language</td><td><code>/lang</code></td><td>Open the language settings menu. You can also open it from the main menu</td></tr>
 <tr><td>Web login</td><td><code>/weblogin &lt;code&gt;</code></td><td>Confirm a website login, usually by copying the full command from the website and running it in-game</td></tr>
+</tbody>
+</table>
+
+## Accounts & Community
+
+<table>
+<thead>
+<tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="4">Account security</td><td><code>/password</code></td><td>Open account security settings</td></tr>
+<tr><td><code>/password set</code></td><td>Set your account password for the first time</td></tr>
+<tr><td><code>/password change</code></td><td>Change your password after verifying the current one</td></tr>
+<tr><td><code>/password remove</code></td><td>Remove your password after verifying it and checking account requirements</td></tr>
+<tr><td rowspan="4">Platform linking</td><td><code>/bind &lt;platform&gt;</code></td><td>Generate a one-time code for an enabled platform. Codes expire after 5 minutes</td></tr>
+<tr><td><code>/bind list</code></td><td>View your linked platforms</td></tr>
+<tr><td><code>/bind cancel &lt;platform&gt;</code></td><td>Invalidate an unused code for that platform</td></tr>
+<tr><td><code>/bind unlink &lt;platform&gt;</code></td><td>Unlink your account from that platform</td></tr>
+<tr><td rowspan="4">Community governance</td><td><code>/gov</code> or <code>/governance menu</code></td><td>Open the community governance menu</td></tr>
+<tr><td><code>/governance status</code></td><td>Check your promotion or active-member eligibility</td></tr>
+<tr><td><code>/governance nominate</code> or <code>/governance withdraw</code></td><td>Eligible active Members can nominate themselves for moderator or withdraw an application</td></tr>
+<tr><td><code>/governance list</code>, <code>/governance show &lt;id&gt;</code>, or <code>/governance vote &lt;id&gt; yes|no|abstain</code></td><td>View governance votes and details, then vote if you are on the voter roll</td></tr>
+<tr><td>AI assistant</td><td><code>/ai &lt;question&gt;</code>, <code>/ai clear</code>, or <code>/ai status</code></td><td>Ask the server AI, clear your conversation history, or check its status. The server must enable AI and grant you access</td></tr>
 </tbody>
 </table>
 
@@ -73,6 +97,10 @@ If you need the full syntax for a vanilla command, see the final section, "Vanil
 <tr><td><code>/cancel</code> or <code>/c</code></td><td>Cancel your own pending delayed messages</td></tr>
 </tbody>
 </table>
+
+### Name Tags
+
+Run <code>/nametag</code> or open Name Tags from the main menu settings. Members and higher can edit the prefix and suffix shown in chat, the tab list, and linked external speech: choose a field, send the MiniMessage text in chat to preview it, then confirm to save. Clearing also requires a preview and confirmation. Name tags use LuckPerms prefix/suffix metadata and do not change the vanilla name above a player's head.
 
 ## Building & Editing
 
@@ -106,43 +134,16 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 </thead>
 <tbody>
 <tr><td>Decorative heads</td><td><code>/headdb</code></td><td>Open the decorative head database and browse custom heads</td></tr>
-<tr><td>Hat</td><td><code>/hat</code> or <code>/head</code></td><td>Wear the item in your hand as a hat</td></tr>
+<tr><td>Hat</td><td><code>/hat</code></td><td>Wear the item in your hand as a hat</td></tr>
 <tr><td>Armor stands</td><td><code>/asedit give</code></td><td>Get the armor stand editor tool</td></tr>
 <tr><td rowspan="2">Invisible item frames</td><td><code>/imageframe giveinvisibleframe glowing</code></td><td>Get glowing invisible item frames</td></tr>
 <tr><td><code>/imageframe giveinvisibleframe regular</code></td><td>Get regular invisible item frames</td></tr>
 <tr><td rowspan="3">Poses</td><td><code>/sit</code></td><td>Sit down</td></tr>
 <tr><td><code>/lay</code></td><td>Lie down</td></tr>
 <tr><td><code>/crawl</code></td><td>Crawl</td></tr>
-<tr><td>Trash</td><td><code>/trash</code>, <code>/trashcan</code>, or <code>/garbage</code></td><td>Open the trash interface. Anything placed inside is deleted permanently</td></tr>
+<tr><td>Trash</td><td><code>/trash</code> or <code>/garbage</code></td><td>Open the trash interface. Anything placed inside is deleted permanently</td></tr>
 </tbody>
 </table>
-
-### Name Tags
-
-Name tags let Members customize the prefix and suffix shown around their player name in chat. They are best for short titles, color styling, or simple status text rather than long sentences.
-
-<table>
-<thead>
-<tr><th scope="col">Usage</th><th scope="col">Notes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>/nametag</code> or <code>/nametag view</code></td><td>View your current prefix, suffix, chat preview, and formatting editor links</td></tr>
-<tr><td><code>/nametag prefix</code></td><td>View only your current prefix</td></tr>
-<tr><td><code>/nametag suffix</code></td><td>View only your current suffix</td></tr>
-<tr><td><code>/nametag prefix set &lt;content&gt;</code></td><td>Set your name prefix</td></tr>
-<tr><td><code>/nametag suffix set &lt;content&gt;</code></td><td>Set your name suffix</td></tr>
-<tr><td><code>/nametag prefix clear</code> or <code>/nametag suffix clear</code></td><td>Clear only your prefix or suffix</td></tr>
-<tr><td><code>/nametag clear</code></td><td>Clear both your custom prefix and suffix</td></tr>
-</tbody>
-</table>
-
-Limits and formatting:
-
-- Prefix and suffix content can each be up to 200 characters.
-- `set` content cannot be empty; use the matching `clear` command to remove a tag.
-- Content uses MiniMessage formatting, including common tags such as colors, text decorations, gradients, rainbow text, and hover text.
-- Click events, selectors, and similar tags that may affect safety or chat display are not supported.
-- Player-related PlaceholderAPI variables such as `%player_...%` are allowed; other placeholders are rejected.
 
 ## Item & World Management
 
@@ -166,11 +167,10 @@ Limits and formatting:
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="5">Music</td><td><code>/music</code></td><td>Open the music console. Requires <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a></td></tr>
-<tr><td><code>/music search &lt;keyword&gt;</code></td><td>Search songs</td></tr>
-<tr><td><code>/music page &lt;page&gt;</code></td><td>Switch music list pages</td></tr>
-<tr><td><code>/music random</code></td><td>Get a random disc</td></tr>
-<tr><td><code>/music randomplay</code></td><td>Play random music at the nearest jukebox</td></tr>
+<tr><td rowspan="4">Music</td><td><code>/music</code></td><td>Open the music workspace for the library, playlists, playback devices, and rhythm games. <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a> is needed for regular audio; NBS uses Minecraft note-block sounds</td></tr>
+<tr><td><code>/music search &lt;keyword&gt;</code></td><td>Search the local library and available online sources</td></tr>
+<tr><td><code>/music playlist &lt;UUID&gt;</code></td><td>Open a public playlist shared with you</td></tr>
+<tr><td><code>/music playlist import &lt;platform&gt; &lt;link or ID&gt;</code></td><td>Import playlist metadata. Supported codes: NetEase Cloud Music <code>wy</code>, QQ Music <code>tx</code>, Kugou <code>kg</code>, Kuwo <code>kw</code>, and Migu <code>mg</code></td></tr>
 <tr><td>Fireworks</td><td><code>/firework gun</code></td><td>Get a random firework launcher</td></tr>
 </tbody>
 </table>
@@ -229,6 +229,7 @@ The following vanilla commands are available on the server. Click a command name
 | [`/gamemode`](https://minecraft.wiki/w/Commands/gamemode) | Change a player's game mode | |
 | [`/give`](https://minecraft.wiki/w/Commands/give) | Give an item to a player | |
 | [`/item`](https://minecraft.wiki/w/Commands/item) | Edit items in containers or equipment slots | ✔ |
+| [`/locate`](https://minecraft.wiki/w/Commands/locate) | Find the nearest structure, biome, or point of interest | |
 | [`/ride`](https://minecraft.wiki/w/Commands/ride) | Control riding relationships between entities | ✔ |
 | [`/save-all`](https://minecraft.wiki/w/Commands/save) | Save the world immediately | ✔ |
 | [`/seed`](https://minecraft.wiki/w/Commands/seed) | Show the world seed | |

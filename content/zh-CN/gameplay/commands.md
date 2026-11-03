@@ -1,6 +1,6 @@
 ---
 title: 常用指令
-description: 日常服务器中传送、建筑、装饰和娱乐指令
+description: 传送、建筑、聊天、账号与服务器功能的常用玩家命令
 order: 20
 icon: Wrench
 ---
@@ -18,12 +18,13 @@ icon: Wrench
 <tbody>
 <tr><td>主城</td><td><code>/spawn</code> 或 <code>/lobby</code></td><td>回到主城</td></tr>
 <tr><td>原版传送</td><td><a href="https://zh.minecraft.wiki/w/命令/tp"><code>/tp</code></a></td><td>传送到指定坐标或玩家位置</td></tr>
-<tr><td rowspan="5">家</td><td><code>/sethome &lt;名字&gt;</code></td><td>把当前位置保存为一个家</td></tr>
-<tr><td><code>/home</code> 或 <code>/home gui</code></td><td>打开家菜单</td></tr>
+<tr><td rowspan="4">家</td><td><code>/sethome &lt;名字&gt;</code></td><td>把当前位置保存为一个家</td></tr>
+<tr><td><code>/home</code></td><td>打开家菜单</td></tr>
 <tr><td><code>/home &lt;名字&gt;</code></td><td>直接回到指定的家</td></tr>
-<tr><td><code>/home icon &lt;材质&gt; &lt;名字&gt;</code></td><td>把指定材质设置为家的图标，例如 <code>/home icon diamond_block home</code></td></tr>
 <tr><td><code>/delhome &lt;名字&gt;</code></td><td>删除指定的家；新人最多 2 个家，成员最多 20 个家</td></tr>
 <tr><td>传送保护</td><td><code>/menu</code> → 传送保护</td><td>设置普通玩家是否可以用 <code>/tp</code> 移动你，以及是否在挂机时自动拒绝被传送</td></tr>
+<tr><td rowspan="2">传送请求</td><td><code>/tpaccept</code></td><td>接受待处理的传送请求</td></tr>
+<tr><td><code>/tpdeny</code></td><td>拒绝待处理的传送请求</td></tr>
 <tr><td rowspan="3">返回历史位置</td><td><code>/back</code></td><td>返回上一次传送或死亡前的位置</td></tr>
 <tr><td><code>/back [次数]</code></td><td>一次回退多条历史记录</td></tr>
 <tr><td><code>/back undo</code> 或 <code>/reback</code></td><td>撤销上一次返回，回到刚才的位置</td></tr>
@@ -37,17 +38,40 @@ icon: Wrench
 <tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="4">个人飞行</td><td><code>/fly</code>、<code>/fly on</code> 或 <code>/fly off</code></td><td>切换、开启或关闭个人飞行；<code>/flight</code> 是同义命令</td></tr>
+<tr><td rowspan="4">个人飞行</td><td><code>/fly</code>、<code>/fly on</code> 或 <code>/fly off</code></td><td>切换、开启或关闭个人飞行</td></tr>
 <tr><td><code>/fly status</code></td><td>查看当前飞行状态和飞行速度</td></tr>
-<tr><td><code>/flyspeed [速度]</code> 或 <code>/fly speed [速度]</code></td><td>不填写速度时查看当前值；填写时可设置为 <code>0.1x</code> 到 <code>10x</code>，也可点击命令返回的快捷速度</td></tr>
-<tr><td><code>/flyspeed reset</code> 或 <code>/fly speed reset</code></td><td>把飞行速度重置为 <code>1x</code>；<code>/flightspeed</code> 是 <code>/flyspeed</code> 的同义命令</td></tr>
-<tr><td rowspan="2">挂机状态</td><td><code>/afk</code> 或 <code>/away</code></td><td>切换挂机状态；长时间无操作也会自动进入挂机</td></tr>
+<tr><td><code>/fly speed [速度]</code></td><td>不填写速度时查看当前值；填写时可设置为 <code>0.1x</code> 到 <code>10x</code></td></tr>
+<tr><td><code>/fly speed reset</code></td><td>把飞行速度重置为 <code>1x</code></td></tr>
+<tr><td rowspan="2">挂机状态</td><td><code>/afk</code></td><td>切换挂机状态；长时间无操作也会自动进入挂机</td></tr>
 <tr><td><code>/afk &lt;状态&gt;</code></td><td>进入挂机并把自定义状态显示在头顶和 Tab 列表，最多 20 个字符</td></tr>
 <tr><td>公告</td><td><code>/announcements</code></td><td>打开服务器公告菜单；上线时会提示未读公告，打开菜单后视为已读</td></tr>
-<tr><td>小提示</td><td><code>/tip</code></td><td>查看一条服务器小提示，服务器也会不定期推送提示</td></tr>
+<tr><td>性能信息栏</td><td><code>/tpsbar</code></td><td>切换 TPS、MSPT 和延迟信息栏；需要服务器为账号开放 <code>mik.tpsbar</code> 权限</td></tr>
 <tr><td>主菜单</td><td><code>/menu</code></td><td>打开主菜单</td></tr>
 <tr><td>语言</td><td><code>/lang</code></td><td>打开语言设置菜单，也可以从主菜单进入</td></tr>
 <tr><td>网页登录</td><td><code>/weblogin &lt;验证码&gt;</code></td><td>确认网页端登录，通常从网站复制完整命令后在游戏内执行</td></tr>
+</tbody>
+</table>
+
+## 账号与社区
+
+<table>
+<thead>
+<tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
+</thead>
+<tbody>
+<tr><td rowspan="4">账号安全</td><td><code>/password</code></td><td>打开账号安全设置</td></tr>
+<tr><td><code>/password set</code></td><td>首次设置自己的账号密码</td></tr>
+<tr><td><code>/password change</code></td><td>验证当前密码后修改密码</td></tr>
+<tr><td><code>/password remove</code></td><td>验证当前密码并检查账号条件后移除密码</td></tr>
+<tr><td rowspan="4">平台绑定</td><td><code>/bind &lt;平台&gt;</code></td><td>为已启用的平台生成一次性验证码；验证码 5 分钟后过期</td></tr>
+<tr><td><code>/bind list</code></td><td>查看自己的平台绑定</td></tr>
+<tr><td><code>/bind cancel &lt;平台&gt;</code></td><td>作废该平台尚未使用的验证码</td></tr>
+<tr><td><code>/bind unlink &lt;平台&gt;</code></td><td>解除自己在该平台的绑定</td></tr>
+<tr><td rowspan="4">社区治理</td><td><code>/gov</code> 或 <code>/governance menu</code></td><td>打开社区治理菜单</td></tr>
+<tr><td><code>/governance status</code></td><td>查看自己的晋升或活跃成员资格</td></tr>
+<tr><td><code>/governance nominate</code> 或 <code>/governance withdraw</code></td><td>符合条件的活跃成员可申请管理或撤回申请</td></tr>
+<tr><td><code>/governance list</code>、<code>/governance show &lt;编号&gt;</code>、<code>/governance vote &lt;编号&gt; yes|no|abstain</code></td><td>查看治理投票、详情并投票；是否有资格参与由投票名册决定</td></tr>
+<tr><td>AI 助手</td><td><code>/ai &lt;问题&gt;</code>、<code>/ai clear</code> 或 <code>/ai status</code></td><td>向服务器 AI 提问、清除自己的对话记录或查看状态；需要服务器启用 AI 并开放使用权限</td></tr>
 </tbody>
 </table>
 
@@ -73,6 +97,10 @@ icon: Wrench
 <tr><td><code>/cancel</code> 或 <code>/c</code></td><td>取消自己尚未发送的延迟消息</td></tr>
 </tbody>
 </table>
+
+### 名牌
+
+运行 <code>/nametag</code> 或从主菜单的设置进入名称标签工作区。成员及以上身份可以编辑聊天、Tab 列表和已绑定外部发言中显示的前缀与后缀：选择字段，在聊天框发送 MiniMessage 原文进行预览，再确认保存；清空也要先预览并确认。名牌效果来自 LuckPerms 前后缀，不会修改原版头顶的玩家名。
 
 ## 建筑与创作
 
@@ -106,43 +134,16 @@ icon: Wrench
 </thead>
 <tbody>
 <tr><td>装饰头颅</td><td><code>/headdb</code></td><td>打开装饰头颅数据库，获取各类装饰用头颅</td></tr>
-<tr><td>帽子</td><td><code>/hat</code> 或 <code>/head</code></td><td>将手中持有的物品戴到头上</td></tr>
+<tr><td>帽子</td><td><code>/hat</code></td><td>将手中持有的物品戴到头上</td></tr>
 <tr><td>盔甲架</td><td><code>/asedit give</code></td><td>获取盔甲架编辑器</td></tr>
 <tr><td rowspan="2">隐形展示框</td><td><code>/imageframe giveinvisibleframe glowing</code></td><td>获取发光隐形展示框</td></tr>
 <tr><td><code>/imageframe giveinvisibleframe regular</code></td><td>获取普通隐形展示框</td></tr>
 <tr><td rowspan="3">姿势动作</td><td><code>/sit</code></td><td>坐下</td></tr>
 <tr><td><code>/lay</code></td><td>躺下</td></tr>
 <tr><td><code>/crawl</code></td><td>爬行</td></tr>
-<tr><td>垃圾桶</td><td><code>/trash</code>、<code>/trashcan</code> 或 <code>/garbage</code></td><td>打开垃圾桶界面，放入其中的物品将被永久销毁</td></tr>
+<tr><td>垃圾桶</td><td><code>/trash</code> 或 <code>/garbage</code></td><td>打开垃圾桶界面，放入其中的物品将被永久销毁</td></tr>
 </tbody>
 </table>
-
-### 名称标签
-
-名称标签用于自定义聊天中玩家名两侧的前缀和后缀。它需要成员权限，适合放短称号、颜色样式或简单状态，不建议写太长的句子。
-
-<table>
-<thead>
-<tr><th scope="col">用法</th><th scope="col">说明</th></tr>
-</thead>
-<tbody>
-<tr><td><code>/nametag</code> 或 <code>/nametag view</code></td><td>查看当前前缀、后缀、聊天预览，并打开格式编辑器链接</td></tr>
-<tr><td><code>/nametag prefix</code></td><td>只查看当前前缀</td></tr>
-<tr><td><code>/nametag suffix</code></td><td>只查看当前后缀</td></tr>
-<tr><td><code>/nametag prefix set &lt;内容&gt;</code></td><td>设置名称前缀</td></tr>
-<tr><td><code>/nametag suffix set &lt;内容&gt;</code></td><td>设置名称后缀</td></tr>
-<tr><td><code>/nametag prefix clear</code> 或 <code>/nametag suffix clear</code></td><td>只清除前缀或后缀</td></tr>
-<tr><td><code>/nametag clear</code></td><td>同时清除自定义前缀和后缀</td></tr>
-</tbody>
-</table>
-
-限制与格式：
-
-- 前缀和后缀内容各最多 200 个字符。
-- `set` 内容不能为空；如需删除请使用对应的 `clear` 命令。
-- 内容使用 MiniMessage 格式，支持颜色、粗体/斜体等装饰、渐变、彩虹、悬浮提示等常用标签。
-- 不支持点击事件、选择器等可能影响安全或聊天显示的标签。
-- 可使用 `%player_...%` 这类玩家相关 PlaceholderAPI 变量，其他占位符不会被接受。
 
 ## 物品与世界管理
 
@@ -166,11 +167,10 @@ icon: Wrench
 <tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="5">音乐</td><td><code>/music</code></td><td>打开音乐控制台，需要安装 <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a> 模组</td></tr>
-<tr><td><code>/music search &lt;关键词&gt;</code></td><td>搜索歌曲</td></tr>
-<tr><td><code>/music page &lt;页码&gt;</code></td><td>切换音乐列表页码</td></tr>
-<tr><td><code>/music random</code></td><td>获得一张随机唱片</td></tr>
-<tr><td><code>/music randomplay</code></td><td>在最近的唱片机播放随机音乐</td></tr>
+<tr><td rowspan="4">音乐</td><td><code>/music</code></td><td>打开音乐工作台，管理曲库、歌单、播放设备和音游；普通音频需要安装 <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a>，NBS 使用 Minecraft 音符盒声音</td></tr>
+<tr><td><code>/music search &lt;关键词&gt;</code></td><td>搜索本地曲库和可用在线来源</td></tr>
+<tr><td><code>/music playlist &lt;UUID&gt;</code></td><td>打开分享给你的公开歌单</td></tr>
+<tr><td><code>/music playlist import &lt;平台&gt; &lt;链接或编号&gt;</code></td><td>导入歌单元数据；支持网易云 <code>wy</code>、QQ 音乐 <code>tx</code>、酷狗 <code>kg</code>、酷我 <code>kw</code> 和咪咕 <code>mg</code></td></tr>
 <tr><td>烟花</td><td><code>/firework gun</code></td><td>获取一把随机烟花发射器</td></tr>
 </tbody>
 </table>
@@ -229,6 +229,7 @@ PVP 设置菜单包含：
 | [`/gamemode`](https://zh.minecraft.wiki/w/命令/gamemode) | 切换玩家游戏模式 | |
 | [`/give`](https://zh.minecraft.wiki/w/命令/give) | 给予玩家指定物品 | |
 | [`/item`](https://zh.minecraft.wiki/w/命令/item) | 修改容器或实体装备栏中的物品 | ✔ |
+| [`/locate`](https://zh.minecraft.wiki/w/命令/locate) | 查找最近的结构、生物群系或兴趣点 | |
 | [`/ride`](https://zh.minecraft.wiki/w/命令/ride) | 控制实体的骑乘关系 | ✔ |
 | [`/save-all`](https://zh.minecraft.wiki/w/命令/save) | 立即保存服务器世界数据 | ✔ |
 | [`/seed`](https://zh.minecraft.wiki/w/命令/seed) | 显示当前世界的种子 | |
