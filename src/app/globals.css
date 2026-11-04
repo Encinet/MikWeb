@@ -9,6 +9,7 @@
 @import "./styles/modules/account.css";
 @import "./styles/modules/chat.css";
 @import "./styles/modules/chat-tools.css";
+@import "./styles/modules/chat-motion.css";
 @import "./styles/modules/building-submission.css";
 @import "./styles/shared/art-guide-pages.css";
 @import "./styles/layout/safe-overlays.css";

@@ -1,0 +1,159 @@
+/* Motion is opt-in; layout and interaction states live in chat.css and chat-tools.css. */
+@media (prefers-reduced-motion: no-preference) {
+  .chat-workspace,
+  .chat-dialog,
+  .chat-action-popover {
+    --chat-motion-fast: 140ms;
+    --chat-motion-state: 180ms;
+    --chat-motion-surface: 220ms;
+  }
+
+  .chat-icon-button,
+  .chat-primary,
+  .chat-send {
+    transition:
+      color var(--chat-motion-fast) ease,
+      background-color var(--chat-motion-fast) ease,
+      transform var(--chat-motion-fast) var(--ui-transition-easing),
+      box-shadow var(--chat-motion-fast) ease;
+  }
+
+  /* Keep menu anchors still so viewport coordinates remain valid during opening. */
+  .chat-icon-button:not(:disabled, .chat-menu-trigger):active,
+  .chat-primary:not(:disabled):active,
+  .chat-send:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+  .chat-navigation .ui-sidebar-link,
+  .chat-scroll-action,
+  .chat-mention-options > button,
+  .chat-search-result,
+  .chat-search-scope button,
+  button.chat-peer,
+  .chat-popover-action,
+  .chat-activity-group > summary,
+  .chat-search-filters > summary,
+  .chat-density-control button {
+    transition:
+      color var(--chat-motion-fast) ease,
+      background-color var(--chat-motion-fast) ease;
+  }
+
+  .chat-input-surface {
+    transition: box-shadow var(--chat-motion-state) ease;
+  }
+
+  .chat-connection-dot {
+    transition:
+      background-color var(--chat-motion-state) ease,
+      box-shadow var(--chat-motion-state) ease;
+  }
+
+  .chat-participants-heading > button {
+    transition: opacity var(--chat-motion-fast) ease;
+  }
+
+  .chat-activity-group > summary > svg {
+    transition: transform var(--chat-motion-state) var(--ui-transition-easing);
+  }
+
+  .chat-message__line,
+  .chat-activity-line {
+    transition: background-color 1s ease;
+  }
+
+  .chat-message__line.is-highlighted,
+  .chat-activity-line.is-highlighted {
+    transition-duration: var(--chat-motion-fast);
+  }
+
+  /* Opacity preserves menu bounds and message coordinates used by search jumps. */
+  .chat-feedback,
+  .chat-connection-banner,
+  .chat-activity-group[open] > .chat-activity-details,
+  .chat-search-filters[open] > .chat-filter-fields {
+    animation: chat-fade-in var(--chat-motion-state) ease-out;
+  }
+
+  .chat-action-popover[data-chat-menu-fallback][data-chat-menu-open] {
+    animation: chat-fade-in var(--chat-motion-fast) ease-out;
+  }
+
+  /* Unsupported native popover selectors must not invalidate the fallback rule. */
+  @supports selector(:popover-open) {
+    .chat-action-popover:popover-open {
+      animation: chat-fade-in var(--chat-motion-fast) ease-out;
+    }
+  }
+
+  .chat-mention-options {
+    animation: chat-mention-enter var(--chat-motion-state) var(--ui-transition-easing);
+  }
+
+  .chat-scroll-actions {
+    animation: chat-scroll-actions-enter var(--chat-motion-surface) var(--ui-transition-easing);
+  }
+
+  .chat-spinner {
+    animation: chat-spin 1s linear infinite;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .chat-primary:not(:disabled):hover,
+    .chat-send:not(:disabled):hover {
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--theme-accent) 24%, transparent);
+    }
+
+    .chat-primary:not(:disabled):active,
+    .chat-send:not(:disabled):active {
+      box-shadow: none;
+    }
+  }
+}
+
+/* Also cover shared control transitions, including menus portaled outside the workspace. */
+@media (prefers-reduced-motion: reduce) {
+  .chat-workspace :is(button, a),
+  .chat-dialog :is(button, a),
+  .chat-action-popover :is(button, a, select) {
+    transition: none;
+  }
+}
+
+@keyframes chat-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chat-mention-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes chat-scroll-actions-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes chat-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -59,7 +59,8 @@ body:has(.chat-workspace)
   cursor: pointer;
 }
 .chat-workspace button:disabled,
-.chat-dialog button:disabled {
+.chat-dialog button:disabled,
+.chat-action-popover button:disabled {
   opacity: 0.45;
   cursor: default;
 }
@@ -257,9 +258,6 @@ body:has(.chat-workspace)
   border: 0;
   border-radius: 999px;
   text-decoration: none;
-  transition:
-    color 160ms ease,
-    background 160ms ease;
 }
 .chat-icon-button {
   padding-inline: 0.75rem;
@@ -267,12 +265,12 @@ body:has(.chat-workspace)
   color: var(--theme-text-muted-strong);
   font-size: 0.8rem;
 }
-.chat-icon-button:hover,
+.chat-icon-button:not(:disabled):hover,
 .chat-icon-button[aria-expanded="true"] {
   background: var(--theme-surface-hover);
   color: var(--theme-text-heading);
 }
-.chat-icon-button:active {
+.chat-icon-button:not(:disabled):active {
   background: var(--chat-soft);
 }
 .chat-icon-button > svg {
@@ -288,8 +286,12 @@ body:has(.chat-workspace)
 .chat-primary {
   padding-inline: 1rem;
 }
-.chat-primary:hover,
+.chat-primary:not(:disabled):hover,
 .chat-send:not(:disabled):hover {
+  background: var(--theme-accent-hover);
+}
+.chat-primary:not(:disabled):active,
+.chat-send:not(:disabled):active {
   background: var(--theme-accent-hover);
 }
 .chat-connection-status {
@@ -306,6 +308,9 @@ body:has(.chat-workspace)
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--theme-status-success);
+}
+.chat-connection-status[data-state="online"] .chat-connection-dot {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-status-success) 16%, transparent);
 }
 .chat-mobile-menu {
   display: none;
@@ -473,7 +478,6 @@ body:has(.chat-workspace)
 .chat-message__line {
   position: relative;
   border-radius: 0.5rem;
-  transition: background-color 1.2s ease;
 }
 .chat-message__line.is-mentioned {
   padding-inline: 0.65rem;
@@ -575,6 +579,9 @@ body:has(.chat-workspace)
   background: var(--chat-soft);
   color: var(--theme-text-heading);
 }
+.chat-scroll-action:active {
+  background: var(--theme-surface-hover);
+}
 .chat-workspace .chat-scroll-action:focus-visible {
   outline-offset: -3px;
 }
@@ -622,7 +629,6 @@ body:has(.chat-workspace)
 .chat-input-surface {
   border: 0;
   background: var(--chat-soft);
-  transition: box-shadow 160ms ease;
 }
 .chat-input-surface:has(> input:focus) {
   box-shadow: inset 0 0 0 1px var(--theme-accent-strong);
@@ -699,6 +705,9 @@ body:has(.chat-workspace)
 }
 .chat-mention-options > button[aria-selected="true"] {
   background: var(--chat-soft);
+}
+.chat-mention-options > button:active {
+  background: var(--theme-surface-hover);
 }
 .chat-mention-options img {
   flex-shrink: 0;
@@ -880,9 +889,6 @@ body:has(.chat-workspace)
   color: var(--theme-text-muted-strong);
   font-size: 0.8125rem;
   white-space: nowrap;
-  transition:
-    background 160ms ease,
-    color 160ms ease;
 }
 .chat-search-scope button:hover {
   background: var(--theme-surface-hover);
@@ -941,11 +947,13 @@ body:has(.chat-workspace)
   padding: 0.75rem 0.6rem;
   border-radius: 0.9rem;
   text-align: start;
-  transition: background 160ms ease;
 }
 .chat-search-result:hover,
 .chat-search-result:focus-visible {
   background: var(--theme-surface-hover);
+}
+.chat-search-result:active {
+  background: var(--chat-soft);
 }
 .chat-search-result[aria-current="true"] {
   background: color-mix(in srgb, var(--theme-accent-strong) 9%, transparent);
@@ -1178,14 +1186,6 @@ button.chat-peer:hover {
   font-weight: 500;
   color: var(--theme-text-heading);
 }
-.chat-spinner {
-  animation: chat-spin 1s linear infinite;
-}
-@keyframes chat-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 @media (min-width: 1180px) {
   .chat-workspace[data-members-visible="true"] {
@@ -1333,17 +1333,5 @@ button.chat-peer:hover {
   }
   .chat-notification-suggestion {
     display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .chat-workspace :is(button, a),
-  .chat-workspace .chat-input-surface,
-  .chat-message__line,
-  .chat-dialog :is(button, a) {
-    transition: none;
-  }
-  .chat-spinner {
-    animation: none;
   }
 }

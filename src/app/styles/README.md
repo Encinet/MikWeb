@@ -8,4 +8,6 @@
 - `site/`: site shell styles such as the header and footer.
 - `modules/`: feature or route-level styles used by one product area.
 
+Chat styles are loaded in order: `chat.css` for the workspace layout, `chat-tools.css` for menus and activity summaries, then `chat-motion.css` for motion timing, animations, and reduced-motion support. Keep final visual states in the first two files and opt into movement in `chat-motion.css`.
+
 Before adding a new global selector, prefer a component-local Tailwind class. Use these files for selectors that must be shared across components or are driven by server-rendered content.

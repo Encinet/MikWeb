@@ -56,8 +56,11 @@
   overflow-wrap: anywhere;
   cursor: pointer;
 }
-.chat-popover-action:hover {
+.chat-popover-action:not(:disabled):is(:hover, :focus-visible) {
   background: var(--chat-soft);
+}
+.chat-popover-action:not(:disabled):active {
+  background: var(--theme-surface-hover);
 }
 .chat-popover-action svg {
   flex-shrink: 0;
@@ -109,6 +112,9 @@
   min-height: 64px;
   gap: 0.6rem;
   padding: 0.65rem 0.45rem;
+}
+.chat-navigation .ui-sidebar-link:not(:disabled):active {
+  background: var(--chat-soft);
 }
 .chat-thread-link .chat-thread-avatar {
   position: relative;
@@ -191,7 +197,6 @@
 .chat-participants-heading > button {
   flex-shrink: 0;
   opacity: 1;
-  transition: opacity 140ms ease;
 }
 .chat-message-entry {
   min-height: 2rem;
@@ -295,6 +300,7 @@
   inset-block-start: calc((1.6em - 13px) / 2);
   inset-inline-start: 0;
   transform: rotate(-90deg);
+  transform-origin: center;
 }
 .chat-activity-group[open] > summary > svg {
   transform: none;
@@ -434,6 +440,10 @@
 .chat-workspace[data-density="compact"] .chat-log__content {
   padding-block: 0.75rem 1rem;
 }
+/* Keep the final row readable above the floating reading actions in either density. */
+.chat-stream:has(> .chat-scroll-actions) .chat-log__content {
+  padding-block-end: 4.5rem;
+}
 .chat-search-filters {
   flex-shrink: 0;
   margin-top: 0.35rem;
@@ -525,7 +535,7 @@
     overflow-wrap: anywhere;
   }
 }
-@media (any-hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .chat-participants-heading > button {
     opacity: 0;
   }
@@ -533,11 +543,15 @@
     opacity: 1;
   }
 }
-@media (pointer: coarse) {
+@media (any-pointer: coarse) {
+  .chat-participants-heading > button {
+    opacity: 1;
+  }
   .chat-message-entry {
     min-height: 44px;
   }
-  .chat-context-menu .chat-popover-action {
+  .chat-context-menu .chat-popover-action,
+  .chat-connection-banner .chat-text-button {
     min-height: 44px;
   }
   .chat-activity-group > summary,
@@ -560,10 +574,5 @@
 @media (max-width: 380px) {
   .chat-workspace[data-channel="private"] .chat-room-mark {
     display: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .chat-participants-heading > button {
-    transition: none;
   }
 }
