@@ -1,39 +1,30 @@
 'use client';
 
-import { Gamepad2, Globe, Hash, MessageCircle, Server, Shield } from 'lucide-react';
+import { Hash, MessageCircle, Server, Shield } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import {
-  Fragment,
-  memo,
-  useCallback,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import type { ReactNode } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
-import type {
-  ChatMessage,
-  ChatPlayerMessage,
-  ChatServerMessage,
-} from '@/modules/chat/model/chat-protocol';
+import type { ChatMessage, ChatServerMessage } from '@/modules/chat/model/chat-protocol';
 import { isPassiveMessage } from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor, ChatUnread } from '@/modules/chat/model/chat-reading';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
+import {
+  chatTimelineGroups,
+  chatTimelineKey,
+  chatDayKey as dayKey,
+} from '@/modules/chat/model/chat-timeline';
 import { ChatActivityGroup } from '@/modules/chat/ui/chat-activity-group';
-import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
 import type { ChatMessageActionHandlers } from '@/modules/chat/ui/chat-message-actions';
-import { ChatMessageActions } from '@/modules/chat/ui/chat-message-actions';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
+import { ChatPlayerMessageRow } from '@/modules/chat/ui/chat-player-message';
+import { finishChatRegrouping } from '@/modules/chat/ui/chat-regroup-motion';
 import { ChatScrollActions } from '@/modules/chat/ui/chat-scroll-actions';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
 import type { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 
 const PAGE_SIZE = 100;
 export interface ChatMessageJump {
@@ -58,31 +49,6 @@ interface Props extends ChatMessageActionHandlers {
   onJumpComplete: (sequence: number) => void;
   showActivity: boolean;
 }
-function dayKey(timestamp: number) {
-  const date = new Date(timestamp);
-  return [date.getFullYear(), date.getMonth(), date.getDate()].join('-');
-}
-function groupMessages(messages: ChatMessage[], boundary?: string) {
-  const groups: ChatMessage[][] = [];
-  for (const message of messages) {
-    const last = groups.at(-1)?.at(-1);
-    if (
-      last &&
-      message.id !== boundary &&
-      ((last.kind === 'player' &&
-        message.kind === 'player' &&
-        last.senderUuid === message.senderUuid &&
-        last.source === message.source &&
-        message.createdAt - last.createdAt < 180_000) ||
-        (isPassiveMessage(last) && isPassiveMessage(message))) &&
-      dayKey(last.createdAt) === dayKey(message.createdAt)
-    )
-      groups.at(-1)?.push(message);
-    else groups.push([message]);
-  }
-  return groups;
-}
-
 export const ChatMessageList = memo(function ChatMessageList({
   conversation,
   destination,
@@ -140,8 +106,8 @@ export const ChatMessageList = memo(function ChatMessageList({
   );
   const [highlight, setHighlight] = useState<string | null>(null);
   const groups = useMemo(
-    () => groupMessages(timeline.slice(start), boundary),
-    [timeline, start, boundary],
+    () => chatTimelineGroups(timeline, pending, owner, name, start, boundary),
+    [timeline, pending, owner, name, start, boundary],
   );
   const previousTimeline = useRef<ChatMessage[] | null>(null);
   const mergePulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -165,6 +131,7 @@ export const ChatMessageList = memo(function ChatMessageList({
     const targetGroup = groups.find((group) =>
       group.some((message) => message.id === previousLast.id),
     );
+    if (!targetGroup?.some((message) => message.id === firstAdded.id)) return;
     const targetId = targetGroup?.[0]?.id;
     if (!targetId) return;
     if (mergePulseTimer.current) clearTimeout(mergePulseTimer.current);
@@ -202,6 +169,7 @@ export const ChatMessageList = memo(function ChatMessageList({
   useLayoutEffect(() => {
     const root = scroll.log.current;
     if (root && prepend.current && prepend.current.start !== start) {
+      finishChatRegrouping(root);
       root.scrollTop = prepend.current.top + root.scrollHeight - prepend.current.height;
       prepend.current = null;
     }
@@ -256,11 +224,6 @@ export const ChatMessageList = memo(function ChatMessageList({
       : destination.channel === 'staff'
         ? Shield
         : MessageCircle;
-  const errorText = (code: string) => {
-    const key = `errors.${code}`;
-    return hasTranslationKey(t, key) ? t(key) : t('errors.default');
-  };
-
   return (
     <div className="chat-stream">
       <div
@@ -272,6 +235,9 @@ export const ChatMessageList = memo(function ChatMessageList({
         aria-live="polite"
         aria-relevant="additions text"
         onScroll={scroll.onScroll}
+        onPointerDownCapture={(event) => finishChatRegrouping(event.currentTarget)}
+        onKeyDownCapture={(event) => finishChatRegrouping(event.currentTarget)}
+        onContextMenuCapture={(event) => finishChatRegrouping(event.currentTarget)}
       >
         <div className="chat-log__content">
           {start > 0 ? (
@@ -280,8 +246,10 @@ export const ChatMessageList = memo(function ChatMessageList({
               className="chat-history-more"
               onClick={() => {
                 const root = scroll.log.current;
-                if (root)
+                if (root) {
+                  finishChatRegrouping(root);
                   prepend.current = { top: root.scrollTop, height: root.scrollHeight, start };
+                }
                 setStartId(timeline[Math.max(0, start - PAGE_SIZE)]?.id ?? null);
               }}
             >
@@ -296,128 +264,71 @@ export const ChatMessageList = memo(function ChatMessageList({
               <p>{t('emptyHistory')}</p>
             </div>
           ) : null}
-          {groups.map((group, index) => {
+          {groups.flatMap((group, index) => {
             const first = group[0];
-            if (!first) return null;
+            if (!first) return [];
             const previous = groups[index - 1]?.[0];
             const showDate = !previous || dayKey(previous.createdAt) !== dayKey(first.createdAt);
-            const SourceIcon =
-              first.kind === 'player' && first.source === 'game' ? Gamepad2 : Globe;
-            return (
-              <Fragment key={first.id}>
-                {showDate ? (
-                  <div className="chat-date">
-                    <span>
-                      {dayKey(first.createdAt) === dayKey(Date.now())
-                        ? t('today')
-                        : format.date.format(first.createdAt)}
-                    </span>
-                  </div>
-                ) : null}
-                {first.id === boundary ? (
-                  <div className="chat-unread-divider">
-                    <span>{t('readMarker')}</span>
-                  </div>
-                ) : null}
-                {first.kind === 'server' && isPassiveMessage(first) ? (
-                  <ChatActivityGroup
-                    messages={group.filter((message) => message.kind === 'server')}
-                    highlighted={highlight}
-                    revealedId={revealedActivityId}
-                    merged={mergedActivityId === first.id}
-                    formatTime={(timestamp) => format.time.format(timestamp)}
-                  />
-                ) : first.kind === 'server' ? (
-                  <ServerMessageLine
-                    message={first}
-                    title={format.full.format(first.createdAt)}
-                    time={format.time.format(first.createdAt)}
-                    highlight={highlight === first.id}
+            const groupKey = chatTimelineKey(first, owner);
+            const items: ReactNode[] = [];
+            if (showDate)
+              items.push(
+                <div className="chat-date" key={`date:${groupKey}`}>
+                  <span>
+                    {dayKey(first.createdAt) === dayKey(Date.now())
+                      ? t('today')
+                      : format.date.format(first.createdAt)}
+                  </span>
+                </div>,
+              );
+            if (first.id === boundary)
+              items.push(
+                <div className="chat-unread-divider" key={`unread:${groupKey}`}>
+                  <span>{t('readMarker')}</span>
+                </div>,
+              );
+            if (first.kind === 'server' && isPassiveMessage(first))
+              items.push(
+                <ChatActivityGroup
+                  key={groupKey}
+                  messages={group.filter((message) => message.kind === 'server')}
+                  highlighted={highlight}
+                  revealedId={revealedActivityId}
+                  merged={mergedActivityId === first.id}
+                  formatTime={(timestamp) => format.time.format(timestamp)}
+                />,
+              );
+            else if (first.kind === 'server')
+              items.push(
+                <ServerMessageLine
+                  key={groupKey}
+                  message={first}
+                  title={format.full.format(first.createdAt)}
+                  time={format.time.format(first.createdAt)}
+                  highlight={highlight === first.id}
+                  track={track}
+                />,
+              );
+            else
+              group.forEach((message, messageIndex) => {
+                if (message.kind === 'server') return;
+                items.push(
+                  <ChatPlayerMessageRow
+                    key={chatTimelineKey(message, owner)}
+                    message={message}
+                    startsGroup={messageIndex === 0}
+                    time={format.time.format(message.createdAt)}
+                    title={format.full.format(message.createdAt)}
+                    highlight={highlight === message.id}
                     track={track}
-                  />
-                ) : (
-                  <article className={`chat-message${first.senderUuid === owner ? ' is-own' : ''}`}>
-                    <div className="chat-message__avatar" aria-hidden="true">
-                      <MinecraftAvatar uuid={first.senderUuid} name={first.senderName} size={40} />
-                    </div>
-                    <div className="chat-message__content">
-                      <div className="chat-message__meta">
-                        <strong>{first.senderName}</strong>
-                        <span className="chat-message__source" title={t(`source.${first.source}`)}>
-                          <SourceIcon size={13} aria-hidden="true" />
-                          <span className="sr-only">{t(`source.${first.source}`)}</span>
-                        </span>
-                        <time
-                          dateTime={new Date(first.createdAt).toISOString()}
-                          title={format.full.format(first.createdAt)}
-                        >
-                          {format.time.format(first.createdAt)}
-                        </time>
-                      </div>
-                      {group
-                        .filter((message) => message.kind === 'player')
-                        .map((message) => (
-                          <MessageLine
-                            key={message.id}
-                            message={message}
-                            title={format.full.format(message.createdAt)}
-                            highlight={highlight === message.id}
-                            track={track}
-                            owner={owner}
-                            onMention={onMention}
-                            onPrivate={onPrivate}
-                          />
-                        ))}
-                    </div>
-                  </article>
-                )}
-              </Fragment>
-            );
-          })}
-          {pending.map((message, index) => {
-            const previousPending = pending[index - 1];
-            const previousOwnerMessage = previousPending ? null : groups.at(-1)?.at(-1);
-            const followsOwnMessage = previousPending
-              ? message.createdAt - previousPending.createdAt < 180_000 &&
-                dayKey(message.createdAt) === dayKey(previousPending.createdAt)
-              : Boolean(
-                  previousOwnerMessage &&
-                    previousOwnerMessage.kind === 'player' &&
-                    previousOwnerMessage.senderUuid === owner &&
-                    previousOwnerMessage.source === 'web' &&
-                    message.createdAt - previousOwnerMessage.createdAt < 180_000 &&
-                    dayKey(message.createdAt) === dayKey(previousOwnerMessage.createdAt),
+                    owner={owner}
+                    onMention={onMention}
+                    onPrivate={onPrivate}
+                    onRestore={onRestore}
+                  />,
                 );
-            return (
-              <article
-                className={`chat-message chat-message--pending${followsOwnMessage ? ' chat-message--continuation' : ''}`}
-                data-status={message.status}
-                key={message.requestId}
-              >
-                <div className="chat-message__avatar" aria-hidden="true">
-                  <MinecraftAvatar uuid={owner} name={name} size={40} />
-                </div>
-                <div className="chat-message__content">
-                  <div className="chat-message__meta">
-                    <strong>{name}</strong>
-                    <span>{t(`delivery.${message.status}`)}</span>
-                  </div>
-                  <p>{message.text}</p>
-                  {message.error ? (
-                    <p className="chat-message__error">{errorText(message.error)}</p>
-                  ) : null}
-                  {message.status !== 'sending' ? (
-                    <button
-                      type="button"
-                      className="chat-text-button"
-                      onClick={() => onRestore(message)}
-                    >
-                      {t('restoreDraft')}
-                    </button>
-                  ) : null}
-                </div>
-              </article>
-            );
+              });
+            return items;
           })}
         </div>
       </div>
@@ -432,59 +343,6 @@ export const ChatMessageList = memo(function ChatMessageList({
         />
       ) : null}
     </div>
-  );
-});
-
-const MessageLine = memo(function MessageLine({
-  message,
-  title,
-  highlight,
-  track,
-  owner,
-  onMention,
-  onPrivate,
-}: ChatMessageActionHandlers & {
-  message: ChatPlayerMessage;
-  title: string;
-  highlight: boolean;
-  track: ReturnType<typeof useChatReadTracker>;
-  owner: string;
-}) {
-  const t = useTranslations('chat');
-  const contentId = useId();
-  const attach = useCallback(
-    (element: HTMLSpanElement | null) => track(element, messageCursor(message)),
-    [track, message],
-  );
-  return (
-    <ChatContextMenu
-      label={t('messageActions.label', { name: message.senderName })}
-      actions={(close) => (
-        <ChatMessageActions
-          message={message}
-          owner={owner}
-          onMention={onMention}
-          onPrivate={onPrivate}
-          onCopied={close}
-        />
-      )}
-    >
-      {(target, keyboard) => (
-        <div
-          {...target}
-          className={`chat-message__line chat-message-entry${highlight ? ' is-highlighted' : ''}${message.mentioned && message.senderUuid !== owner ? ' is-mentioned' : ''}`}
-          data-chat-message={message.id}
-          tabIndex={-1}
-          title={title}
-        >
-          <button {...keyboard} className="chat-context-keyboard" aria-describedby={contentId} />
-          <p className="chat-message__text" id={contentId}>
-            <ChatMessageContent content={message.content} />
-            <span ref={attach} className="chat-read-sentinel" aria-hidden="true" />
-          </p>
-        </div>
-      )}
-    </ChatContextMenu>
   );
 });
 

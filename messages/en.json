@@ -528,6 +528,7 @@
     },
     "delivery": {
       "sending": "Sending",
+      "accepted": "Sent",
       "unknown": "Result unknown; check before sending again",
       "failed": "Send failed"
     },

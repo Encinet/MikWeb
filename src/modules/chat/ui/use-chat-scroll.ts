@@ -2,6 +2,7 @@
 
 import type { UIEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { finishChatRegrouping } from '@/modules/chat/ui/chat-regroup-motion';
 
 interface ScrollPosition {
   top: number;
@@ -51,6 +52,7 @@ export function useChatScroll(conversation: string) {
   }, []);
 
   const toLatest = useCallback(() => {
+    finishChatRegrouping(log.current);
     nearBottom.current = true;
     setAtBottom(true);
     if (log.current) log.current.scrollTop = log.current.scrollHeight;
@@ -64,6 +66,7 @@ export function useChatScroll(conversation: string) {
     if (!element || !message) return;
     const disclosure = message.closest('details');
     if (disclosure) disclosure.open = true;
+    finishChatRegrouping(element);
     const top =
       element.scrollTop +
       message.getBoundingClientRect().top -

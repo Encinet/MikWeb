@@ -19,6 +19,7 @@ import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
 import { isTerminalChatClose } from '@/modules/chat/model/chat-connection';
 import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
+import { acceptChatDelivery, unconfirmedChatDeliveries } from '@/modules/chat/model/chat-delivery';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import type {
   ChatAccess,
@@ -212,10 +213,8 @@ export function useWebChat() {
               liveMessage.current?.(record, () =>
                 current() ? activeSession.accessFor(record) : null,
               );
-            if (record.kind === 'player' && record.senderUuid === owner && record.requestId)
-              setPending((existing) =>
-                existing.filter((item) => item.requestId !== record.requestId),
-              );
+            if (record.kind === 'player' && record.senderUuid === owner)
+              setPending((existing) => unconfirmedChatDeliveries(existing, [record], owner));
             const history = lease.current;
             if (history)
               void saveHistory(history, record).catch(() => {
@@ -224,7 +223,9 @@ export function useWebChat() {
             break;
           }
           case 'accepted':
-            setPending((existing) => existing.filter((item) => item.requestId !== event.requestId));
+            setPending((existing) =>
+              acceptChatDelivery(existing, event.requestId, event.messageId),
+            );
             break;
           case 'error':
             setPending((existing) =>
@@ -280,6 +281,7 @@ export function useWebChat() {
             mayReadMessage(message, owner, allowedStaff.current),
           ),
         );
+        setPending((existing) => unconfirmedChatDeliveries(existing, snapshot.messages, owner));
         updateReading((positions) => {
           let merged = positions;
           for (const [key, cursor] of snapshot.readPositions) {

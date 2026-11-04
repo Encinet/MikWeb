@@ -528,6 +528,7 @@
     },
     "delivery": {
       "sending": "正在发送",
+      "accepted": "已发送",
       "unknown": "结果未知，请先核对再重发",
       "failed": "发送失败"
     },

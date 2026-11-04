@@ -13,6 +13,23 @@
     transition: grid-template-columns var(--chat-motion-layout) var(--ui-transition-easing);
   }
 
+  .chat-message {
+    transition: margin-top var(--chat-motion-surface) var(--ui-transition-easing);
+  }
+
+  .chat-message__author {
+    transition:
+      grid-template-rows var(--chat-motion-surface) var(--ui-transition-easing),
+      opacity var(--chat-motion-fast) ease,
+      visibility var(--chat-motion-surface) allow-discrete;
+  }
+
+  .chat-message__avatar {
+    transition:
+      opacity var(--chat-motion-fast) ease,
+      visibility var(--chat-motion-surface) allow-discrete;
+  }
+
   .chat-sidebar {
     transition:
       opacity var(--chat-motion-state) ease,
@@ -126,8 +143,14 @@
     transition: background-color 1s ease;
   }
 
-  .chat-message--pending {
-    animation: chat-fade-in var(--chat-motion-state) ease-out;
+  .chat-message-entry > .chat-message__text {
+    transition: color var(--chat-motion-state) ease;
+  }
+
+  /* Delay delivery icons so quick confirmations do not flash loading or sent states. */
+  .chat-delivery-line:is([data-delivery="sending"], [data-delivery="accepted"])
+    > .chat-delivery-indicator {
+    animation: chat-fade-in var(--chat-motion-fast) ease-out 350ms both;
   }
 
   .chat-message__line.is-highlighted,

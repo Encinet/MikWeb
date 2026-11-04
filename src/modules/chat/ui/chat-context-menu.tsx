@@ -43,10 +43,12 @@ export function ChatContextMenu({
   label,
   actions,
   children,
+  disabled = false,
 }: {
   label: string;
   actions: (close: () => void) => ReactNode;
   children: (target: ContextTargetProps, keyboard: ContextKeyboardProps) => ReactNode;
+  disabled?: boolean;
 }) {
   const menu = useChatMenu();
   const press = useRef<{
@@ -175,19 +177,30 @@ export function ChatContextMenu({
 
   return (
     <>
-      {children(target, {
-        type: 'button',
-        'aria-label': label,
-        'aria-haspopup': 'menu',
-        'aria-expanded': menu.open,
-        'aria-controls': menu.id,
-        'aria-keyshortcuts': 'Shift+F10',
-        'data-chat-context-keyboard': true,
-        onClick(event) {
-          cancel();
-          menu.show(undefined, event.currentTarget);
+      {children(
+        disabled
+          ? {
+              ref: menu.setAnchor,
+              'data-chat-context-target': true,
+              'data-chat-context-open': undefined,
+              'data-chat-context-press': undefined,
+            }
+          : target,
+        {
+          type: 'button',
+          disabled,
+          'aria-label': label,
+          'aria-haspopup': 'menu',
+          'aria-expanded': menu.open,
+          'aria-controls': menu.id,
+          'aria-keyshortcuts': 'Shift+F10',
+          'data-chat-context-keyboard': true,
+          onClick(event) {
+            cancel();
+            menu.show(undefined, event.currentTarget);
+          },
         },
-      })}
+      )}
       <ChatMenuSurface menu={menu} label={label} role="menu">
         {actions(() => menu.close(true))}
       </ChatMenuSurface>
