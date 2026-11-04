@@ -52,7 +52,7 @@ export function ChatSettings({
     <div className="chat-settings">
       {appearance}
       <div className="ui-settings-list">
-        <div className="ui-setting-row">
+        <div className="ui-setting-row chat-density-setting">
           <div className="ui-setting-row__label">
             <span>
               <AlignJustify size={18} aria-hidden="true" />

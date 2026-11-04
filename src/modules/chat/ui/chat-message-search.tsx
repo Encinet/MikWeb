@@ -185,14 +185,19 @@ export function ChatMessageSearch({
           type="button"
           aria-pressed={scope === 'current'}
           aria-label={`${t('searchCurrent')}: ${currentLabel}`}
-          title={t('searchCurrent')}
+          title={`${t('searchCurrent')}: ${currentLabel}`}
           onClick={() => changeScope('current')}
         >
           <CurrentIcon size={14} aria-hidden="true" />
           <span>{currentLabel}</span>
         </button>
-        <button type="button" aria-pressed={scope === 'all'} onClick={() => changeScope('all')}>
-          {t('searchAll')}
+        <button
+          type="button"
+          aria-pressed={scope === 'all'}
+          title={t('searchAll')}
+          onClick={() => changeScope('all')}
+        >
+          <span>{t('searchAll')}</span>
         </button>
       </fieldset>
       <details className="chat-search-filters">

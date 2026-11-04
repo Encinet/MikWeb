@@ -114,7 +114,6 @@ export function ChatActivityGroup({
   return (
     <details className="chat-activity-group" open={forcedOpen || undefined}>
       <summary>
-        <ChevronDown size={13} aria-hidden="true" />
         <span className="chat-activity-summary">
           {summaries.map((summary) => (
             <span
@@ -137,6 +136,7 @@ export function ChatActivityGroup({
         <span className="chat-activity-count">
           {t('activity.count', { count: messages.length })}
         </span>
+        <ChevronDown size={13} aria-hidden="true" />
         <time dateTime={new Date(lastTime).toISOString()}>{formatTime(lastTime)}</time>
       </summary>
       <ul

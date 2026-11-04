@@ -79,7 +79,7 @@ export function ChatPanel({
           <X size={19} aria-hidden="true" />
         </button>
       </header>
-      {children}
+      <div className="chat-panel-body">{children}</div>
     </aside>
   );
 }

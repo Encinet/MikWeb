@@ -418,7 +418,7 @@ export function ChatWorkspace({
               )}
             </span>
             <div className="chat-room-copy">
-              <h1>{title}</h1>
+              <h1 title={title}>{title}</h1>
               {selected.channel === 'private' && peer ? (
                 <div className="chat-private-presence">
                   <PeerPresence player={peer} />
