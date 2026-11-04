@@ -277,10 +277,7 @@
 }
 .chat-activity-group > summary {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 0.75rem;
+  display: block;
   min-height: 32px;
   border-radius: 0.5rem;
   line-height: 1.6;
@@ -303,20 +300,31 @@
   transform: none;
 }
 .chat-activity-summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
+  display: grid;
+  gap: 0.25rem;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
-.chat-activity-preview {
-  display: inline-flex;
-  flex-shrink: 0;
+.chat-activity-summary-line,
+.chat-activity-expanded-heading {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.75rem;
 }
-.chat-activity-summary-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.chat-activity-summary-line {
+  display: grid;
+}
+.chat-activity-expanded-heading,
+.chat-activity-group[open] > summary > .chat-activity-summary {
+  display: none;
+}
+.chat-activity-group[open] > summary > .chat-activity-expanded-heading {
+  display: grid;
+}
+.chat-activity-repetitions {
+  margin-inline-start: 0.35rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .chat-activity-player {
@@ -337,10 +345,6 @@
   overflow: hidden;
   border-radius: 0.2rem;
   vertical-align: middle;
-}
-.chat-activity-preview > .chat-activity-avatar + .chat-activity-avatar {
-  margin-inline-start: -6px;
-  box-shadow: -2px 0 var(--chat-surface);
 }
 .chat-activity-group time {
   font-variant-numeric: tabular-nums;

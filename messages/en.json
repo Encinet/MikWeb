@@ -609,8 +609,10 @@
     },
     "activity": {
       "count": "{count, plural, one {# player activity} other {# player activities}}",
-      "summary": "{count, plural, one {# activity} other {# activities}} · {players, plural, one {# player} other {# players}}",
-      "summarySingle": "{name} · {count, plural, one {# activity} other {# activities}}",
+      "playerSeparator": ", ",
+      "morePlayers": ", and others ({count} players total)",
+      "repeatCount": "({count, plural, one {# event} other {# events}})",
+      "otherEvents": "{count, plural, one {# other system update} other {# other system updates}}",
       "gameJoined": "<players></players> joined the game",
       "gameLeft": "<players></players> left the game",
       "webJoined": "<players></players> joined web chat",

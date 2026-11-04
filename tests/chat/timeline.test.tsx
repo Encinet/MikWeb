@@ -161,11 +161,19 @@ test('collapsed activity groups bound their preview and retain every detailed ev
     assert.equal(groups.length, 2, 'conversation messages separate presence groups');
     assert.equal(groups[0].tagName, 'DETAILS');
     assert.equal(groups[0].hasAttribute('open'), false);
-    assert.equal(
-      groups[0].querySelector('.chat-activity-summary-label')?.textContent,
-      '7 条动态 · 6 位玩家',
+    assert.deepEqual(
+      Array.from(
+        groups[0].querySelectorAll('.chat-activity-summary-line > span:first-child'),
+        (line) => line.textContent,
+      ),
+      [
+        'Steve、Alex 加入了游戏（共 3 次）',
+        'Sam、Pat 退出了游戏',
+        'Taylor 加入了网页聊天',
+        'Riley 退出了网页聊天',
+      ],
     );
-    assert.equal(groups[0].querySelectorAll('summary .chat-activity-avatar').length, 3);
+    assert.equal(groups[0].querySelectorAll('summary .chat-activity-avatar').length, 6);
     const players = groups[0].querySelectorAll('.chat-activity-details .chat-activity-player');
     assert.deepEqual(
       Array.from(players, (player) => player.textContent),
@@ -247,8 +255,9 @@ test('compact activity summaries support English and preserve unstructured serve
         messages={[
           activity('join-a', 'gameJoined', 'Alex', 1),
           activity('join-b', 'gameJoined', 'Steve', 2),
+          activity('join-c', 'gameJoined', 'Robin', 3),
           {
-            ...activity('notice', 'gameLeft', 'Alex', 3, OTHER),
+            ...activity('notice', 'gameLeft', 'Alex', 4, OTHER),
             content: [{ text: 'Server notice' }],
           },
         ]}
@@ -261,9 +270,12 @@ test('compact activity summaries support English and preserve unstructured serve
   const window = new Window();
   try {
     window.document.body.innerHTML = html;
-    assert.equal(
-      window.document.querySelector('.chat-activity-summary-label')?.textContent,
-      '3 activities · 2 players',
+    assert.deepEqual(
+      Array.from(
+        window.document.querySelectorAll('.chat-activity-summary-line > span:first-child'),
+        (line) => line.textContent,
+      ),
+      ['Alex, Steve, and others (3 players total) joined the game', '1 other system update'],
     );
     assert.ok(
       window.document
@@ -287,14 +299,15 @@ test('compact activity summaries support English and preserve unstructured serve
   }
 });
 
-test('large activity summaries keep a bounded avatar preview and count repeated player activity', () => {
+test('large activity summaries bound participants per action and distinguish people from repeated events', () => {
   const window = new Window();
   try {
     for (const samePlayer of [false, true]) {
+      const templates = ['gameJoined', 'gameLeft', 'webJoined', 'webLeft'] as const;
       const messages = Array.from({ length: 200 }, (_, index) =>
         activity(
           `event-${index}`,
-          index % 2 ? 'webLeft' : 'webJoined',
+          templates[index % templates.length],
           samePlayer ? 'Steve' : `Player${index}`,
           index,
         ),
@@ -311,11 +324,28 @@ test('large activity summaries keep a bounded avatar preview and count repeated 
       );
       const summary = window.document.querySelector('summary');
       assert.ok(summary);
-      assert.equal(
-        summary.querySelector('.chat-activity-summary-label')?.textContent,
-        samePlayer ? 'Steve · 200 条动态' : '200 条动态 · 200 位玩家',
+      const lines = summary.querySelectorAll('.chat-activity-summary-line');
+      assert.equal(lines.length, 4);
+      for (const line of lines) {
+        assert.equal(line.querySelectorAll('.chat-activity-player').length, samePlayer ? 1 : 2);
+        assert.ok(line.textContent.includes(samePlayer ? '共 50 次' : '等 50 人'));
+      }
+      assert.deepEqual(
+        Array.from(lines, (line) => line.querySelector('span')?.textContent),
+        samePlayer
+          ? [
+              'Steve 加入了游戏（共 50 次）',
+              'Steve 退出了游戏（共 50 次）',
+              'Steve 加入了网页聊天（共 50 次）',
+              'Steve 退出了网页聊天（共 50 次）',
+            ]
+          : [
+              'Player0、Player4 等 50 人 加入了游戏',
+              'Player1、Player5 等 50 人 退出了游戏',
+              'Player2、Player6 等 50 人 加入了网页聊天',
+              'Player3、Player7 等 50 人 退出了网页聊天',
+            ],
       );
-      assert.equal(summary.querySelectorAll('.chat-activity-avatar').length, samePlayer ? 1 : 3);
       assert.equal(window.document.querySelectorAll('.chat-activity-line').length, 200);
       assert.equal(window.document.querySelector('details')?.hasAttribute('open'), false);
     }
@@ -356,7 +386,7 @@ test('quiet activity spans long gaps but conversation messages and dates still s
     assert.equal(window.document.querySelectorAll('.chat-date').length, 2);
     const times = groups[0].querySelectorAll('.chat-activity-line time');
     assert.equal(
-      groups[0].querySelector('summary time')?.getAttribute('title'),
+      groups[0].querySelector('.chat-activity-expanded-heading time')?.getAttribute('title'),
       `${times[0].textContent} – ${times[1].textContent}`,
     );
   } finally {

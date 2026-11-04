@@ -2,6 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Fragment } from 'react';
 import type { ChatServerMessage } from '@/modules/chat/model/chat-protocol';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
@@ -11,6 +12,7 @@ interface ActivityPlayer {
   name: string;
   uuid?: string;
 }
+type ActivityTemplate = Extract<ChatServerMessage['content'], { template: string }>['template'];
 
 function activityPlayers(messages: ChatServerMessage[]): ActivityPlayer[] {
   const players = new Map<string, ActivityPlayer>();
@@ -31,6 +33,28 @@ function activityPlayers(messages: ChatServerMessage[]): ActivityPlayer[] {
   ];
 }
 
+function summarizeActivities(messages: ChatServerMessage[]) {
+  const actions = new Map<ActivityTemplate, ChatServerMessage[]>();
+  const others: ChatServerMessage[] = [];
+  for (const message of messages) {
+    if (Array.isArray(message.content)) {
+      others.push(message);
+      continue;
+    }
+    const events = actions.get(message.content.template);
+    if (events) events.push(message);
+    else actions.set(message.content.template, [message]);
+  }
+  return {
+    actions: [...actions].map(([template, events]) => ({
+      template,
+      events,
+      players: activityPlayers(events),
+    })),
+    others,
+  };
+}
+
 function ActivityAvatar({ name, uuid }: ActivityPlayer) {
   return (
     <span className="chat-activity-avatar" aria-hidden="true">
@@ -48,7 +72,7 @@ function PlayerName({ name, uuid }: ActivityPlayer) {
   );
 }
 
-/** A bounded summary keeps quiet activity compact; expansion preserves the full chronology. */
+/** Each action keeps named participants visible; expansion preserves the full chronology. */
 export function ChatActivityGroup({
   messages,
   highlighted,
@@ -65,17 +89,21 @@ export function ChatActivityGroup({
   const forcedOpen = messages.some(
     (message) => message.id === highlighted || message.id === revealedId,
   );
-  const players = activityPlayers(messages);
-  const summary =
-    players.length === 1
-      ? t('activity.summarySingle', { name: players[0].name, count: messages.length })
-      : players.length > 1
-        ? t('activity.summary', { players: players.length, count: messages.length })
-        : t('activity.count', { count: messages.length });
+  const summaries = summarizeActivities(messages);
   const firstTime = messages[0]?.createdAt ?? 0;
   const lastTime = messages.at(-1)?.createdAt ?? 0;
-  const startTime = formatTime(firstTime);
-  const endTime = formatTime(lastTime);
+  const renderTime = (first: number, last: number) => {
+    const start = formatTime(first);
+    const end = formatTime(last);
+    return (
+      <time
+        dateTime={new Date(last).toISOString()}
+        title={start === end ? undefined : `${start} – ${end}`}
+      >
+        {end}
+      </time>
+    );
+  };
   const renderActivity = (message: ChatServerMessage) =>
     Array.isArray(message.content) ? (
       <>
@@ -113,22 +141,48 @@ export function ChatActivityGroup({
     <details className="chat-activity-group" open={forcedOpen || undefined}>
       <summary>
         <ChevronDown size={13} aria-hidden="true" />
-        <span className="chat-activity-summary" title={summary}>
-          {players.length ? (
-            <span className="chat-activity-preview" aria-hidden="true">
-              {players.slice(0, 3).map((player) => (
-                <ActivityAvatar key={player.uuid ?? player.name} {...player} />
-              ))}
+        <span className="chat-activity-summary">
+          {summaries.actions.map(({ template, players, events }) => (
+            <span className="chat-activity-summary-line" key={template}>
+              <span>
+                {t.rich(`activity.${template}`, {
+                  players: () => (
+                    <>
+                      {players.slice(0, 2).map((player, index) => (
+                        <Fragment key={player.uuid ?? player.name}>
+                          {index > 0 ? t('activity.playerSeparator') : null}
+                          <PlayerName {...player} />
+                        </Fragment>
+                      ))}
+                      {players.length > 2
+                        ? t('activity.morePlayers', { count: players.length })
+                        : null}
+                    </>
+                  ),
+                })}
+                {events.length > players.length ? (
+                  <span className="chat-activity-repetitions">
+                    {t('activity.repeatCount', { count: events.length })}
+                  </span>
+                ) : null}
+              </span>
+              {renderTime(events[0].createdAt, events[events.length - 1].createdAt)}
+            </span>
+          ))}
+          {summaries.others.length ? (
+            <span className="chat-activity-summary-line">
+              <span>{t('activity.otherEvents', { count: summaries.others.length })}</span>
+              {renderTime(
+                summaries.others[0].createdAt,
+                summaries.others[summaries.others.length - 1].createdAt,
+              )}
             </span>
           ) : null}
-          <span className="chat-activity-summary-label">{summary}</span>
         </span>
-        <time
-          dateTime={new Date(lastTime).toISOString()}
-          title={startTime === endTime ? undefined : `${startTime} – ${endTime}`}
-        >
-          {endTime}
-        </time>
+        <span className="chat-activity-expanded-heading">
+          <span>{t('activity.count', { count: messages.length })}</span>
+          {renderTime(firstTime, lastTime)}
+        </span>
       </summary>
       <ul
         className="chat-activity-details"
