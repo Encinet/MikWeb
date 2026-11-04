@@ -4,6 +4,7 @@ export interface PendingChatMessage {
   requestId: string;
   destination: ChatDestination;
   text: string;
+  createdAt: number;
   status: 'sending' | 'unknown' | 'failed';
   error?: string;
 }

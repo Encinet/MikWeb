@@ -143,6 +143,43 @@ export const ChatMessageList = memo(function ChatMessageList({
     () => groupMessages(timeline.slice(start), boundary),
     [timeline, start, boundary],
   );
+  const previousTimeline = useRef<ChatMessage[] | null>(null);
+  const mergePulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [mergedActivityId, setMergedActivityId] = useState<string | null>(null);
+  useEffect(() => {
+    const previous = previousTimeline.current;
+    previousTimeline.current = timeline;
+    if (!previous || previous.length >= timeline.length) return;
+    const appended = previous.every((message, index) => timeline[index]?.id === message.id);
+    const previousLast = previous.at(-1);
+    const firstAdded = timeline[previous.length];
+    if (
+      !appended ||
+      !previousLast ||
+      !firstAdded ||
+      !isPassiveMessage(previousLast) ||
+      !isPassiveMessage(firstAdded) ||
+      dayKey(previousLast.createdAt) !== dayKey(firstAdded.createdAt)
+    )
+      return;
+    const targetGroup = groups.find((group) =>
+      group.some((message) => message.id === previousLast.id),
+    );
+    const targetId = targetGroup?.[0]?.id;
+    if (!targetId) return;
+    if (mergePulseTimer.current) clearTimeout(mergePulseTimer.current);
+    setMergedActivityId(targetId);
+    mergePulseTimer.current = setTimeout(() => {
+      setMergedActivityId(null);
+      mergePulseTimer.current = null;
+    }, 240);
+  }, [timeline, groups]);
+  useEffect(
+    () => () => {
+      if (mergePulseTimer.current) clearTimeout(mergePulseTimer.current);
+    },
+    [],
+  );
   const initial = useRef(true);
   const prepend = useRef<{ top: number; height: number; start: number } | null>(null);
   const track = useChatReadTracker(scroll.log, (cursor) => onRead(conversation, cursor), paused);
@@ -287,6 +324,7 @@ export const ChatMessageList = memo(function ChatMessageList({
                     messages={group.filter((message) => message.kind === 'server')}
                     highlighted={highlight}
                     revealedId={revealedActivityId}
+                    merged={mergedActivityId === first.id}
                     formatTime={(timestamp) => format.time.format(timestamp)}
                   />
                 ) : first.kind === 'server' ? (
@@ -336,32 +374,51 @@ export const ChatMessageList = memo(function ChatMessageList({
               </Fragment>
             );
           })}
-          {pending.map((message) => (
-            <article className="chat-message chat-message--pending" key={message.requestId}>
-              <div className="chat-message__avatar" aria-hidden="true">
-                <MinecraftAvatar uuid={owner} name={name} size={40} />
-              </div>
-              <div className="chat-message__content">
-                <div className="chat-message__meta">
-                  <strong>{name}</strong>
-                  <span>{t(`delivery.${message.status}`)}</span>
+          {pending.map((message, index) => {
+            const previousPending = pending[index - 1];
+            const previousOwnerMessage = previousPending ? null : groups.at(-1)?.at(-1);
+            const followsOwnMessage = previousPending
+              ? message.createdAt - previousPending.createdAt < 180_000 &&
+                dayKey(message.createdAt) === dayKey(previousPending.createdAt)
+              : Boolean(
+                  previousOwnerMessage &&
+                    previousOwnerMessage.kind === 'player' &&
+                    previousOwnerMessage.senderUuid === owner &&
+                    previousOwnerMessage.source === 'web' &&
+                    message.createdAt - previousOwnerMessage.createdAt < 180_000 &&
+                    dayKey(message.createdAt) === dayKey(previousOwnerMessage.createdAt),
+                );
+            return (
+              <article
+                className={`chat-message chat-message--pending${followsOwnMessage ? ' chat-message--continuation' : ''}`}
+                data-status={message.status}
+                key={message.requestId}
+              >
+                <div className="chat-message__avatar" aria-hidden="true">
+                  <MinecraftAvatar uuid={owner} name={name} size={40} />
                 </div>
-                <p>{message.text}</p>
-                {message.error ? (
-                  <p className="chat-message__error">{errorText(message.error)}</p>
-                ) : null}
-                {message.status !== 'sending' ? (
-                  <button
-                    type="button"
-                    className="chat-text-button"
-                    onClick={() => onRestore(message)}
-                  >
-                    {t('restoreDraft')}
-                  </button>
-                ) : null}
-              </div>
-            </article>
-          ))}
+                <div className="chat-message__content">
+                  <div className="chat-message__meta">
+                    <strong>{name}</strong>
+                    <span>{t(`delivery.${message.status}`)}</span>
+                  </div>
+                  <p>{message.text}</p>
+                  {message.error ? (
+                    <p className="chat-message__error">{errorText(message.error)}</p>
+                  ) : null}
+                  {message.status !== 'sending' ? (
+                    <button
+                      type="button"
+                      className="chat-text-button"
+                      onClick={() => onRestore(message)}
+                    >
+                      {t('restoreDraft')}
+                    </button>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
       {!scroll.atBottom ? (

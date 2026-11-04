@@ -560,8 +560,14 @@ export function ChatWorkspace({
         onClose={closePanel}
       />
 
-      {isChannel && panel === null && preferences.membersVisible ? (
-        <aside className="chat-participants" aria-label={t('participants')}>
+      {isChannel ? (
+        <aside
+          className="chat-participants"
+          aria-label={t('participants')}
+          aria-hidden={panel !== null || !preferences.membersVisible || undefined}
+          inert={panel !== null || !preferences.membersVisible}
+          data-chat-side-open={(panel === null && preferences.membersVisible) || undefined}
+        >
           <div className="chat-participants-heading">
             <h2>{t('onlinePlayers', { count: participants.length })}</h2>
             <button

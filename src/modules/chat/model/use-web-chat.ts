@@ -339,7 +339,13 @@ export function useWebChat() {
     }
     setPending((existing) => [
       ...existing.slice(-19),
-      { requestId: result.requestId, destination, text: result.text, status: 'sending' },
+      {
+        requestId: result.requestId,
+        destination,
+        text: result.text,
+        createdAt: Date.now(),
+        status: 'sending',
+      },
     ]);
     return true;
   }, []);

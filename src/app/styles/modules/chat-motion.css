@@ -6,6 +6,59 @@
     --chat-motion-fast: 140ms;
     --chat-motion-state: 180ms;
     --chat-motion-surface: 220ms;
+    --chat-motion-layout: 280ms;
+  }
+
+  .chat-workspace {
+    transition: grid-template-columns var(--chat-motion-layout) var(--ui-transition-easing);
+  }
+
+  .chat-sidebar {
+    transition:
+      opacity var(--chat-motion-state) ease,
+      translate var(--chat-motion-surface) var(--ui-transition-easing),
+      visibility var(--chat-motion-surface) allow-discrete;
+  }
+
+  .chat-panel,
+  .chat-participants {
+    visibility: hidden;
+    opacity: 0;
+    translate: 0 0.4rem;
+    pointer-events: none;
+    transition:
+      opacity var(--chat-motion-state) ease,
+      translate var(--chat-motion-surface) var(--ui-transition-easing),
+      visibility var(--chat-motion-surface) allow-discrete;
+  }
+
+  .chat-panel[data-chat-panel-open="true"],
+  .chat-participants[data-chat-side-open="true"] {
+    visibility: visible;
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+    transition-delay: 0ms;
+  }
+
+  .chat-workspace[data-panel-open="true"] > .chat-conversation {
+    opacity: 0;
+    transition:
+      opacity var(--chat-motion-state) ease,
+      visibility var(--chat-motion-surface) allow-discrete;
+  }
+
+  @media (min-width: 1180px) {
+    .chat-workspace[data-panel-open="true"] > .chat-conversation {
+      opacity: 1;
+      transition: opacity var(--chat-motion-state) ease;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .chat-sidebar {
+      translate: -0.5rem 0;
+    }
   }
 
   .chat-icon-button,
@@ -58,9 +111,23 @@
     transition: transform var(--chat-motion-state) var(--ui-transition-easing);
   }
 
+  .chat-activity-disclosure {
+    transition:
+      grid-template-rows var(--chat-motion-surface) var(--ui-transition-easing),
+      opacity var(--chat-motion-state) ease;
+  }
+
+  .chat-activity-group[data-activity-merged="true"] > summary {
+    animation: chat-activity-merge var(--chat-motion-state) ease-out;
+  }
+
   .chat-message__line,
   .chat-activity-line {
     transition: background-color 1s ease;
+  }
+
+  .chat-message--pending {
+    animation: chat-fade-in var(--chat-motion-state) ease-out;
   }
 
   .chat-message__line.is-highlighted,
@@ -71,7 +138,6 @@
   /* Opacity preserves menu bounds and message coordinates used by search jumps. */
   .chat-feedback,
   .chat-connection-banner,
-  .chat-activity-group[open] > .chat-activity-details,
   .chat-search-filters[open] > .chat-filter-fields {
     animation: chat-fade-in var(--chat-motion-state) ease-out;
   }
@@ -124,6 +190,15 @@
 @keyframes chat-fade-in {
   from {
     opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chat-activity-merge {
+  from {
+    opacity: 0.65;
   }
   to {
     opacity: 1;

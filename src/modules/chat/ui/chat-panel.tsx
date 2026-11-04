@@ -64,7 +64,9 @@ export function ChatPanel({
       id={id}
       className="chat-panel"
       aria-labelledby={titleId}
-      hidden={!open}
+      aria-hidden={!open || undefined}
+      inert={!open}
+      data-chat-panel-open={open || undefined}
       onKeyDown={keyboard}
     >
       <header className="chat-panel-header">

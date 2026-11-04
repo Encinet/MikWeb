@@ -77,11 +77,13 @@ export function ChatActivityGroup({
   messages,
   highlighted,
   revealedId,
+  merged = false,
   formatTime,
 }: {
   messages: ChatServerMessage[];
   highlighted: string | null;
   revealedId: string | null;
+  merged?: boolean;
   formatTime: (timestamp: number) => string;
 }) {
   const t = useTranslations('chat');
@@ -138,7 +140,11 @@ export function ChatActivityGroup({
     return <ul className="chat-activity-group chat-activity-single">{lines}</ul>;
 
   return (
-    <details className="chat-activity-group" open={forcedOpen || undefined}>
+    <details
+      className="chat-activity-group"
+      data-activity-merged={merged || undefined}
+      open={forcedOpen || undefined}
+    >
       <summary>
         <ChevronDown size={13} aria-hidden="true" />
         <span className="chat-activity-summary">
@@ -184,12 +190,14 @@ export function ChatActivityGroup({
           {renderTime(firstTime, lastTime)}
         </span>
       </summary>
-      <ul
-        className="chat-activity-details"
-        aria-label={t('activity.count', { count: messages.length })}
-      >
-        {lines}
-      </ul>
+      <div className="chat-activity-disclosure">
+        <ul
+          className="chat-activity-details"
+          aria-label={t('activity.count', { count: messages.length })}
+        >
+          {lines}
+        </ul>
+      </div>
     </details>
   );
 }

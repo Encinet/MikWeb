@@ -360,8 +360,24 @@
   display: grid;
   gap: 0.4rem;
   margin: 0;
-  padding: 0.4rem 0 0.5rem;
+  padding: 0;
   list-style: none;
+}
+.chat-activity-disclosure {
+  display: grid;
+  grid-template-rows: 0fr;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.chat-activity-group[open] > .chat-activity-disclosure {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.chat-activity-disclosure > .chat-activity-details {
+  min-height: 0;
+  overflow: hidden;
+  padding-block: 0.4rem 0.5rem;
 }
 .chat-activity-line {
   display: grid;
