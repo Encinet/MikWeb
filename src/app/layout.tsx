@@ -82,7 +82,12 @@ export default async function RootLayout({
   const defaultPalette = getAccentProperties(getDailyAccentColor());
 
   return (
-    <html lang={locale} style={defaultPalette as CSSProperties} suppressHydrationWarning>
+    <html
+      lang={locale}
+      data-scroll-behavior="smooth"
+      style={defaultPalette as CSSProperties}
+      suppressHydrationWarning
+    >
       <head>
         <script>{getAccentInitializationScript()}</script>
         <meta name="theme-color" content={defaultPalette['--palette-dark-bg']} />
