@@ -19,12 +19,12 @@ import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { closeChatActionMenus } from '@/modules/chat/lib/chat-action-menu-events';
 import { focusChatConversation } from '@/modules/chat/lib/chat-conversation-focus';
 import { keepChatWorkspace } from '@/modules/chat/model/chat-connection';
+import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 import { chatWorkspaceFeedback } from '@/modules/chat/model/chat-feedback';
 import { chatInputHistory } from '@/modules/chat/model/chat-input-history';
 import { channelPlayers } from '@/modules/chat/model/chat-presence';
-
 import { CHAT_MESSAGE_MAX_LENGTH, messageConversation } from '@/modules/chat/model/chat-protocol';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
@@ -33,7 +33,6 @@ import type { ChatPreferences, ChatThread } from '@/modules/chat/model/chat-work
 import { chatThreads } from '@/modules/chat/model/chat-workspace';
 import { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
 import { useChatWorkspace } from '@/modules/chat/model/use-chat-workspace';
-import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
 import { ChatComposer } from '@/modules/chat/ui/chat-composer';
 import { ChatConnectionBanner } from '@/modules/chat/ui/chat-connection-banner';

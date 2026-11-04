@@ -179,6 +179,7 @@ export const chatServerEventSchema = z.discriminatedUnion('type', [
 ]);
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
+export type ChatServerEvent = z.infer<typeof chatServerEventSchema>;
 export type ChatPlayerMessage = z.infer<typeof playerMessageSchema>;
 export type ChatServerMessage = z.infer<typeof serverMessageSchema>;
 export type ChatContent = z.infer<typeof contentSchema>;

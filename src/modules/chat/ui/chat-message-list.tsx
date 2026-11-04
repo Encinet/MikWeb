@@ -13,6 +13,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import type {
   ChatMessage,
@@ -22,7 +23,6 @@ import type {
 import { isPassiveMessage } from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor, ChatUnread } from '@/modules/chat/model/chat-reading';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
-import type { PendingChatMessage } from '@/modules/chat/model/use-web-chat';
 import { ChatActivityGroup } from '@/modules/chat/ui/chat-activity-group';
 import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
 import type { ChatMessageActionHandlers } from '@/modules/chat/ui/chat-message-actions';
