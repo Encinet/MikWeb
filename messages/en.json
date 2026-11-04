@@ -609,6 +609,8 @@
     },
     "activity": {
       "count": "{count, plural, one {# player activity} other {# player activities}}",
+      "summary": "{count, plural, one {# activity} other {# activities}} · {players, plural, one {# player} other {# players}}",
+      "summarySingle": "{name} · {count, plural, one {# activity} other {# activities}}",
       "gameJoined": "<players></players> joined the game",
       "gameLeft": "<players></players> left the game",
       "webJoined": "<players></players> joined web chat",

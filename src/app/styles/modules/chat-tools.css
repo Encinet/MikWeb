@@ -270,13 +270,20 @@
   padding: 0;
   list-style: none;
 }
+/* Single events and expanded details reserve the same disclosure space as summaries. */
+.chat-activity-group > summary,
+.chat-activity-line {
+  padding-inline-start: 1.25rem;
+}
 .chat-activity-group > summary {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 13px auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 0.75rem;
   min-height: 32px;
   border-radius: 0.5rem;
+  line-height: 1.6;
   list-style: none;
   cursor: pointer;
 }
@@ -287,25 +294,30 @@
   display: none;
 }
 .chat-activity-group > summary > svg {
-  align-self: start;
-  margin-top: 0.25rem;
+  position: absolute;
+  inset-block-start: calc((1.6em - 13px) / 2);
+  inset-inline-start: 0;
   transform: rotate(-90deg);
 }
 .chat-activity-group[open] > summary > svg {
   transform: none;
 }
 .chat-activity-summary {
-  display: grid;
-  gap: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
   line-height: 1.6;
-  overflow-wrap: anywhere;
 }
-.chat-activity-count,
-.chat-activity-group[open] > summary > .chat-activity-summary {
-  display: none;
+.chat-activity-preview {
+  display: inline-flex;
+  flex-shrink: 0;
 }
-.chat-activity-group[open] > summary > .chat-activity-count {
-  display: inline;
+.chat-activity-summary-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .chat-activity-player {
   display: inline-flex;
@@ -325,6 +337,10 @@
   overflow: hidden;
   border-radius: 0.2rem;
   vertical-align: middle;
+}
+.chat-activity-preview > .chat-activity-avatar + .chat-activity-avatar {
+  margin-inline-start: -6px;
+  box-shadow: -2px 0 var(--chat-surface);
 }
 .chat-activity-group time {
   font-variant-numeric: tabular-nums;

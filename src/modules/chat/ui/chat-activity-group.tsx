@@ -2,44 +2,33 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Fragment } from 'react';
 import type { ChatServerMessage } from '@/modules/chat/model/chat-protocol';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
-type PresenceContent = Extract<ChatServerMessage['content'], { template: string }>;
 interface ActivityPlayer {
   name: string;
   uuid?: string;
 }
-interface PlayerSummary {
-  kind: 'players';
-  template: PresenceContent['template'];
-  players: Map<string, ActivityPlayer>;
-}
-type ActivitySummary = PlayerSummary | { kind: 'message'; message: ChatServerMessage };
 
-function summarizeActivities(messages: ChatServerMessage[]): ActivitySummary[] {
-  const summaries: ActivitySummary[] = [];
-  const players = new Map<PresenceContent['template'], PlayerSummary>();
+function activityPlayers(messages: ChatServerMessage[]): ActivityPlayer[] {
+  const players = new Map<string, ActivityPlayer>();
   for (const message of messages) {
-    if (Array.isArray(message.content)) {
-      summaries.push({ kind: 'message', message });
-      continue;
-    }
-    const { template, values } = message.content;
-    let summary = players.get(template);
-    if (!summary) {
-      summary = { kind: 'players', template, players: new Map() };
-      players.set(template, summary);
-      summaries.push(summary);
-    }
-    const player = summary.players.get(values.name);
+    const name = Array.isArray(message.content)
+      ? message.subject?.name
+      : message.content.values.name;
+    if (!name) continue;
+    const key = name.toLowerCase();
+    const player = players.get(key);
     if (!player || (!player.uuid && message.subject))
-      summary.players.set(values.name, { name: values.name, uuid: message.subject?.playerUuid });
+      players.set(key, { name, uuid: message.subject?.playerUuid });
   }
-  return summaries;
+  return [
+    ...new Map(
+      [...players.values()].map((player) => [player.uuid ?? player.name, player]),
+    ).values(),
+  ];
 }
 
 function ActivityAvatar({ name, uuid }: ActivityPlayer) {
@@ -59,7 +48,7 @@ function PlayerName({ name, uuid }: ActivityPlayer) {
   );
 }
 
-/** Summaries group player names by action; expansion preserves the full event chronology. */
+/** A bounded summary keeps quiet activity compact; expansion preserves the full chronology. */
 export function ChatActivityGroup({
   messages,
   highlighted,
@@ -76,8 +65,17 @@ export function ChatActivityGroup({
   const forcedOpen = messages.some(
     (message) => message.id === highlighted || message.id === revealedId,
   );
-  const summaries = summarizeActivities(messages);
+  const players = activityPlayers(messages);
+  const summary =
+    players.length === 1
+      ? t('activity.summarySingle', { name: players[0].name, count: messages.length })
+      : players.length > 1
+        ? t('activity.summary', { players: players.length, count: messages.length })
+        : t('activity.count', { count: messages.length });
+  const firstTime = messages[0]?.createdAt ?? 0;
   const lastTime = messages.at(-1)?.createdAt ?? 0;
+  const startTime = formatTime(firstTime);
+  const endTime = formatTime(lastTime);
   const renderActivity = (message: ChatServerMessage) =>
     Array.isArray(message.content) ? (
       <>
@@ -114,30 +112,23 @@ export function ChatActivityGroup({
   return (
     <details className="chat-activity-group" open={forcedOpen || undefined}>
       <summary>
-        <span className="chat-activity-summary">
-          {summaries.map((summary) => (
-            <span
-              key={summary.kind === 'players' ? summary.template : `message:${summary.message.id}`}
-            >
-              {summary.kind === 'players'
-                ? t.rich(`activity.${summary.template}`, {
-                    players: () =>
-                      [...summary.players.values()].map((player, index) => (
-                        <Fragment key={player.name}>
-                          {index > 0 ? ', ' : null}
-                          <PlayerName name={player.name} uuid={player.uuid} />
-                        </Fragment>
-                      )),
-                  })
-                : renderActivity(summary.message)}
-            </span>
-          ))}
-        </span>
-        <span className="chat-activity-count">
-          {t('activity.count', { count: messages.length })}
-        </span>
         <ChevronDown size={13} aria-hidden="true" />
-        <time dateTime={new Date(lastTime).toISOString()}>{formatTime(lastTime)}</time>
+        <span className="chat-activity-summary" title={summary}>
+          {players.length ? (
+            <span className="chat-activity-preview" aria-hidden="true">
+              {players.slice(0, 3).map((player) => (
+                <ActivityAvatar key={player.uuid ?? player.name} {...player} />
+              ))}
+            </span>
+          ) : null}
+          <span className="chat-activity-summary-label">{summary}</span>
+        </span>
+        <time
+          dateTime={new Date(lastTime).toISOString()}
+          title={startTime === endTime ? undefined : `${startTime} – ${endTime}`}
+        >
+          {endTime}
+        </time>
       </summary>
       <ul
         className="chat-activity-details"

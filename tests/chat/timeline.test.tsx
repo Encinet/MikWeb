@@ -135,7 +135,7 @@ test('hiding a large block of presence events keeps older conversation messages 
   assert.ok(!html.includes('查看更早消息'));
 });
 
-test('collapsed activity groups join player names by action and retain every detailed event in order', () => {
+test('collapsed activity groups bound their preview and retain every detailed event in order', () => {
   const html = renderToStaticMarkup(
     localized(
       <Timeline
@@ -161,22 +161,15 @@ test('collapsed activity groups join player names by action and retain every det
     assert.equal(groups.length, 2, 'conversation messages separate presence groups');
     assert.equal(groups[0].tagName, 'DETAILS');
     assert.equal(groups[0].hasAttribute('open'), false);
-    assert.deepEqual(
-      Array.from(
-        groups[0].querySelectorAll('summary .chat-activity-summary > span'),
-        (line) => line.textContent,
-      ),
-      [
-        'Steve, Alex 加入了游戏',
-        'Sam, Pat 退出了游戏',
-        'Taylor 加入了网页聊天',
-        'Riley 退出了网页聊天',
-      ],
+    assert.equal(
+      groups[0].querySelector('.chat-activity-summary-label')?.textContent,
+      '7 条动态 · 6 位玩家',
     );
-    const players = groups[0].querySelectorAll('summary .chat-activity-player');
+    assert.equal(groups[0].querySelectorAll('summary .chat-activity-avatar').length, 3);
+    const players = groups[0].querySelectorAll('.chat-activity-details .chat-activity-player');
     assert.deepEqual(
       Array.from(players, (player) => player.textContent),
-      ['Steve', 'Alex', 'Sam', 'Pat', 'Taylor', 'Riley'],
+      ['Steve', 'Alex', 'Sam', 'Pat', 'Taylor', 'Riley', 'Steve'],
     );
     for (const player of players) {
       const avatar = player.firstElementChild;
@@ -247,7 +240,7 @@ test('collapsed activity groups join player names by action and retain every det
   }
 });
 
-test('activity summaries use comma-space separators in English too and preserve unstructured server messages', () => {
+test('compact activity summaries support English and preserve unstructured server messages in details', () => {
   const html = renderToStaticMarkup(
     <NextIntlClientProvider locale="en" timeZone="Asia/Singapore" messages={englishTranslations}>
       <ChatActivityGroup
@@ -268,11 +261,9 @@ test('activity summaries use comma-space separators in English too and preserve 
   const window = new Window();
   try {
     window.document.body.innerHTML = html;
-    assert.deepEqual(
-      Array.from(window.document.querySelectorAll('.chat-activity-summary > span'), (line) =>
-        line.textContent.trim(),
-      ),
-      ['Alex, Steve joined the game', 'Server notice'],
+    assert.equal(
+      window.document.querySelector('.chat-activity-summary-label')?.textContent,
+      '3 activities · 2 players',
     );
     assert.ok(
       window.document
@@ -282,9 +273,91 @@ test('activity summaries use comma-space separators in English too and preserve 
     );
     assert.ok(
       window.document
-        .querySelector('.chat-activity-summary > span:last-child img')
+        .querySelector('.chat-activity-details > li:last-child img')
         ?.getAttribute('src')
         ?.includes(`/helm/${OTHER.replaceAll('-', '')}/64`),
+    );
+    assert.ok(
+      window.document
+        .querySelector('.chat-activity-details > li:last-child')
+        ?.textContent.includes('Server notice'),
+    );
+  } finally {
+    void window.happyDOM.close();
+  }
+});
+
+test('large activity summaries keep a bounded avatar preview and count repeated player activity', () => {
+  const window = new Window();
+  try {
+    for (const samePlayer of [false, true]) {
+      const messages = Array.from({ length: 200 }, (_, index) =>
+        activity(
+          `event-${index}`,
+          index % 2 ? 'webLeft' : 'webJoined',
+          samePlayer ? 'Steve' : `Player${index}`,
+          index,
+        ),
+      );
+      window.document.body.innerHTML = renderToStaticMarkup(
+        localized(
+          <ChatActivityGroup
+            messages={messages}
+            highlighted={null}
+            revealedId={null}
+            formatTime={() => '18:00'}
+          />,
+        ),
+      );
+      const summary = window.document.querySelector('summary');
+      assert.ok(summary);
+      assert.equal(
+        summary.querySelector('.chat-activity-summary-label')?.textContent,
+        samePlayer ? 'Steve · 200 条动态' : '200 条动态 · 200 位玩家',
+      );
+      assert.equal(summary.querySelectorAll('.chat-activity-avatar').length, samePlayer ? 1 : 3);
+      assert.equal(window.document.querySelectorAll('.chat-activity-line').length, 200);
+      assert.equal(window.document.querySelector('details')?.hasAttribute('open'), false);
+    }
+  } finally {
+    void window.happyDOM.close();
+  }
+});
+
+test('quiet activity spans long gaps but conversation messages and dates still separate groups', () => {
+  const window = new Window();
+  try {
+    window.document.body.innerHTML = renderToStaticMarkup(
+      localized(
+        <Timeline
+          showActivity
+          messages={[
+            activity('early', 'gameJoined', 'Alex', 1),
+            { ...activity('later', 'gameLeft', 'Alex', 2), createdAt: ACTIVITY_TIME + 600_000 },
+            message({ id: 'conversation', createdAt: ACTIVITY_TIME + 610_000, sequence: 3 }),
+            {
+              ...activity('after-chat', 'webJoined', 'Steve', 4),
+              createdAt: ACTIVITY_TIME + 620_000,
+            },
+            {
+              ...activity('next-day', 'webLeft', 'Steve', 5),
+              createdAt: ACTIVITY_TIME + 86_400_000,
+            },
+          ]}
+        />,
+      ),
+    );
+    const groups = window.document.querySelectorAll('.chat-activity-group');
+    assert.equal(groups.length, 3);
+    assert.deepEqual(
+      Array.from(groups, (group) => group.querySelectorAll('.chat-activity-line').length),
+      [2, 1, 1],
+    );
+    assert.equal(window.document.querySelectorAll('.chat-date').length, 2);
+    const times = groups[0].querySelectorAll('.chat-activity-line time');
+    assert.equal(
+      groups[0].querySelector('summary time')?.getAttribute('title'),
+      `${times[0].textContent} – ${times[1].textContent}`,
     );
   } finally {
     void window.happyDOM.close();

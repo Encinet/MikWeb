@@ -74,9 +74,7 @@ function groupMessages(messages: ChatMessage[], boundary?: string) {
         last.senderUuid === message.senderUuid &&
         last.source === message.source &&
         message.createdAt - last.createdAt < 180_000) ||
-        (isPassiveMessage(last) &&
-          isPassiveMessage(message) &&
-          message.createdAt - last.createdAt < 300_000)) &&
+        (isPassiveMessage(last) && isPassiveMessage(message))) &&
       dayKey(last.createdAt) === dayKey(message.createdAt)
     )
       groups.at(-1)?.push(message);

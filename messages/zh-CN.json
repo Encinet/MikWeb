@@ -609,6 +609,8 @@
     },
     "activity": {
       "count": "{count, plural, other {# 条玩家动态}}",
+      "summary": "{count, plural, other {# 条动态}} · {players, plural, other {# 位玩家}}",
+      "summarySingle": "{name} · {count, plural, other {# 条动态}}",
       "gameJoined": "<players></players> 加入了游戏",
       "gameLeft": "<players></players> 退出了游戏",
       "webJoined": "<players></players> 加入了网页聊天",
