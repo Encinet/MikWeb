@@ -31,7 +31,7 @@
     calc(5rem + var(--viewport-bottom-inset));
   background:
     linear-gradient(rgba(6, 12, 9, 0.78), rgba(6, 12, 9, 0.9)),
-    url("/home-hero-library.webp") center / cover no-repeat;
+    url("/images/home/hero-library.webp") center / cover no-repeat;
   isolation: isolate;
 }
 
@@ -266,7 +266,7 @@
       transparent 28rem
     ),
     radial-gradient(circle at 18% 76%, rgba(185, 130, 85, 0.24), transparent 30rem),
-    url("/home-hero-library.webp") center / cover no-repeat;
+    url("/images/home/hero-library.webp") center / cover no-repeat;
   color: #f3efe7;
   isolation: isolate;
   padding: calc(clamp(7rem, 13vw, 9.5rem) + var(--viewport-top-inset)) 0

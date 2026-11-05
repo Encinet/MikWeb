@@ -6,6 +6,7 @@ import { getLocale } from 'next-intl/server';
 import type { CSSProperties } from 'react';
 import {
   ORGANIZATION_NAME,
+  SITE_APPLE_ICON_PATH,
   SITE_DESCRIPTION,
   SITE_FAVICON_PATH,
   SITE_KEYWORDS,
@@ -23,6 +24,7 @@ import {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
     default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,
@@ -32,10 +34,16 @@ export const metadata: Metadata = {
   authors: [{ name: `${ORGANIZATION_NAME} Team` }],
   creator: ORGANIZATION_NAME,
   publisher: 'Mik',
+  appleWebApp: {
+    title: SITE_NAME,
+    statusBarStyle: 'black-translucent',
+  },
   icons: {
-    icon: [{ url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' }],
-    shortcut: SITE_FAVICON_PATH,
-    apple: [{ url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' }],
+    icon: [
+      { url: SITE_FAVICON_PATH, sizes: '16x16 32x32 48x48', type: 'image/x-icon' },
+      { url: SITE_LOGO_PATH, sizes: 'any', type: 'image/svg+xml' },
+    ],
+    apple: [{ url: SITE_APPLE_ICON_PATH, sizes: '180x180', type: 'image/png' }],
   },
   robots: {
     index: true,
@@ -90,12 +98,6 @@ export default async function RootLayout({
     >
       <head>
         <script>{getAccentInitializationScript()}</script>
-        <meta name="theme-color" content={defaultPalette['--palette-dark-bg']} />
-        <meta name="color-scheme" content="dark light" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-title" content="Mik Server" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="apple-touch-icon" href={SITE_LOGO_PATH} />
       </head>
       <body className="app-body">
         {children}

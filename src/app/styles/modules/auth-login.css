@@ -29,7 +29,7 @@
       rgba(8, 12, 11, 0.52) 52%,
       rgba(8, 12, 11, 0.72) 100%
     ),
-    url("/home-hero-library.webp") center / cover no-repeat;
+    url("/images/home/hero-library.webp") center / cover no-repeat;
 }
 
 .auth-login-stage {

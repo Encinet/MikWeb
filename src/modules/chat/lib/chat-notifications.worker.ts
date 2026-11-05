@@ -2,6 +2,7 @@
 
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey, readChatDestination } from '@/modules/chat/model/chat-destination';
+import { SITE_NOTIFICATION_ICON_PATH } from '@/shared/config/site-config';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -233,7 +234,7 @@ worker.addEventListener('message', (event) => {
       if (expectedRevision !== revision || !currentNotification(data, client.id)) return;
       await worker.registration.showNotification(data.title, {
         body: data.body,
-        icon: '/mik-logo.svg',
+        icon: SITE_NOTIFICATION_ICON_PATH,
         tag: `mik-chat:${key}`,
         data: {
           owner: data.owner,

@@ -17,12 +17,15 @@ import { ThemeProvider } from '@/site/providers/theme-provider';
 import { ViewportMetrics } from '@/site/providers/viewport-metrics';
 import { buildPageMetadata } from '@/site/seo/build-page-metadata';
 import StructuredData from '@/site/structured-data/ui/structured-data';
+import { getAccentProperties, getDailyAccentColor } from '@/site/theme/lib/accent-color';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
 export function generateViewport(): Viewport {
+  const defaultPalette = getAccentProperties(getDailyAccentColor());
+
   return {
     width: 'device-width',
     initialScale: 1,
@@ -30,6 +33,8 @@ export function generateViewport(): Viewport {
     userScalable: true,
     viewportFit: 'cover',
     interactiveWidget: 'resizes-content',
+    themeColor: defaultPalette['--palette-dark-bg'],
+    colorScheme: 'dark light',
   };
 }
 
@@ -48,6 +53,7 @@ export async function generateMetadata({
       title: messages.metadata.title,
       description: messages.metadata.description,
     }),
+    manifest: `/${locale}/manifest.webmanifest`,
     keywords: [
       'Minecraft',
       'Server',

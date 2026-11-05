@@ -1,7 +1,11 @@
 {
   "metadata": {
     "title": "Mik Server - Creative Casual Server",
-    "description": "A creative casual Minecraft server that allows any mods, focused on building creation"
+    "description": "A creative casual Minecraft server that allows any mods, focused on building creation",
+    "screenshots": {
+      "desktop": "Mik Casual desktop home page with server information and player tools",
+      "mobile": "Mik Casual mobile home page with server information, map and guide links"
+    }
   },
   "common": {
     "states": {

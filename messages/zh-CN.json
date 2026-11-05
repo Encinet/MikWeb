@@ -1,7 +1,11 @@
 {
   "metadata": {
     "title": "Mik 米客服务器 - 创造休闲服务器",
-    "description": "一个创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作"
+    "description": "一个创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作",
+    "screenshots": {
+      "desktop": "Mik Casual 桌面首页，展示服务器介绍和玩家常用入口",
+      "mobile": "Mik Casual 手机首页，展示服务器介绍和地图、指南入口"
+    }
   },
   "common": {
     "states": {

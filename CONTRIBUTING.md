@@ -88,6 +88,25 @@ src/
 - 读取密钥或只应在服务端执行的模块使用 `server-only` 标记；命令行也要使用的内容解析器保留在 `server/`，不引入客户端组件
 - 不在 `src/` 里放 Markdown 文档
 
+## 静态资源
+
+| 路径 | 用途 | 维护方式 |
+|------|------|------|
+| `public/brand/mik/logo.svg` | Mik 品牌原稿，供页面和 SVG favicon 使用 | 修改原稿 |
+| `public/brand/mik/icon-192.png`、`icon-512.png` | 安装图标；192px 图标同时用于聊天通知 | 从 Logo 导出对应尺寸 |
+| `public/brand/mik/icon-maskable-1024.png` | 1024px 不透明自适应图标，供 Android 和 macOS 等平台裁切 | 保持文字在中心直径 80% 的圆形安全区内 |
+| `public/brand/mik/favicon.ico` | 浏览器图标，包含 16/32/48px 图标 | 从 Logo 导出对应尺寸 |
+| `public/brand/mik/apple-touch-icon.png` | 180px Apple Touch Icon | 从 Logo 导出对应尺寸 |
+| `public/brand/encinet/logo.webp` | Encinet 团队 Logo | 修改原稿 |
+| `public/images/home/`、`public/images/map/` | 按用途归档的页面图片 | 修改原图及引用 |
+| `public/images/app/<locale>/desktop.png`、`mobile.png` | 安装预览截图，分别为 1440×900 和 390×844 | 从对应语言的真实首页截取 PNG |
+
+修改 Mik Logo 时，同步导出并更新以上五个 ICO/PNG 文件，连同原稿一起提交。安装预览使用真实界面截图，桌面与手机截图分别标记为 `wide` 和 `narrow`，并提供对应语言的无障碍描述；首页外观变更时同步更新截图。
+
+品牌资源的公开路径集中在 `src/shared/config/site-config.ts`，页面、manifest、结构化数据和通知共用这些配置。根 layout 的 Metadata API 声明应用名称、ICO、SVG 和 Apple 图标，语言 layout 链接对应的 manifest。`src/app/[locale]/manifest.webmanifest/route.ts` 在构建时生成两种语言的安装信息；装配逻辑和分享图片的渲染实现归入 `src/site/seo/`，`opengraph-image.tsx` 等路由入口保留在 `src/app/`。
+
+两种语言的 manifest 共用 `id: '/'` 和 `scope: '/'`，应用名称统一为 `Mik Casual`；`start_url`、描述、快捷入口和截图随语言变化。快捷入口复用聊天、地图和 Wiki 的现有翻译，截图描述放在 `metadata.screenshots`。
+
 ## 聊天模块的职责边界
 
 聊天实现保留在 `src/modules/chat/`，按下面的职责维护：

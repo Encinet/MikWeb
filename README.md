@@ -33,6 +33,12 @@ bun dev
 
 页面启用 `viewport-fit=cover`，通过 `env(safe-area-inset-*)` 处理四边安全区域。固定聊天界面和共享弹窗使用 `VisualViewport` 的可见尺寸与偏移应对键盘、地址栏和横竖屏变化；缺少该接口时回退到窗口尺寸，首屏 CSS 按 `dvh/svh/lvh → vh` 降级。浮动菜单在安全区内定位，页面保留手动缩放。
 
+## 网页应用安装
+
+安装信息由 `/zh-CN/manifest.webmanifest` 和 `/en/manifest.webmanifest` 提供，两种语言共用应用标识 `/` 和运行范围 `/`，名称统一为 `Mik Casual`，启动页保持安装时的语言。
+
+在支持相应能力的平台上，安装后可从图标的快捷菜单进入网页聊天、世界地图和游戏指南。manifest 提供普通图标、不透明自适应图标，以及中英文各一组桌面和手机真实界面截图，供平台展示安装预览。
+
 ## 结构
 
 源码统一放在 `src/`：
@@ -50,7 +56,7 @@ src/
 - `site`：站点壳层与全局能力，如 header、footer、background、seo、providers
 - `shared`：共享基础能力和站点常量（`shared/config/site-config.ts`）
 
-协作规则、命名约定和 Wiki 规范见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+Logo、favicon 和安装图标集中在 `public/brand/`，页面图片位于 `public/images/`，由 Metadata API 声明图标标签。资源维护、协作规则、命名约定和 Wiki 规范见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ## 项目路由
 

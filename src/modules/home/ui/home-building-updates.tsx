@@ -64,7 +64,7 @@ export function HomeBuildingUpdates() {
       >
         <Link href="/map" className="home-world-map">
           <Image
-            src="/world-map-preview.webp"
+            src="/images/map/world-preview.webp"
             alt=""
             fill
             sizes="(max-width: 639px) 100vw, 45vw"

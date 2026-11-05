@@ -68,7 +68,7 @@
                 "selector": {
                   "kind": "objectLiteralProperty"
                 },
-                "match": "Webkit[A-Za-z]+|short_name|start_url|background_color|theme_color|query-input|Accept|(.*)"
+                "match": "Webkit[A-Za-z]+|short_name|start_url|background_color|theme_color|form_factor|query-input|Accept|(.*)"
               }
             ]
           }
