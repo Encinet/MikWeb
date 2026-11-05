@@ -9,11 +9,11 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
+  formatBuildingDate,
   getBuildingDescription,
   getBuildingName,
-  passthroughImageLoader,
 } from '@/modules/building/lib/building-view-helpers';
-import type { Building, LocalizedText } from '@/modules/building/model/building-types';
+import type { Building } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
 import {
   BuilderNames,
@@ -27,11 +27,8 @@ interface BuildingDetailsDialogProps {
   activeImage: string | undefined;
   building: Building | null;
   currentImageIndex: number;
-  formatDate: (timestamp: number | string) => string;
-  getTagKey: (building: Building, tag: LocalizedText) => string;
   imageLoading: boolean;
   imageTransitionDirection: -1 | 1;
-  imageUrls: string[];
   isImageError: (imageUrl: string) => boolean;
   locale: string;
   mounted: boolean;
@@ -40,7 +37,7 @@ interface BuildingDetailsDialogProps {
   onImageLoad: () => void;
   onNextImage: () => void;
   onPreviousImage: () => void;
-  onSelectImage: (imageIndex: number, imageUrls: string[]) => void;
+  onSelectImage: (imageIndex: number) => void;
   t: BuildingsTranslator;
 }
 
@@ -48,11 +45,8 @@ export function BuildingDetailsDialog({
   activeImage,
   building,
   currentImageIndex,
-  formatDate,
-  getTagKey,
   imageLoading,
   imageTransitionDirection,
-  imageUrls,
   isImageError,
   locale,
   mounted,
@@ -70,9 +64,8 @@ export function BuildingDetailsDialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   useModalInteraction(dialogRef, mounted && Boolean(building), onClose);
   const shouldReduceMotion = useReducedMotion();
-  const buildingKey = building
-    ? `${building.coordinates.world}:${building.coordinates.x}:${building.coordinates.y}:${building.coordinates.z}:${building.buildDate}`
-    : null;
+  const buildingKey = building?.id ?? null;
+  const imageUrls = building?.images ?? [];
   const [expandedState, setExpandedState] = useState<{
     buildingKey: string | null;
     expanded: boolean;
@@ -151,7 +144,6 @@ export function BuildingDetailsDialog({
                 className="building-archive-stage-image"
               >
                 <Image
-                  loader={passthroughImageLoader}
                   src={activeImage}
                   alt={buildingName}
                   fill
@@ -239,7 +231,7 @@ export function BuildingDetailsDialog({
                       aria-hidden="true"
                     />
                     <span className="building-archive-info-bar__meta-value">
-                      {formatDate(building.buildDate)}
+                      {formatBuildingDate(building.buildDate, locale)}
                     </span>
                   </span>
                 </div>
@@ -259,7 +251,7 @@ export function BuildingDetailsDialog({
                         <button
                           key={url}
                           type="button"
-                          onClick={() => onSelectImage(i, imageUrls)}
+                          onClick={() => onSelectImage(i)}
                           aria-label={t('dialog.currentImage', {
                             current: i + 1,
                             total: imageUrls.length,
@@ -271,7 +263,6 @@ export function BuildingDetailsDialog({
                             <span>{i + 1}</span>
                           ) : (
                             <Image
-                              loader={passthroughImageLoader}
                               src={url}
                               alt=""
                               fill
@@ -327,12 +318,7 @@ export function BuildingDetailsDialog({
                   </div>
                   {building.tags && building.tags.length > 0 ? (
                     <div className="building-archive-info-expanded__tags">
-                      <BuildingTags
-                        building={building}
-                        getTagKey={getTagKey}
-                        locale={locale}
-                        compact
-                      />
+                      <BuildingTags building={building} locale={locale} compact />
                     </div>
                   ) : null}
                 </div>

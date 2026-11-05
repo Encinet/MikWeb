@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import type { Building } from '@/modules/building/model/building-types';
+import type { BuildingInput } from '@/modules/building/model/building-types';
 import {
   createBuildingSubmissionImageDraft,
   uploadBuildingSubmissionImageDrafts,
@@ -318,7 +318,7 @@ export function useBuildingSubmissionForm() {
       return;
     }
 
-    let payload: Building;
+    let payload: BuildingInput;
     try {
       payload = buildBuildingSubmissionPayload(
         form,

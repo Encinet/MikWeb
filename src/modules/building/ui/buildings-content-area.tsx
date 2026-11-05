@@ -4,10 +4,7 @@ import type { useTranslations } from 'next-intl';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry from 'react-masonry-css';
 
-import {
-  BUILDING_MASONRY_BREAKPOINT_COLUMNS,
-  getBuildingId,
-} from '@/modules/building/lib/building-catalog';
+import { BUILDING_MASONRY_BREAKPOINT_COLUMNS } from '@/modules/building/lib/building-catalog';
 import type { Building } from '@/modules/building/model/building-types';
 import { BuildingCard } from '@/modules/building/ui/building-card';
 import {
@@ -101,7 +98,7 @@ export function BuildingsContentArea({
       >
         {buildings.map((building) => (
           <BuildingCard
-            key={getBuildingId(building)}
+            key={building.id}
             building={building}
             isImageError={isImageError}
             locale={locale}

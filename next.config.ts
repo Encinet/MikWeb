@@ -27,20 +27,6 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'mineskin.eu',
-      },
-      {
-        protocol: 'https',
-        hostname: 'minotar.net',
-      },
-      {
-        protocol: 'https',
-        hostname: 'mc-heads.net',
-      },
-    ],
     minimumCacheTTL: 864000, // 10 days for optimized site images
   },
   experimental: {

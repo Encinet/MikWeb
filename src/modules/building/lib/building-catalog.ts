@@ -25,23 +25,6 @@ export function isBuildingSortKey(value: string): value is BuildingSortKey {
   return BUILDING_SORT_KEYS.some((sortKey) => sortKey === value);
 }
 
-export function getBuildingId(building: Building): string {
-  const hashSource = `${building.coordinates.world}-${building.coordinates.x}-${building.coordinates.y}-${building.coordinates.z}-${building.buildDate}-${building.builders.map((builder) => builder.uuid).join('-')}`;
-  let hash = 0;
-
-  for (let index = 0; index < hashSource.length; index += 1) {
-    const character = hashSource.charCodeAt(index);
-    hash = (hash << 5) - hash + character;
-    hash &= hash;
-  }
-
-  return Math.abs(hash).toString(36);
-}
-
-export function getBuildingImages(building: Building): string[] {
-  return building.images;
-}
-
 export function filterBuildings(
   buildings: Building[],
   buildingFilter: BuildingFilterId,

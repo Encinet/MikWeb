@@ -3,8 +3,6 @@ export interface AnnouncementItem {
   timestamp: string;
 }
 
-export type AnnouncementsApiResponse = AnnouncementItem[];
-
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }

@@ -3,7 +3,7 @@
 import { CheckCircle, Copy, MapPin, User } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
 import { getBuildingSourceNotes } from '@/modules/building/lib/building-view-helpers';
-import type { Building, LocalizedText } from '@/modules/building/model/building-types';
+import type { Building } from '@/modules/building/model/building-types';
 import { getLocalizedText, sortBuildersByWeight } from '@/modules/building/model/building-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
@@ -53,12 +53,11 @@ export function BuildingTypeBadge({ buildType, compact = false, t }: BuildingTyp
 
 interface BuildingTagsProps {
   building: Building;
-  getTagKey: (building: Building, tag: LocalizedText) => string;
   locale: string;
   compact?: boolean;
 }
 
-export function BuildingTags({ building, getTagKey, locale, compact = false }: BuildingTagsProps) {
+export function BuildingTags({ building, locale, compact = false }: BuildingTagsProps) {
   if (!building.tags || building.tags.length === 0) {
     return null;
   }
@@ -67,7 +66,7 @@ export function BuildingTags({ building, getTagKey, locale, compact = false }: B
     <div className={`flex flex-wrap gap-2 ${compact ? 'mb-3' : ''}`}>
       {building.tags.map((tag) => (
         <span
-          key={getTagKey(building, tag)}
+          key={`${building.id}:${getLocalizedText(tag, locale)}`}
           className={
             compact
               ? 'rounded-full px-2.5 py-1 text-xs font-medium'

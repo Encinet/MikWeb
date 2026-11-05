@@ -3,11 +3,7 @@
 import { Building2, Images, MapPin } from 'lucide-react';
 import Image from 'next/image';
 
-import { getBuildingImages } from '@/modules/building/lib/building-catalog';
-import {
-  getBuildingName,
-  passthroughImageLoader,
-} from '@/modules/building/lib/building-view-helpers';
+import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
 import { BuilderSummary } from '@/modules/building/ui/building-metadata';
@@ -29,7 +25,7 @@ export function BuildingCard({
   onOpen,
   t,
 }: BuildingCardProps) {
-  const buildingImages = getBuildingImages(building);
+  const buildingImages = building.images;
   const coverImage = buildingImages.find((imageUrl) => !isImageError(imageUrl));
   const buildingName = getBuildingName(building, locale);
 
@@ -38,7 +34,6 @@ export function BuildingCard({
       <div className="building-archive-card__media">
         {coverImage ? (
           <Image
-            loader={passthroughImageLoader}
             src={coverImage}
             alt={buildingName}
             fill

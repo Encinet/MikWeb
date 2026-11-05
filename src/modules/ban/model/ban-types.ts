@@ -8,8 +8,6 @@ export interface BanItem {
   isPermanent: boolean;
 }
 
-export type BansApiResponse = BanItem[];
-
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }

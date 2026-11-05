@@ -13,6 +13,14 @@ export function getBuildingSourceNotes(building: Building, locale: string): stri
   return getLocalizedText(building.source?.notes, locale);
 }
 
-export function passthroughImageLoader({ src }: { src: string }): string {
-  return src;
+export function formatBuildingDate(value: string, locale: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(locale, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC',
+      });
 }

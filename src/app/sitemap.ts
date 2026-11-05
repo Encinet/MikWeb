@@ -1,13 +1,9 @@
 import type { MetadataRoute } from 'next';
 
-import { getLocalizedText, isBuildingArray } from '@/modules/building/model/building-types';
-import { dataApiUrl } from '@/shared/api/data-api-url';
-import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { SITE_URL } from '@/shared/config/site-config';
 import { routing } from '@/shared/i18n/routing';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Static pages
+export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     '',
     '/buildings',
@@ -19,48 +15,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/mcp',
   ];
 
-  const locales = routing.locales;
-
-  // Generate URLs for all locales
-  const urls: MetadataRoute.Sitemap = [];
-
-  for (const locale of locales) {
-    for (const page of staticPages) {
-      urls.push({
-        url: `${SITE_URL}/${locale}${page}`,
-        lastModified: new Date(),
-        changeFrequency: page === '' ? 'daily' : 'weekly',
-        priority: page === '' ? 1 : 0.8,
-      });
-    }
-  }
-
-  // Fetch buildings for dynamic pages
-  const result = await fetchValidatedJson({
-    url: dataApiUrl('/buildings'),
-    validate: isBuildingArray,
-    timeoutMs: 15_000,
-    fallbackErrorMessage: 'Failed to load buildings for sitemap',
+  return staticPages.flatMap((page) => {
+    const languages = Object.fromEntries(
+      routing.locales.map((locale) => [locale, `${SITE_URL}/${locale}${page}`]),
+    );
+    return routing.locales.map((locale) => ({
+      url: languages[locale],
+      alternates: { languages },
+      changeFrequency: page === '' ? 'daily' : 'weekly',
+      priority: page === '' ? 1 : 0.8,
+    }));
   });
-
-  if (result.status === 'success') {
-    for (const locale of locales) {
-      result.data.forEach((building) => {
-        const buildingAnchor = encodeURIComponent(getLocalizedText(building.name, 'en'));
-        const buildDate = building.buildDate ? new Date(building.buildDate) : new Date();
-        urls.push({
-          url: `${SITE_URL}/${locale}/buildings#${buildingAnchor}`,
-          lastModified: buildDate,
-          changeFrequency: 'monthly',
-          priority: 0.6,
-        });
-      });
-    }
-  } else if (result.status === 'network-error') {
-    console.error('Failed to fetch buildings for sitemap:', result.cause);
-  } else {
-    console.error(result.error);
-  }
-
-  return urls;
 }

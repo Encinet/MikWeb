@@ -5,13 +5,8 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect } from 'react';
-import { getBuildingId, sortBuildings } from '@/modules/building/lib/building-catalog';
-import {
-  getBuildingName,
-  passthroughImageLoader,
-} from '@/modules/building/lib/building-view-helpers';
-import type { Building, LocalizedText } from '@/modules/building/model/building-types';
-import { getLocalizedText } from '@/modules/building/model/building-types';
+import { sortBuildings } from '@/modules/building/lib/building-catalog';
+import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import { useBuildingDialog } from '@/modules/building/model/use-building-dialog';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
@@ -42,14 +37,6 @@ export function HomeBuildingUpdates() {
 
   const recentBuildings = sortBuildings(buildings, 'date-desc', locale).slice(0, 2);
   const isPending = lastUpdatedAt === null && !error;
-  const formatDate = (timestamp: number | string) => {
-    const date = new Date(typeof timestamp === 'number' ? timestamp * 1000 : timestamp);
-    return Number.isNaN(date.getTime())
-      ? String(timestamp)
-      : date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
-  };
-  const getTagKey = (building: Building, tag: LocalizedText) =>
-    `${getBuildingId(building)}:${getLocalizedText(tag, locale)}`;
 
   return (
     <section className="home-building-section" aria-labelledby="home-buildings-title">
@@ -86,7 +73,7 @@ export function HomeBuildingUpdates() {
             const cover = building.images.find((url) => !dialog.isImageError(url));
             return (
               <button
-                key={getBuildingId(building)}
+                key={building.id}
                 type="button"
                 className="home-building-preview"
                 onClick={() => dialog.open(building)}
@@ -96,7 +83,6 @@ export function HomeBuildingUpdates() {
                 <span className="home-building-preview__image">
                   {cover ? (
                     <Image
-                      loader={passthroughImageLoader}
                       src={cover}
                       alt=""
                       fill
@@ -146,11 +132,8 @@ export function HomeBuildingUpdates() {
           activeImage={dialog.activeImage}
           building={dialog.building}
           currentImageIndex={dialog.imageIndex}
-          formatDate={formatDate}
-          getTagKey={getTagKey}
           imageLoading={dialog.loading}
           imageTransitionDirection={dialog.direction}
-          imageUrls={dialog.images}
           isImageError={dialog.isImageError}
           locale={locale}
           mounted={mounted}

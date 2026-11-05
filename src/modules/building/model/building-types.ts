@@ -1,6 +1,8 @@
 import type { PlayerIdentity } from '@/modules/player/model/player-types';
 import { isPlayerIdentity } from '@/modules/player/model/player-types';
 
+const BUILDING_ID_RE = /^[0-9a-f]{32}$/i;
+
 export type BuildType = 'original' | 'derivative' | 'replica';
 
 export interface Builder extends PlayerIdentity {
@@ -24,7 +26,7 @@ export interface BuildingSource {
   notes?: LocalizedText;
 }
 
-export interface Building {
+export interface BuildingInput {
   name: LocalizedText;
   description: LocalizedText;
   coordinates: Coordinates;
@@ -36,7 +38,9 @@ export interface Building {
   source?: BuildingSource | null;
 }
 
-export type BuildingsApiResponse = Building[];
+export interface Building extends BuildingInput {
+  readonly id: string;
+}
 
 export interface BuildingsContextValue {
   buildings: Building[];
@@ -104,7 +108,7 @@ export function isBuildingSource(value: unknown): value is BuildingSource {
   );
 }
 
-export function isBuilding(value: unknown): value is Building {
+export function isBuildingInput(value: unknown): value is BuildingInput {
   return (
     isObjectRecord(value) &&
     isLocalizedText(value.name) &&
@@ -121,6 +125,14 @@ export function isBuilding(value: unknown): value is Building {
       (Array.isArray(value.tags) && value.tags.every(isLocalizedText))) &&
     isBuildingSource(value.source)
   );
+}
+
+export function isBuilding(value: unknown): value is Building {
+  return isObjectRecord(value) && isBuildingId(value.id) && isBuildingInput(value);
+}
+
+export function isBuildingId(value: unknown): value is string {
+  return typeof value === 'string' && BUILDING_ID_RE.test(value);
 }
 
 export function isBuildingArray(value: unknown): value is Building[] {

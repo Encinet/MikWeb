@@ -1,4 +1,4 @@
-import type { Building } from '@/modules/building/model/building-types';
+import type { BuildingInput } from '@/modules/building/model/building-types';
 import { isWorldName } from '@/modules/building/model/building-types';
 import type {
   BuilderDraft,
@@ -12,7 +12,7 @@ export function buildBuildingSubmissionPayload(
   builders: BuilderDraft[],
   tags: BuildingSubmissionTagDraft[],
   imageUrls: string[],
-): Building {
+): BuildingInput {
   const required = [
     form.nameZh,
     form.nameEn,
@@ -78,7 +78,7 @@ function buildRequiredSource({
   sourceLink: string;
   sourceNoteEn: string;
   sourceNoteZh: string;
-}): NonNullable<Building['source']> {
+}): NonNullable<BuildingInput['source']> {
   const originalAuthor = sourceAuthor.trim();
   const originalLink = sourceLink.trim();
   const zhNote = sourceNoteZh.trim();

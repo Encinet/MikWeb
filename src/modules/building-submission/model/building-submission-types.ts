@@ -1,5 +1,5 @@
-import type { Building } from '@/modules/building/model/building-types';
-import { isBuilding } from '@/modules/building/model/building-types';
+import type { BuildingInput } from '@/modules/building/model/building-types';
+import { isBuildingId, isBuildingInput } from '@/modules/building/model/building-types';
 
 export interface BuildingSubmissionImage {
   url: string;
@@ -20,7 +20,7 @@ export interface BuildingSubmission {
   submitterUuid: string;
   submitterName: string;
   submitterRole: string;
-  payload: Building;
+  payload: BuildingInput;
   images: BuildingSubmissionImage[];
   reviewer?: string;
   reviewNote?: string;
@@ -57,19 +57,19 @@ export function isBuildingSubmissionImage(value: unknown): value is BuildingSubm
 export function isBuildingSubmission(value: unknown): value is BuildingSubmission {
   return (
     isObjectRecord(value) &&
-    typeof value.id === 'string' &&
+    isBuildingId(value.id) &&
     (value.status === 'pending' || value.status === 'approved' || value.status === 'rejected') &&
     typeof value.submitterUuid === 'string' &&
     typeof value.submitterName === 'string' &&
     typeof value.submitterRole === 'string' &&
-    isBuilding(value.payload) &&
+    isBuildingInput(value.payload) &&
     Array.isArray(value.images) &&
     value.images.every(isBuildingSubmissionImage) &&
     (value.reviewer === undefined || typeof value.reviewer === 'string') &&
     (value.reviewNote === undefined || typeof value.reviewNote === 'string') &&
     (value.rejectedAt === undefined || typeof value.rejectedAt === 'string') &&
     (value.expiresAt === undefined || typeof value.expiresAt === 'string') &&
-    (value.buildingId === undefined || typeof value.buildingId === 'string') &&
+    (value.buildingId === undefined || isBuildingId(value.buildingId)) &&
     typeof value.createdAt === 'string' &&
     typeof value.updatedAt === 'string'
   );
