@@ -2,13 +2,24 @@ import Image from 'next/image';
 import {
   ORGANIZATION_NAME,
   SITE_LOGO_PATH,
-  SITE_SOCIAL_PREVIEW_COPY,
+  SITE_NAME,
   SITE_URL,
 } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 
+const PRINT_HEADER_COPY = {
+  'zh-CN': {
+    brand: 'Mik 米客服务器',
+    headline: '创造休闲 Minecraft 服务器',
+  },
+  en: {
+    brand: SITE_NAME,
+    headline: 'Creative Casual Minecraft Server',
+  },
+} as const;
+
 export function PrintHeader({ locale }: { locale: AppLocale }) {
-  const brand = SITE_SOCIAL_PREVIEW_COPY[locale];
+  const brand = PRINT_HEADER_COPY[locale];
 
   return (
     <header className="print-site-header">

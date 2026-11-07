@@ -20,9 +20,6 @@ interface BuildingsContentAreaProps {
   isLoading: boolean;
   error: string | null;
   filteredCount: number;
-  isImageError: (url: string) => boolean;
-  onImageError: (url: string) => void;
-  onOpenBuilding: (building: Building) => void;
   loadMore: () => void;
   locale: string;
   t: BuildingsTranslator;
@@ -38,9 +35,6 @@ export function BuildingsContentArea({
   isLoading,
   error,
   filteredCount,
-  isImageError,
-  onImageError,
-  onOpenBuilding,
   loadMore,
   locale,
   t,
@@ -97,15 +91,7 @@ export function BuildingsContentArea({
         columnClassName="building-archive-masonry__column"
       >
         {buildings.map((building) => (
-          <BuildingCard
-            key={building.id}
-            building={building}
-            isImageError={isImageError}
-            locale={locale}
-            onImageError={onImageError}
-            onOpen={onOpenBuilding}
-            t={t}
-          />
+          <BuildingCard key={building.id} building={building} locale={locale} t={t} />
         ))}
       </Masonry>
     </InfiniteScroll>

@@ -100,10 +100,13 @@ src/
 | `public/brand/encinet/logo.webp` | Encinet 团队 Logo | 修改原稿 |
 | `public/images/home/`、`public/images/map/` | 按用途归档的页面图片 | 修改原图及引用 |
 | `public/images/app/<locale>/desktop.png`、`mobile.png` | 安装预览截图，分别为 1440×900 和 390×844 | 从对应语言的真实首页截取 PNG |
+| `public/fonts/` | 服务端分享图字体 | 更新字体时保留同目录许可证 |
 
 修改 Mik Logo 时，同步导出并更新以上五个 ICO/PNG 文件，连同原稿一起提交。安装预览使用真实界面截图，桌面与手机截图分别标记为 `wide` 和 `narrow`，并提供对应语言的无障碍描述；首页外观变更时同步更新截图。
 
-品牌资源的公开路径集中在 `src/shared/config/site-config.ts`，页面、manifest、结构化数据和通知共用这些配置。根 layout 的 Metadata API 声明应用名称、ICO、SVG 和 Apple 图标，语言 layout 链接对应的 manifest。`src/app/[locale]/manifest.webmanifest/route.ts` 在构建时生成两种语言的安装信息；装配逻辑和分享图片的渲染实现归入 `src/site/seo/`，`opengraph-image.tsx` 等路由入口保留在 `src/app/`。
+品牌资源的公开路径集中在 `src/shared/config/site-config.ts`，页面、manifest、结构化数据和通知共用这些配置。根 layout 的 Metadata API 声明应用名称、ICO、SVG 和 Apple 图标，语言 layout 链接对应的 manifest。`src/app/[locale]/manifest.webmanifest/route.ts` 在构建时生成两种语言的安装信息；metadata 装配归入 `src/site/seo/`，分享图实现集中在其 `social-image/` 目录，`opengraph-image.tsx` 等路由入口保留在 `src/app/`。
+
+页面路径和 SEO 文案配置集中在 `src/site/seo/site-pages.ts`。
 
 两种语言的 manifest 共用 `id: '/'` 和 `scope: '/'`，应用名称统一为 `Mik Casual`；`start_url`、描述、快捷入口和截图随语言变化。快捷入口复用聊天、地图和 Wiki 的现有翻译，截图描述放在 `metadata.screenshots`。
 

@@ -4,90 +4,60 @@ import { useState } from 'react';
 
 import type { Building } from '@/modules/building/model/building-types';
 
-export interface BuildingDialogState {
-  building: Building | null;
+export interface BuildingGalleryState {
   imageIndex: number;
   direction: -1 | 1;
   loading: boolean;
   activeImage: string | undefined;
   isImageError: (url: string) => boolean;
   handleImageError: (url: string) => void;
-  handleImageLoad: () => void;
+  handleImageLoad: (url: string) => void;
   handleSelectImage: (index: number, dir?: -1 | 1) => void;
-  open: (b: Building) => void;
-  close: () => void;
   next: () => void;
   prev: () => void;
 }
 
-export function useBuildingDialog(): BuildingDialogState {
-  const [building, setBuilding] = useState<Building | null>(null);
+export function useBuildingGallery(building: Building): BuildingGalleryState {
   const [imageIndex, setImageIndex] = useState(0);
   const [direction, setDirection] = useState<-1 | 1>(1);
-  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Set<string>>(new Set());
 
-  const images = building?.images ?? [];
+  const images = building.images;
   const activeImage = images[imageIndex];
+  const loading = Boolean(activeImage && !loaded.has(activeImage) && !errors.has(activeImage));
 
   const isImageError = (url: string) => errors.has(url);
 
   const handleImageError = (url: string) => {
     setErrors((prev) => new Set(prev).add(url));
-    if (url === activeImage) setLoading(false);
   };
 
-  const handleImageLoad = () => {
-    setLoading(false);
-  };
-
-  const syncImageLoading = (url: string | undefined) => {
-    if (!url || errors.has(url)) {
-      setLoading(false);
-      return;
-    }
-
-    const image = new globalThis.Image();
-    image.src = url;
-    setLoading(!image.complete);
+  const handleImageLoad = (url: string) => {
+    setLoaded((previous) => new Set(previous).add(url));
   };
 
   const handleSelectImage = (index: number, dir: -1 | 1 = index >= imageIndex ? 1 : -1) => {
-    syncImageLoading(images[index]);
+    if (!Number.isInteger(index) || index < 0 || index >= images.length) return;
     setDirection(dir);
     setImageIndex(index);
   };
 
-  const open = (b: Building) => {
-    syncImageLoading(b.images[0]);
-    setBuilding(b);
-    setDirection(1);
-    setImageIndex(0);
-  };
-
-  const close = () => {
-    setBuilding(null);
-    setLoading(false);
-    setDirection(1);
-    setImageIndex(0);
-  };
-
   const next = () => {
-    if (building && images.length > 0) {
+    if (images.length > 0) {
       const nextIndex = (imageIndex + 1) % images.length;
       handleSelectImage(nextIndex, 1);
     }
   };
 
   const prev = () => {
-    if (building && images.length > 0) {
+    if (images.length > 0) {
       const prevIndex = (imageIndex - 1 + images.length) % images.length;
       handleSelectImage(prevIndex, -1);
     }
   };
 
   return {
-    building,
     imageIndex,
     direction,
     loading,
@@ -96,8 +66,6 @@ export function useBuildingDialog(): BuildingDialogState {
     handleImageError,
     handleImageLoad,
     handleSelectImage,
-    open,
-    close,
     next,
     prev,
   };

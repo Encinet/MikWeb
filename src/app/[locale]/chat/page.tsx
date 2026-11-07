@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
 import { ChatPage } from '@/modules/chat/ui/chat-page';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
-import { buildPageMetadata } from '@/site/seo/build-page-metadata';
+import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
 import { ThemePreferences } from '@/site/theme/ui/theme-preferences';
 
 export async function generateMetadata({
@@ -12,14 +11,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const t = await getTranslations({ locale, namespace: 'chat' });
   return {
-    ...buildPageMetadata({
-      locale,
-      title: t('title'),
-      description: t('description'),
-      pathname: '/chat',
-    }),
+    ...(await generateSitePageMetadata(locale, 'chat')),
     robots: { index: false, follow: false },
   };
 }

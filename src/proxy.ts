@@ -36,7 +36,23 @@ export default function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Image routes validate their locale themselves. Avoid locale cookies and alternate
+  // HTML links on public image responses, which otherwise prevent CDN caching.
+  if (isLocalizedSocialImage(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   return intlMiddleware(request);
+}
+
+function isLocalizedSocialImage(pathname: string): boolean {
+  const [, locale, ...segments] = pathname.split('/');
+  if (!isRoutingLocale(locale)) return false;
+  return (
+    (segments.length === 1 && segments[0] === 'opengraph-image') ||
+    (segments.length === 2 && segments[0] === 'opengraph') ||
+    (segments.length === 3 && segments[0] === 'buildings' && segments[2] === 'opengraph-image')
+  );
 }
 
 function getPcl2XmlRewrite(request: NextRequest): URL | null {
@@ -67,7 +83,12 @@ function isRawXmlRequest(request: NextRequest): boolean {
 
 function isBrowserDocumentRequest(request: NextRequest): boolean {
   const accept = request.headers.get('accept') ?? '';
-  return accept.includes('text/html');
+  const userAgent = request.headers.get('user-agent') ?? '';
+  // Link preview crawlers may send */*. They need HTML metadata, while launchers need XML.
+  return (
+    accept.includes('text/html') ||
+    /bot|crawler|spider|facebookexternalhit|WhatsApp|SkypeUriPreview|vkShare/i.test(userAgent)
+  );
 }
 
 export const config = {

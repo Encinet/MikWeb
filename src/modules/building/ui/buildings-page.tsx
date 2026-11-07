@@ -4,18 +4,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 import { useBuildingCatalog } from '@/modules/building/model/use-building-catalog';
-import { useBuildingDialog } from '@/modules/building/model/use-building-dialog';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { BuildingCatalogControls } from '@/modules/building/ui/building-catalog-controls';
-import { BuildingDetailsDialog } from '@/modules/building/ui/building-details-dialog';
 import { BuildingsContentArea } from '@/modules/building/ui/buildings-content-area';
-import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 
 export default function BuildingsPage() {
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const mounted = useHasMounted();
   const { buildings, isLoading, error, fetchBuildings } = useBuildings();
 
   const catalog = useBuildingCatalog(buildings, locale, {
@@ -29,8 +25,6 @@ export default function BuildingsPage() {
     nameDesc: t('sort.options.nameDesc'),
     random: t('sort.options.random'),
   });
-
-  const dialog = useBuildingDialog();
 
   useEffect(() => {
     fetchBuildings();
@@ -66,9 +60,6 @@ export default function BuildingsPage() {
             isLoading={isLoading}
             error={error}
             filteredCount={catalog.filtered.length}
-            isImageError={dialog.isImageError}
-            onImageError={dialog.handleImageError}
-            onOpenBuilding={dialog.open}
             loadMore={catalog.loadMore}
             locale={locale}
             t={t}
@@ -79,24 +70,6 @@ export default function BuildingsPage() {
           />
         </div>
       </div>
-
-      <BuildingDetailsDialog
-        activeImage={dialog.activeImage}
-        building={dialog.building}
-        currentImageIndex={dialog.imageIndex}
-        imageLoading={dialog.loading}
-        imageTransitionDirection={dialog.direction}
-        isImageError={dialog.isImageError}
-        locale={locale}
-        mounted={mounted}
-        onClose={dialog.close}
-        onImageError={dialog.handleImageError}
-        onImageLoad={dialog.handleImageLoad}
-        onNextImage={dialog.next}
-        onPreviousImage={dialog.prev}
-        onSelectImage={dialog.handleSelectImage}
-        t={t}
-      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { SITE_NAME } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
+import { SOCIAL_IMAGE_SIZE } from '@/site/seo/social-image/social-image-config';
 
 const OPEN_GRAPH_LOCALE_BY_APP_LOCALE: Record<AppLocale, string> = {
   'zh-CN': 'zh_CN',
@@ -11,23 +12,23 @@ function getLocalePath(locale: AppLocale, pathname = '') {
   return pathname ? `/${locale}${pathname}` : `/${locale}`;
 }
 
-function getLocaleSocialImagePath(locale: AppLocale) {
-  return `${getLocalePath(locale)}/opengraph-image`;
-}
-
 export function buildPageMetadata({
   locale,
   title,
   description,
   pathname = '',
+  imagePath = `/${locale}/opengraph-image`,
+  imageAlt = title,
 }: {
   locale: AppLocale;
   title: string;
   description: string;
   pathname?: string;
+  imagePath?: string;
+  imageAlt?: string;
 }): Metadata {
   const canonical = getLocalePath(locale, pathname);
-  const imagePath = getLocaleSocialImagePath(locale);
+  const image = { url: imagePath, ...SOCIAL_IMAGE_SIZE, alt: imageAlt, type: 'image/png' };
 
   return {
     title,
@@ -49,20 +50,13 @@ export function buildPageMetadata({
       alternateLocale: Object.entries(OPEN_GRAPH_LOCALE_BY_APP_LOCALE)
         .filter(([key]) => key !== locale)
         .map(([, ogLocale]) => ogLocale),
-      images: [
-        {
-          url: imagePath,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      images: [image],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [imagePath],
+      images: [image],
     },
   };
 }

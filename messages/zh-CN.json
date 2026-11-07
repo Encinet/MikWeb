@@ -5,6 +5,10 @@
     "screenshots": {
       "desktop": "Mik Casual 桌面首页，展示服务器介绍和玩家常用入口",
       "mobile": "Mik Casual 手机首页，展示服务器介绍和地图、指南入口"
+    },
+    "social": {
+      "title": "创造休闲\nMinecraft 服务器",
+      "description": "允许任意 Mod，专注建筑创作与社区交流"
     }
   },
   "common": {
@@ -127,7 +131,8 @@
       "source": "来源"
     },
     "meta": {
-      "description": "展示服务器内玩家的精彩建筑作品"
+      "description": "展示服务器内玩家的精彩建筑作品",
+      "imageDescription": "玩家在服务器内的建筑作品"
     },
     "search": {
       "placeholder": "搜索建筑名称、建造者、标签..."
@@ -160,7 +165,22 @@
     },
     "states": {
       "empty": "暂无建筑收录",
-      "end": "没有更多建筑了"
+      "end": "没有更多建筑了",
+      "notFound": "未找到这座建筑",
+      "notFoundDescription": "这座建筑可能已移出收录。你可以返回浏览其他作品。",
+      "loadFailed": "暂时无法加载建筑资料，请重试。"
+    },
+    "share": {
+      "action": "分享建筑",
+      "copyLink": "复制链接",
+      "copied": "链接已复制",
+      "copyCoordinates": "复制坐标",
+      "saveCard": "保存分享卡片",
+      "shareImage": "分享当前图片",
+      "imageUnavailable": "图片分享未能完成，可以使用上方的建筑分享链接。"
+    },
+    "actions": {
+      "viewOnMap": "在地图中查看"
     }
   },
   "buildingSubmission": {
@@ -235,18 +255,24 @@
       "empty": "还没有提交记录",
       "rejectionReason": "拒绝原因：{reason}",
       "expiresAt": "保留至 {time}"
-    }
+    },
+    "imageDescription": "提交作品，通过审核后加入建筑收录"
   },
   "map": {
     "title": "世界地图",
     "actions": {
       "openExternal": "新窗口打开地图"
+    },
+    "meta": {
+      "description": "从世界地图探索服务器中的建筑与风景。",
+      "imageDescription": "从地图中探索建筑与风景"
     }
   },
   "wiki": {
     "title": "游戏指南",
     "meta": {
-      "description": "了解服务器规则、指令和游戏技巧"
+      "description": "了解服务器规则、指令和游戏技巧",
+      "imageDescription": "了解服务器规则、指令与玩法"
     },
     "navigation": {
       "title": "导航",
@@ -684,7 +710,8 @@
         "title": "返回启动页",
         "description": "重新打开启动页后即可看到 Mik 首页。"
       }
-    }
+    },
+    "imageDescription": "在启动器中查看状态、公告和建筑"
   },
   "mcp": {
     "title": "MCP 配置",

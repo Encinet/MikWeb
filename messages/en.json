@@ -5,6 +5,10 @@
     "screenshots": {
       "desktop": "Mik Casual desktop home page with server information and player tools",
       "mobile": "Mik Casual mobile home page with server information, map and guide links"
+    },
+    "social": {
+      "title": "Creative & casual\nMinecraft",
+      "description": "Mods welcome, create together"
     }
   },
   "common": {
@@ -127,7 +131,8 @@
       "source": "Source"
     },
     "meta": {
-      "description": "Showcasing amazing building works by our players"
+      "description": "Showcasing amazing building works by our players",
+      "imageDescription": "Builds from the Mik community"
     },
     "search": {
       "placeholder": "Search buildings, builders, tags..."
@@ -160,7 +165,22 @@
     },
     "states": {
       "empty": "No buildings yet",
-      "end": "No more buildings to load"
+      "end": "No more buildings to load",
+      "notFound": "Building not found",
+      "notFoundDescription": "This building may have been removed. Return to explore other builds.",
+      "loadFailed": "Building details could not be loaded. Please try again."
+    },
+    "share": {
+      "action": "Share building",
+      "copyLink": "Copy link",
+      "copied": "Link copied",
+      "copyCoordinates": "Copy coordinates",
+      "saveCard": "Save share card",
+      "shareImage": "Share this image",
+      "imageUnavailable": "Image sharing could not be completed. You can share the building link above."
+    },
+    "actions": {
+      "viewOnMap": "View on map"
     }
   },
   "buildingSubmission": {
@@ -235,18 +255,24 @@
       "empty": "No submissions yet.",
       "rejectionReason": "Rejection reason: {reason}",
       "expiresAt": "Kept until {time}"
-    }
+    },
+    "imageDescription": "Submit your build for review"
   },
   "map": {
     "title": "World Map",
     "actions": {
       "openExternal": "Open map in new window"
+    },
+    "meta": {
+      "description": "Explore builds and landscapes on the server map.",
+      "imageDescription": "Discover the world and its builds."
     }
   },
   "wiki": {
     "title": "Game Guide",
     "meta": {
-      "description": "Learn about server rules, commands, and gameplay tips"
+      "description": "Learn about server rules, commands, and gameplay tips",
+      "imageDescription": "Server rules, commands and gameplay."
     },
     "navigation": {
       "title": "Navigation",
@@ -684,7 +710,8 @@
         "title": "Return home",
         "description": "Reopen the launcher home page to see the Mik page."
       }
-    }
+    },
+    "imageDescription": "Server status, notices and builds in your launcher"
   },
   "mcp": {
     "title": "MCP Config",

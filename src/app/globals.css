@@ -25,6 +25,7 @@
 @import "./styles/base/forms.css";
 @import "./styles/modules/wiki.css";
 @import "./styles/modules/building-archive.css";
+@import "./styles/modules/building-gallery.css";
 @import "./styles/modules/bans.css";
 @import "./styles/modules/community-board.css";
 @import "./styles/base/print.css";

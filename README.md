@@ -69,6 +69,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 - `POST /api/account/*`：玩家账号 BFF，只在服务端转发到 Mik Data
 - `POST /api/account/images/upload`：玩家建筑申请图片上传代理，只接受已登录成员上传的 WebP，并在服务端转发到 ImgBB
 - `GET /api/map/worlds`：读取公开地图的世界目录，校验并仅返回坐标定位所需的名称、显示名和维度类型，缓存 5 分钟
+- `GET /:locale/buildings/:id`：建筑详情与分享入口
 - `GET /:locale/pcl2`：PCL2 主页；浏览器访问显示说明页，PCL2 请求返回对应语言的 XAML
 
 ## 登录配置

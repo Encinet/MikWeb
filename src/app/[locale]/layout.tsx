@@ -15,7 +15,7 @@ import { PrintFooter, PrintHeader } from '@/site/print/ui/print-chrome';
 import { ThemeColor } from '@/site/providers/theme-color';
 import { ThemeProvider } from '@/site/providers/theme-provider';
 import { ViewportMetrics } from '@/site/providers/viewport-metrics';
-import { buildPageMetadata } from '@/site/seo/build-page-metadata';
+import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
 import StructuredData from '@/site/structured-data/ui/structured-data';
 import { getAccentProperties, getDailyAccentColor } from '@/site/theme/lib/accent-color';
 
@@ -45,14 +45,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const messages = await getMessages({ locale });
 
   return {
-    ...buildPageMetadata({
-      locale,
-      title: messages.metadata.title,
-      description: messages.metadata.description,
-    }),
+    ...(await generateSitePageMetadata(locale, 'home')),
     manifest: `/${locale}/manifest.webmanifest`,
     keywords: [
       'Minecraft',
@@ -68,9 +63,11 @@ export async function generateMetadata({
 
 export default async function LocaleLayout({
   children,
+  building,
   params,
 }: {
   children: React.ReactNode;
+  building: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   const { locale: rawLocale } = await params;
@@ -93,7 +90,10 @@ export default async function LocaleLayout({
               <SiteBackground />
               <SiteHeader />
               <PrintHeader locale={locale} />
-              <main className="relative z-10 flex min-h-0 flex-1 flex-col">{children}</main>
+              <main className="relative z-10 flex min-h-0 flex-1 flex-col">
+                {children}
+                {building}
+              </main>
               <PrintFooter />
               <SiteFooter />
             </BuildingsProvider>

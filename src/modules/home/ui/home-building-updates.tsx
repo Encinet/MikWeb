@@ -1,35 +1,23 @@
 'use client';
 
 import { Building2, MapPin } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { sortBuildings } from '@/modules/building/lib/building-catalog';
+import { getBuildingPath } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
-import { useBuildingDialog } from '@/modules/building/model/use-building-dialog';
 import { useBuildings } from '@/modules/building/model/use-buildings';
-import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { Link } from '@/shared/i18n/routing';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
-
-const BuildingDetailsDialog = dynamic(
-  () =>
-    import('@/modules/building/ui/building-details-dialog').then(
-      (module) => module.BuildingDetailsDialog,
-    ),
-  { ssr: false },
-);
 
 export function HomeBuildingUpdates() {
   const t = useTranslations('home.playerHome.buildings');
   const mapT = useTranslations('map');
   const commonT = useTranslations('common');
-  const buildingsT = useTranslations('buildings');
   const locale = useLocale();
-  const mounted = useHasMounted();
   const { buildings, fetchBuildings, error, lastUpdatedAt, isLoading } = useBuildings();
-  const dialog = useBuildingDialog();
+  const [imageErrors, setImageErrors] = useState<string[]>([]);
 
   useEffect(() => {
     void fetchBuildings();
@@ -70,15 +58,14 @@ export function HomeBuildingUpdates() {
         ) : recentBuildings.length > 0 ? (
           recentBuildings.map((building) => {
             const name = getBuildingName(building, locale);
-            const cover = building.images.find((url) => !dialog.isImageError(url));
+            const cover = building.images.find((url) => !imageErrors.includes(url));
             return (
-              <button
+              <Link
                 key={building.id}
-                type="button"
+                href={getBuildingPath(building.id)}
+                scroll={false}
                 className="home-building-preview"
-                onClick={() => dialog.open(building)}
                 aria-label={t('open', { name })}
-                aria-haspopup="dialog"
               >
                 <span className="home-building-preview__image">
                   {cover ? (
@@ -89,7 +76,7 @@ export function HomeBuildingUpdates() {
                       unoptimized
                       sizes="(max-width: 639px) 100vw, (max-width: 900px) 50vw, 33vw"
                       className="object-cover"
-                      onError={() => dialog.handleImageError(cover)}
+                      onError={() => setImageErrors((previous) => [...previous, cover])}
                     />
                   ) : (
                     <Building2 className="h-10 w-10" aria-hidden="true" />
@@ -108,7 +95,7 @@ export function HomeBuildingUpdates() {
                     </span>
                   </span>
                 </span>
-              </button>
+              </Link>
             );
           })
         ) : (
@@ -127,25 +114,6 @@ export function HomeBuildingUpdates() {
           </div>
         )}
       </div>
-      {dialog.building ? (
-        <BuildingDetailsDialog
-          activeImage={dialog.activeImage}
-          building={dialog.building}
-          currentImageIndex={dialog.imageIndex}
-          imageLoading={dialog.loading}
-          imageTransitionDirection={dialog.direction}
-          isImageError={dialog.isImageError}
-          locale={locale}
-          mounted={mounted}
-          onClose={dialog.close}
-          onImageError={dialog.handleImageError}
-          onImageLoad={dialog.handleImageLoad}
-          onNextImage={dialog.next}
-          onPreviousImage={dialog.prev}
-          onSelectImage={dialog.handleSelectImage}
-          t={buildingsT}
-        />
-      ) : null}
     </section>
   );
 }
