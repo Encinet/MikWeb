@@ -646,6 +646,10 @@
     "messageActions": {
       "label": "{name} 的消息操作",
       "copy": "复制消息",
+      "selectText": "选择文字",
+      "selectionHint": "长按或拖动选择需要的文字，然后复制。",
+      "textLabel": "消息文字",
+      "copySelection": "复制所选文字",
       "mention": "提及此人",
       "private": "发起私聊"
     },

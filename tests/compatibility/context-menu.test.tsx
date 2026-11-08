@@ -7,6 +7,7 @@ import { closeChatActionMenus } from '@/modules/chat/lib/chat-action-menu-events
 import { emptyChatWorkspace } from '@/modules/chat/model/chat-workspace';
 import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
 import { ChatMessageList } from '@/modules/chat/ui/chat-message-list';
+import { ChatMessageTextDialog } from '@/modules/chat/ui/chat-message-text-dialog';
 import { ChatNavigation } from '@/modules/chat/ui/chat-navigation';
 import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import translations from '../../messages/zh-CN.json';
@@ -155,6 +156,36 @@ function menu() {
   return document.querySelector<HTMLElement>('[role="menu"][data-chat-menu-open]');
 }
 
+function enableNativePopovers() {
+  const prototype = browser.window.HTMLElement.prototype;
+  const matches = prototype.matches;
+  prototype.matches = function (selector: string) {
+    return selector === ':popover-open'
+      ? this.hasAttribute('data-native-open')
+      : matches.call(this, selector);
+  };
+  const toggle = (element: HTMLElement, open: boolean) => {
+    element.toggleAttribute('data-native-open', open);
+    const event = new Event('toggle');
+    Object.assign(event, { newState: open ? 'open' : 'closed' });
+    element.dispatchEvent(event);
+  };
+  Object.defineProperties(prototype, {
+    showPopover: {
+      configurable: true,
+      value: function (this: HTMLElement) {
+        toggle(this, true);
+      },
+    },
+    hidePopover: {
+      configurable: true,
+      value: function (this: HTMLElement) {
+        toggle(this, false);
+      },
+    },
+  });
+}
+
 beforeEach(() => {
   browser = createBrowserEnvironment();
   const prototype = browser.window.HTMLElement.prototype;
@@ -191,11 +222,13 @@ test('message right-click opens actions at the pointer without a three-dot butto
   assert.equal(popup.style.left, '120px');
   assert.equal(popup.style.top, '160px');
   const actions = popup.querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
-  assert.equal(actions.length, 3);
+  assert.equal(actions.length, 4);
   assert.equal(document.activeElement, actions[0]);
   await act(async () => key(actions[0], 'ArrowDown'));
   assert.equal(document.activeElement, actions[1]);
-  await act(async () => actions[1].click());
+  await act(async () => key(actions[1], 'ArrowDown'));
+  assert.equal(document.activeElement, actions[2]);
+  await act(async () => actions[2].click());
   assert.equal(mentioned, 'Alex');
   assert.equal(menu(), null);
   assert.equal(document.activeElement, row);
@@ -362,33 +395,7 @@ test('context menus respect visual viewport safe bounds and keep modal ownership
 });
 
 test('native popovers use the same focus and dismissal lifecycle without a portal or competing menus', async () => {
-  const prototype = browser.window.HTMLElement.prototype;
-  const matches = prototype.matches;
-  prototype.matches = function (selector: string) {
-    return selector === ':popover-open'
-      ? this.hasAttribute('data-native-open')
-      : matches.call(this, selector);
-  };
-  const toggle = (element: HTMLElement, open: boolean) => {
-    element.toggleAttribute('data-native-open', open);
-    const event = new Event('toggle');
-    Object.assign(event, { newState: open ? 'open' : 'closed' });
-    element.dispatchEvent(event);
-  };
-  Object.defineProperties(prototype, {
-    showPopover: {
-      configurable: true,
-      value: function (this: HTMLElement) {
-        toggle(this, true);
-      },
-    },
-    hidePopover: {
-      configurable: true,
-      value: function (this: HTMLElement) {
-        toggle(this, false);
-      },
-    },
-  });
+  enableNativePopovers();
   await act(async () =>
     browser.root.render(
       <>
@@ -402,7 +409,7 @@ test('native popovers use the same focus and dismissal lifecycle without a porta
   const first = menu();
   assert.ok(first);
   assert.equal(first.parentElement, browser.container);
-  assert.equal(first.getAttribute('popover'), 'auto');
+  assert.equal(first.getAttribute('popover'), 'manual');
   assert.equal(document.activeElement, first.querySelector('button'));
   await act(async () => context(rows[1]));
   const second = menu();
@@ -418,6 +425,210 @@ test('native popovers use the same focus and dismissal lifecycle without a porta
   await act(async () => context(rows[0]));
   await act(async () => closeChatActionMenus());
   assert.equal(menu(), null);
+});
+
+test('native long-press survives release and keeps outside touch and Escape dismissal', async () => {
+  enableNativePopovers();
+  let chosen = 0;
+  await act(async () =>
+    browser.root.render(
+      <>
+        <Row
+          onChoose={() => {
+            chosen++;
+          }}
+        />
+        <button type="button" data-outside>
+          Outside
+        </button>
+      </>,
+    ),
+  );
+  // Happy DOM does not implement the browser's pointerup light-dismiss of auto popovers.
+  // This gesture starts outside the popover, before the long-press timer shows it.
+  document.addEventListener('pointerup', (event) => {
+    for (const popup of document.querySelectorAll<HTMLElement>(
+      '[popover="auto"][data-native-open]',
+    )) {
+      if (event.target instanceof Node && !popup.contains(event.target)) popup.hidePopover();
+    }
+  });
+  const row = element('[data-row]');
+  await act(async () => pointer(row, 'pointerdown'));
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 590));
+  });
+  const popup = menu();
+  assert.ok(popup);
+  await act(async () => {
+    pointer(row, 'pointerup');
+    row.click();
+  });
+  assert.equal(menu(), popup);
+  assert.equal(popup.matches(':popover-open'), true);
+  assert.equal(chosen, 0);
+  const outside = element('[data-outside]');
+  await act(async () => pointer(outside, 'pointerdown'));
+  assert.equal(menu(), null);
+  assert.equal(popup.matches(':popover-open'), false);
+  await act(async () => context(row));
+  outside.focus();
+  await act(async () => key(outside, 'Escape'));
+  assert.equal(menu(), null);
+  assert.equal(document.activeElement, row);
+});
+
+for (const native of [false, true]) {
+  test(`${native ? 'native' : 'fallback'} context menu closes when its source is tapped again`, async () => {
+    if (native) enableNativePopovers();
+    let chosen = 0;
+    await act(async () =>
+      browser.root.render(
+        <Row
+          onChoose={() => {
+            chosen++;
+          }}
+        />,
+      ),
+    );
+    const row = element('[data-row]');
+    await act(async () => context(row));
+    assert.ok(menu());
+    await act(async () => {
+      pointer(row, 'pointerdown');
+      pointer(row, 'pointerup');
+      row.click();
+    });
+    assert.equal(menu(), null);
+    assert.equal(chosen, 1);
+  });
+}
+
+test('platform close requests dismiss manual menus and stop watching after every close or unmount', async () => {
+  enableNativePopovers();
+  const watchers: TestCloseWatcher[] = [];
+  class TestCloseWatcher extends EventTarget {
+    destroyed = false;
+    constructor() {
+      super();
+      watchers.push(this);
+    }
+    requestClose() {
+      this.dispatchEvent(new Event('close'));
+    }
+    destroy() {
+      this.destroyed = true;
+    }
+  }
+  Object.defineProperty(browser.window, 'CloseWatcher', {
+    configurable: true,
+    value: TestCloseWatcher,
+  });
+  await act(async () => browser.root.render(<Row />));
+  const row = element('[data-row]');
+  await act(async () => context(row));
+  const first = watchers[0];
+  assert.ok(first, 'manual menus must subscribe to platform close requests');
+  await act(async () => first.requestClose());
+  assert.equal(menu(), null);
+  assert.equal(document.activeElement, row);
+  assert.equal(first.destroyed, true);
+  await act(async () => context(row));
+  const second = watchers[1];
+  assert.ok(second);
+  await act(async () => pointer(document.body, 'pointerdown'));
+  assert.equal(menu(), null);
+  assert.equal(second.destroyed, true);
+  await act(async () => context(row));
+  const third = watchers[2];
+  assert.ok(third);
+  await act(async () => browser.root.render(null));
+  assert.equal(third.destroyed, true);
+});
+
+for (const native of [false, true]) {
+  test(`${native ? 'native' : 'fallback'} message actions open text selection, copy a portion or the whole message, and restore focus`, async () => {
+    if (native) enableNativePopovers();
+    let copied = '';
+    Object.defineProperty(browser.window.navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async (value: string) => {
+          copied = value;
+        },
+      },
+    });
+    await act(async () => browser.root.render(localized(<Timeline />)));
+    const row = element('[data-chat-message]');
+    await act(async () => context(row));
+    const select = [...document.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')].find(
+      (button) => button.textContent?.includes('选择文字'),
+    );
+    assert.ok(select);
+    await act(async () => select.click());
+    assert.equal(menu(), null);
+    const dialog = element('dialog[aria-modal="true"]');
+    const field = dialog.querySelector<HTMLTextAreaElement>('textarea');
+    assert.ok(field);
+    assert.equal(field.value, 'Hello example.com');
+    assert.equal(field.readOnly, true);
+    assert.equal(field.disabled, false);
+    assert.equal(document.activeElement, field);
+    assert.equal(browser.container.inert, true);
+    assert.equal(context(field).defaultPrevented, false, 'the native text menu stays available');
+    const copySelection = element('button[aria-label="复制所选文字"]') as HTMLButtonElement;
+    assert.equal(copySelection.disabled, true);
+    await act(async () => {
+      field.setSelectionRange(6, field.value.length);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    assert.equal(copySelection.disabled, false);
+    await act(async () => copySelection.click());
+    assert.equal(copied, 'example.com');
+    assert.ok(dialog.isConnected, 'copying keeps the selection window open for another portion');
+    await act(async () => element('button[aria-label="复制消息"]').click());
+    assert.equal(copied, 'Hello example.com');
+    await act(async () => key(field, 'Escape'));
+    assert.equal(document.querySelector('dialog'), null);
+    assert.equal(document.activeElement, row);
+    assert.equal(browser.container.inert, false);
+  });
+}
+
+test('selected text preserves Unicode and whitespace, supports copy retries, and resets after selection changes', async () => {
+  const text = '你好🙂，\n访问 example.com';
+  let fail = true;
+  let copied = '';
+  Object.defineProperty(browser.window.navigator, 'clipboard', {
+    configurable: true,
+    value: {
+      writeText: async (value: string) => {
+        if (fail) throw new Error('Denied');
+        copied = value;
+      },
+    },
+  });
+  await act(async () =>
+    browser.root.render(localized(<ChatMessageTextDialog text={text} onClose={() => undefined} />)),
+  );
+  const field = document.querySelector<HTMLTextAreaElement>('textarea');
+  assert.ok(field);
+  await act(async () => {
+    field.setSelectionRange(text.indexOf('🙂'), text.indexOf('example.com'));
+    document.dispatchEvent(new Event('selectionchange'));
+  });
+  await act(async () => element('button[aria-label="复制所选文字"]').click());
+  assert.ok(document.querySelector('dialog'));
+  assert.ok(element('button[aria-label="复制失败"]'));
+  fail = false;
+  await act(async () => element('button[aria-label="复制失败"]').click());
+  assert.equal(copied, '🙂，\n访问 ');
+  await act(async () => {
+    field.setSelectionRange(0, 0);
+    document.dispatchEvent(new Event('selectionchange'));
+  });
+  const copySelection = element('button[aria-label="复制所选文字"]') as HTMLButtonElement;
+  assert.equal(copySelection.disabled, true);
 });
 
 test('copy failure stays recoverable while success closes the menu after copying the whole message', async () => {

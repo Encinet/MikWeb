@@ -63,6 +63,7 @@ test('unbound authors render without Minecraft lookups or player mention and pri
         onMention={() => undefined}
         onPrivate={() => undefined}
         onCopied={() => undefined}
+        onSelectText={() => undefined}
       />
     </NextIntlClientProvider>,
   );

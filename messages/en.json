@@ -646,6 +646,10 @@
     "messageActions": {
       "label": "Actions for a message from {name}",
       "copy": "Copy message",
+      "selectText": "Select text",
+      "selectionHint": "Press and hold or drag to select the text you want, then copy it.",
+      "textLabel": "Message text",
+      "copySelection": "Copy selected text",
       "mention": "Mention player",
       "private": "Start private chat"
     },

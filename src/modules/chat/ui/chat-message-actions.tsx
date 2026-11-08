@@ -1,6 +1,6 @@
 'use client';
 
-import { AtSign, MessageCircle } from 'lucide-react';
+import { AtSign, MessageCircle, TextCursorInput } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ChatUserMessage } from '@/modules/chat/model/chat-protocol';
 import { CopyButton } from '@/shared/ui/action/copy-button';
@@ -16,18 +16,21 @@ export function ChatMessageActions({
   onMention,
   onPrivate,
   onCopied,
+  onSelectText,
 }: ChatMessageActionHandlers & {
   message: ChatUserMessage;
   owner: string;
   onCopied: () => void;
+  onSelectText: (text: string) => void;
 }) {
   const t = useTranslations('chat');
   const playerUuid = message.sender.playerUuid;
   const playerName = message.sender.playerName ?? message.sender.name;
+  const text = message.content.map((part) => part.text).join('');
   return (
     <>
       <CopyButton
-        value={message.content.map((part) => part.text).join('')}
+        value={text}
         label={t('messageActions.copy')}
         showLabel
         className="chat-popover-action"
@@ -35,6 +38,17 @@ export function ChatMessageActions({
         tabIndex={-1}
         onCopied={onCopied}
       />
+      <button
+        type="button"
+        role="menuitem"
+        tabIndex={-1}
+        className="chat-popover-action"
+        data-chat-menu-close
+        onClick={() => onSelectText(text)}
+      >
+        <TextCursorInput size={16} aria-hidden="true" />
+        {t('messageActions.selectText')}
+      </button>
       {playerUuid && playerUuid !== owner ? (
         <>
           <button

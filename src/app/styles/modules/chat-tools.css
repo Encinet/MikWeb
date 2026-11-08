@@ -85,6 +85,25 @@
   min-height: 36px;
   padding: 0.4rem 0.65rem;
 }
+.chat-text-selection-dialog {
+  --app-dialog-width: 36rem;
+}
+.chat-text-selection-field {
+  width: 100%;
+  height: clamp(8rem, 35dvh, 20rem);
+  min-height: 6rem;
+  max-height: 50dvh;
+  padding: 0.85rem;
+  resize: vertical;
+  border: 1px solid var(--theme-border-glass);
+  border-radius: 0.75rem;
+  background: var(--theme-bg-base);
+  color: var(--theme-text-primary);
+  font: 1rem / 1.7 var(--font-base);
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
 [data-chat-context-press] {
   -webkit-touch-callout: none;
   -webkit-user-select: none;

@@ -19,7 +19,8 @@ export function ChatMenuSurface({
   const surfaceProps = {
     ref: menu.surface,
     id: menu.id,
-    popover: menu.native ? ('auto' as const) : undefined,
+    // An auto popover opened during a long press light-dismisses on that same pointerup.
+    popover: menu.native ? (role === 'menu' ? 'manual' : 'auto') : undefined,
     'data-chat-menu-fallback': !menu.native || undefined,
     'data-chat-menu-open': menu.open || undefined,
     className: `chat-action-popover${role === 'menu' ? ' chat-context-menu' : ''}`,

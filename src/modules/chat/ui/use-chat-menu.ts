@@ -112,6 +112,16 @@ export function useChatMenu(onOpen?: () => void) {
   useEffect(() => {
     const element = surface.current;
     if (!element || !open) return;
+    const customDismiss = !native || element.getAttribute('popover') === 'manual';
+    const contextMenu = element.getAttribute('role') === 'menu';
+    // Preserve platform close requests, such as Android Back, for custom dismissal.
+    const CloseWatcher = (
+      window as Window &
+        Partial<Record<'CloseWatcher', new () => EventTarget & { destroy(): void }>>
+    ).CloseWatcher;
+    const closeWatcher =
+      customDismiss && typeof CloseWatcher === 'function' ? new CloseWatcher() : null;
+    closeWatcher?.addEventListener('close', () => close(true));
     const resize = new ResizeObserver(position);
     resize.observe(element);
     if (anchor.current) resize.observe(anchor.current);
@@ -125,20 +135,33 @@ export function useChatMenu(onOpen?: () => void) {
       if (
         event.target instanceof Node &&
         !element.contains(event.target) &&
-        !anchor.current?.contains(event.target)
+        (contextMenu || !anchor.current?.contains(event.target))
       )
         close();
     };
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
+      event.preventDefault();
+      event.stopPropagation();
+      close(true);
+    };
     window.addEventListener(CHAT_ACTION_MENUS_CLOSE_EVENT, dismiss);
-    if (!native) document.addEventListener('pointerdown', pointer, true);
+    if (customDismiss) {
+      document.addEventListener('pointerdown', pointer, true);
+      document.addEventListener('keydown', dismissOnEscape);
+    }
     document.addEventListener('scroll', scroll, true);
     window.addEventListener('resize', position);
     window.visualViewport?.addEventListener('resize', position);
     window.visualViewport?.addEventListener('scroll', position);
     return () => {
+      closeWatcher?.destroy();
       resize.disconnect();
       window.removeEventListener(CHAT_ACTION_MENUS_CLOSE_EVENT, dismiss);
-      if (!native) document.removeEventListener('pointerdown', pointer, true);
+      if (customDismiss) {
+        document.removeEventListener('pointerdown', pointer, true);
+        document.removeEventListener('keydown', dismissOnEscape);
+      }
       document.removeEventListener('scroll', scroll, true);
       window.removeEventListener('resize', position);
       window.visualViewport?.removeEventListener('resize', position);
