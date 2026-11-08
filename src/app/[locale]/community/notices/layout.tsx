@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
+import { SiteShareMetadata } from '@/site/seo/site-share-metadata';
 
 export async function generateMetadata({
   params,
@@ -12,6 +13,18 @@ export async function generateMetadata({
   return generateSitePageMetadata(locale, 'community');
 }
 
-export default function CommunityNoticesLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function CommunityNoticesLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  return (
+    <>
+      <SiteShareMetadata locale={requireRouteLocale(locale)} page="community" />
+      {children}
+    </>
+  );
 }

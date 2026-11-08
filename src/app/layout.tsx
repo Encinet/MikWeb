@@ -16,6 +16,7 @@ import {
   SITE_TITLE,
   SITE_URL,
 } from '@/shared/config/site-config';
+import { ShareThumbnailMetadata } from '@/site/seo/share-thumbnail-metadata';
 import {
   getAccentInitializationScript,
   getAccentProperties,
@@ -97,6 +98,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <ShareThumbnailMetadata />
         <script>{getAccentInitializationScript()}</script>
       </head>
       <body className="app-body">

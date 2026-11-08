@@ -50,8 +50,10 @@ function isLocalizedSocialImage(pathname: string): boolean {
   if (!isRoutingLocale(locale)) return false;
   return (
     (segments.length === 1 && segments[0] === 'opengraph-image') ||
-    (segments.length === 2 && segments[0] === 'opengraph') ||
-    (segments.length === 3 && segments[0] === 'buildings' && segments[2] === 'opengraph-image')
+    (segments.length === 2 && (segments[0] === 'opengraph' || segments[0] === 'thumbnails')) ||
+    (segments.length === 3 &&
+      segments[0] === 'buildings' &&
+      (segments[2] === 'opengraph-image' || segments[2] === 'thumbnail'))
   );
 }
 

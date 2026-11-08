@@ -26,18 +26,20 @@ function gradient(direction: 'horizontal' | 'vertical', color: string, stops: [n
   );
 }
 
-async function framePhoto(source: Buffer, style: BackdropStyle) {
+export async function frameSocialImagePhoto(
+  source: Buffer,
+  size: { width: number; height: number } = SOCIAL_IMAGE_SIZE,
+) {
   const cover = await sharp(source)
-    .resize(SOCIAL_IMAGE_SIZE.width, SOCIAL_IMAGE_SIZE.height, { fit: 'cover' })
+    .resize(size.width, size.height, { fit: 'cover' })
     .png()
     .toBuffer();
-  if (style !== 'building') return cover;
   // Preserve the entire original image. The same image, blurred, fills any empty space.
   const [background, fitted] = await Promise.all([
     sharp(cover).blur(24).png().toBuffer(),
     sharp(source)
       .ensureAlpha()
-      .resize(SOCIAL_IMAGE_SIZE.width, SOCIAL_IMAGE_SIZE.height, {
+      .resize(size.width, size.height, {
         fit: 'inside',
       })
       .png()
@@ -57,6 +59,14 @@ async function framePhoto(source: Buffer, style: BackdropStyle) {
     .toBuffer();
   return sharp(background)
     .composite([{ input: foreground, gravity: 'centre' }])
+    .png()
+    .toBuffer();
+}
+
+async function framePhoto(source: Buffer, style: BackdropStyle) {
+  if (style === 'building') return frameSocialImagePhoto(source);
+  return sharp(source)
+    .resize(SOCIAL_IMAGE_SIZE.width, SOCIAL_IMAGE_SIZE.height, { fit: 'cover' })
     .png()
     .toBuffer();
 }

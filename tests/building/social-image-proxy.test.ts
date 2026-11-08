@@ -7,6 +7,9 @@ test('public localized image routes bypass locale cookies so CDN responses can b
   for (const path of [
     '/zh-CN/opengraph-image',
     '/en/opengraph/map',
+    '/zh-CN/thumbnails/home',
+    '/en/thumbnails/buildings',
+    `/zh-CN/buildings/${'a'.repeat(32)}/thumbnail`,
     `/zh-CN/buildings/${'a'.repeat(32)}/opengraph-image`,
     `/api/buildings/${'a'.repeat(32)}/images/0`,
   ]) {

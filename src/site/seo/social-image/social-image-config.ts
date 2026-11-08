@@ -1,4 +1,5 @@
 export const SOCIAL_IMAGE_SIZE = { width: 1200, height: 630 } as const;
+export const SHARE_THUMBNAIL_SIZE = { width: 600, height: 600 } as const;
 
 export const SOCIAL_IMAGE_COLORS = {
   background: '#172b36',
