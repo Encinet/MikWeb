@@ -37,6 +37,7 @@ import { useWebChat } from '@/modules/chat/model/use-web-chat';
 import { ChatComposer } from '@/modules/chat/ui/chat-composer';
 import { ChatConnectionBanner } from '@/modules/chat/ui/chat-connection-banner';
 import { ChatGate } from '@/modules/chat/ui/chat-gate';
+import { ChatHistoryRecoveryGate } from '@/modules/chat/ui/chat-history-recovery-gate';
 import type { ChatMessageJump } from '@/modules/chat/ui/chat-message-list';
 import { ChatMessageList } from '@/modules/chat/ui/chat-message-list';
 import { ChatMessageSearch } from '@/modules/chat/ui/chat-message-search';
@@ -301,6 +302,13 @@ export function ChatWorkspace({
     if (!window.matchMedia('(min-width: 1180px)').matches) setPanel(null);
   };
   const connectionStatus = chat.connection.status;
+  if (chat.historyRecovery)
+    return (
+      <ChatHistoryRecoveryGate
+        recovery={chat.historyRecovery}
+        onDelete={chat.deleteUnsupportedHistory}
+      />
+    );
   if (!workspaceVisible) {
     const { connection } = chat;
     const failed = connection.status === 'error';

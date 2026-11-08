@@ -5,8 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { registerChatNotificationWorker } from '@/modules/chat/lib/chat-notifications';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey, readChatDestination } from '@/modules/chat/model/chat-destination';
-import type { ChatAccess, ChatPlayerMessage } from '@/modules/chat/model/chat-protocol';
-import { messageConversation } from '@/modules/chat/model/chat-protocol';
+import type { ChatAccess, ChatUserMessage } from '@/modules/chat/model/chat-protocol';
+import { messageConversation, messageDestination } from '@/modules/chat/model/chat-protocol';
 
 const PREFERENCE = 'mik-chat-notifications';
 let registration: Promise<ServiceWorkerRegistration> | undefined;
@@ -55,7 +55,7 @@ function worker() {
   return registration;
 }
 
-function messagePreview(message: ChatPlayerMessage): string {
+function messagePreview(message: ChatUserMessage): string {
   const text = message.content
     .map((part) => part.text)
     .join('')
@@ -217,15 +217,16 @@ export function useChatNotifications(
   };
 
   const receive = useCallback(
-    (message: ChatPlayerMessage, access: () => ChatAccess | null) => {
-      if (message.senderUuid === owner || (!message.mentioned && message.channel !== 'private'))
+    (message: ChatUserMessage, access: () => ChatAccess | null) => {
+      if (
+        message.sender.playerUuid === owner ||
+        (!message.mentioned && message.channel !== 'private')
+      )
         return;
       if (eligible.current && access()?.owner === owner) setSuggestion(true);
       if (status === 'error' || !enabled()) return;
-      const destination: ChatDestination =
-        message.channel === 'private'
-          ? { channel: 'private', targetUuid: message.senderUuid, name: message.senderName }
-          : { channel: message.channel };
+      const destination = messageDestination(message, owner);
+      if (!destination) return;
       const currentToken = token.current;
       void worker()
         .then((value) => {
@@ -248,9 +249,9 @@ export function useChatNotifications(
             destination,
             title:
               message.channel === 'private'
-                ? message.senderName
+                ? message.sender.name
                 : t('notifications.mentionTitle', {
-                    name: message.senderName,
+                    name: message.sender.name,
                     channel: t(`channels.${message.channel}`),
                   }),
             body: messagePreview(message),

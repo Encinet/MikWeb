@@ -8,7 +8,7 @@ import {
 } from '@/modules/chat/model/chat-search';
 import type { MapWorld } from '@/modules/map/model/map-world';
 import { coordinateMapWorld, mapPositionUrl } from '@/modules/map/model/map-world';
-import { message, OTHER, OWNER, PEER } from './fixtures';
+import { message, OTHER, OWNER, PEER, player } from './fixtures';
 
 test('search combines author, source, conversation, and literal text without interpreting regex syntax', () => {
   const item = message({ content: [{ text: 'Use [x] at spawn' }] });
@@ -80,7 +80,7 @@ test('mentions show only messages addressed to this account, with all-conversati
     false,
   );
   assert.equal(
-    matchesChatSearch({ ...mention, senderUuid: OWNER }, '', '', criteria, OWNER, 'public'),
+    matchesChatSearch({ ...mention, sender: player(OWNER) }, '', '', criteria, OWNER, 'public'),
     false,
   );
   assert.equal(
@@ -107,8 +107,8 @@ test('the mentions filter combines with text, author, source and date conditions
   assert.equal(chatSearchFilterCount(criteria), 5);
   const rejected = [
     { ...mention, mentioned: false },
-    { ...mention, senderUuid: OWNER },
-    { ...mention, source: 'web' as const },
+    { ...mention, sender: player(OWNER) },
+    { ...mention, source: { kind: 'web' as const } },
     { ...mention, createdAt: new Date(2026, 10, 4).getTime() },
   ];
   for (const candidate of rejected)

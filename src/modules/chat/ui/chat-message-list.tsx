@@ -18,9 +18,9 @@ import {
 import { ChatActivityGroup } from '@/modules/chat/ui/chat-activity-group';
 import type { ChatMessageActionHandlers } from '@/modules/chat/ui/chat-message-actions';
 import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
-import { ChatPlayerMessageRow } from '@/modules/chat/ui/chat-player-message';
 import { finishChatRegrouping } from '@/modules/chat/ui/chat-regroup-motion';
 import { ChatScrollActions } from '@/modules/chat/ui/chat-scroll-actions';
+import { ChatUserMessageRow } from '@/modules/chat/ui/chat-user-message';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
 import type { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
@@ -313,7 +313,7 @@ export const ChatMessageList = memo(function ChatMessageList({
               group.forEach((message, messageIndex) => {
                 if (message.kind === 'server') return;
                 items.push(
-                  <ChatPlayerMessageRow
+                  <ChatUserMessageRow
                     key={chatTimelineKey(message, owner)}
                     message={message}
                     startsGroup={messageIndex === 0}

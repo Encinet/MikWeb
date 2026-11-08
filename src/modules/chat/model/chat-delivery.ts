@@ -40,7 +40,7 @@ export function unconfirmedChatDeliveries(
   const ids = new Set<string>();
   const requests = new Set<string>();
   for (const message of messages) {
-    if (message.kind !== 'player' || message.senderUuid !== owner) continue;
+    if (message.kind !== 'user' || message.sender.playerUuid !== owner) continue;
     ids.add(message.id);
     if (message.requestId) requests.add(message.requestId);
   }

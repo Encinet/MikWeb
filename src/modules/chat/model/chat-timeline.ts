@@ -1,14 +1,13 @@
 import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import { unconfirmedChatDeliveries } from '@/modules/chat/model/chat-delivery';
-import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
-import { isPassiveMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatMessage, ChatSender } from '@/modules/chat/model/chat-protocol';
+import { isPassiveMessage, sameChatSource } from '@/modules/chat/model/chat-protocol';
 
 export interface ChatPendingEntry extends PendingChatMessage {
   kind: 'pending';
   id: string;
-  senderUuid: string;
-  senderName: string;
-  source: 'web';
+  sender: ChatSender;
+  source: { kind: 'web' };
 }
 
 export type ChatTimelineEntry = ChatMessage | ChatPendingEntry;
@@ -21,7 +20,7 @@ export function chatDayKey(timestamp: number) {
 /** Preserve the line identity when a local send is confirmed or changes author groups. */
 export function chatTimelineKey(message: ChatTimelineEntry, owner: string): string {
   return message.kind === 'pending' ||
-    (message.kind === 'player' && message.senderUuid === owner && message.requestId)
+    (message.kind === 'user' && message.sender.playerUuid === owner && message.requestId)
     ? `request:${message.requestId}`
     : `message:${message.id}`;
 }
@@ -42,9 +41,8 @@ export function chatTimelineGroups(
         ...message,
         kind: 'pending',
         id: `request:${message.requestId}`,
-        senderUuid: owner,
-        senderName: name,
-        source: 'web',
+        sender: { id: owner, playerUuid: owner, playerName: name, name },
+        source: { kind: 'web' },
       }),
     ),
   ];
@@ -55,8 +53,8 @@ export function chatTimelineGroups(
       last &&
       last.kind !== 'server' &&
       message.kind !== 'server' &&
-      last.senderUuid === message.senderUuid &&
-      last.source === message.source &&
+      last.sender.id === message.sender.id &&
+      sameChatSource(last.source, message.source) &&
       Math.abs(message.createdAt - last.createdAt) < 180_000;
     const sameActivity =
       last?.kind === 'server' &&

@@ -2,7 +2,7 @@
 
 import { AtSign, MessageCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ChatPlayerMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatUserMessage } from '@/modules/chat/model/chat-protocol';
 import { CopyButton } from '@/shared/ui/action/copy-button';
 
 export interface ChatMessageActionHandlers {
@@ -17,11 +17,13 @@ export function ChatMessageActions({
   onPrivate,
   onCopied,
 }: ChatMessageActionHandlers & {
-  message: ChatPlayerMessage;
+  message: ChatUserMessage;
   owner: string;
   onCopied: () => void;
 }) {
   const t = useTranslations('chat');
+  const playerUuid = message.sender.playerUuid;
+  const playerName = message.sender.playerName ?? message.sender.name;
   return (
     <>
       <CopyButton
@@ -33,7 +35,7 @@ export function ChatMessageActions({
         tabIndex={-1}
         onCopied={onCopied}
       />
-      {message.senderUuid !== owner ? (
+      {playerUuid && playerUuid !== owner ? (
         <>
           <button
             type="button"
@@ -41,7 +43,7 @@ export function ChatMessageActions({
             tabIndex={-1}
             className="chat-popover-action"
             data-chat-menu-close
-            onClick={() => onMention(message.senderName)}
+            onClick={() => onMention(playerName)}
           >
             <AtSign size={16} aria-hidden="true" />
             {t('messageActions.mention')}
@@ -52,7 +54,7 @@ export function ChatMessageActions({
             tabIndex={-1}
             className="chat-popover-action"
             data-chat-menu-close
-            onClick={() => onPrivate(message.senderUuid, message.senderName)}
+            onClick={() => onPrivate(playerUuid, playerName)}
           >
             <MessageCircle size={16} aria-hidden="true" />
             {t('messageActions.private')}

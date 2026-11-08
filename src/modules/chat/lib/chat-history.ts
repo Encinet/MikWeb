@@ -1,3 +1,4 @@
+import { openChatHistoryDatabase as openDatabase } from '@/modules/chat/lib/chat-history-database';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import {
   chatMessageSchema,
@@ -39,37 +40,6 @@ interface HistoryReadChange {
 
 const CHANGE_EVENT = 'mik-chat-history-change';
 const MAX_AGE = 30 * 24 * 60 * 60 * 1000;
-let database: Promise<IDBDatabase> | undefined;
-
-function openDatabase(): Promise<IDBDatabase> {
-  database ??= new Promise((resolve, reject) => {
-    const request = indexedDB.open('mik-chat', 2);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains('state')) db.createObjectStore('state');
-      if (db.objectStoreNames.contains('messages')) db.deleteObjectStore('messages');
-      const messages = db.createObjectStore('messages', { keyPath: 'key' });
-      messages.createIndex('ownerTime', ['owner', 'createdAt', 'sequence']);
-      messages.createIndex('ownerBucketTime', ['owner', 'bucket', 'createdAt', 'sequence']);
-    };
-    request.onerror = () => {
-      database = undefined;
-      reject(request.error);
-    };
-    request.onblocked = () => {
-      database = undefined;
-      reject(new Error('history_blocked'));
-    };
-    request.onsuccess = () => {
-      request.result.onversionchange = () => {
-        request.result.close();
-        database = undefined;
-      };
-      resolve(request.result);
-    };
-  });
-  return database;
-}
 
 function range(owner: string): IDBKeyRange {
   return IDBKeyRange.bound(

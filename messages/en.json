@@ -532,6 +532,16 @@
     "clearAction": "Clear",
     "clearConfirm": "Clear local messages, drafts, and conversations? This cannot be undone.",
     "storageFailed": "Messages or drafts could not be saved locally and may be lost when this page closes.",
+    "historyRecovery": {
+      "title": "Incompatible local chat data",
+      "required": "This version cannot read or upgrade your local chat data. Delete it to use chat.",
+      "description": "Delete the chat messages, drafts, conversations, and chat preferences saved in this browser and start again? This cannot be undone. Cancelling keeps the data and leaves chat unavailable.",
+      "review": "Review cleanup options",
+      "delete": "Delete local data and continue",
+      "deleting": "Deleting local chat data…",
+      "blocked": "Close other tabs or windows for this website. Chat will continue automatically when deletion finishes.",
+      "failed": "Deletion failed. Your data has not been cleared. Please try again."
+    },
     "restoreDraft": "Restore draft",
     "server": {
       "label": "Server",
@@ -547,7 +557,8 @@
     },
     "source": {
       "web": "Web",
-      "game": "Game"
+      "game": "Game",
+      "social": "Social"
     },
     "status": {
       "idle": "Not connected",

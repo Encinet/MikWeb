@@ -5,7 +5,7 @@ export interface ChatSearchCriteria {
   query: string;
   scope: 'current' | 'all';
   author: string;
-  source: 'all' | 'game' | 'web';
+  source: 'all' | 'game' | 'web' | 'social';
   after: string;
   before: string;
   mentionsOnly: boolean;
@@ -56,16 +56,16 @@ export function matchesChatSearch(
 ): boolean {
   if (
     criteria.mentionsOnly &&
-    (message.kind !== 'player' || !message.mentioned || message.senderUuid === owner)
+    (message.kind !== 'user' || !message.mentioned || message.sender.playerUuid === owner)
   )
     return false;
   if (criteria.scope === 'current' && messageConversation(message, owner) !== conversation)
     return false;
-  if (criteria.author && (message.kind !== 'player' || message.senderUuid !== criteria.author))
+  if (criteria.author && (message.kind !== 'user' || message.sender.id !== criteria.author))
     return false;
   if (
     criteria.source !== 'all' &&
-    (message.kind !== 'player' || message.source !== criteria.source)
+    (message.kind !== 'user' || message.source.kind !== criteria.source)
   )
     return false;
   if (criteria.after && !(message.createdAt >= dayBoundary(criteria.after))) return false;

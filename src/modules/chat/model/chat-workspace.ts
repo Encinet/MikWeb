@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
-import type { ChatMessage, ChatPeer, ChatPlayerMessage } from '@/modules/chat/model/chat-protocol';
+import type { ChatMessage, ChatPeer, ChatUserMessage } from '@/modules/chat/model/chat-protocol';
 import { CHAT_MESSAGE_MAX_LENGTH, messageDestination } from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor } from '@/modules/chat/model/chat-reading';
 import { compareCursors, messageCursor } from '@/modules/chat/model/chat-reading';
@@ -137,7 +137,7 @@ export function updateChatWorkspace(
 
 export interface ChatThread {
   destination: Extract<ChatDestination, { channel: 'private' }>;
-  latest: ChatPlayerMessage | null;
+  latest: ChatUserMessage | null;
   peer?: ChatPeer;
   draft: string;
   pinned: boolean;
@@ -150,12 +150,12 @@ export function chatThreads(
   owner: string,
   workspace: ChatWorkspaceState,
 ): ChatThread[] {
-  const latest = new Map<string, ChatPlayerMessage>();
+  const latest = new Map<string, ChatUserMessage>();
   const names = new Map(
     Object.entries(workspace.threads).map(([key, thread]) => [key, thread.name]),
   );
   for (const message of messages) {
-    if (message.kind !== 'player' || message.channel !== 'private') continue;
+    if (message.kind !== 'user' || message.channel !== 'private') continue;
     const destination = messageDestination(message, owner);
     if (destination?.channel !== 'private') continue;
     const key = destinationKey(destination);

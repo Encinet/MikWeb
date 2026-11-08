@@ -8,7 +8,7 @@ import {
   readChatWorkspace,
   updateChatWorkspace,
 } from '@/modules/chat/model/chat-workspace';
-import { message, OTHER, OWNER, PEER } from './fixtures';
+import { message, OTHER, OWNER, PEER, player } from './fixtures';
 
 const destination = { channel: 'private', targetUuid: PEER, name: 'Alex' } as const;
 
@@ -61,8 +61,7 @@ test('pinned conversations precede newer messages and previews use the latest se
   const older = message({ channel: 'private', targetUuid: OWNER, createdAt: now - 5000 });
   const newer = message({
     id: 'new',
-    senderUuid: OTHER,
-    senderName: 'Steve',
+    sender: player(OTHER, 'Steve'),
     channel: 'private',
     targetUuid: OWNER,
     createdAt: now,
@@ -132,8 +131,7 @@ test('opening an older conversation does not reorder it ahead of more recent mes
   const older = message({ channel: 'private', targetUuid: OWNER, createdAt: now - 5000 });
   const newer = message({
     id: 'newer',
-    senderUuid: OTHER,
-    senderName: 'Steve',
+    sender: player(OTHER, 'Steve'),
     channel: 'private',
     targetUuid: OWNER,
     createdAt: now - 1000,

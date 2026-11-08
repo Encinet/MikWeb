@@ -5,6 +5,7 @@ import { isStaffRole } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import type { HistoryLease } from '@/modules/chat/lib/chat-history';
 import {
+  announceHistoryChange,
   currentHistoryLease,
   enableHistory,
   loadHistory,
@@ -15,17 +16,20 @@ import {
   setStaffHistoryPermission,
   syncHistoryAccount,
 } from '@/modules/chat/lib/chat-history';
+import { deleteChatHistoryDatabase } from '@/modules/chat/lib/chat-history-database';
 import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
 import { isTerminalChatClose } from '@/modules/chat/model/chat-connection';
 import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import { acceptChatDelivery, unconfirmedChatDeliveries } from '@/modules/chat/model/chat-delivery';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import type { ChatHistoryRecovery } from '@/modules/chat/model/chat-history-compatibility';
+import { UnsupportedChatHistoryError } from '@/modules/chat/model/chat-history-compatibility';
 import type {
   ChatAccess,
   ChatMessage,
-  ChatPlayerMessage,
   ChatPresence,
+  ChatUserMessage,
 } from '@/modules/chat/model/chat-protocol';
 import {
   isPassiveMessage,
@@ -57,7 +61,7 @@ function mergeMessages(existing: ChatMessage[], incoming: ChatMessage[]): ChatMe
   );
 }
 
-type LiveMessageListener = (message: ChatPlayerMessage, access: () => ChatAccess | null) => void;
+type LiveMessageListener = (message: ChatUserMessage, access: () => ChatAccess | null) => void;
 
 export function useWebChat() {
   const { account, verified, refresh } = useAuth();
@@ -75,6 +79,14 @@ export function useWebChat() {
   const [staff, setStaff] = useState(accountStaff);
   const [persist, setPersist] = useState(true);
   const [storageFailed, setStorageFailed] = useState(false);
+  const [historyRecovery, setHistoryRecovery] = useState<ChatHistoryRecovery | null>(null);
+  const [historyRevision, setHistoryRevision] = useState(0);
+  const historyScope = useMemo(
+    () => ({ owner, verified, revision: historyRevision }),
+    [owner, verified, historyRevision],
+  );
+  const historyAccess = useRef<'loading' | 'ready' | 'incompatible'>('loading');
+  const deletingHistory = useRef(false);
   const session = useRef<ChatSession | null>(null);
   const lease = useRef<HistoryLease | null>(null);
   const reading = useRef<ChatReadPositions>(new Map());
@@ -119,7 +131,19 @@ export function useWebChat() {
   }, []);
 
   const stop = useCallback(() => session.current?.stop(), []);
-  const retry = useCallback(() => session.current?.retry(), []);
+  const retry = useCallback(() => {
+    if (historyAccess.current === 'ready') session.current?.retry();
+  }, []);
+  const historyError = useCallback((error: unknown, current: () => boolean) => {
+    if (!current()) return;
+    if (error instanceof UnsupportedChatHistoryError) {
+      historyAccess.current = 'incompatible';
+      session.current?.stop();
+      lease.current = null;
+      setHistoryLease(null);
+      if (!deletingHistory.current) setHistoryRecovery('required');
+    } else setStorageFailed(true);
+  }, []);
 
   const applyPermissions = useCallback(
     (staff: boolean, current: () => boolean) => {
@@ -135,15 +159,15 @@ export function useWebChat() {
           return next;
         });
       setMessages((records) => records.filter((record) => mayReadMessage(record, owner, staff)));
-      void setStaffHistoryPermission(owner, staff).catch(() => {
-        if (current()) setStorageFailed(true);
-      });
+      void setStaffHistoryPermission(owner, staff).catch((error) => historyError(error, current));
     },
-    [owner, updateReading],
+    [owner, updateReading, historyError],
   );
 
   useEffect(() => {
-    const recover = () => session.current?.recover();
+    const recover = () => {
+      if (historyAccess.current === 'ready') session.current?.recover();
+    };
     const visible = () => {
       if (document.visibilityState === 'visible') recover();
     };
@@ -160,6 +184,7 @@ export function useWebChat() {
   }, []);
 
   useEffect(() => {
+    const { owner, verified } = historyScope;
     stop();
     historyOwner.current = null;
     lease.current = null;
@@ -170,6 +195,9 @@ export function useWebChat() {
     setHasConnected(false);
     setPending([]);
     setError(null);
+    historyAccess.current = 'loading';
+    setHistoryRecovery(null);
+    setStorageFailed(false);
     allowedStaff.current = false;
     setStaff(false);
     if (!owner || !verified) return;
@@ -209,17 +237,15 @@ export function useWebChat() {
                 advanceReadPosition(positions, messageConversation(record, owner), null),
               );
             setMessages((existing) => mergeMessages(existing, [record]));
-            if (record.kind === 'player')
+            if (record.kind === 'user')
               liveMessage.current?.(record, () =>
                 current() ? activeSession.accessFor(record) : null,
               );
-            if (record.kind === 'player' && record.senderUuid === owner)
+            if (record.kind === 'user' && record.sender.playerUuid === owner)
               setPending((existing) => unconfirmedChatDeliveries(existing, [record], owner));
             const history = lease.current;
             if (history)
-              void saveHistory(history, record).catch(() => {
-                if (current()) setStorageFailed(true);
-              });
+              void saveHistory(history, record).catch((error) => historyError(error, current));
             break;
           }
           case 'accepted':
@@ -290,17 +316,22 @@ export function useWebChat() {
           }
           return merged;
         });
-      } catch {
-        if (current) setStorageFailed(true);
+      } catch (error) {
+        historyError(error, () => current);
       } finally {
-        // History initialization cannot overwrite live traffic; unavailable storage still permits chat.
-        if (initialize && current) retry();
+        // Ordinary storage failures permit memory-only chat; incompatible data requires consent.
+        if (initialize && current && historyAccess.current !== 'incompatible') {
+          historyAccess.current = 'ready';
+          retry();
+        }
       }
     };
     void load(true);
     const unsubscribe = onHistoryChange((reading) => {
       if (!reading) {
-        void load(false);
+        if (deletingHistory.current) return;
+        if (historyAccess.current === 'incompatible') setHistoryRevision((value) => value + 1);
+        else void load(false);
         return;
       }
       if (
@@ -321,7 +352,32 @@ export function useWebChat() {
       activeSession.stop();
       if (session.current === activeSession) session.current = null;
     };
-  }, [owner, verified, retry, stop, updateReading, applyPermissions, releaseConnection]);
+  }, [historyScope, retry, stop, updateReading, applyPermissions, releaseConnection, historyError]);
+
+  const deleteUnsupportedHistory = useCallback(async () => {
+    if (
+      !owner ||
+      historyOwner.current !== owner ||
+      historyAccess.current !== 'incompatible' ||
+      deletingHistory.current
+    )
+      return;
+    const activeSession = session.current;
+    const current = () => historyOwner.current === owner && session.current === activeSession;
+    deletingHistory.current = true;
+    setHistoryRecovery('deleting');
+    try {
+      await deleteChatHistoryDatabase(() => {
+        if (current()) setHistoryRecovery('blocked');
+      });
+      if (current()) setHistoryRevision((value) => value + 1);
+      announceHistoryChange();
+    } catch {
+      if (current()) setHistoryRecovery('failed');
+    } finally {
+      deletingHistory.current = false;
+    }
+  }, [owner]);
 
   useEffect(() => {
     let current = true;
@@ -334,6 +390,7 @@ export function useWebChat() {
   }, [owner, verified, accountStaff, applyPermissions]);
 
   const send = useCallback((destination: ChatDestination, text: string): boolean => {
+    if (historyAccess.current !== 'ready') return false;
     const result = session.current?.send(destination, text);
     if (!result?.ok) {
       if (result?.error) setError(result.error);
@@ -372,10 +429,10 @@ export function useWebChat() {
     if (!owner) return;
     try {
       applyHistoryLease(await resetHistory(owner), true);
-    } catch {
-      if (historyOwner.current === owner) setStorageFailed(true);
+    } catch (error) {
+      historyError(error, () => historyOwner.current === owner);
     }
-  }, [owner, applyHistoryLease]);
+  }, [owner, applyHistoryLease, historyError]);
 
   const setPersistence = useCallback(
     async (enabled: boolean, workspace?: ChatWorkspaceState) => {
@@ -385,11 +442,11 @@ export function useWebChat() {
           ? await enableHistory(owner, messages, reading.current, workspace)
           : await resetHistory(owner, false);
         applyHistoryLease(next, !enabled);
-      } catch {
-        if (historyOwner.current === owner) setStorageFailed(true);
+      } catch (error) {
+        historyError(error, () => historyOwner.current === owner);
       }
     },
-    [owner, messages, applyHistoryLease],
+    [owner, messages, applyHistoryLease, historyError],
   );
 
   const dismissPending = useCallback(
@@ -406,11 +463,11 @@ export function useWebChat() {
       updateReading(() => next);
       const history = lease.current;
       if (history)
-        void saveReadPosition(history, conversation, cursor).catch(() => {
-          if (lease.current === history) setStorageFailed(true);
-        });
+        void saveReadPosition(history, conversation, cursor).catch((error) =>
+          historyError(error, () => lease.current === history),
+        );
     },
-    [owner, updateReading],
+    [owner, updateReading, historyError],
   );
   const unread = useMemo(
     () => (owner ? unreadMessages(messages, owner, readPositions) : new Map<string, ChatUnread>()),
@@ -431,6 +488,8 @@ export function useWebChat() {
     staff,
     persist,
     storageFailed,
+    historyRecovery,
+    deleteUnsupportedHistory,
     retry,
     send,
     clearHistory,

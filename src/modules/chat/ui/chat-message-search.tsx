@@ -14,6 +14,7 @@ import {
   emptyChatSearch,
   matchesChatSearch,
 } from '@/modules/chat/model/chat-search';
+import { ChatAuthorAvatar } from '@/modules/chat/ui/chat-author-avatar';
 import { ChatPanel, ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
@@ -108,7 +109,7 @@ export function ChatMessageSearch({
                     .map((part) => part.text)
                     .join(''),
                   name:
-                    message.kind === 'player' ? message.senderName : (message.subject?.name ?? ''),
+                    message.kind === 'user' ? message.sender.name : (message.subject?.name ?? ''),
                 },
               ];
             })
@@ -125,7 +126,7 @@ export function ChatMessageSearch({
   const authors = useMemo(() => {
     const values = new Map<string, string>();
     for (const message of messages)
-      if (message.kind === 'player') values.set(message.senderUuid, message.senderName);
+      if (message.kind === 'user') values.set(message.sender.id, message.sender.name);
     return [...values].sort((a, b) => a[1].localeCompare(b[1]));
   }, [messages]);
   const format = useMemo(
@@ -240,6 +241,7 @@ export function ChatMessageSearch({
               <option value="all">{t('filters.anySource')}</option>
               <option value="game">{t('source.game')}</option>
               <option value="web">{t('source.web')}</option>
+              <option value="social">{t('source.social')}</option>
             </select>
           </label>
           <label>
@@ -296,8 +298,8 @@ export function ChatMessageSearch({
               const showDate =
                 index === 0 || date !== format.date.format(visible[index - 1].message.createdAt);
               const subject =
-                message.kind === 'player'
-                  ? { playerUuid: message.senderUuid, name: message.senderName }
+                message.kind === 'user'
+                  ? { playerUuid: message.sender.playerUuid, name: message.sender.name }
                   : message.subject;
               const ContextIcon =
                 destination.channel === 'public'
@@ -309,7 +311,7 @@ export function ChatMessageSearch({
                 scope === 'all' &&
                 (message.channel !== 'private' ||
                   message.kind === 'server' ||
-                  message.senderUuid === owner);
+                  message.sender.playerUuid === owner);
               return (
                 <li key={message.id}>
                   {showDate ? (
@@ -323,7 +325,9 @@ export function ChatMessageSearch({
                     onClick={() => choose(result)}
                   >
                     <span className="chat-search-result__avatar" aria-hidden="true">
-                      {subject ? (
+                      {message.kind === 'user' ? (
+                        <ChatAuthorAvatar sender={message.sender} size={32} />
+                      ) : subject ? (
                         <MinecraftAvatar uuid={subject.playerUuid} name={subject.name} size={32} />
                       ) : (
                         <Server size={20} />
@@ -333,9 +337,7 @@ export function ChatMessageSearch({
                       <span className="chat-search-result__meta">
                         <strong>
                           <HighlightedText
-                            text={
-                              message.kind === 'player' ? message.senderName : t('server.label')
-                            }
+                            text={message.kind === 'user' ? message.sender.name : t('server.label')}
                             query={needle}
                           />
                         </strong>

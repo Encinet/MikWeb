@@ -1377,3 +1377,15 @@ button.chat-peer:hover {
     display: none;
   }
 }
+
+.chat-author-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--theme-surface-icon);
+  color: var(--theme-text-muted-strong);
+  font-size: 16px;
+  font-weight: 700;
+}

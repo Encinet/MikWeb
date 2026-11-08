@@ -1,7 +1,7 @@
 import type { RecipientContext, SenderContext } from '@hpke/core';
 import { Aes256Gcm, CipherSuite, DhkemP256HkdfSha256, HkdfSha256 } from '@hpke/core';
 
-const PROTOCOL = 'mik-chat-hpke-2026-11-03\0https://mcmik.top\0';
+const PROTOCOL = 'mik-chat-hpke-2026-11-08\0https://mcmik.top\0';
 const KEY_LIFETIME = 30 * 60 * 1000;
 const EXCHANGE_TIMEOUT = 5000;
 const APPLICATION = 0;

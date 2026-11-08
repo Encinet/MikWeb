@@ -8,7 +8,7 @@ import type {
 } from '@/modules/chat/lib/connection/chat-session';
 import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
-import { message, OTHER, OWNER, PEER } from './fixtures';
+import { message, OTHER, OWNER, PEER, player } from './fixtures';
 
 class Clock {
   now = 0;
@@ -285,7 +285,7 @@ test('accepted, rejected and echoed sends cancel their deadlines while unconfirm
     transport.receive({ type: 'error', requestId: ids[1], error: 'chat_busy' });
     transport.receive({
       type: 'message',
-      message: message({ senderUuid: OWNER, requestId: ids[2] }),
+      message: message({ sender: player(OWNER), requestId: ids[2] }),
     });
     h.clock.advance(10_000);
     assert.deepEqual(h.timedOut, [ids[3]]);
@@ -395,7 +395,7 @@ test('deferred message consumers lose access immediately when permissions or con
     assert.equal(current?.(), true);
     assert.equal(h.session.accessFor(record), null);
     assert.equal(
-      h.session.accessFor(message({ channel: 'private', senderUuid: PEER, targetUuid: OTHER })),
+      h.session.accessFor(message({ channel: 'private', sender: player(PEER), targetUuid: OTHER })),
       null,
     );
     transport.close();
@@ -405,4 +405,20 @@ test('deferred message consumers lose access immediately when permissions or con
   } finally {
     h.session.stop();
   }
+});
+
+test('social authors flow through an authorized session without disconnecting or entering player presence', () => {
+  const h = harness();
+  h.session.retry();
+  const transport = h.online();
+  transport.receive({
+    type: 'message',
+    message: message({
+      sender: { id: 'external:guest', name: 'Guest' },
+      source: { kind: 'social', platformId: 'matrix', platformName: 'Matrix' },
+    }),
+  });
+  assert.equal(h.state().status, 'online');
+  assert.equal(h.events.filter(({ event }) => event.type === 'message').length, 1);
+  h.session.stop();
 });

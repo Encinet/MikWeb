@@ -18,8 +18,8 @@ export function chatInputHistory(
   for (let index = messages.length - 1; index >= 0; index--) {
     const message = messages[index];
     if (
-      message.kind !== 'player' ||
-      message.senderUuid !== owner ||
+      message.kind !== 'user' ||
+      message.sender.playerUuid !== owner ||
       messageConversation(message, owner) !== conversation
     )
       continue;

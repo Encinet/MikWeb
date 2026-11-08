@@ -355,8 +355,8 @@ export class ChatSession {
         return;
       }
       if (
-        event.message.kind === 'player' &&
-        event.message.senderUuid === this.owner &&
+        event.message.kind === 'user' &&
+        event.message.sender.playerUuid === this.owner &&
         event.message.requestId
       )
         this.finishDelivery(event.message.requestId);

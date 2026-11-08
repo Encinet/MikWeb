@@ -2,42 +2,42 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { chatInputHistory } from '@/modules/chat/model/chat-input-history';
 import { isValidChatInput } from '@/modules/chat/model/chat-protocol';
-import { message, OTHER, OWNER, PEER } from './fixtures';
+import { message, OTHER, OWNER, PEER, player } from './fixtures';
 
 test('input recall keeps only the account’s own sendable messages from the requested conversation', () => {
   const messages = [
     message({
       id: 'old',
-      senderUuid: OWNER,
+      sender: player(OWNER),
       content: [{ text: 'Hello ' }, { text: '@Alex', mention: true }],
     }),
-    message({ id: 'other', senderUuid: PEER, content: [{ text: 'Someone else' }] }),
+    message({ id: 'other', sender: player(PEER), content: [{ text: 'Someone else' }] }),
     message({
       id: 'staff',
-      senderUuid: OWNER,
+      sender: player(OWNER),
       channel: 'staff',
       content: [{ text: 'Staff message' }],
     }),
     message({
       id: 'private',
-      senderUuid: OWNER,
+      sender: player(OWNER),
       channel: 'private',
       targetUuid: PEER,
       content: [{ text: 'Private message' }],
     }),
     message({
       id: 'other-private',
-      senderUuid: OWNER,
+      sender: player(OWNER),
       channel: 'private',
       targetUuid: OTHER,
       content: [{ text: 'Other private message' }],
     }),
-    message({ id: 'invalid', senderUuid: OWNER, content: [{ text: 'Line one\nLine two' }] }),
-    message({ id: 'long', senderUuid: OWNER, content: [{ text: 'a'.repeat(257) }] }),
+    message({ id: 'invalid', sender: player(OWNER), content: [{ text: 'Line one\nLine two' }] }),
+    message({ id: 'long', sender: player(OWNER), content: [{ text: 'a'.repeat(257) }] }),
     message({
       id: 'latest',
-      senderUuid: OWNER,
-      source: 'web',
+      sender: player(OWNER),
+      source: { kind: 'web' },
       content: [{ text: 'Latest message' }],
     }),
   ];

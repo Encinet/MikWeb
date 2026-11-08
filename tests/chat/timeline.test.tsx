@@ -526,7 +526,7 @@ function SearchFilters() {
       messages={[
         message({ id: 'mention', mentioned: true, content: [{ text: 'Meet at spawn' }] }),
         message({ id: 'ordinary', content: [{ text: 'Spawn is ready' }] }),
-        message({ id: 'web', source: 'web', content: [{ text: 'Hello spawn' }] }),
+        message({ id: 'web', source: { kind: 'web' }, content: [{ text: 'Hello spawn' }] }),
         message({ id: 'elsewhere', content: [{ text: 'See you at the gate' }] }),
       ]}
       owner={OWNER}
