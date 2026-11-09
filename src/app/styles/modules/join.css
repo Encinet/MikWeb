@@ -164,33 +164,52 @@
   font-size: 0.875rem;
 }
 .join-captcha {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
   margin-top: 1rem;
 }
-.join-captcha > div {
+.join-captcha-widget,
+.join-captcha-loading {
+  grid-area: 1 / 1;
   min-width: 0;
-  flex: 1 1 14rem;
+  min-height: 4rem;
 }
-.join-captcha cap-widget {
-  --cap-background: var(--theme-surface-code);
+.join-captcha-widget cap-widget {
+  /* Cap uses this background for its label masks, so it must be opaque. */
+  --cap-background: var(--theme-surface-code-block);
   --cap-border-color: var(--theme-border-glass);
   --cap-border-radius: 1rem;
   --cap-color: var(--theme-text-heading);
-  --cap-checkbox-background: var(--theme-surface-glass);
-  --cap-checkbox-border: 1px solid var(--theme-border-glass);
+  --cap-checkbox-background: var(--theme-bg-base);
+  --cap-checkbox-border: 1px solid var(--theme-text-muted);
   --cap-spinner-color: var(--theme-accent-strong);
   --cap-spinner-background-color: var(--theme-border-glass);
-  --cap-font: inherit;
+  --cap-font: var(--font-base);
+  --cap-focus-ring: var(--theme-accent-strong);
+  --cap-troubleshoot-color: var(--theme-accent-strong);
+  --cap-widget-height: 4rem;
   --cap-widget-width: 100%;
   display: block;
+  width: 100%;
   max-width: 100%;
+  font-family: var(--font-base);
+  line-height: 1.4;
 }
-.join-captcha > p {
+.join-captcha-loading {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.875rem;
+  border: 1px solid var(--theme-border-glass);
+  border-radius: 1rem;
+  background: var(--theme-surface-code-block);
   color: var(--theme-text-muted-strong);
   font-size: 0.875rem;
+}
+.join-captcha-cancel {
+  grid-row: 2;
+  justify-self: end;
 }
 .join-unavailable {
   margin-top: 1rem;

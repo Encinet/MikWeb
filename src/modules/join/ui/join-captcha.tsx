@@ -67,9 +67,13 @@ export function JoinCaptcha({
 
   return (
     <div className="join-captcha">
-      <div ref={host} />
-      {!loaded ? <p role="status">{t('loading')}</p> : null}
-      <button type="button" className="ui-action-button" onClick={onCancel}>
+      <div ref={host} className="join-captcha-widget" />
+      {!loaded ? (
+        <p className="join-captcha-loading" role="status">
+          {t('loading')}
+        </p>
+      ) : null}
+      <button type="button" className="ui-action-button join-captcha-cancel" onClick={onCancel}>
         {t('cancel')}
       </button>
     </div>
