@@ -38,10 +38,10 @@ export function HomeWorldNavigation() {
           <span>{t('chat.title')}</span>
         </Link>
       ) : !isLoading ? (
-        <a href="https://apply.mcmik.top" target="_blank" rel="noopener noreferrer">
+        <Link href="/join">
           <UserPlus className="h-4 w-4" aria-hidden="true" />
           <span>{t('nav.items.join')}</span>
-        </a>
+        </Link>
       ) : null}
     </nav>
   );

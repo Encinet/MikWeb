@@ -1,3 +1,4 @@
+import { isJoinPagePath } from '@/modules/join/lib/join-path';
 import {
   ACCENT_COLOR_STORAGE_KEY,
   DAILY_ACCENT_CHROMA,
@@ -182,7 +183,7 @@ const palette=(${getAccentProperties.toString()});
 const hue=(${getDailyAccentHue.toString()})();
 let color=palette(${JSON.stringify(DEFAULT_ACCENT_COLOR)},hue,${DAILY_ACCENT_CHROMA})['--theme-seed'];
 let mode='daily';
-try{const saved=localStorage.getItem(${JSON.stringify(ACCENT_COLOR_STORAGE_KEY)});if(saved&&/^#[\\da-f]{6}$/i.test(saved)){color=saved.toLowerCase();mode='custom'}}catch{}
+if(!(${isJoinPagePath.toString()})(location.pathname))try{const saved=localStorage.getItem(${JSON.stringify(ACCENT_COLOR_STORAGE_KEY)});if(saved&&/^#[\\da-f]{6}$/i.test(saved)){color=saved.toLowerCase();mode='custom'}}catch{}
 for(const [name,value] of Object.entries(palette(color))){document.documentElement.style.setProperty(name,value)}
 document.documentElement.setAttribute('data-accent-mode',mode);
 }`;

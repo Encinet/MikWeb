@@ -10,6 +10,7 @@ import { createBrowserEnvironment } from '../support/browser-environment';
 
 let browser: ReturnType<typeof createBrowserEnvironment>;
 let previousObserver: PropertyDescriptor | undefined;
+let previousGeometry: typeof browser.window.HTMLElement.prototype.getBoundingClientRect;
 let scrollY: number;
 let scrolls: ScrollToOptions[];
 let reading: ReturnType<typeof useWikiReading>;
@@ -17,6 +18,7 @@ const outline = [{ slug: 'details', heading: 'Details', level: 2 }];
 
 beforeEach(() => {
   browser = createBrowserEnvironment();
+  previousGeometry = browser.window.HTMLElement.prototype.getBoundingClientRect;
   previousObserver = Object.getOwnPropertyDescriptor(globalThis, 'MutationObserver');
   Object.defineProperty(globalThis, 'MutationObserver', {
     configurable: true,
@@ -61,6 +63,7 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
+  browser.window.HTMLElement.prototype.getBoundingClientRect = previousGeometry;
   await browser.close();
   if (previousObserver) Object.defineProperty(globalThis, 'MutationObserver', previousObserver);
   else Reflect.deleteProperty(globalThis, 'MutationObserver');

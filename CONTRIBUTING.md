@@ -349,7 +349,7 @@ icon: Home
 
 ## API / MCP
 
-- 数据 API 由独立的 `mikdata` Worker 提供；MikWeb 内不要重新引入 Minecraft 上游代理或 TOTP secret
+- 数据 API 由独立的 `mikdata` Worker 提供；MikWeb 内不要重新引入 Minecraft 上游代理；QQ 入群 TOTP 仅在 `modules/join/server/` 生成，密钥只通过服务端环境变量读取
 - MCP 工具变更后，同步更新 [README.md](./README.md) 中的对外说明
 - 涉及数据 API 响应结构、缓存行为或新增端点时，在 `mikdata` 项目维护对应文档
 

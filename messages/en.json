@@ -772,5 +772,59 @@
       "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
       "eula": "Mojang's EULA"
     }
+  },
+  "join": {
+    "title": "Join the Mik community",
+    "description": "Apply through a QQ group or the form. Choose whichever works for you",
+    "meta": {
+      "description": "Apply to join Mik Casual through QQ or Google Forms"
+    },
+    "qq": {
+      "title": "Apply through QQ",
+      "description": "Copy a join code, then follow the group notice to apply. Results are shared in the group",
+      "number": "Group {number}",
+      "unavailable": "QQ applications are unavailable",
+      "open": "Open QQ"
+    },
+    "groups": {
+      "1": "Group 1",
+      "2": "Group 2 (backup)"
+    },
+    "form": {
+      "title": "Apply with the form",
+      "description": "No QQ account needed. Enter your Java username, email, and a short introduction. Results arrive by email",
+      "open": "Open application form",
+      "note": "Opens Google Forms in a new window",
+      "unavailable": "Form applications are unavailable"
+    },
+    "code": {
+      "get": "Get join code",
+      "copy": "Copy code",
+      "retry": "Get a new code",
+      "label": "QQ join code",
+      "waitingHint": "Verified. Getting your code; this may take a moment near expiry",
+      "help": "Copy the code and paste it into the QQ join verification",
+      "paste": "Copied. Open QQ and paste the code into the join verification",
+      "remaining": "{seconds}s remaining",
+      "remainingLabel": "Time until the join code expires",
+      "expired": "This code has expired. Get a new one"
+    },
+    "errors": {
+      "unavailable": "Join codes are unavailable. Try again later or use the form",
+      "request_timeout": "The request timed out. Try again or use the form",
+      "request_failed": "Could not get a code. Try again or use the form",
+      "captcha_failed": "Verification failed or expired. Verify again",
+      "captcha_unavailable": "Verification is unavailable. Try again or use the form",
+      "code_expired": "The code has expired. Verify again to get a new one"
+    },
+    "rules": "Read the server rules before applying",
+    "captcha": {
+      "hint": "Complete the verification to display your join code",
+      "pending": "Complete verification",
+      "verify": "Verify you are human",
+      "loading": "Loading verification…",
+      "failed": "Verification failed, try again",
+      "cancel": "Cancel"
+    }
   }
 }

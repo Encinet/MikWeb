@@ -59,3 +59,6 @@ PRODUCT.md
 
 .reasonix/
 AGENTS.md
+
+# Generated from pinned Cap dependencies before dev/build
+/public/vendor/cap/

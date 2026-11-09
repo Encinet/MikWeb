@@ -87,7 +87,7 @@ export default function SiteHeader() {
         id: 'apply',
         icon: Play,
         label: t('nav.items.join'),
-        link: 'https://apply.mcmik.top',
+        path: '/join',
         highlight: true,
       });
     }

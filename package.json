@@ -7,8 +7,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "bun run scripts/prepare-cap-assets.ts && next dev",
+    "build": "bun run scripts/prepare-cap-assets.ts && next build",
     "start": "next start",
     "fix": "biome check . --write",
     "check:wiki": "bun run scripts/wiki-check.ts",
@@ -24,6 +24,7 @@
     "@modelcontextprotocol/server": "^2.4.0",
     "@simplewebauthn/browser": "^14.0.0",
     "@vercel/analytics": "^2.0.1",
+    "cap-widget": "0.1.62",
     "github-slugger": "^2.0.0",
     "lucide-react": "^1.70.0",
     "mcp-handler": "^2.3.1",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.6",
+    "@cap.js/wasm": "0.0.8",
     "@formatjs/icu-messageformat-parser": "3.5.22",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/mdx": "^2.0.14",
@@ -51,6 +53,7 @@
     "@types/react-dom": "^19.3.0",
     "fake-indexeddb": "^6.2.8",
     "happy-dom": "^21.0.4",
+    "pako": "2.1.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2"
   }

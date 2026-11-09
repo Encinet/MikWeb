@@ -9,6 +9,12 @@ export const SITE_PAGES = {
     imageDescription: 'metadata.social.description',
     cover: '/images/home/hero-city-daylight.webp',
   },
+  join: {
+    sitemap: true,
+    pathname: '/join',
+    title: 'join.title',
+    description: 'join.meta.description',
+  },
   map: {
     sitemap: true,
     pathname: '/map',

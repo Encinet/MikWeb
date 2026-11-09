@@ -64,6 +64,9 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 
 本站保留的动态入口：
 
+- `/:locale/join`：同时展示 QQ 群与表单申请，使用每日配色，保留全站深浅色设置
+- `POST /api/join/code`：获取 QQ 入群验证码，响应不缓存
+
 - `POST /api/mcp`：MCP 工具入口
 - `GET|POST|DELETE /api/auth/*`：网页登录 BFF，只在服务端转发到 Mik Data
 - `POST /api/account/*`：玩家账号 BFF，只在服务端转发到 Mik Data
@@ -152,3 +155,15 @@ Wiki 位于 `content/<locale>/<group>/*.mdx`，默认打开新手入门，通过
 聊天的存储、筛选、坐标识别与 DOM 交互回归测试：`bun run test:chat`。
 
 部署时，将 `chat.mcmik.top/ws` 通过 Cloudflare Tunnel 转发到插件的 `127.0.0.1:35354`，其他路径拒绝。仅允许正式网站 Origin `https://mcmik.top`；完整配置见 mik 项目的 `docs/web-chat.md`。
+
+## 入群验证码
+
+入群页为 `/zh-CN/join` 与 `/en/join`，QQ群和表单由 `.env.example` 中的字段配置
+
+获取入群码必须通过 [Cap](https://capjs.js.org/guide/capd/) 验证，配置 `CAP_API_ENDPOINT` 与服务端 `CAP_SECRET_KEY`，并在 Cap 控制台允许本站域名，使用专门的 site key
+
+`QQ_GROUP_1_TOTP_SECRET` 与 `QQ_GROUP_2_TOTP_SECRET` 使用不同的 Base32 密钥，各自至少包含 20 个随机字节，只用于入群验证；所有 secret 均留在服务端
+
+Cap 验证令牌仅使用一次，验证失败或服务不可用时不发码；接近换码时间时，服务端等待下一轮，取码重试需要重新验证，验证组件与求解资源随本站构建提供
+
+`prepare-cap-assets.ts` 仅在开发和构建前准备静态资源，资源版本与依赖保持一致，并检查组件与 WASM 是否匹配；升级时同时更新 `cap-widget` 与 `@cap.js/wasm`

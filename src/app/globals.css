@@ -4,6 +4,7 @@
 @import "./styles/base/document.css";
 @import "./styles/shared/ui-system.css";
 @import "./styles/modules/auth-login.css";
+@import "./styles/modules/join.css";
 @import "./styles/modules/auth-flow.css";
 @import "./styles/shared/feedback.css";
 @import "./styles/modules/account.css";

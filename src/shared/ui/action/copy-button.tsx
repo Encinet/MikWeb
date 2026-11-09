@@ -2,10 +2,10 @@
 
 import { AlertCircle, Check, Copy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ButtonHTMLAttributes } from 'react';
+import type { ComponentPropsWithRef } from 'react';
 import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
 
-type CopyButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'onClick'> & {
+type CopyButtonProps = Omit<ComponentPropsWithRef<'button'>, 'children' | 'onClick'> & {
   value: string;
   label?: string;
   showLabel?: boolean;
