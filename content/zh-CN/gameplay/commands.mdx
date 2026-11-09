@@ -73,32 +73,19 @@ icon: Wrench
 
 ## 聊天与私信
 
+频道、提及、物品展示与平台互通见[聊天系统](?section=chat)
+
 <WikiTable>
 <thead>
 <tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
 </thead>
 <tbody>
-<tr><td>公共频道</td><td><code>/public</code> 或 <code>/global</code></td><td>切换到公共聊天频道</td></tr>
-<tr><td>临时公共消息</td><td><code>/public &lt;消息&gt;</code></td><td>发送一条公共消息但不改变当前聊天频道；<code>/global</code> 也可使用同样写法</td></tr>
-<tr><td rowSpan="2">私聊频道</td><td><code>/msg &lt;玩家&gt;</code></td><td>切换到与该玩家的私聊频道；如果当前已经在这个私聊频道，再执行一次会回到公共频道</td></tr>
-<tr><td><code>/msg</code></td><td>已经在任意私聊频道时，直接执行会回到公共频道</td></tr>
-<tr><td>临时私信</td><td><code>/msg &lt;玩家&gt; &lt;消息&gt;</code></td><td>发送一条私信但不改变当前聊天频道；<code>/tell</code>、<code>/w</code>、<code>/whisper</code> 也可使用同样写法</td></tr>
-<tr><td>快速回复</td><td><code>/r &lt;消息&gt;</code> 或 <code>/reply &lt;消息&gt;</code></td><td>回复最近私聊过的玩家，同样不会改变当前聊天频道</td></tr>
-<tr><td rowSpan="5">聊天增强</td><td><code>@玩家名</code> 或直接输入玩家名</td><td>提及当前频道可见的玩家；大小写不敏感，例如 <code>@steve</code> 或 <code>steve</code> 会显示为 <code>@Steve</code></td></tr>
-<tr><td><code>%i</code>、<code>[i]</code> 或 <code>[item]</code></td><td>在聊天中展示手中物品</td></tr>
-<tr><td><code>%num</code>，例如 <code>%1</code></td><td>在聊天中展示对应物品栏格子的物品；<code>%1</code> 是物品栏第一格，支持 <code>%1</code> 到 <code>%36</code></td></tr>
-<tr><td>链接、<code>av</code> / <code>BV</code> 号</td><td>网址和 Bilibili 视频号会自动显示为可点击文本</td></tr>
-<tr><td>MiniMessage 样式</td><td>成员可在聊天中使用颜色、粗体/斜体等装饰、渐变、彩虹与 reset；不支持点击事件、选择器、换行等标签</td></tr>
-<tr><td rowSpan="2">聊天设置</td><td>主菜单 → 聊天设置</td><td>设置提及提醒和聊天延迟；延迟可选 <code>off</code>、<code>3s</code>、<code>5s</code>、<code>7s</code>，启用后所有聊天频道都会在指定时间后发送</td></tr>
-<tr><td><code>/cancel</code> 或 <code>/c</code></td><td>取消自己尚未发送的延迟消息</td></tr>
+<tr><td>公共消息</td><td><code>/public</code>、<code>/global</code></td><td><a href="?section=chat#开始聊天">切换频道与发送单条消息</a></td></tr>
+<tr><td>私聊与回复</td><td><code>/msg</code>、<code>/r</code></td><td><a href="?section=chat#开始聊天">私聊频道、临时私信与回复</a></td></tr>
+<tr><td>取消待发消息</td><td><code>/cancel</code>、<code>/c</code></td><td><a href="?section=chat#延迟发送">发送前的取消窗口</a></td></tr>
+<tr><td>名牌</td><td><code>/nametag</code></td><td><a href="?section=chat#身份与名牌">名称前后缀与显示范围</a></td></tr>
 </tbody>
 </WikiTable>
-
-### 名牌
-
-成员及以上可用 `/nametag` 或「主菜单 → 设置 → 名称标签」编辑前后缀：选择字段 → 在聊天框输入 MiniMessage → 预览并确认保存。清空也须预览确认。
-
-效果用于聊天、Tab 列表和已绑定外部发言，不修改头顶的原版玩家名。
 
 ## 装饰与互动
 

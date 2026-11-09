@@ -1,0 +1,206 @@
+---
+title: 聊天系统
+description: 公共、私聊与管理频道，以及提及、物品展示、网页聊天和平台互通
+order: 35
+icon: Users
+---
+
+游戏与网页共用公共、私聊和管理频道，你可以在不同设备上继续交流，QQ 和 Matrix 也接入了公共聊天
+
+## 频道与范围
+
+<Definitions>
+<Definition title="公共">
+
+面向公共频道中的玩家，游戏与网页消息相互同步，并按下方规则连接 QQ 和 Matrix
+
+</Definition>
+<Definition title="私聊">
+
+仅对话双方可见，支持游戏与网页之间收发，对方需要在游戏或网页聊天中在线
+
+</Definition>
+<Definition title="管理">
+
+仅管理与维护者可用，游戏和网页的管理频道相互同步，消息只发给有权限的频道成员
+
+</Definition>
+</Definitions>
+
+## 开始聊天
+
+<Tabs defaultValue="game">
+<Tab value="game" title="游戏">
+
+进入游戏后默认使用公共频道（public），直接输入消息即可在公共频道聊天
+
+<Definitions>
+<Definition title="公共频道">
+
+用 `/public` 切回公共频道，`/public <消息>` 只发送一条公共消息，保留当前频道，别名 `/global` 支持相同用法
+
+</Definition>
+<Definition title="私聊频道">
+
+用 `/msg <玩家>` 切换到与对方的私聊，再对同一人执行一次会回到公共频道；已经在私聊时，单独执行 `/msg` 也可回到公共频道
+
+</Definition>
+<Definition title="临时私信与回复">
+
+用 `/msg <玩家> <消息>` 发送一条私信，用 `/r <消息>` 回复最近私聊过的玩家，两者都不会改变当前频道
+
+`/tell`、`/w`、`/whisper` 是 `/msg` 的别名，`/reply` 是 `/r` 的别名
+
+</Definition>
+</Definitions>
+
+例如，临时发送一条公共消息或私信，保留当前频道：
+
+```mcfunction
+/public 大家好
+```
+
+```mcfunction
+/msg Steve 你好
+```
+
+</Tab>
+<Tab value="web" title="网页">
+
+登录[网页聊天](/zh-CN/chat)，选择公共频道或私聊会话，有管理权限时还可选择管理频道，无需同时登录游戏
+
+- 点击「新建私聊」，或从在线玩家名单选择对象
+- 在输入框发送文字、链接或提及，每条消息最多 256 个字符
+- 进入聊天页面即连接，离开页面后断开
+
+在聊天设置中开启「私聊与提及通知」，并授予浏览器通知权限，提醒需要网页保持连接，关闭全部聊天页面后没有离线推送
+
+<Details title="本机记录保存在哪里">
+
+启用「保存本机记录」后，消息、草稿和会话列表保存在当前浏览器，不同设备不共享记录，消息最多保留 30 天，可在聊天设置中关闭保存或清空
+
+离开聊天页面会保留本机记录，退出登录或切换账号会清空，记录只包含此浏览器已收到的消息，离线期间的消息不会补发
+
+</Details>
+
+</Tab>
+</Tabs>
+
+## 提及与消息内容
+
+<Tabs defaultValue="mentions">
+<Tab value="mentions" title="提及">
+
+游戏内推荐用 `@ 玩家名`，`@` 后留一个空格，便于用 Tab 补全玩家名；也支持 `@玩家名`，大小写不敏感，单独输入玩家名不会触发提及
+
+```text
+@ Steve 来看看这里
+```
+
+网页输入 `@` 后可从当前频道的在线玩家中补全，游戏公共聊天还可以提及已绑定平台账号的离线玩家
+
+游戏内的提及提醒可在「主菜单 → 聊天设置」中调整
+
+`@all` 仅维护者可在游戏中使用，网页不支持发送全体提及
+
+</Tab>
+<Tab value="items" title="物品展示">
+
+<Definitions>
+<Definition title="%i" code>
+
+在游戏中展示主手物品，也可写成 `[i]` 或 `[item]`，游戏内悬浮可查看物品详情
+
+</Definition>
+<Definition title="%1 ~ %36" code>
+
+展示对应物品栏格子的物品，`%1` 是第一格，空格子显示为空
+
+</Definition>
+</Definitions>
+
+```text
+看看这件物品 %i
+```
+
+物品展示需要在游戏中发送，网页输入 `%i` 或 `%1` 不会读取游戏物品栏；转发到网页和社交平台时按平台能力显示物品文字
+
+</Tab>
+<Tab value="links" title="链接">
+
+网址会转换成可点击链接，Bilibili 的 `av` / `BV` 号、Mojira 的 `MC-编号` 也会自动识别，GitHub、Minecraft Wiki 和 Matrix 链接会显示对应的链接样式
+
+在网页和游戏中都可以发送链接
+
+</Tab>
+<Tab value="styles" title="文字样式">
+
+成员及以上可在游戏中使用 MiniMessage 的颜色、粗体、斜体、下划线、删除线、渐变、彩虹和重置样式，例如：
+
+```text
+<gold><bold>大家好</bold></gold>
+```
+
+标签语法与更多示例见 [MiniMessage 官方格式文档](https://docs.papermc.io/adventure/minimessage/format/)
+
+网页可以显示消息已有的颜色与装饰，直接在网页输入 MiniMessage 标签不会应用这些样式，游戏中也不支持通过样式标签添加点击事件、选择器或换行
+
+</Tab>
+</Tabs>
+
+## 延迟发送
+
+已发送的消息无法撤回，游戏内的延迟发送会在真正发出前留出几秒确认时间，等待期间先向自己显示预览，其他人还看不到，可以用 `/cancel` 或 `/c` 取消
+
+在「主菜单 → 聊天设置」选择 `3s`、`5s` 或 `7s` 设置等待时间，选择 `off` 则立即发送，这项设置对游戏中发送的公共、管理和私聊消息都生效，到期发出后就不能撤回
+
+## 平台互通
+
+<Definitions>
+<Definition title="游戏 ↔ 网页">
+
+公共、私聊和管理频道均按各自的可见范围收发，网页消息会标明网页来源
+
+</Definition>
+<Definition title="Matrix">
+
+房间与游戏、网页公共频道之间双向自动同步，普通消息无需前缀
+
+</Definition>
+<Definition title="QQ">
+
+一群的普通消息直接同步到游戏、网页公共频道和 Matrix，无需前缀或 @机器人；从这些平台发往一群时，消息需以半角 `#` 开头，例如 `#大家好`
+
+二群(备用)暂未开启互通
+
+<Callout title="转发审核与隐私">
+
+转发到 QQ 前，消息会提交给 OVHcloud 提供的 Qwen3Guard 模型进行内容审核，提交内容包括消息正文、发送者显示名，以及消息中的提及和链接目标
+
+</Callout>
+
+</Definition>
+</Definitions>
+
+<Callout title="QQ 与 Matrix 接收公共频道消息">
+
+管理频道和私聊不会转发到这些群或房间，在私聊中输入 `#` 也不会改变消息的频道范围
+
+</Callout>
+
+## 身份与名牌
+
+<Definitions>
+<Definition title="游戏名牌">
+
+成员及以上可用 `/nametag` 或「主菜单 → 设置 → 名称标签」编辑前后缀：选择字段，在聊天框输入 MiniMessage，预览并确认保存，清空也须预览确认
+
+名牌用于聊天、Tab 列表和已绑定的外部发言，头顶仍显示原版玩家名
+
+</Definition>
+<Definition title="平台身份">
+
+消息会标明来源平台，QQ、Matrix 账号绑定后显示游戏身份，未绑定时显示平台昵称，绑定命令见[账号与社区](?section=commands#账号与社区)
+
+</Definition>
+</Definitions>

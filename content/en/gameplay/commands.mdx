@@ -73,32 +73,19 @@ icon: Wrench
 
 ## Chat & Messages
 
+For channels, mentions, item sharing, and platform bridging, see [Chat system](?section=chat)
+
 <WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td>Public channel</td><td><code>/public</code> or <code>/global</code></td><td>Switch to the public chat channel</td></tr>
-<tr><td>One-time public message</td><td><code>/public &lt;message&gt;</code></td><td>Send one public message without changing your current chat channel. <code>/global</code> uses the same format</td></tr>
-<tr><td rowSpan="2">Private channel</td><td><code>/msg &lt;player&gt;</code></td><td>Switch to a private chat channel with that player. If you are already in that private channel, running it again returns you to public chat</td></tr>
-<tr><td><code>/msg</code></td><td>When you are already in any private chat channel, return to public chat</td></tr>
-<tr><td>One-time private message</td><td><code>/msg &lt;player&gt; &lt;message&gt;</code></td><td>Send one private message without changing your current chat channel. <code>/tell</code>, <code>/w</code>, and <code>/whisper</code> use the same format</td></tr>
-<tr><td>Quick reply</td><td><code>/r &lt;message&gt;</code> or <code>/reply &lt;message&gt;</code></td><td>Reply to the player you most recently messaged, without changing your current chat channel</td></tr>
-<tr><td rowSpan="5">Chat enhancements</td><td><code>@player</code> or the player name directly</td><td>Mention a player visible in the current channel. Mentions are case-insensitive; for example, <code>@steve</code> or <code>steve</code> displays as <code>@Steve</code></td></tr>
-<tr><td><code>%i</code>, <code>[i]</code> or <code>[item]</code></td><td>Show the item in your hand in chat</td></tr>
-<tr><td><code>%num</code>, for example <code>%1</code></td><td>Show the item in the matching inventory slot. <code>%1</code> is the first slot; valid slots are <code>%1</code> through <code>%36</code></td></tr>
-<tr><td>Links, <code>av</code> / <code>BV</code> IDs</td><td>URLs and Bilibili video IDs are automatically displayed as clickable text</td></tr>
-<tr><td>MiniMessage styling</td><td>Members can use colors, text decorations, gradients, rainbow text, and reset in chat. Click events, selectors, newline tags, and similar unsafe tags are not supported</td></tr>
-<tr><td rowSpan="2">Chat settings</td><td>Main menu → Chat Settings</td><td>Configure mention alerts and chat delay. Delay options are <code>off</code>, <code>3s</code>, <code>5s</code>, and <code>7s</code>; when enabled, all chat channels are sent after the selected delay</td></tr>
-<tr><td><code>/cancel</code> or <code>/c</code></td><td>Cancel your own pending delayed messages</td></tr>
+<tr><td>Public messages</td><td><code>/public</code>, <code>/global</code></td><td><a href="?section=chat#start-chatting">Channel switching and one-time messages</a></td></tr>
+<tr><td>Private chat and replies</td><td><code>/msg</code>, <code>/r</code></td><td><a href="?section=chat#start-chatting">Private channels, one-time messages, and replies</a></td></tr>
+<tr><td>Cancel pending messages</td><td><code>/cancel</code>, <code>/c</code></td><td><a href="?section=chat#delayed-sending">The cancellation window before sending</a></td></tr>
+<tr><td>Name tags</td><td><code>/nametag</code></td><td><a href="?section=chat#identity-and-name-tags">Prefixes, suffixes, and where they appear</a></td></tr>
 </tbody>
 </WikiTable>
-
-### Name Tags
-
-Members and higher can edit prefixes and suffixes through `/nametag` or Main menu → Settings → Name Tags: select a field → enter MiniMessage in chat → preview and confirm. Clearing also requires a preview and confirmation.
-
-Applies to chat, the tab list, and linked external messages. Does not change the vanilla name above a player's head.
 
 ## Decoration & Interaction
 

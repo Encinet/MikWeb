@@ -20,7 +20,7 @@ test('public page and MCP input exclude staff documents, metadata, and search re
   for (const locale of ['zh-CN', 'en'] as const) {
     const documents = await loadWikiSectionDocuments(locale);
     const bundle = await createWikiContentBundle(locale, documents);
-    assert.equal(documents.length, 6);
+    assert.equal(documents.length, 7);
     assert.ok(documents.every((document) => document.section.access === 'public'));
     assert.equal(bundle.sections[0]?.id, 'getting-started');
     assert.equal(

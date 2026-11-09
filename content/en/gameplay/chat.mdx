@@ -1,0 +1,206 @@
+---
+title: Chat system
+description: Public, private, and staff channels, mentions, item sharing, web chat, and platform bridging
+order: 35
+icon: Users
+---
+
+Minecraft and web chat share public, private, and staff channels, so you can continue conversations across devices. QQ and Matrix also connect to public chat
+
+## Channels and visibility
+
+<Definitions>
+<Definition title="Public">
+
+For players in the public channel. Minecraft and web messages are shared, with QQ and Matrix connected according to the rules below
+
+</Definition>
+<Definition title="Private">
+
+Visible only to the two participants, including conversations between Minecraft and the web. The recipient must be online in Minecraft or web chat
+
+</Definition>
+<Definition title="Staff">
+
+Available only to moderators and custodians. Minecraft and web staff channels share messages with authorized channel members
+
+</Definition>
+</Definitions>
+
+## Start chatting
+
+<Tabs defaultValue="game">
+<Tab value="game" title="Minecraft">
+
+Your default in-game channel is public. Type a message to chat with everyone in that channel
+
+<Definitions>
+<Definition title="Public channel">
+
+Use `/public` to return to public chat. `/public <message>` sends one public message while keeping your current channel. The alias `/global` supports the same usage
+
+</Definition>
+<Definition title="Private channel">
+
+Use `/msg <player>` to switch to a private channel with that player. Run it again for the same player to return to public chat. While in private chat, `/msg` on its own also returns you to public chat
+
+</Definition>
+<Definition title="One-time messages and replies">
+
+Use `/msg <player> <message>` to send one private message, or `/r <message>` to reply to the player you last messaged. Both keep your current channel
+
+`/tell`, `/w`, and `/whisper` are aliases of `/msg`; `/reply` is an alias of `/r`
+
+</Definition>
+</Definitions>
+
+For example, send one public or private message while keeping your current channel:
+
+```mcfunction
+/public Hello everyone
+```
+
+```mcfunction
+/msg Steve Hello
+```
+
+</Tab>
+<Tab value="web" title="Web">
+
+Sign in to [web chat](/en/chat) and choose the public channel or a private conversation. Authorized staff can also choose the staff channel. You do not need to be connected to Minecraft
+
+- Select "New message" or choose someone from the online player list
+- Send text, links, or mentions, up to 256 characters per message
+- Opening the chat page connects you; leaving it disconnects you
+
+Enable private-message and mention notifications in chat settings and grant browser notification permission. The page must stay connected; closing all chat pages stops notifications
+
+<Details title="Where local history is saved">
+
+With "Save local history" enabled, messages, drafts, and conversations stay in the current browser. History is not shared across devices. Messages are kept for up to 30 days; disable saving or clear history in chat settings
+
+Leaving the chat page keeps local history. Signing out or switching accounts clears it. History contains messages this browser received; messages missed while offline are not replayed
+
+</Details>
+
+</Tab>
+</Tabs>
+
+## Mentions and message content
+
+<Tabs defaultValue="mentions">
+<Tab value="mentions" title="Mentions">
+
+In Minecraft, prefer `@ player`: a space after `@` lets you use Tab to complete the player name. `@player` also works. Names are case-insensitive; a name without `@` does not trigger a mention
+
+```text
+@ Steve Come take a look
+```
+
+On the web, typing `@` offers online players in the current channel. Minecraft public chat can also mention offline players with linked platform accounts
+
+Adjust in-game mention alerts in Main menu → Chat Settings
+
+Only custodians can use `@all` in-game. Web chat does not send broadcast mentions
+
+</Tab>
+<Tab value="items" title="Item sharing">
+
+<Definitions>
+<Definition title="%i" code>
+
+Share the item in your main hand from Minecraft. `[i]` and `[item]` also work. In-game recipients can hover to view item details
+
+</Definition>
+<Definition title="%1 ~ %36" code>
+
+Share the item in the matching inventory slot. `%1` is the first slot; empty slots display as empty
+
+</Definition>
+</Definitions>
+
+```text
+Look at this item %i
+```
+
+Send item placeholders from Minecraft. Typing `%i` or `%1` on the web does not read your game inventory. Web and social platforms show item text according to their capabilities
+
+</Tab>
+<Tab value="links" title="Links">
+
+URLs become clickable links. Bilibili `av` / `BV` IDs and Mojira `MC-number` references are recognized too. GitHub, Minecraft Wiki, and Matrix links receive matching link styles
+
+You can send links from both Minecraft and the web
+
+</Tab>
+<Tab value="styles" title="Text styles">
+
+Members and higher can use MiniMessage in-game for colors, bold, italic, underline, strikethrough, gradients, rainbow text, and resets, for example:
+
+```text
+<gold><bold>Hello everyone</bold></gold>
+```
+
+See the [official MiniMessage format reference](https://docs.papermc.io/adventure/minimessage/format/) for syntax and more examples
+
+Web chat displays existing message colors and decorations. Entering MiniMessage tags directly on the web does not apply those styles. In-game style tags also do not support click events, selectors, or newlines
+
+</Tab>
+</Tabs>
+
+## Delayed sending
+
+Sent messages cannot be recalled. Delayed sending in Minecraft gives you a few seconds before a message actually goes out. During the wait, only you see the preview; use `/cancel` or `/c` to cancel
+
+In Main menu → Chat Settings, choose `3s`, `5s`, or `7s` for the waiting period, or `off` to send immediately. This applies to public, staff, and private messages sent in-game. Once the wait ends and the message is sent, it cannot be recalled
+
+## Platform bridging
+
+<Definitions>
+<Definition title="Minecraft ↔ Web">
+
+Public, private, and staff messages follow their own channel visibility. Messages from the web show their source
+
+</Definition>
+<Definition title="Matrix">
+
+Ordinary messages flow automatically in both directions between the room, Minecraft public chat, and web public chat. No prefix is needed
+
+</Definition>
+<Definition title="QQ">
+
+Ordinary messages from Group 1 reach Minecraft, web public chat, and Matrix without a prefix or bot mention. Messages from those platforms need a leading `#` to reach Group 1, such as `#Hello everyone`
+
+Group 2 (backup) is not currently bridged
+
+<Callout title="Forwarding, moderation, and privacy">
+
+Before a message is forwarded to QQ, its text, the sender's display name, mentions, and link destinations are sent to OVHcloud for moderation with Qwen3Guard
+
+</Callout>
+
+</Definition>
+</Definitions>
+
+<Callout title="QQ and Matrix receive public channel messages">
+
+Staff and private messages are not forwarded to these groups or rooms. Adding `#` to a private message does not change its channel visibility
+
+</Callout>
+
+## Identity and name tags
+
+<Definitions>
+<Definition title="Minecraft name tags">
+
+Members and higher can edit prefixes and suffixes through `/nametag` or Main menu → Settings → Name Tags. Select a field, enter MiniMessage in chat, then preview and confirm. Clearing also requires a preview and confirmation
+
+Name tags appear in chat, the tab list, and linked external messages. The vanilla player name remains above your head
+
+</Definition>
+<Definition title="Platform identity">
+
+Messages show their source platform. Linked QQ and Matrix accounts use their Minecraft identity; unlinked accounts use their platform nickname. See [Accounts & Community](?section=commands#accounts--community) for linking commands
+
+</Definition>
+</Definitions>
