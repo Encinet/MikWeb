@@ -1,8 +1,11 @@
+/** QQ verifies the current 30-second step and the immediately preceding step. */
+export const JOIN_CODE_PERIOD_SECONDS = 30;
+export const MAX_JOIN_CODE_LIFETIME_MS = JOIN_CODE_PERIOD_SECONDS * 2 * 1000;
+
 export interface JoinCode {
   code: string;
   serverTime: number;
   expiresAt: number;
-  period: number;
 }
 
 export type JoinCodeError =
@@ -12,25 +15,6 @@ export type JoinCodeError =
   | 'captcha_failed'
   | 'captcha_unavailable'
   | 'code_expired';
-
-export interface JoinCodeResponse extends JoinCode {
-  processingTimeMs: number;
-}
-
-export function isJoinCodeResponse(value: unknown): value is JoinCodeResponse {
-  return (
-    isJoinCode(value) &&
-    'processingTimeMs' in value &&
-    typeof value.processingTimeMs === 'number' &&
-    Number.isInteger(value.processingTimeMs) &&
-    value.processingTimeMs >= 0 &&
-    value.processingTimeMs <= 20_000
-  );
-}
-
-export function minimumJoinCodeLifetime(period: number): number {
-  return Math.min(10_000, period * 500);
-}
 
 export function isJoinCode(value: unknown): value is JoinCode {
   if (!value || typeof value !== 'object') return false;
@@ -43,10 +27,6 @@ export function isJoinCode(value: unknown): value is JoinCode {
     typeof code.expiresAt === 'number' &&
     Number.isFinite(code.expiresAt) &&
     code.expiresAt > code.serverTime &&
-    typeof code.period === 'number' &&
-    Number.isInteger(code.period) &&
-    code.period >= 15 &&
-    code.period <= 300 &&
-    code.expiresAt - code.serverTime <= code.period * 1000
+    code.expiresAt - code.serverTime <= MAX_JOIN_CODE_LIFETIME_MS
   );
 }

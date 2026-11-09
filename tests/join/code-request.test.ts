@@ -18,7 +18,6 @@ const keys = [
   'CAP_SECRET_KEY',
   'QQ_GROUP_1_TOTP_SECRET',
   'QQ_GROUP_2_TOTP_SECRET',
-  'TOTP_PERIOD',
   'JOIN_FORM_URL',
   'QQ_GROUP_1_NUMBER',
   'QQ_GROUP_2_NUMBER',
@@ -83,7 +82,7 @@ test('join codes require a server-verified Cap token and are never cached', asyn
     assert.match(body.code, /^\d{6}$/);
     assert.equal(body.code, (await createTotp(secret, body.serverTime)).code);
     assert.ok(body.expiresAt > body.serverTime);
-    assert.equal(body.period, 30);
+    assert.equal(body.expiresAt - body.serverTime, 60000);
     assert.doesNotMatch(
       JSON.stringify(body),
       new RegExp(`${secret}|${secondSecret}|server-only-cap-secret`),
@@ -136,7 +135,7 @@ test('invalid groups and cross-origin submissions do not issue codes', async () 
     assert.equal((await joinCodeRequest(request('1', 'https://other.test'))).status, 403);
   }));
 
-test('missing configuration, duplicate secrets and invalid periods are handled', async () =>
+test('missing configuration and duplicate secrets are handled', async () =>
   configured(async () => {
     assert.equal((await joinCodeRequest(request('2'))).status, 200);
     delete process.env.QQ_GROUP_1_TOTP_SECRET;
@@ -149,8 +148,7 @@ test('missing configuration, duplicate secrets and invalid periods are handled',
       ?.join('-')}====`;
     assert.equal((await joinCodeRequest(request('1'))).status, 503);
     process.env.QQ_GROUP_1_TOTP_SECRET = secret;
-    process.env.TOTP_PERIOD = '0';
-    assert.equal((await joinCodeRequest(request('1'))).status, 503);
+    assert.equal((await joinCodeRequest(request('1'))).status, 200);
   }));
 
 test('clients cannot select a time, counter, secret or generation options', async () =>
@@ -210,16 +208,10 @@ test('untrusted clock headers cannot change the time or response fields', async 
       input.headers.set('X-TOTP-Counter', '0');
       const response = await joinCodeRequest(input);
       const body = await response.json();
-      assert.deepEqual(Object.keys(body).sort(), [
-        'code',
-        'expiresAt',
-        'period',
-        'processingTimeMs',
-        'serverTime',
-      ]);
+      assert.deepEqual(Object.keys(body).sort(), ['code', 'expiresAt', 'serverTime']);
       assert.equal(body.serverTime, serverTime);
       assert.equal(body.code, (await createTotp(secret, serverTime)).code);
-      assert.equal(body.expiresAt, (Math.floor(serverTime / 30000) + 1) * 30000);
+      assert.equal(body.expiresAt, (Math.floor(serverTime / 30000) + 2) * 30000);
       assert.equal(response.headers.get('Cache-Control'), 'no-store');
     } finally {
       Date.now = originalNow;
@@ -358,42 +350,38 @@ test('incomplete or unsafe Cap configuration disables both the widget and code i
     }
   }));
 
-test('a verified request waits for the next current code without consuming Cap twice', async () =>
+test('verified requests at every point in a step return the current code and its QQ acceptance deadline', async () =>
   configured(async () => {
     const boundary = 1234567890000;
-    let now = boundary - 20;
-    Date.now = () => now;
     let calls = 0;
     globalThis.fetch = Object.assign(async () => {
       calls++;
       return Response.json({ success: true });
     }, globalThis.fetch);
-    let completed = false;
-    const pending = joinCodeRequest(request('1')).then((response) => {
-      completed = true;
-      return response;
-    });
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    assert.equal(completed, false);
-    now = boundary + 25;
-    const response = await pending;
-    assert.equal(response.status, 200);
-    const body = await response.json();
-    assert.equal(body.serverTime, now);
-    assert.equal(body.code, (await createTotp(secret, now)).code);
-    assert.ok(body.processingTimeMs >= 20);
-    assert.equal(calls, 1);
+    for (const offset of [0, 19000, 25000, 29999]) {
+      const now = boundary + offset;
+      Date.now = () => now;
+      const response = await joinCodeRequest(request('1'));
+      assert.equal(response.status, 200);
+      const body = await response.json();
+      assert.equal(body.serverTime, now);
+      assert.equal(body.code, (await createTotp(secret, now)).code);
+      assert.equal(body.expiresAt, boundary + 60000);
+      assert.ok(body.expiresAt - now > 30000);
+      assert.ok(body.expiresAt - now <= 60000);
+      // The code belongs to the preceding step at the final millisecond QQ accepts it.
+      assert.equal(body.code, (await createTotp(secret, body.expiresAt - 30001)).code);
+    }
+    assert.equal(calls, 4);
   }));
 
-test('an aborted verified request stops waiting without returning a code', async () =>
+test('an aborted request cannot return a code', async () =>
   configured(async () => {
-    Date.now = () => 1234567890000 - 10;
     const controller = new AbortController();
-    const input = request('1');
-    const pending = joinCodeRequest(new Request(input, { signal: controller.signal }));
-    await new Promise((resolve) => setTimeout(resolve, 5));
     controller.abort();
-    const response = await pending;
+    const response = await joinCodeRequest(
+      new Request(request('1'), { signal: controller.signal }),
+    );
     assert.equal(response.status, 503);
-    assert.deepEqual(await response.json(), { error: 'unavailable' });
+    assert.deepEqual(await response.json(), { error: 'captcha_unavailable' });
   }));

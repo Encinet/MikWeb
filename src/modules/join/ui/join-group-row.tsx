@@ -74,7 +74,7 @@ export function JoinGroupRow({
         : state.phase === 'verifying'
           ? t('captcha.hint')
           : state.phase === 'loading'
-            ? t('code.waitingHint')
+            ? t('code.loadingHint')
             : state.phase === 'ready'
               ? t(copied ? 'code.paste' : 'code.help')
               : '';
@@ -152,7 +152,7 @@ export function JoinGroupRow({
           <div className="join-code-timer">
             <span>{t('code.remaining', { seconds: Math.ceil(remaining / 1000) })}</span>
             <progress
-              max={state.value.period * 1000}
+              max={state.value.expiresAt - state.value.serverTime}
               value={remaining}
               aria-label={t('code.remainingLabel')}
             />

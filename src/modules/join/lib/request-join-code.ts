@@ -1,5 +1,5 @@
 import type { JoinCode, JoinCodeError } from '@/modules/join/model/join-code';
-import { isJoinCodeResponse } from '@/modules/join/model/join-code';
+import { isJoinCode } from '@/modules/join/model/join-code';
 import type { JoinGroupId } from '@/modules/join/model/join-group';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
@@ -12,7 +12,7 @@ export class JoinCodeRequestError extends Error {
 export async function requestJoinCode(
   group: JoinGroupId,
   token: string,
-  { signal, timeoutMs = 20_000 }: { signal: AbortSignal; timeoutMs?: number },
+  { signal, timeoutMs = 8000 }: { signal: AbortSignal; timeoutMs?: number },
 ): Promise<{ value: JoinCode; deadline: number; wallDeadline: number }> {
   const startedAt = performance.now();
   const startedWallTime = Date.now();
@@ -45,7 +45,7 @@ export async function requestJoinCode(
           throw new JoinCodeRequestError('request_failed');
         }
         const body: unknown = await response.json();
-        if (!isJoinCodeResponse(body)) throw new JoinCodeRequestError('request_failed');
+        if (!isJoinCode(body)) throw new JoinCodeRequestError('request_failed');
         return body;
       } catch (error) {
         if (requestSignal.aborted && !signal.aborted)
@@ -56,11 +56,10 @@ export async function requestJoinCode(
     signal,
   );
   signal.throwIfAborted();
-  // Exclude server verification/boundary waiting, but conservatively subtract network transit.
+  // Conservatively subtract the whole request; a client clock cannot extend validity.
   const finishedAt = performance.now();
   const elapsed = Math.max(finishedAt - startedAt, Date.now() - startedWallTime);
-  const remaining =
-    value.expiresAt - value.serverTime - Math.max(0, elapsed - value.processingTimeMs);
+  const remaining = value.expiresAt - value.serverTime - elapsed;
   if (remaining <= 0) throw new JoinCodeRequestError('code_expired');
   // Some browsers pause performance.now() during device sleep; either clock may expire the code.
   return { value, deadline: finishedAt + remaining, wallDeadline: Date.now() + remaining };

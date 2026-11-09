@@ -46,26 +46,24 @@ test('a consumed Cap token is never retried automatically, even after a network 
   }
 });
 
-test('server processing time preserves code lifetime while network time is subtracted', async () => {
+test('request time is conservatively subtracted from the QQ acceptance lifetime', async () => {
   const previous = globalThis.fetch;
   const originalClock = Object.getOwnPropertyDescriptor(performance, 'now');
   let now = 1000;
   Object.defineProperty(performance, 'now', { configurable: true, value: () => now });
   globalThis.fetch = Object.assign(async () => {
-    now += 10500;
+    now += 500;
     return Response.json({
       code: '123456',
       serverTime: 30000,
-      expiresAt: 60000,
-      period: 30,
-      processingTimeMs: 10000,
+      expiresAt: 90000,
     });
   }, previous);
   try {
     const result = await requestJoinCode('1', 'test-token', {
       signal: new AbortController().signal,
     });
-    assert.equal(result.deadline - now, 29500);
+    assert.equal(result.deadline - now, 59500);
   } finally {
     globalThis.fetch = previous;
     if (originalClock) Object.defineProperty(performance, 'now', originalClock);
@@ -73,15 +71,9 @@ test('server processing time preserves code lifetime while network time is subtr
   }
 });
 
-test('a response cannot extend a TOTP code beyond its configured period', () => {
-  assert.equal(
-    isJoinCode({ code: '123456', serverTime: 1000, expiresAt: 32000, period: 30 }),
-    false,
-  );
-  assert.equal(
-    isJoinCode({ code: '123456', serverTime: 1000, expiresAt: 31000, period: 30 }),
-    true,
-  );
+test('a response cannot extend a code beyond the two steps accepted by QQ', () => {
+  assert.equal(isJoinCode({ code: '123456', serverTime: 1000, expiresAt: 62000 }), false);
+  assert.equal(isJoinCode({ code: '123456', serverTime: 1000, expiresAt: 61000 }), true);
 });
 
 test('device sleep during a request cannot preserve an expired code when the monotonic clock pauses', async () => {
@@ -97,8 +89,6 @@ test('device sleep during a request cannot preserve an expired code when the mon
       code: '123456',
       serverTime: 30000,
       expiresAt: 60000,
-      period: 30,
-      processingTimeMs: 0,
     });
   }, previous);
   try {

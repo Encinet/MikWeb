@@ -802,12 +802,12 @@
       "copy": "Copy code",
       "retry": "Get a new code",
       "label": "QQ join code",
-      "waitingHint": "Verified. Getting your code; this may take a moment near expiry",
       "help": "Copy the code and paste it into the QQ join verification",
       "paste": "Copied. Open QQ and paste the code into the join verification",
       "remaining": "{seconds}s remaining",
       "remainingLabel": "Time until the join code expires",
-      "expired": "This code has expired. Get a new one"
+      "expired": "This code has expired. Get a new one",
+      "loadingHint": "Verified. Getting your join code"
     },
     "errors": {
       "unavailable": "Join codes are unavailable. Try again later or use the form",

@@ -9,13 +9,11 @@ import zh from '../../messages/zh-CN.json';
 import { createBrowserEnvironment } from '../support/browser-environment';
 import { joinPageData } from './join-fixture';
 
-function code(value = '123456', milliseconds = 30000) {
+function code(value = '123456', milliseconds = 60000) {
   return Response.json({
     code: value,
     serverTime: Date.now(),
     expiresAt: Date.now() + milliseconds,
-    period: 30,
-    processingTimeMs: 0,
   });
 }
 
@@ -113,7 +111,10 @@ test('copying highlights QQ, and expiry restores the request action and focus', 
     assert.ok(env.container.querySelector('.join-group-actions a.ui-action-button--primary'));
     assert.match(env.container.querySelector('.join-message')?.textContent ?? '', /入群验证中粘贴/);
     now += 31_000;
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 300)));
+    await act(async () => document.dispatchEvent(new Event('visibilitychange')));
+    assert.equal(env.container.querySelector('output')?.textContent, '123 456');
+    now += 30_000;
+    await act(async () => document.dispatchEvent(new Event('visibilitychange')));
     assert.equal(env.container.querySelector('output'), null);
     assert.equal(button(env.container).textContent, '重新获取');
     assert.equal(document.activeElement, button(env.container));
@@ -318,7 +319,7 @@ test('resuming after device sleep expires a code even when the monotonic clock h
   try {
     await getCode(env.container);
     assert.ok(env.container.querySelector('output'));
-    wallTime += 31_000;
+    wallTime += 61_000;
     await act(async () => document.dispatchEvent(new Event('visibilitychange')));
     assert.equal(env.container.querySelector('output'), null);
     assert.equal(button(env.container).textContent, '重新获取');

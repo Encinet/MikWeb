@@ -1,8 +1,7 @@
 import 'server-only';
 import { timingSafeEqual } from 'node:crypto';
-import { setTimeout as delay } from 'node:timers/promises';
 import { isCapToken } from '@/modules/join/model/join-captcha';
-import { minimumJoinCodeLifetime } from '@/modules/join/model/join-code';
+import { JOIN_CODE_PERIOD_SECONDS } from '@/modules/join/model/join-code';
 import { isJoinGroupId } from '@/modules/join/model/join-group';
 import { verifyJoinCaptcha } from '@/modules/join/server/join-captcha';
 import { createTotp, decodeBase32 } from '@/modules/join/server/join-totp';
@@ -52,7 +51,6 @@ export async function joinCodeRequest(request: Request): Promise<Response> {
   const secret = process.env[`QQ_GROUP_${group}_TOTP_SECRET`];
   if (!secret) return json({ error: 'unavailable' }, 503);
   try {
-    const startedAt = performance.now();
     const first = process.env.QQ_GROUP_1_TOTP_SECRET;
     const second = process.env.QQ_GROUP_2_TOTP_SECRET;
     if (first && second) {
@@ -61,31 +59,22 @@ export async function joinCodeRequest(request: Request): Promise<Response> {
       if (firstBytes.length === secondBytes.length && timingSafeEqual(firstBytes, secondBytes))
         return json({ error: 'unavailable' }, 503);
     }
-    const period = process.env.TOTP_PERIOD === undefined ? 30 : Number(process.env.TOTP_PERIOD);
-    if (
-      !Number.isInteger(period) ||
-      period < 15 ||
-      period > 300 ||
-      decodeBase32(secret).length < 20
-    )
-      return json({ error: 'unavailable' }, 503);
+    if (decodeBase32(secret).length < 20) return json({ error: 'unavailable' }, 503);
     const verification = await verifyJoinCaptcha(body.token, request.signal);
     if (verification !== 'verified')
       return json(
         { error: verification === 'rejected' ? 'captcha_failed' : 'captcha_unavailable' },
         verification === 'rejected' ? 403 : 503,
       );
-    const timeToBoundary = period * 1000 - (Date.now() % (period * 1000));
-    if (timeToBoundary < minimumJoinCodeLifetime(period) + 1000) {
-      // Consume Cap once, then wait for the next CURRENT code; never ask the client for a time.
-      await delay(timeToBoundary + 25, undefined, { signal: request.signal });
-    }
     request.signal.throwIfAborted();
     // Time, period, digits and secret are never read from request fields or headers.
-    const serverTime = Date.now();
-    const processingTimeMs = Math.floor(performance.now() - startedAt);
-    const code = await createTotp(secret, serverTime, { period });
-    return json({ ...code, processingTimeMs });
+    const code = await createTotp(secret, Date.now(), { period: JOIN_CODE_PERIOD_SECONDS });
+    return json({
+      code: code.code,
+      serverTime: code.serverTime,
+      // The existing QQ verifier also accepts this code throughout the next step.
+      expiresAt: code.expiresAt + JOIN_CODE_PERIOD_SECONDS * 1000,
+    });
   } catch {
     return json({ error: 'unavailable' }, 503);
   }
