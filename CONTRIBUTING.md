@@ -258,7 +258,7 @@ docs(readme): trim setup instructions
 
 ## Wiki / 内容编辑
 
-目录固定为 `content/<locale>/<group>/*.md`。每个分组目录必须包含 `_group.md`，文件名本身就是 `section id`，中英文必须使用相同文件名。
+目录固定为 `content/<locale>/<group>/*.mdx`。每个分组目录必须包含 `_group.mdx`，文件名本身就是 `section id`，中英文必须使用相同文件名。
 
 目录示例：
 
@@ -266,8 +266,8 @@ docs(readme): trim setup instructions
 content/
   zh-CN/
     basics/
-      _group.md
-      getting-started.md
+      _group.mdx
+      getting-started.mdx
 ```
 
 组级元信息：
@@ -292,26 +292,55 @@ icon: Home
 
 | 字段 | 说明 | 约束 |
 |------|------|------|
-| `label` | 分组显示名 | 写在 `_group.md` |
+| `label` | 分组显示名 | 写在 `_group.mdx` |
+| `access` | 分组访问范围 | 写在 `_group.mdx`；`public`（默认）或 `staff` |
 | `order` | 分组或文章排序 | 同层级内唯一 |
 | `title` | 页面标题 | 正文不要重复写 `# 一级标题` |
 | `description` | 导航摘要 | 保持简短 |
-| `icon` | 导航图标 | 当前支持 `Home` `Wrench` `Shield` `Users` `Zap` |
+| `icon` | 导航图标 | `Home` `Wrench` `Shield` `Users` `Zap` `BookOpen` `Code` `GitPullRequest` `ClipboardList` `Layers` |
 
 规则：
 
 - 每篇文章至少包含一个 `##`
-- 同名中英文文件的目录分组、`order`、`icon` 必须一致
+- 同名中英文文件的目录分组、`order`、`icon`、访问范围必须一致
 - 不要新增多级子目录
 - 不要只改单语文件名或只增删单语文件
+- `staff/_group.mdx` 必须保留 `access: staff`；公开页面和 MCP 默认只读取公开内容，管理接口须验证会话与角色后才能加载管理文件
+- `bun check:wiki` 会编译所有公开及管理 MDX，检查两种语言的内容与权限配对
+
+### MDX 表达组件
+
+文档由服务端编译，在阅读器中使用预置 React 组件。只允许仓库内经过评审的内容，不接收远程或用户提交的 MDX；不要在文档中引入服务器代码、密钥或运行时环境变量。
+
+可使用 `Callout`（提示框，`title`、可选 `kind="warning"`）、`Steps` / `Step`（步骤，`Step` 需要 `title`）、`Cards` / `Card`（链接卡片，`title` 与 `href`）、`Details`（折叠说明，`title`）、`Tabs` / `Tab`（按场景切换，`Tabs` 需要 `defaultValue`，`Tab` 需要 `value` 和 `title`）。并列的版本说明、命令释义等可使用 `Definitions` / `Definition`：`Definition` 的 `title` 为左侧标题，正文为解释，可加 `code` 将标题显示为代码；窄屏下自动上下排布。组件标签与 Markdown 正文之间保留空行，例如：
+
+```mdx
+<Callout title="搭建前检查">
+
+各层至少保留一列相同的 X/Z 坐标。
+
+</Callout>
+
+<Steps>
+<Step title="放置铁块">
+
+在每层地板预留电梯位置。
+
+</Step>
+</Steps>
+```
+
+按信息关系组合基础组件：项目与命令说明用 `Definitions`，操作顺序用 `Steps`，并列选项用 `Tabs`，补充细节用 `Details`。各场景的名称、说明和入口直接写在 MDX 正文中，用普通 Markdown 链接组合；组件统一控制留白、窄屏布局和键盘交互。组件根据用途保留必要边界：提示区分重要信息，折叠收纳补充内容，步骤标示操作顺序；正文与并列说明通过留白和对齐组织。
+
+代码围栏自动提供复制按钮。常规表格使用 GFM 表格；需要合并单元格时使用 `<WikiTable>` 配合 HTML 表格元素，并使用 JSX 的 `rowSpan` / `colSpan`。普通小节仍使用 Markdown `##` / `###`，以保持搜索、深链接和目录一致。
 
 常见报错：
 
 | 报错 | 含义 |
 |------|------|
 | `Invalid wiki section front matter in ...` | 文章元信息缺字段、类型错误或 `icon` 非法 |
-| `Invalid wiki group front matter in ...` | `_group.md` 缺少 `label` 或 `order` |
-| `Missing _group.md in wiki group ...` | 分组目录缺少组级元信息文件 |
+| `Invalid wiki group front matter in ...` | `_group.mdx` 缺少 `label` 或 `order` |
+| `Missing _group.mdx in wiki group ...` | 分组目录缺少组级元信息文件 |
 | `Wiki body must not contain an extra level-1 heading` | 正文里重复写了 `# 标题` |
 | `Wiki section must contain at least one level-2 heading` | 缺少 `##` 小节 |
 | `Duplicate wiki section order` | 同一语言内文章排序冲突 |

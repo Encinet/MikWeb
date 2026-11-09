@@ -77,8 +77,24 @@ function decodeWikiHtmlEntities(text: string): string {
     .replace(/&#39;/g, "'");
 }
 
-export function stripWikiMarkdown(text: string): string {
+/** Retain readable Markdown for MCP consumers while removing layout-only JSX. */
+export function formatWikiMdxForSearch(text: string): string {
   return text
+    .replace(/<Card\b([^>]+)>/g, (_match, attributes: string) => {
+      const title = attributes.match(/\btitle="([^"]+)"/)?.[1] ?? '';
+      const href = attributes.match(/\bhref="([^"]+)"/)?.[1];
+      return href ? `[${title}](${href})\n` : `${title}\n`;
+    })
+    .replace(/<(?:Callout|Step|Details|Tab|Definition)\b[^>]*\btitle="([^"]+)"[^>]*>/g, '**$1**\n')
+    .replace(
+      /<\/?(?:Callout|Steps|Step|Cards|Card|Details|Tabs|Tab|Definitions|Definition)\b[^>]*>/g,
+      '',
+    )
+    .replace(/<(\/?)WikiTable>/g, '<$1table>');
+}
+
+export function stripWikiMarkdown(text: string): string {
+  return formatWikiMdxForSearch(text)
     .replace(/\r\n?/g, '\n')
     .replace(/```([^\n]*)\n([\s\S]*?)```/g, (_, __, code: string) => code.trim())
     .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
@@ -121,8 +137,21 @@ export function stripWikiMarkdown(text: string): string {
 
 export function parseWikiMarkdownBlocks(sectionId: string, raw: string): MarkdownBlock[] {
   const lines = raw.replace(/\r\n?/g, '\n').split('\n');
+  let fence: { marker: string; length: number } | null = null;
   const headingMatches = lines
     .map((line, index) => {
+      const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})(.*)$/);
+      if (fenceMatch) {
+        if (!fence) fence = { marker: fenceMatch[1][0], length: fenceMatch[1].length };
+        else if (
+          fenceMatch[1][0] === fence.marker &&
+          fenceMatch[1].length >= fence.length &&
+          !fenceMatch[2].trim()
+        )
+          fence = null;
+        return null;
+      }
+      if (fence) return null;
       const match = line.match(/^(#{1,4})\s+(.+?)\s*#*\s*$/);
       if (!match) return null;
 
@@ -209,7 +238,10 @@ export function buildWikiSearchIndex(
         sectionId,
         path: block.heading === pageTitle ? pageTitle : `${pageTitle} › ${block.heading}`,
         url: normalizedBaseUrl ? `${normalizedBaseUrl}${wikiPath}` : wikiPath,
-        content: [`${'#'.repeat(block.level)} ${block.heading}`, block.subtreeRaw]
+        content: [
+          `${'#'.repeat(block.level)} ${block.heading}`,
+          formatWikiMdxForSearch(block.subtreeRaw),
+        ]
           .filter(Boolean)
           .join('\n\n'),
         heading: block.heading,

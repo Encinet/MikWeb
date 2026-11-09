@@ -67,6 +67,7 @@ MikWeb 不代理 Minecraft 后端数据。玩家、建筑、封禁和公告数�
 - `POST /api/mcp`：MCP 工具入口
 - `GET|POST|DELETE /api/auth/*`：网页登录 BFF，只在服务端转发到 Mik Data
 - `POST /api/account/*`：玩家账号 BFF，只在服务端转发到 Mik Data
+- `POST /api/wiki/staff?locale=zh-CN|en`：服务端通过现有会话确认 Moderator 或 Custodian 身份后返回管理手册，响应不缓存
 - `POST /api/account/images/upload`：玩家建筑申请图片上传代理，只接受已登录成员上传的 WebP，并在服务端转发到 ImgBB
 - `GET /api/map/worlds`：读取公开地图的世界目录，校验并仅返回坐标定位所需的名称、显示名和维度类型，缓存 5 分钟
 - `GET /:locale/buildings/:id`：建筑详情与分享入口
@@ -102,7 +103,7 @@ MCP 端点使用无状态 Streamable HTTP。
 | `get_announcements` | 获取公告列表，支持 `count` |
 | `get_buildings` | 获取建筑列表 |
 | `get_bans` | 获取封禁列表 |
-| `search_wiki` | 基于 Markdown 索引做搜索，支持 `searchPhrases`、`locale`、`limit` |
+| `search_wiki` | 搜索公开 MDX 文档，支持 `searchPhrases`、`locale`、`limit`；不包含管理手册 |
 
 客户端配置示例：
 
@@ -129,6 +130,10 @@ bun run build
 ```bash
 bun check:wiki
 ```
+
+Wiki 位于 `content/<locale>/<group>/*.mdx`，默认打开新手入门，通过分类导航切换文档。开源计划集中介绍 Mik、MikWeb、Mik Data 及贡献方式；服务器机制说明铁块电梯等玩法。
+
+文档支持通用的提示、步骤、并列说明、链接组、折叠、切换面板与可复制代码块。`_group.mdx` 的 `access: staff` 将整组设为管理专用；服务端默认只加载公开文章，管理文档须由 Mik Data 验证当前 HttpOnly 会话属于 `moderator` 或 `custodian` 后才能读取。退出登录或切换身份会移除页面中的管理内容与搜索索引。MDX 仅来自仓库内经过评审的文件，不接受用户提交的 MDX 或远程代码。
 
 修改界面翻译时，至少运行 `bun check:i18n`；改动翻译键时运行 `bun check`，同时检查代码中的引用。
 

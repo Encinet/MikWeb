@@ -127,7 +127,7 @@ export function WikiReadingToolbar({
               navigationLabel={navigationLabel}
               sectionGroups={sectionGroups}
               onSectionChange={(id) => {
-                dismissPanel(false);
+                dismissPanel(id === activeSection && !isSearching);
                 onSectionChange(id);
               }}
             />

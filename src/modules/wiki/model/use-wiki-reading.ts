@@ -15,6 +15,8 @@ interface WikiScrollTarget {
   focus: boolean;
   smooth: boolean;
   scrollY?: number;
+  onlyIfAbove?: boolean;
+  minScrollY?: number;
 }
 
 function getScrollOffset(element: HTMLElement): number {
@@ -45,15 +47,21 @@ export function useWikiReading(
 
     const top =
       scrollTarget.scrollY ??
-      Math.max(0, heading.getBoundingClientRect().top + window.scrollY - getScrollOffset(heading));
+      Math.max(
+        scrollTarget.minScrollY ?? 0,
+        heading.getBoundingClientRect().top + window.scrollY - getScrollOffset(heading),
+      );
     if (scrollTarget.focus) heading.focus({ preventScroll: true });
-    window.scrollTo({
-      top,
-      behavior:
-        scrollTarget.smooth && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-          ? 'smooth'
-          : 'instant',
-    });
+    // Changing articles should reveal a scrolled-past title without pushing the page down.
+    if (!scrollTarget.onlyIfAbove || top < window.scrollY) {
+      window.scrollTo({
+        top,
+        behavior:
+          scrollTarget.smooth && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? 'smooth'
+            : 'instant',
+      });
+    }
     requestScroll(null);
   }, [article, enabled, scrollTarget, sectionId]);
 

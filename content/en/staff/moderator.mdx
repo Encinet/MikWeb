@@ -1,0 +1,250 @@
+---
+title: In-game operations
+description: Incident investigation and recovery, inventory checks, whitelists, voice moderation, player records, and account security
+order: 80
+icon: Shield
+---
+
+Sneak and press Swap Item With Offhand (default `Shift + F`) to open the main menu.
+
+## Investigation and recovery
+
+### Block records
+
+Enable the Prism inspector with `/pr wand inspect`, then click at the scene:
+
+- **Left-click** queries the clicked block's location.
+- **Right-click a block face** queries the adjacent placement location, useful for inspecting a space where a block was removed.
+
+Use `/pr wand` to turn it off.
+
+<Details title="Filter records and preview a rollback">
+
+Stand at the scene and replace `PlayerName` with the verified account. This example finds that player's block breaks within 10 blocks during the last hour:
+
+```text
+/pr lookup p:PlayerName a:break r:10 since:1h -nogroup
+```
+
+`-nogroup` shows individual records so you can check their times and locations. Preview using the same player, action, radius, and time filters:
+
+```text
+/pr preview-rollback p:PlayerName a:break r:10 since:1h
+```
+
+The preview changes only the blocks you see. Use `/pr preview-apply` to apply it, or `/pr preview-cancel` to discard it. Previews cannot display entity or item changes.
+
+`rollback` reverses recorded actions; `restore` reapplies them. Use a rollback to repair broken blocks; `restore` is a different operation.
+
+</Details>
+
+<Cards>
+<Card title="Prism official documentation" href="https://docs.prism-mc.org/">
+
+Inspection tools, query parameters, previews, rollbacks, and restores.
+
+</Card>
+</Cards>
+
+### Inventories and ender chests
+
+Use `/openinv <player>` for the target's inventory or `/openender <player>` for their ender chest, then inspect through the inventory interface. Both support offline players.
+
+Taking, placing, or moving items changes the target's actual inventory.
+
+<Cards>
+<Card title="OpenInv official documentation" href="https://github.com/Jikoo/OpenInv/wiki/Commands">
+
+Inventory and ender chest controls, item searches, and container tools.
+
+</Card>
+</Cards>
+
+## Whitelist
+
+<Definitions>
+<Definition title="Java accounts">
+
+Add with `/whitelist add <player>`, remove with `/whitelist remove <player>`, and view entries with `/whitelist list`.
+
+</Definition>
+<Definition title="Floodgate identities">
+
+Use `/fwhitelist add <gamertag or UUID>` or `/fwhitelist remove <gamertag or UUID>`. Omit the Floodgate username prefix.
+
+</Definition>
+</Definitions>
+
+<Cards>
+<Card title="Floodgate official documentation" href="https://geysermc.org/wiki/floodgate/features/">
+
+Whitelist commands and how to use gamertags and UUIDs.
+
+</Card>
+</Cards>
+
+## Player records and promotion
+
+**Main menu → Community Governance → Player Management.** Search recorded online and offline players by name or UUID, then select a result to view effective playtime, promotion conditions, and pause records.
+
+<Definitions>
+<Definition title="Pause newcomer promotion">
+
+Choose Pause newcomer promotion, enter a duration, reason, and appeal route, then confirm. Durations accept `m`, `h`, or `d`, such as `2h` or `3d`. Only players who have not become Members can be paused.
+
+</Definition>
+<Definition title="Lift promotion pause">
+
+Choose Lift promotion pause, enter a reason, and confirm. The original record is retained.
+
+</Definition>
+</Definitions>
+
+## Ban management
+
+Use `/ban` to open the ban menu.
+
+<Steps>
+<Step title="Choose the player">
+
+Search for and select the target, then choose a severity.
+
+</Step>
+<Step title="Enter a reason and confirm">
+
+Check the displayed target, severity, and expiry, then enter a reason and confirm. Players who have never joined require an additional confirmation. A successful ban disconnects the target's active game connection and publishes a ban notice.
+
+</Step>
+</Steps>
+
+See [Disputes, Enforcement, and Appeals](?section=rules#disputes-enforcement-and-appeals) for severity, duration, and procedure.
+
+<Details title="History, pardons, and corrections">
+
+The current ban menu creates new bans. These operations still use commands:
+
+| Action | Usage |
+| --- | --- |
+| View history | `/ban history <player> [page]` |
+| Lift the active ban and retain history | `/pardon <player> <reason>` |
+| Correct the reason | `/ban edit <player> reason <new reason>` |
+| Change severity | `/ban edit <player> severity <severity ID>` |
+
+Severity IDs: `warning`, `excusable`, `minor`, `severe`, `extreme`.
+
+<Callout kind="warning" title="Changing severity recalculates expiry">
+
+The current tool starts the new duration at the time of the edit. Check the start time required by the rules, especially when temporary isolation is already in effect.
+
+</Callout>
+
+</Details>
+
+## Password resets
+
+Moderators and Custodians need a password before logging in. A newly appointed staff member without one needs another authorized operator to perform a reset.
+
+<Steps>
+<Step title="Open the target's account security">
+
+Open the target's record in Player Management, then choose Account Security → Reset Password. Offline accounts are supported.
+
+</Step>
+<Step title="Confirm and verify your own password">
+
+Check the target, confirm the reset, and enter your own current password. A successful reset sets a new random password, invalidates the old password, and revokes the target's existing game login.
+
+</Step>
+<Step title="Deliver the new password">
+
+Copy it from the private result form and deliver it through a trusted channel after verifying the account holder. Closing the result makes it unavailable; reset again if you did not obtain it. The player logs in normally and can then change it.
+
+</Step>
+</Steps>
+
+### Which accounts can a Moderator reset?
+
+| Target | Action |
+| --- | --- |
+| Newcomer or Member | Moderator can reset |
+| Another Moderator without a password | Moderator can reset |
+| Another Moderator with a password | Ask a Custodian to reset |
+| Custodian or OP | Use the server console |
+| Yourself | Change it through Main menu → Settings → Account Security; if forgotten, ask another authorized operator |
+
+## PVP management
+
+Use `/pvp admin` to open the online player list.
+
+- Toggle a player's PVP switch directly in the list.
+- Open their settings to adjust PVP, mob protection, mounted mob damage, and automatic enabling on death.
+
+Temporary PVP overrides may still determine the effective state; check the displayed state. Managing your own account still respects the combat lock.
+
+## Voice moderation
+
+Use `/vmute <player> [duration] [reason]` to mute a player through Plasmo Voice, or `/vunmute <player>` to unmute them. This affects voice; text chat is handled separately.
+
+<Cards>
+<Card title="Plasmo Voice official documentation" href="https://plasmovoice.com/docs/server/commands/">
+
+Voice moderation commands and permission nodes.
+
+</Card>
+</Cards>
+
+## Staff chat and player locations
+
+`/staff` switches to staff chat; run it again to return to public chat. `/staff <message>` sends one staff message without changing your current channel.
+
+<Details title="Field teleports">
+
+| Action | Usage |
+| --- | --- |
+| Visit an online player's current position or an offline player's last saved position | `/tpany <player>` |
+| Bring the specified online player to you | `/tpforce <player> @s` |
+| Move a player to coordinates | `/tpforce <player> <X> <Y> <Z>` |
+| Visit another world | `/mvtp <world>` |
+
+`/tpforce` accepts vanilla `/tp` arguments and bypasses ordinary teleport preferences and consent requests. Other teleport protections may still prevent movement.
+
+`/mvtp` still checks destination permissions and safety.
+
+In Spectator mode, use `/spectate <player>` to follow their view; run `/spectate` without arguments to stop.
+
+<Cards>
+<Card title="Multiverse official documentation" href="https://mvplugins.org/core/fundamentals/commands-usage/#teleport-command">
+
+World teleportation, destination formats, and permissions.
+
+</Card>
+</Cards>
+
+</Details>
+
+## Maintenance and status
+
+| Usage | Action |
+| --- | --- |
+| `/maintenance` | Check maintenance mode |
+| `/maintenance on` | Restrict new logins to Moderators and Custodians |
+| `/maintenance off` | Allow ordinary players to log in again |
+| `/network status` | Inspect outbound traffic, throttling stage, view-distance ratios, limited explorers, and server tick time |
+| `/viaversion list` | List online players by client version |
+| `/plugins` | View the server plugin list |
+
+Maintenance mode does not disconnect players already online. It defaults to off after a server restart.
+
+<Details title="Parkour area maintenance">
+
+Player entry commands are listed under [Mini-Games](?section=commands#mini-games).
+
+<Cards>
+<Card title="ajParkour official documentation" href="https://wiki.ajg0702.us/ajParkour/setup/Creating%20an%20area/">
+
+Area setup, difficulty, fall positions, and parkour entrances.
+
+</Card>
+</Cards>
+
+</Details>

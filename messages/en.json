@@ -269,23 +269,28 @@
     }
   },
   "wiki": {
-    "title": "Game Guide",
+    "title": "Wiki",
     "meta": {
-      "description": "Learn about server rules, commands, and gameplay tips",
-      "imageDescription": "Server rules, commands and gameplay."
+      "description": "Documentation for joining, building, server mechanics, and open-source contributions",
+      "imageDescription": "Mik server documentation and open source"
     },
     "navigation": {
       "title": "Navigation",
       "onThisPage": "On This Page"
     },
     "search": {
-      "placeholder": "Search wiki content, commands, or keywords...",
+      "placeholder": "Search documentation, mechanics, or commands…",
       "resultsTitle": "Search Results",
       "resultsCount": "{count} matches",
       "empty": {
         "title": "No matching content found",
         "description": "Try a shorter keyword, a command alias, or a different phrasing."
       }
+    },
+    "staff": {
+      "loading": "Verifying access and loading the Moderator handbook…",
+      "error": "The Moderator handbook could not be loaded. Please try again.",
+      "retry": "Reload"
     }
   },
   "bans": {

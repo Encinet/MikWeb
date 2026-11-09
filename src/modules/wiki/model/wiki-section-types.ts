@@ -3,7 +3,19 @@ export type WikiSectionGroupId = string;
 
 export type WikiLocale = 'zh-CN' | 'en';
 
-export type WikiSectionIcon = 'Home' | 'Wrench' | 'Shield' | 'Users' | 'Zap';
+export type WikiSectionIcon =
+  | 'Home'
+  | 'Wrench'
+  | 'Shield'
+  | 'Users'
+  | 'Zap'
+  | 'BookOpen'
+  | 'Code'
+  | 'GitPullRequest'
+  | 'ClipboardList'
+  | 'Layers';
+
+export type WikiAccess = 'public' | 'staff';
 
 export interface WikiSectionDefinition {
   id: WikiSectionId;
@@ -14,6 +26,7 @@ export interface WikiSectionDefinition {
   groupLabel: string;
   groupOrder: number;
   order: number;
+  access: WikiAccess;
 }
 
 export interface WikiSectionGroupDefinition {
@@ -36,6 +49,15 @@ export interface WikiSectionDocument {
   section: WikiSectionDefinition;
   content: string;
   sourcePath: string;
+}
+
+export interface WikiContentBundle {
+  compiled: Record<string, string>;
+  sections: WikiSectionDefinition[];
+  sectionGroups: WikiSectionGroupDefinition[];
+  content: WikiSectionContentMap;
+  outlines: WikiSectionOutlineMap;
+  searchIndex: SearchableWikiBlock[];
 }
 
 export interface WikiSectionOutlineItem {

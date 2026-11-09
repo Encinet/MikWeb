@@ -1,0 +1,250 @@
+---
+title: 服务器内操作
+description: 现场查证与恢复、背包核查、白名单、语音管理，以及玩家档案与账号安全
+order: 80
+icon: Shield
+---
+
+潜行时按副手切换键（默认 `Shift + F`）打开主菜单。
+
+## 现场查证与恢复
+
+### 方块记录
+
+用 `/pr wand inspect` 开启 Prism 检查工具，直接点击现场方块：
+
+- **左键**：查询该方块位置的记录。
+- **右键方块表面**：查询该面外侧、通常会放置新方块的位置，可检查已经被挖空的地方。
+
+结束时执行 `/pr wand` 关闭工具。
+
+<Details title="筛选记录并预览回滚">
+
+站在现场，将 `玩家名` 换成已核实的账号。以下例子查询周围 10 格、最近 1 小时内该玩家的方块破坏记录：
+
+```text
+/pr lookup p:玩家名 a:break r:10 since:1h -nogroup
+```
+
+`-nogroup` 逐条展示记录，便于核对时间与位置。核实后，用相同的玩家、操作、范围和时间筛选条件预览：
+
+```text
+/pr preview-rollback p:玩家名 a:break r:10 since:1h
+```
+
+预览只改变本人看到的方块。确认后用 `/pr preview-apply` 应用；不符合预期时用 `/pr preview-cancel` 退出。预览不能展示实体和物品变更。
+
+`rollback` 撤销记录中的操作；`restore` 重新执行记录中的操作。修复被破坏的方块使用回滚，不能把 `restore` 当作同义命令。
+
+</Details>
+
+<Cards>
+<Card title="Prism 官方文档" href="https://docs.prism-mc.org/">
+
+检查工具、查询参数、预览、回滚与恢复。
+
+</Card>
+</Cards>
+
+### 背包与末影箱
+
+用 `/openinv <玩家名>` 打开目标背包，用 `/openender <玩家名>` 打开末影箱。两者均支持离线玩家，打开后通过物品栏界面检查。
+
+界面中的取出、放入和移动会修改目标的真实物品，不是副本。
+
+<Cards>
+<Card title="OpenInv 官方文档" href="https://github.com/Jikoo/OpenInv/wiki/Commands">
+
+背包、末影箱、物品搜索与容器工具的操作说明。
+
+</Card>
+</Cards>
+
+## 白名单
+
+<Definitions>
+<Definition title="Java 账号">
+
+用 `/whitelist add <玩家名>` 添加，`/whitelist remove <玩家名>` 移除；`/whitelist list` 查看名单。
+
+</Definition>
+<Definition title="Floodgate 身份">
+
+用 `/fwhitelist add <游戏名或UUID>` 添加，`/fwhitelist remove <游戏名或UUID>` 移除。游戏名不附加 Floodgate 前缀。
+
+</Definition>
+</Definitions>
+
+<Cards>
+<Card title="Floodgate 官方文档" href="https://geysermc.org/wiki/floodgate/features/">
+
+白名单命令、游戏名与 UUID 的使用方法。
+
+</Card>
+</Cards>
+
+## 玩家档案与晋升
+
+**主菜单 → 社区治理 → 玩家管理**。按名称或 UUID 搜索已记录的在线、离线玩家，点击结果进入档案，查看有效游玩、晋升条件和暂停记录。
+
+<Definitions>
+<Definition title="暂停新人晋升">
+
+点击「暂停新人晋升」，填写期限、理由和申诉途径后确认。期限支持 `m`、`h`、`d`，例如 `2h`、`3d`；仅适用于尚未成为成员的玩家。
+
+</Definition>
+<Definition title="解除晋升暂停">
+
+点击「解除晋升暂停」，填写解除原因并确认，原有记录保留。
+
+</Definition>
+</Definitions>
+
+## 封禁管理
+
+用 `/ban` 打开封禁菜单。
+
+<Steps>
+<Step title="选择玩家">
+
+搜索并点击目标，再选择封禁等级。
+
+</Step>
+<Step title="填写理由并确认">
+
+核对界面显示的目标、等级和到期时间，填写理由后确认。目标从未入服时，会额外要求确认。生效后断开目标的在线连接并发布封禁通知。
+
+</Step>
+</Steps>
+
+等级、期限及处理条件见[纠纷、处分与申诉](?section=rules#纠纷处分与申诉)。
+
+<Details title="查询、解封与修正">
+
+当前封禁菜单只负责新建封禁，以下操作使用命令：
+
+| 操作 | 用法 |
+| --- | --- |
+| 查看历史 | `/ban history <玩家名> [页码]` |
+| 解除当前封禁并保留历史 | `/pardon <玩家名> <解除理由>` |
+| 修正理由 | `/ban edit <玩家名> reason <新理由>` |
+| 修改等级 | `/ban edit <玩家名> severity <等级ID>` |
+
+等级 ID：`warning`、`excusable`、`minor`、`severe`、`extreme`。
+
+<Callout kind="warning" title="修改等级会重新计算期限">
+
+当前工具从修改时刻计算新等级的期限。执行前核对规则要求的起算时间，尤其是已有临时隔离的处分。
+
+</Callout>
+
+</Details>
+
+## 账号密码重置
+
+管理与维护者须设置密码后才能登录。尚未设密的新任管理，需要其他有权限者执行重置。
+
+<Steps>
+<Step title="打开目标的账号安全">
+
+在「玩家管理」中进入目标档案，点击「账号安全」→「重置密码」。目标可以离线。
+
+</Step>
+<Step title="确认并验证自己的密码">
+
+核对目标，确认重置后输入执行者自己的当前密码。提交成功会设置新的随机密码，使目标旧密码失效并撤销其已有游戏登录。
+
+</Step>
+<Step title="转交新密码">
+
+在私人结果表单复制新密码，核实本人后通过可信渠道交付。关闭结果后无法再次查看；未取得结果时须重新重置。玩家用新密码正常登录后，可自行修改。
+
+</Step>
+</Steps>
+
+### 可以重置谁
+
+| 目标 | 处理方式 |
+| --- | --- |
+| 新人、正式成员 | 管理可重置 |
+| 尚未设密的其他管理 | 管理可重置 |
+| 已设密的其他管理 | 交由维护者重置 |
+| 维护者或 OP | 使用服务器控制台 |
+| 自己 | 从「主菜单 → 设置 → 账号安全」修改；忘记密码请其他有权限者处理 |
+
+## PVP 管理
+
+用 `/pvp admin` 打开在线玩家列表。
+
+- 在列表中直接切换玩家的 PVP 开关。
+- 打开目标的设置页，调整 PVP、生物保护、骑乘生物伤害和死亡后自动开启。
+
+临时 PVP 覆盖可能仍决定实际状态，以界面显示为准。管理自己的账号时仍受战斗锁定限制。
+
+## 语音管理
+
+Plasmo Voice 的服务器禁言使用 `/vmute <玩家名> [期限] [理由]`；解除用 `/vunmute <玩家名>`。禁言作用于语音，文字聊天另行处理。
+
+<Cards>
+<Card title="Plasmo Voice 官方文档" href="https://plasmovoice.com/docs/server/commands/">
+
+语音管理命令与权限节点。
+
+</Card>
+</Cards>
+
+## 管理沟通与现场定位
+
+`/staff` 切换到管理频道，再次执行回到公共频道。`/staff <消息>` 只发送一条管理消息，保留当前频道。
+
+<Details title="现场传送">
+
+| 操作 | 用法 |
+| --- | --- |
+| 前往在线玩家当前位置或离线玩家最后保存的位置 | `/tpany <玩家名>` |
+| 将指定在线玩家带到身边 | `/tpforce <玩家名> @s` |
+| 将指定玩家移到坐标 | `/tpforce <玩家名> <X> <Y> <Z>` |
+| 前往其他世界 | `/mvtp <世界名>` |
+
+`/tpforce` 参数沿用原版 `/tp`，跳过普通传送的偏好与同意请求；其他传送保护仍可能阻止移动。
+
+`/mvtp` 仍受目标世界的传送权限与安全检查约束。
+
+进入旁观模式后，用 `/spectate <玩家名>` 跟随目标视角；不带参数执行 `/spectate` 退出跟随。
+
+<Cards>
+<Card title="Multiverse 官方文档" href="https://mvplugins.org/core/fundamentals/commands-usage/#teleport-command">
+
+跨世界传送、目标格式与权限说明。
+
+</Card>
+</Cards>
+
+</Details>
+
+## 维护与状态查询
+
+| 用法 | 操作 |
+| --- | --- |
+| `/maintenance` | 查看维护模式状态 |
+| `/maintenance on` | 限制后续登录，仅管理与维护者可进入 |
+| `/maintenance off` | 恢复普通玩家登录 |
+| `/network status` | 查看出口流量、限流阶段、视距比例、受限探索者数量与服务器 tick 耗时 |
+| `/viaversion list` | 按客户端版本列出在线玩家 |
+| `/plugins` | 查看服务器插件列表 |
+
+维护模式不会踢出已在线玩家，服务器重启后默认关闭。
+
+<Details title="跑酷区域维护">
+
+玩家的开始方式见[小游戏指令](?section=commands#小游戏)。
+
+<Cards>
+<Card title="ajParkour 官方文档" href="https://wiki.ajg0702.us/ajParkour/setup/Creating%20an%20area/">
+
+区域、难度、失败落点与跑酷入口配置。
+
+</Card>
+</Cards>
+
+</Details>

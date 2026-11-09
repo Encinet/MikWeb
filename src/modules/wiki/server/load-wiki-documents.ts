@@ -5,6 +5,7 @@ import path from 'node:path';
 import { z } from 'zod';
 
 import type {
+  WikiAccess,
   WikiSectionDocument,
   WikiSectionFrontMatter,
   WikiSectionGroupId,
@@ -18,15 +19,21 @@ export const SUPPORTED_WIKI_SECTION_ICONS = [
   'Shield',
   'Users',
   'Zap',
+  'BookOpen',
+  'Code',
+  'GitPullRequest',
+  'ClipboardList',
+  'Layers',
 ] as const satisfies readonly WikiSectionIcon[];
 
 const DEFAULT_WIKI_SECTION_ICON: WikiSectionIcon = 'Home';
 const DEFAULT_WIKI_ORDER_STEP = 10;
 const DEFAULT_WIKI_ORDER_FALLBACK = 999;
-const WIKI_GROUP_METADATA_FILENAME = '_group.md';
+const WIKI_GROUP_METADATA_FILENAME = '_group.mdx';
 const wikiGroupFrontMatterSchema = z.strictObject({
   label: z.string().trim().min(1),
   order: z.number().int().nonnegative(),
+  access: z.enum(['public', 'staff']).default('public'),
 });
 const wikiSectionFrontMatterSchema = z.strictObject({
   title: z.string().trim().min(1),
@@ -39,6 +46,7 @@ interface WikiGroupMetadata {
   groupId: WikiSectionGroupId;
   groupLabel: string;
   groupOrder: number;
+  access: WikiAccess;
 }
 
 interface WikiSectionSource {
@@ -60,7 +68,7 @@ function getWikiContentDirectory(locale: string): string {
 }
 
 function deriveWikiSectionIdFromFilename(fileName: string): WikiSectionId {
-  return fileName.replace(/\.md$/i, '');
+  return fileName.replace(/\.mdx$/i, '');
 }
 
 async function readDirectoryEntriesSorted(directoryPath: string): Promise<Dirent[]> {
@@ -175,6 +183,7 @@ function parseWikiGroupMetadata({
   const parsedWikiGroupFrontMatterResult = wikiGroupFrontMatterSchema.safeParse({
     label: attributes.label,
     order: attributes.order,
+    access: attributes.access,
   });
 
   if (!parsedWikiGroupFrontMatterResult.success) {
@@ -189,6 +198,7 @@ function parseWikiGroupMetadata({
     groupId: wikiGroupId,
     groupLabel: parsedWikiGroupFrontMatterResult.data.label,
     groupOrder: parsedWikiGroupFrontMatterResult.data.order,
+    access: parsedWikiGroupFrontMatterResult.data.access,
   };
 }
 
@@ -210,7 +220,7 @@ async function collectWikiSectionSourcesFromGroupDirectory({
         `Nested directories are not allowed in wiki group "${path.basename(groupDirectoryPath)}"`,
         `group directory: ${groupDirectoryPath}`,
         `nested directories: ${nestedGroupDirectoryEntries.map((directoryEntry) => directoryEntry.name).join(', ')}`,
-        'suggestion: Keep the structure as content/<locale>/<group>/*.md.',
+        'suggestion: Keep the structure as content/<locale>/<group>/*.mdx.',
       ].join('\n'),
     );
   }
@@ -244,14 +254,14 @@ async function collectWikiSectionSourcesFromGroupDirectory({
   const wikiSectionFileEntries = groupDirectoryEntries.filter(
     (directoryEntry) =>
       directoryEntry.isFile() &&
-      directoryEntry.name.endsWith('.md') &&
+      directoryEntry.name.endsWith('.mdx') &&
       directoryEntry.name !== WIKI_GROUP_METADATA_FILENAME,
   );
 
   if (wikiSectionFileEntries.length === 0) {
     throw new WikiContentValidationError(
       [
-        `No wiki markdown files found in group "${wikiGroupMetadata.groupId}"`,
+        `No wiki MDX files found in group "${wikiGroupMetadata.groupId}"`,
         `group directory: ${groupDirectoryPath}`,
         `suggestion: Add at least one markdown article alongside ${WIKI_GROUP_METADATA_FILENAME}.`,
       ].join('\n'),
@@ -273,7 +283,7 @@ async function discoverWikiSectionSources(locale: string): Promise<WikiSectionSo
   const localeRootEntries = await readDirectoryEntriesSorted(contentDirectory);
   const wikiSectionSources: WikiSectionSource[] = [];
   const localeRootSectionFileEntries = localeRootEntries.filter(
-    (directoryEntry) => directoryEntry.isFile() && directoryEntry.name.endsWith('.md'),
+    (directoryEntry) => directoryEntry.isFile() && directoryEntry.name.endsWith('.mdx'),
   );
 
   if (localeRootSectionFileEntries.length > 0) {
@@ -373,34 +383,41 @@ export function parseWikiSectionDocument({
       groupLabel: groupMetadata.groupLabel,
       groupOrder: groupMetadata.groupOrder,
       order: wikiSectionFrontMatter.order,
+      access: groupMetadata.access,
     },
     content: [`# ${wikiSectionFrontMatter.title}`, body].filter(Boolean).join('\n\n'),
     sourcePath: sourcePath ?? `<wiki:${id}>`,
   };
 }
 
-export async function loadWikiSectionDocuments(locale: string): Promise<WikiSectionDocument[]> {
+/** Public by default, including for MCP. Staff content requires a verified caller. */
+export async function loadWikiSectionDocuments(
+  locale: string,
+  audience: WikiAccess | 'all' = 'public',
+): Promise<WikiSectionDocument[]> {
   const contentDirectory = getWikiContentDirectory(locale);
   const wikiSectionSources = await discoverWikiSectionSources(locale);
 
   if (wikiSectionSources.length === 0) {
-    throw new WikiContentValidationError(`No wiki markdown files found in ${contentDirectory}`);
+    throw new WikiContentValidationError(`No wiki MDX files found in ${contentDirectory}`);
   }
 
   validateUniqueSectionIds(locale, wikiSectionSources);
 
   const wikiDocuments = await Promise.all(
-    wikiSectionSources.map(async (wikiSectionSource) => {
-      const rawWikiSectionSource = await fs.readFile(wikiSectionSource.sourcePath, 'utf-8');
+    wikiSectionSources
+      .filter((source) => audience === 'all' || source.groupMetadata.access === audience)
+      .map(async (wikiSectionSource) => {
+        const rawWikiSectionSource = await fs.readFile(wikiSectionSource.sourcePath, 'utf-8');
 
-      return parseWikiSectionDocument({
-        groupMetadata: wikiSectionSource.groupMetadata,
-        id: wikiSectionSource.id,
-        rawSource: rawWikiSectionSource,
-        sourceOrder: wikiSectionSource.sourceOrder,
-        sourcePath: wikiSectionSource.sourcePath,
-      });
-    }),
+        return parseWikiSectionDocument({
+          groupMetadata: wikiSectionSource.groupMetadata,
+          id: wikiSectionSource.id,
+          rawSource: rawWikiSectionSource,
+          sourceOrder: wikiSectionSource.sourceOrder,
+          sourcePath: wikiSectionSource.sourcePath,
+        });
+      }),
   );
 
   return wikiDocuments;

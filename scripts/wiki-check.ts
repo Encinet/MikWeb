@@ -10,6 +10,7 @@ import type {
   WikiSectionDocument,
   WikiSectionId,
 } from '@/modules/wiki/model/wiki-section-types';
+import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
 
 function createWikiCheckError(title: string, details: string[], suggestion?: string): Error {
@@ -161,6 +162,9 @@ function validateCrossLocaleSectionMetadata(
         referenceSection.icon !== currentSection.icon
           ? `icon: ${referenceSection.icon} vs ${currentSection.icon}`
           : null,
+        referenceSection.access !== currentSection.access
+          ? `access: ${referenceSection.access} vs ${currentSection.access}`
+          : null,
       ].filter((field): field is string => Boolean(field));
 
       if (mismatchedFields.length === 0) {
@@ -177,7 +181,7 @@ function validateCrossLocaleSectionMetadata(
           `current file: ${currentDocument.sourcePath}`,
           ...mismatchedFields,
         ],
-        'Keep group directory names, "_group.md" order, and section "order" / "icon" aligned across locales for the same section.',
+        'Keep group directories, "_group.mdx" access / order, and section "order" / "icon" aligned across locales.',
       );
     }
   }
@@ -188,7 +192,7 @@ async function runWikiCheck(): Promise<void> {
   const wikiDocumentsByLocale = new Map<WikiLocale, Map<WikiSectionId, WikiSectionDocument>>();
 
   for (const locale of WIKI_LOCALES) {
-    const wikiDocuments = await loadWikiSectionDocuments(locale);
+    const wikiDocuments = await loadWikiSectionDocuments(locale, 'all');
     const wikiSections = sortWikiSections(
       wikiDocuments.map((wikiDocument) => wikiDocument.section),
     );
@@ -201,6 +205,7 @@ async function runWikiCheck(): Promise<void> {
     validateNoDuplicateTopLevelHeading(locale, wikiDocuments);
     validateSectionStructure(locale, wikiDocuments);
     validateUniqueSectionOrder(locale, wikiSections);
+    await createWikiContentBundle(locale, wikiDocuments);
     wikiSectionIdsByLocale.set(locale, wikiSectionIdSet);
     wikiDocumentsByLocale.set(locale, wikiDocumentBySectionId);
 

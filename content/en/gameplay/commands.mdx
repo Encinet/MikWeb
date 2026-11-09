@@ -1,134 +1,110 @@
 ---
 title: Common Commands
-description: A practical player command reference for travel, building, chat, accounts, and server features.
-order: 20
+description: Player commands for travel, building, chat, accounts, and server features.
+order: 40
 icon: Wrench
 ---
 
-This page lists commands for regular players. New players join as Newcomers and become Members after meeting the automatic promotion requirements. Moderator- and Custodian-only commands are not listed here.
-
-If you need the full syntax for a vanilla command, see the final section, "Vanilla Command Reference."
-
 ## Teleportation & Navigation
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
 <tr><td>Spawn</td><td><code>/spawn</code> or <code>/lobby</code></td><td>Return to the main city</td></tr>
 <tr><td>Vanilla teleport</td><td><a href="https://minecraft.wiki/w/Commands/tp"><code>/tp</code></a></td><td>Teleport to specific coordinates or another player</td></tr>
-<tr><td rowspan="4">Homes</td><td><code>/sethome &lt;name&gt;</code></td><td>Save your current position as a home.</td></tr>
+<tr><td rowSpan="4">Homes</td><td><code>/sethome &lt;name&gt;</code></td><td>Save your current position as a home.</td></tr>
 <tr><td><code>/home</code></td><td>Open the home menu to teleport</td></tr>
 <tr><td><code>/home &lt;name&gt;</code></td><td>Return directly to a saved home</td></tr>
 <tr><td><code>/delhome &lt;name&gt;</code></td><td>Delete a saved home. Newcomers can save up to 2 homes; Members can save up to 20</td></tr>
-<tr><td>Teleport protection</td><td><code>/menu</code> → Teleport Protection</td><td>Choose whether normal players can move you with <code>/tp</code>, and whether teleport attempts are rejected while you are AFK</td></tr>
-<tr><td rowspan="2">Teleport requests</td><td><code>/tpaccept</code></td><td>Accept a pending teleport request</td></tr>
+<tr><td>Teleport protection</td><td>Main menu → Teleport Protection</td><td>Choose whether normal players can move you with <code>/tp</code>, and whether teleport attempts are rejected while you are AFK</td></tr>
+<tr><td rowSpan="2">Teleport requests</td><td><code>/tpaccept</code></td><td>Accept a pending teleport request</td></tr>
 <tr><td><code>/tpdeny</code></td><td>Reject a pending teleport request</td></tr>
-<tr><td rowspan="3">Back history</td><td><code>/back</code></td><td>Return to your previous teleport or death location</td></tr>
+<tr><td rowSpan="3">Back history</td><td><code>/back</code></td><td>Return to your previous teleport or death location</td></tr>
 <tr><td><code>/back [times]</code></td><td>Go back multiple history entries at once</td></tr>
 <tr><td><code>/back undo</code> or <code>/reback</code></td><td>Undo your last back step and return to where you just were</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
 ## Status & Server Info
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="4">Personal flight</td><td><code>/fly</code>, <code>/fly on</code>, or <code>/fly off</code></td><td>Toggle, enable, or disable personal flight</td></tr>
+<tr><td rowSpan="4">Personal flight</td><td><code>/fly</code>, <code>/fly on</code>, or <code>/fly off</code></td><td>Toggle, enable, or disable personal flight</td></tr>
 <tr><td><code>/fly status</code></td><td>Show your current flight status and speed</td></tr>
 <tr><td><code>/fly speed [speed]</code></td><td>Omit the speed to show the current value, or set it from <code>0.1x</code> to <code>10x</code></td></tr>
 <tr><td><code>/fly speed reset</code></td><td>Reset flight speed to <code>1x</code></td></tr>
-<tr><td rowspan="2">Idle status</td><td><code>/afk</code></td><td>Toggle idle status. Long inactivity also marks you as AFK automatically</td></tr>
-<tr><td><code>/afk &lt;status&gt;</code></td><td>Go idle and show a custom status above your head and in the tab list, up to 20 characters</td></tr>
+<tr><td rowSpan="2">Idle status</td><td><code>/afk</code></td><td>Go AFK; press a movement key again to leave. <a href="?section=mechanisms#afk-and-effective-playtime">Detection and playtime</a></td></tr>
+<tr><td><code>/afk &lt;status&gt;</code></td><td>Set a status above your head and in the tab list, up to 20 characters. Updates the message if already AFK</td></tr>
 <tr><td>Announcements</td><td><code>/announcements</code></td><td>Open the server announcements menu. Unread announcements are shown when you join, and opening the menu marks them as seen</td></tr>
 <tr><td>Performance bar</td><td><code>/tpsbar</code></td><td>Toggle the TPS, MSPT, and latency bar. The <code>mik.tpsbar</code> permission must be enabled for your account</td></tr>
-<tr><td>Main menu</td><td><code>/menu</code></td><td>Open the main menu</td></tr>
+<tr><td>Main menu</td><td>Sneak + Swap Item With Offhand (default <code>Shift + F</code>), or <code>/menu</code></td><td>Open the main menu</td></tr>
 <tr><td>Language</td><td><code>/lang</code></td><td>Open the language settings menu. You can also open it from the main menu</td></tr>
 <tr><td>Web login</td><td><code>/weblogin &lt;code&gt;</code></td><td>Confirm a website login, usually by copying the full command from the website and running it in-game</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
 ## Accounts & Community
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="4">Account security</td><td><code>/password</code></td><td>Open account security settings</td></tr>
+<tr><td rowSpan="4">Account security</td><td><code>/password</code></td><td>Open account security settings</td></tr>
 <tr><td><code>/password set</code></td><td>Set your account password for the first time</td></tr>
 <tr><td><code>/password change</code></td><td>Change your password after verifying the current one</td></tr>
 <tr><td><code>/password remove</code></td><td>Remove your password after verifying it and checking account requirements</td></tr>
-<tr><td rowspan="4">Platform linking</td><td><code>/bind &lt;platform&gt;</code></td><td>Generate a one-time code for an enabled platform. Codes expire after 5 minutes</td></tr>
+<tr><td rowSpan="4">Platform linking</td><td><code>/bind &lt;platform&gt;</code></td><td>Generate a one-time code for an enabled platform. Codes expire after 5 minutes</td></tr>
 <tr><td><code>/bind list</code></td><td>View your linked platforms</td></tr>
 <tr><td><code>/bind cancel &lt;platform&gt;</code></td><td>Invalidate an unused code for that platform</td></tr>
 <tr><td><code>/bind unlink &lt;platform&gt;</code></td><td>Unlink your account from that platform</td></tr>
-<tr><td rowspan="4">Community governance</td><td><code>/gov</code> or <code>/governance menu</code></td><td>Open the community governance menu</td></tr>
+<tr><td rowSpan="4">Community governance</td><td><code>/gov</code> or <code>/governance menu</code></td><td>Open the community governance menu</td></tr>
 <tr><td><code>/governance status</code></td><td>Check your promotion or active-member eligibility</td></tr>
 <tr><td><code>/governance nominate</code> or <code>/governance withdraw</code></td><td>Eligible active Members can nominate themselves for moderator or withdraw an application</td></tr>
 <tr><td><code>/governance list</code>, <code>/governance show &lt;id&gt;</code>, or <code>/governance vote &lt;id&gt; yes|no|abstain</code></td><td>View governance votes and details, then vote if you are on the voter roll</td></tr>
 <tr><td>AI assistant</td><td><code>/ai &lt;question&gt;</code>, <code>/ai clear</code>, or <code>/ai status</code></td><td>Ask the server AI, clear your conversation history, or check its status. The server must enable AI and grant you access</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
 ## Chat & Messages
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
 <tr><td>Public channel</td><td><code>/public</code> or <code>/global</code></td><td>Switch to the public chat channel</td></tr>
 <tr><td>One-time public message</td><td><code>/public &lt;message&gt;</code></td><td>Send one public message without changing your current chat channel. <code>/global</code> uses the same format</td></tr>
-<tr><td rowspan="2">Private channel</td><td><code>/msg &lt;player&gt;</code></td><td>Switch to a private chat channel with that player. If you are already in that private channel, running it again returns you to public chat</td></tr>
+<tr><td rowSpan="2">Private channel</td><td><code>/msg &lt;player&gt;</code></td><td>Switch to a private chat channel with that player. If you are already in that private channel, running it again returns you to public chat</td></tr>
 <tr><td><code>/msg</code></td><td>When you are already in any private chat channel, return to public chat</td></tr>
 <tr><td>One-time private message</td><td><code>/msg &lt;player&gt; &lt;message&gt;</code></td><td>Send one private message without changing your current chat channel. <code>/tell</code>, <code>/w</code>, and <code>/whisper</code> use the same format</td></tr>
 <tr><td>Quick reply</td><td><code>/r &lt;message&gt;</code> or <code>/reply &lt;message&gt;</code></td><td>Reply to the player you most recently messaged, without changing your current chat channel</td></tr>
-<tr><td rowspan="5">Chat enhancements</td><td><code>@player</code> or the player name directly</td><td>Mention a player visible in the current channel. Mentions are case-insensitive; for example, <code>@steve</code> or <code>steve</code> displays as <code>@Steve</code></td></tr>
+<tr><td rowSpan="5">Chat enhancements</td><td><code>@player</code> or the player name directly</td><td>Mention a player visible in the current channel. Mentions are case-insensitive; for example, <code>@steve</code> or <code>steve</code> displays as <code>@Steve</code></td></tr>
 <tr><td><code>%i</code>, <code>[i]</code> or <code>[item]</code></td><td>Show the item in your hand in chat</td></tr>
 <tr><td><code>%num</code>, for example <code>%1</code></td><td>Show the item in the matching inventory slot. <code>%1</code> is the first slot; valid slots are <code>%1</code> through <code>%36</code></td></tr>
 <tr><td>Links, <code>av</code> / <code>BV</code> IDs</td><td>URLs and Bilibili video IDs are automatically displayed as clickable text</td></tr>
 <tr><td>MiniMessage styling</td><td>Members can use colors, text decorations, gradients, rainbow text, and reset in chat. Click events, selectors, newline tags, and similar unsafe tags are not supported</td></tr>
-<tr><td rowspan="2">Chat settings</td><td><code>/menu</code> → Chat Settings</td><td>Configure mention alerts and chat delay. Delay options are <code>off</code>, <code>3s</code>, <code>5s</code>, and <code>7s</code>; when enabled, all chat channels are sent after the selected delay</td></tr>
+<tr><td rowSpan="2">Chat settings</td><td>Main menu → Chat Settings</td><td>Configure mention alerts and chat delay. Delay options are <code>off</code>, <code>3s</code>, <code>5s</code>, and <code>7s</code>; when enabled, all chat channels are sent after the selected delay</td></tr>
 <tr><td><code>/cancel</code> or <code>/c</code></td><td>Cancel your own pending delayed messages</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
 ### Name Tags
 
-Run <code>/nametag</code> or open Name Tags from the main menu settings. Members and higher can edit the prefix and suffix shown in chat, the tab list, and linked external speech: choose a field, send the MiniMessage text in chat to preview it, then confirm to save. Clearing also requires a preview and confirmation. Name tags use LuckPerms prefix/suffix metadata and do not change the vanilla name above a player's head.
+Members and higher can edit prefixes and suffixes through `/nametag` or Main menu → Settings → Name Tags: select a field → enter MiniMessage in chat → preview and confirm. Clearing also requires a preview and confirmation.
 
-## Building & Editing
-
-### Axiom
-
-**Axiom** is a powerful all-in-one world editing mod for Minecraft, with features like terrain sculpting, precision building tools, and brush-based editing.
-
-- [Modrinth Page](https://modrinth.com/mod/axiom) - Download the mod
-- [Server Axiom Guide](https://hi-ysumc.feishu.cn/wiki/QDJBwtCBEi5eLakfWCvcRtErnvb) - A server-specific tutorial
-
-> **Quick shortcuts:**
->
-> - Hold `Left Alt` in Creative mode to open the Builder menu
-> - Press `Right Shift` to enter Editor mode for terrain tools, brushes, and more
-
-### WorldEdit
-
-**WorldEdit** is the classic building plugin for copying, pasting, rotating, and reshaping structures at scale. It pairs especially well with Axiom.
-
-WorldEdit is already installed on the server, so you do not need a separate client mod to use it.
-
-- [Common Commands Overview (Chinese)](https://www.mcmod.cn/post/3050.html)
-- [Full Command Reference (Chinese)](https://www.mcmod.cn/post/3533.html)
-- [Official Command List (English)](https://intellectualsites.gitbook.io/fastasyncworldedit/features/main-commands-and-permissions)
+Applies to chat, the tab list, and linked external messages. Does not change the vanilla name above a player's head.
 
 ## Decoration & Interaction
 
-<table>
+[Building and decoration usage](?section=mechanisms#building-and-decoration) · [Axiom controls](?section=tips#axiom)
+
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
@@ -136,75 +112,87 @@ WorldEdit is already installed on the server, so you do not need a separate clie
 <tr><td>Decorative heads</td><td><code>/headdb</code></td><td>Open the decorative head database and browse custom heads</td></tr>
 <tr><td>Hat</td><td><code>/hat</code></td><td>Wear the item in your hand as a hat</td></tr>
 <tr><td>Armor stands</td><td><code>/asedit give</code></td><td>Get the armor stand editor tool</td></tr>
-<tr><td rowspan="2">Invisible item frames</td><td><code>/imageframe giveinvisibleframe glowing</code></td><td>Get glowing invisible item frames</td></tr>
+<tr><td rowSpan="2">Invisible item frames</td><td><code>/imageframe giveinvisibleframe glowing</code></td><td>Get glowing invisible item frames</td></tr>
 <tr><td><code>/imageframe giveinvisibleframe regular</code></td><td>Get regular invisible item frames</td></tr>
-<tr><td rowspan="3">Poses</td><td><code>/sit</code></td><td>Sit down</td></tr>
+<tr><td rowSpan="3">Poses</td><td><code>/sit</code></td><td>Sit down</td></tr>
 <tr><td><code>/lay</code></td><td>Lie down</td></tr>
 <tr><td><code>/crawl</code></td><td>Crawl</td></tr>
-<tr><td>Trash</td><td><code>/trash</code> or <code>/garbage</code></td><td>Open the trash interface. Anything placed inside is deleted permanently</td></tr>
+<tr><td>Trash</td><td><code>/trash</code> or <code>/garbage</code></td><td>Open your personal trash bin. Items remain for 10 seconds after closing; Clear destroys them immediately. <a href="?section=mechanisms#personal-trash-bin">Recovery and cleanup</a></td></tr>
 </tbody>
-</table>
+</WikiTable>
+
+### Get a player head
+
+Replace `PlayerID` with the target player's username:
+
+```mcfunction
+/give @s minecraft:player_head[minecraft:profile={name:"PlayerID"}]
+```
 
 ## Item & World Management
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="2">Dropped item cleanup</td><td><code>/rmitems</code> or <code>/removeitems</code></td><td>Remove nearby dropped items with the default 50-block radius</td></tr>
+<tr><td rowSpan="2">Dropped item cleanup</td><td><code>/rmitems</code> or <code>/removeitems</code></td><td>Remove nearby dropped items with the default 50-block radius</td></tr>
 <tr><td><code>/rmitems &lt;radius&gt;</code></td><td>Remove dropped items within a custom radius, for example <code>/rmitems 20</code>. Radius must be between 1 and 300</td></tr>
 <tr><td>Temporary whitelist</td><td><code>/tempwhitelist &lt;player&gt;</code>, <code>/twl &lt;player&gt;</code>, or <code>/tempwl &lt;player&gt;</code></td><td>Add a 1-hour temporary whitelist entry for a friend. Requires Member status</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
-> Newcomers cannot use `/rmitems` or `/tempwhitelist`.
+<Callout title="Permission limits">
+
+Newcomers cannot use `/rmitems` or `/tempwhitelist`.
+
+</Callout>
 
 ## Music & Fun
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="4">Music</td><td><code>/music</code></td><td>Open the music workspace for the library, playlists, playback devices, and rhythm games. <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a> is needed for regular audio; NBS uses Minecraft note-block sounds</td></tr>
+<tr><td rowSpan="4">Music</td><td><code>/music</code></td><td>Open the music workspace for the library, playlists, and playback devices. <a href="https://modrinth.com/plugin/plasmo-voice">PlasmoVoice</a> is needed for regular audio; NBS uses Minecraft note-block sounds</td></tr>
 <tr><td><code>/music search &lt;keyword&gt;</code></td><td>Search the local library and available online sources</td></tr>
 <tr><td><code>/music playlist &lt;UUID&gt;</code></td><td>Open a public playlist shared with you</td></tr>
 <tr><td><code>/music playlist import &lt;platform&gt; &lt;link or ID&gt;</code></td><td>Import playlist metadata. Supported codes: NetEase Cloud Music <code>wy</code>, QQ Music <code>tx</code>, Kugou <code>kg</code>, Kuwo <code>kw</code>, and Migu <code>mg</code></td></tr>
 <tr><td>Fireworks</td><td><code>/firework gun</code></td><td>Get a random firework launcher</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
 ## PVP
 
 PVP is disabled by default. Only enable it when both sides agree. After real player combat, you are briefly combat-locked and cannot turn PVP off until the lock expires.
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="6">PVP status</td><td><code>/pvp</code> or <code>/pvp toggle</code></td><td>Toggle your PVP status</td></tr>
+<tr><td rowSpan="6">PVP status</td><td><code>/pvp</code> or <code>/pvp toggle</code></td><td>Toggle your PVP status</td></tr>
 <tr><td><code>/pvp on</code></td><td>Turn your PVP on</td></tr>
 <tr><td><code>/pvp off</code></td><td>Turn your PVP off. This is blocked while combat-locked</td></tr>
 <tr><td><code>/pvp status</code></td><td>Show your PVP status and current settings</td></tr>
 <tr><td><code>/pvp gui</code> or <code>/pvp settings</code></td><td>Open the PVP settings menu</td></tr>
 <tr><td><code>/pvp help</code></td><td>Show PVP command help</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
 The PVP settings menu includes:
 
 - PVP toggle: whether you can participate in player combat.
 - Mob protection: enabled by default. Protects your tamed mobs and related mounted-mob cases.
 - Mounted mob damage: allowed by default. Controls whether other PVP-enabled players can damage related mobs while you are mounted.
-- Enable on death: enabled by default. If your PVP is off, dying turns it on so you can continue participating.
+- Enable on death: enabled by default. If your PVP is off, dying turns it on.
 
 If your PVP is off and you attack a player whose PVP is on, the first hit is cancelled with a warning. Attacking the same player again shortly after automatically turns your PVP on.
 
 ## Mini-Games
 
-<table>
+<WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
 </thead>
@@ -212,11 +200,11 @@ If your PVP is off and you attack a player whose PVP is on, the first hit is can
 <tr><td>Parkour</td><td><code>/apk start</code></td><td>Start the parkour challenge. The difficulty increases as you progress</td></tr>
 <tr><td>Who's the Killer</td><td><code>/spy</code></td><td>Join the "Who's the Killer" mini-game</td></tr>
 </tbody>
-</table>
+</WikiTable>
 
 ## Vanilla Command Reference
 
-The following vanilla commands are available on the server. Click a command name to open the Minecraft Wiki entry with full syntax and details:
+<Details title="Vanilla command list">
 
 | Command | Description | Member Only |
 |------|------|:----------:|
@@ -239,3 +227,5 @@ The following vanilla commands are available on the server. Click a command name
 | [`/tellraw`](https://minecraft.wiki/w/Commands/tellraw) | Send formatted JSON chat messages | |
 | [`/time`](https://minecraft.wiki/w/Commands/time) | Check or change the world time | |
 | [`/weather`](https://minecraft.wiki/w/Commands/weather) | Change the weather | |
+
+</Details>

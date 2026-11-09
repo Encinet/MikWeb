@@ -1,12 +1,9 @@
 'use client';
 
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import type { ReactNode } from 'react';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import rehypeSlug from 'rehype-slug';
-import remarkGfm from 'remark-gfm';
+import { getWikiNavigationScrollMinimum } from '@/modules/wiki/lib/wiki-navigation-scroll';
 import {
   decodeWikiHash,
   getWikiHistoryScroll,
@@ -24,22 +21,13 @@ import type {
   WikiSectionOutlineItem,
   WikiSectionOutlineMap,
 } from '@/modules/wiki/model/wiki-section-types';
-import { createWikiMarkdownRenderers } from '@/modules/wiki/ui/wiki-markdown-renderers';
+import { WikiMdx } from '@/modules/wiki/ui/wiki-mdx';
 import { WikiNavigation } from '@/modules/wiki/ui/wiki-navigation';
 import { WikiOutlineLinks } from '@/modules/wiki/ui/wiki-outline-links';
 import { WikiReadingToolbar } from '@/modules/wiki/ui/wiki-reading-toolbar';
 import { WikiSearchBox } from '@/modules/wiki/ui/wiki-search-box';
 import { WikiSearchResults } from '@/modules/wiki/ui/wiki-search-results';
 import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
-
-const wikiSanitizeSchema = {
-  ...defaultSchema,
-  attributes: {
-    ...defaultSchema.attributes,
-    td: [...(defaultSchema.attributes?.td ?? []), 'rowSpan', 'colSpan'],
-    th: [...(defaultSchema.attributes?.th ?? []), 'rowSpan', 'colSpan', 'scope'],
-  },
-};
 
 const emptyOutline: WikiSectionOutlineItem[] = [];
 
@@ -56,10 +44,12 @@ interface WikiContentProps {
   sections: WikiSectionDefinition[];
   sectionGroups: WikiSectionGroupDefinition[];
   content: WikiSectionContentMap;
+  compiled: Record<string, string>;
   outlines: WikiSectionOutlineMap;
   searchIndex: SearchableWikiBlock[];
   initialSection?: WikiSectionId;
   initialQuery?: string;
+  staffStatus?: ReactNode;
 }
 
 export default function WikiContent({
@@ -75,10 +65,12 @@ export default function WikiContent({
   sections,
   sectionGroups,
   content,
+  compiled,
   outlines,
   searchIndex,
   initialSection,
   initialQuery = '',
+  staffStatus,
 }: WikiContentProps) {
   const fallbackSection = sections[0]?.id || '';
   const [activeSection, setActiveSection] = useState(initialSection || fallbackSection);
@@ -89,6 +81,7 @@ export default function WikiContent({
   const liveSearchQuery = searchQuery.trim();
   const deferredLiveSearchQuery = useDeferredValue(liveSearchQuery);
   const committedSearchQuery = useRef(initialQuery);
+  const navigationRef = useRef<HTMLElement>(null);
   const activeOutline = outlines[activeSection] ?? emptyOutline;
   const activeSearchQuery = isSearchComposing
     ? debouncedSearchQuery
@@ -114,7 +107,7 @@ export default function WikiContent({
   }, [searchResults.length, searchResultsCountTemplate]);
 
   useEffect(() => {
-    if (content[activeSection]) {
+    if (Object.hasOwn(content, activeSection)) {
       return;
     }
 
@@ -147,7 +140,9 @@ export default function WikiContent({
       const nextQuery = params.get('q')?.trim() ?? '';
       const selectedSectionId = params.get('section');
       const nextSection =
-        selectedSectionId && content[selectedSectionId] ? selectedSectionId : fallbackSection;
+        selectedSectionId && Object.hasOwn(content, selectedSectionId)
+          ? selectedSectionId
+          : fallbackSection;
 
       committedSearchQuery.current = nextQuery;
       setSearchQuery((currentQuery) => (currentQuery === nextQuery ? currentQuery : nextQuery));
@@ -232,12 +227,22 @@ export default function WikiContent({
 
   const handleSectionChange = (id: WikiSectionId) => {
     setNavigationPanel(null);
+    if (id === activeSection && !liveSearchQuery && !isSearching) return;
+
+    const minScrollY = getWikiNavigationScrollMinimum(navigationRef.current);
     committedSearchQuery.current = '';
     setActiveSection(id);
     setSearchQuery('');
     setDebouncedSearchQuery('');
     pushUrlState({ nextSection: id, nextQuery: '', nextHash: '' });
-    requestScroll({ sectionId: id, slug: '', focus: true, smooth: false });
+    requestScroll({
+      sectionId: id,
+      slug: '',
+      focus: true,
+      smooth: false,
+      onlyIfAbove: true,
+      minScrollY,
+    });
   };
 
   const handleSearchResultOpen = (result: (typeof searchResults)[number]) => {
@@ -265,8 +270,6 @@ export default function WikiContent({
     requestScroll({ sectionId: activeSection, slug: item.slug, focus: true, smooth: true });
   };
 
-  const markdownComponents = useMemo(() => createWikiMarkdownRenderers(), []);
-
   return (
     <MotionConfig reducedMotion="user">
       <div className="wiki-page page-shell">
@@ -291,11 +294,12 @@ export default function WikiContent({
               />
             }
           />
+          {staffStatus}
 
           <div
             className={`wiki-page__layout ${!isSearching && activeOutline.length > 0 ? 'has-outline' : ''}`}
           >
-            <aside className="wiki-page__navigation">
+            <aside className="wiki-page__navigation" ref={navigationRef}>
               <WikiNavigation
                 activeSection={activeSection}
                 isSearching={isSearching}
@@ -343,17 +347,7 @@ export default function WikiContent({
                       transition={{ duration: 0.16 }}
                       className="wiki-markdown"
                     >
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[
-                          rehypeRaw,
-                          [rehypeSanitize, wikiSanitizeSchema],
-                          rehypeSlug,
-                        ]}
-                        components={markdownComponents as object}
-                      >
-                        {content[activeSection]}
-                      </ReactMarkdown>
+                      {compiled[activeSection] ? <WikiMdx code={compiled[activeSection]} /> : null}
                     </motion.article>
                   )}
                 </AnimatePresence>

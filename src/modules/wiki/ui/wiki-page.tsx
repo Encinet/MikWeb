@@ -1,17 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 
-import { createWikiSectionGroups, sortWikiSections } from '@/modules/wiki/lib/wiki-grouping';
-import { buildWikiSearchIndex, parseWikiMarkdownBlocks } from '@/modules/wiki/lib/wiki-search';
-import type {
-  SearchableWikiBlock,
-  WikiSectionContentMap,
-  WikiSectionDocument,
-  WikiSectionGroupDefinition,
-  WikiSectionOutlineMap,
-} from '@/modules/wiki/model/wiki-section-types';
+import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
-import WikiContentView from '@/modules/wiki/ui/wiki-content-view';
+import WikiContentGateway from '@/modules/wiki/ui/wiki-content-gateway';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 
 export default async function WikiPage({
@@ -27,34 +19,18 @@ export default async function WikiPage({
   const t = await getTranslations({ locale, namespace: 'wiki' });
   const commonT = await getTranslations({ locale, namespace: 'common' });
 
-  const wikiDocuments: WikiSectionDocument[] = await loadWikiSectionDocuments(locale);
-  const wikiSections = sortWikiSections(wikiDocuments.map((wikiDocument) => wikiDocument.section));
-  const wikiGroups: WikiSectionGroupDefinition[] = createWikiSectionGroups(wikiSections);
-  const wikiContentBySection = Object.fromEntries(
-    wikiDocuments.map((wikiDocument) => [wikiDocument.section.id, wikiDocument.content]),
-  ) as WikiSectionContentMap;
-  const wikiOutlineBySection = Object.fromEntries(
-    wikiDocuments.map((wikiDocument) => [
-      wikiDocument.section.id,
-      parseWikiMarkdownBlocks(wikiDocument.section.id, wikiDocument.content)
-        .filter((block) => block.level >= 2 && block.level <= 3)
-        .map((block) => ({
-          heading: block.heading,
-          level: block.level,
-          slug: block.slug,
-        })),
-    ]),
-  ) as WikiSectionOutlineMap;
-  const wikiSearchIndex: SearchableWikiBlock[] = buildWikiSearchIndex(locale, wikiContentBySection);
+  const wikiDocuments = await loadWikiSectionDocuments(locale);
+  const bundle = await createWikiContentBundle(locale, wikiDocuments);
 
-  const availableSectionIds = wikiSections.map((wikiSection) => wikiSection.id);
+  const availableSectionIds = bundle.sections.map((wikiSection) => wikiSection.id);
   const initialSection =
-    section && availableSectionIds.includes(section) ? section : (wikiSections[0]?.id ?? '');
+    section && availableSectionIds.includes(section) ? section : (bundle.sections[0]?.id ?? '');
   const initialQuery = q?.trim() ?? '';
 
   return (
     <Suspense>
-      <WikiContentView
+      <WikiContentGateway
+        {...bundle}
         pageTitle={t('title')}
         navigation={t('navigation.title')}
         onThisPage={t('navigation.onThisPage')}
@@ -64,11 +40,6 @@ export default async function WikiPage({
         searchEmptyTitle={t('search.empty.title')}
         searchEmptyDescription={t('search.empty.description')}
         clearSearchLabel={commonT('actions.clearSearch')}
-        sections={wikiSections}
-        sectionGroups={wikiGroups}
-        content={wikiContentBySection}
-        outlines={wikiOutlineBySection}
-        searchIndex={wikiSearchIndex}
         initialSection={initialSection}
         initialQuery={initialQuery}
       />

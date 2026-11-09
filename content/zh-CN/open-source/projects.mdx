@@ -1,0 +1,137 @@
+---
+title: Mik 开源计划
+description: Mik、MikWeb 与 Mik Data 的项目分工、贡献入口和开发验证
+order: 60
+icon: Code
+---
+
+## 项目与贡献入口
+
+<Definitions>
+<Definition title="Mik">
+
+**服务器插件**。负责铁块电梯、空间菜单、玩家工具和游戏内聊天等功能。使用 Java、Paper 与 Gradle。
+
+[源码](https://github.com/Encinet/mik) · [功能与开发文档](https://github.com/Encinet/mik/blob/main/docs/README.md) · [问题与建议](https://github.com/Encinet/mik/issues)
+
+</Definition>
+<Definition title="MikWeb">
+
+**官网与 Wiki**。负责页面交互、建筑展示、网页聊天和双语内容。使用 TypeScript、Next.js 与 React。
+
+[源码](https://github.com/Encinet/MikWeb) · [贡献说明](https://github.com/Encinet/MikWeb/blob/main/CONTRIBUTING.md) · [问题与建议](https://github.com/Encinet/MikWeb/issues)
+
+</Definition>
+<Definition title="Mik Data">
+
+**数据与账号服务**。负责公开数据接口、网页登录会话、建筑投稿与审核。运行于 Cloudflare Workers，使用 TypeScript、SQLite 与 KV。
+
+[源码](https://github.com/Encinet/mikdata) · [开发说明](https://github.com/Encinet/mikdata/blob/main/README.md) · [问题与建议](https://github.com/Encinet/mikdata/issues)
+
+</Definition>
+</Definitions>
+
+## 可以参与什么
+
+<Definitions>
+<Definition title="反馈问题与建议">
+
+写明复现步骤与预期、实际结果，附相关版本和截图。已有同类 Issue 时补充原记录。
+
+</Definition>
+<Definition title="文档与翻译">
+
+补充机制用法、修正说明或界面文案。Wiki 与网站翻译在 MikWeb 维护。
+
+</Definition>
+<Definition title="代码与测试">
+
+修复问题、改进交互或实现功能；也可验证现有 PR，补充测试环境与结果。
+
+</Definition>
+</Definitions>
+
+账号问题、安全漏洞及含私人信息的报告，请私下联系维护者。
+
+<Details title="修改 Wiki 与网站翻译">
+
+- Wiki 文章：`content/zh-CN/` 与 `content/en/` 下的 `.mdx` 文件，两种语言使用相同文件名。
+- 界面翻译：`messages/zh-CN.json` 与 `messages/en.json`，保持翻译键和参数对应。
+- MDX 的元信息、分组与组件用法见 [Wiki 内容规范](https://github.com/Encinet/MikWeb/blob/main/CONTRIBUTING.md#wiki--内容编辑)。
+
+只改 Wiki 时运行 `bun check:wiki`；修改界面翻译后运行 `bun check:i18n`。
+
+</Details>
+
+## 提交一份修改
+
+<Steps>
+<Step title="确定范围">
+
+从对应仓库 Fork 并创建分支，一次修改围绕一个问题。较大功能先开 Issue 讨论；涉及多个项目时，说明接口或行为如何配合。
+
+</Step>
+<Step title="修改并验证">
+
+按下方项目说明准备本地环境，执行检查。游戏行为在测试服验证；界面改动检查桌面和手机布局。
+
+</Step>
+<Step title="发起 Pull Request">
+
+写清解决的问题、改动后的表现和验证结果，关联对应 Issue。界面改动附截图；跨项目修改附上配套 PR。
+
+</Step>
+</Steps>
+
+## 开发与验证
+
+以下命令在对应仓库目录执行。
+
+<Tabs defaultValue="mik">
+<Tab value="mik" title="Mik">
+
+Java 版本、服务端依赖和测试服安装见 [README](https://github.com/Encinet/mik/blob/main/README.md)。构建并运行默认测试：
+
+```sh
+./gradlew build
+```
+
+功能代码按 `feature/<领域>/<功能>/` 组织；目录边界见[项目架构](https://github.com/Encinet/mik/blob/main/docs/architecture.md)。涉及游戏内行为时，检查权限、多人操作与重启后的状态。
+
+</Tab>
+<Tab value="mikweb" title="MikWeb">
+
+安装依赖并启动网站：
+
+```sh
+bun install
+bun dev
+```
+
+功能页面位于 `src/modules/`，路由入口位于 `src/app/`。登录等功能需要的本地配置见 [README](https://github.com/Encinet/MikWeb/blob/main/README.md)。代码改动提交前运行：
+
+```sh
+bun check
+bun run build
+```
+
+</Tab>
+<Tab value="mikdata" title="Mik Data">
+
+按 [README](https://github.com/Encinet/mikdata/blob/main/README.md#development) 配置本地变量与服务绑定后，启动开发服务：
+
+```sh
+bun install
+bun run dev
+```
+
+提交前运行测试、类型检查与部署预检：
+
+```sh
+bun run check
+```
+
+接口说明见 [openapi.yaml](https://github.com/Encinet/mikdata/blob/main/openapi.yaml)。修改接口时同步更新文档，并核对 MikWeb 与 Mik 插件的调用；涉及账号操作时，验证登录身份与资源归属。
+
+</Tab>
+</Tabs>

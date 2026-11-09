@@ -45,7 +45,7 @@
     "items": {
       "home": "首页",
       "buildings": "建筑收录",
-      "wiki": "游戏指南",
+      "wiki": "Wiki",
       "join": "申请加入",
       "notices": "社区公示"
     },
@@ -269,23 +269,28 @@
     }
   },
   "wiki": {
-    "title": "游戏指南",
+    "title": "Wiki",
     "meta": {
-      "description": "了解服务器规则、指令和游戏技巧",
-      "imageDescription": "了解服务器规则、指令与玩法"
+      "description": "入服、建造、服务器机制与开源贡献的文档入口",
+      "imageDescription": "Mik 服务器文档与开源计划"
     },
     "navigation": {
       "title": "导航",
       "onThisPage": "本页目录"
     },
     "search": {
-      "placeholder": "搜索 wiki 内容、指令、关键词...",
+      "placeholder": "搜索文档、机制或指令…",
       "resultsTitle": "搜索结果",
       "resultsCount": "{count} 个匹配结果",
       "empty": {
         "title": "没有找到匹配内容",
         "description": "试试更短的关键词、指令别名，或换一种中英文说法。"
       }
+    },
+    "staff": {
+      "loading": "正在验证权限并加载管理手册…",
+      "error": "管理手册暂时无法加载，请重试。",
+      "retry": "重新加载"
     }
   },
   "bans": {

@@ -1,0 +1,137 @@
+---
+title: Mik open source
+description: Project roles, contribution links, and development checks for Mik, MikWeb, and Mik Data
+order: 60
+icon: Code
+---
+
+## Projects and contribution links
+
+<Definitions>
+<Definition title="Mik">
+
+**Server plugin.** Implements iron-block elevators, spatial menus, player tools, in-game chat, and other server features. Built with Java, Paper, and Gradle.
+
+[Source](https://github.com/Encinet/mik) · [Feature and development docs](https://github.com/Encinet/mik/blob/main/docs/README.md) · [Issues and suggestions](https://github.com/Encinet/mik/issues)
+
+</Definition>
+<Definition title="MikWeb">
+
+**Website and Wiki.** Handles page interactions, the building gallery, web chat, and bilingual content. Built with TypeScript, Next.js, and React.
+
+[Source](https://github.com/Encinet/MikWeb) · [Contribution guide](https://github.com/Encinet/MikWeb/blob/main/CONTRIBUTING.md) · [Issues and suggestions](https://github.com/Encinet/MikWeb/issues)
+
+</Definition>
+<Definition title="Mik Data">
+
+**Data and account service.** Handles public APIs, website login sessions, building submissions, and reviews. Runs on Cloudflare Workers with TypeScript, SQLite, and KV.
+
+[Source](https://github.com/Encinet/mikdata) · [Development guide](https://github.com/Encinet/mikdata/blob/main/README.md) · [Issues and suggestions](https://github.com/Encinet/mikdata/issues)
+
+</Definition>
+</Definitions>
+
+## Ways to contribute
+
+<Definitions>
+<Definition title="Issues and suggestions">
+
+Include reproduction steps, expected and actual behavior, relevant versions, and screenshots. Add evidence to an existing report when it covers the same problem.
+
+</Definition>
+<Definition title="Docs and translations">
+
+Explain mechanics, correct instructions, or improve interface text. Wiki articles and website translations live in MikWeb.
+
+</Definition>
+<Definition title="Code and testing">
+
+Fix a bug, improve an interaction, or implement a feature. You can also test an existing PR and add your environment and results.
+
+</Definition>
+</Definitions>
+
+Contact maintainers privately about account problems, vulnerabilities, or reports containing personal information.
+
+<Details title="Edit Wiki articles and website translations">
+
+- Wiki articles: `.mdx` files under `content/zh-CN/` and `content/en/`, with matching filenames in both languages.
+- Interface translations: `messages/zh-CN.json` and `messages/en.json`, with matching keys and parameters.
+- See the [Wiki content conventions](https://github.com/Encinet/MikWeb/blob/main/CONTRIBUTING.md#wiki--内容编辑) for front matter, groups, and MDX components.
+
+Run `bun check:wiki` for Wiki-only changes, or `bun check:i18n` after editing interface translations.
+
+</Details>
+
+## Submit a change
+
+<Steps>
+<Step title="Define the scope">
+
+Fork the relevant repository and create a branch for one problem. Discuss larger features in an Issue first. For changes spanning projects, explain how the interfaces or behavior fit together.
+
+</Step>
+<Step title="Make and verify the change">
+
+Prepare your local environment and run the checks below. Verify gameplay on a test server and interface changes at desktop and mobile sizes.
+
+</Step>
+<Step title="Open a pull request">
+
+Describe the problem, resulting behavior, and validation, and link the relevant Issue. Include screenshots for interface changes and companion PRs for changes spanning projects.
+
+</Step>
+</Steps>
+
+## Development and checks
+
+Run these commands from the relevant repository directory.
+
+<Tabs defaultValue="mik">
+<Tab value="mik" title="Mik">
+
+See the [README](https://github.com/Encinet/mik/blob/main/README.md) for the Java version, server dependencies, and test-server setup. Build and run the default tests:
+
+```sh
+./gradlew build
+```
+
+Feature code follows `feature/<domain>/<feature>/`; see the [project architecture](https://github.com/Encinet/mik/blob/main/docs/architecture.md) for module boundaries. Check permissions, multiplayer behavior, and restart persistence when changing gameplay.
+
+</Tab>
+<Tab value="mikweb" title="MikWeb">
+
+Install dependencies and start the website:
+
+```sh
+bun install
+bun dev
+```
+
+Features live in `src/modules/`; route entry points live in `src/app/`. See the [README](https://github.com/Encinet/MikWeb/blob/main/README.md) for local configuration, including login. Before submitting code changes, run:
+
+```sh
+bun check
+bun run build
+```
+
+</Tab>
+<Tab value="mikdata" title="Mik Data">
+
+Configure local variables and service bindings using the [README](https://github.com/Encinet/mikdata/blob/main/README.md#development), then start the development service:
+
+```sh
+bun install
+bun run dev
+```
+
+Before submitting, run tests, type checking, and a deployment dry-run:
+
+```sh
+bun run check
+```
+
+See [openapi.yaml](https://github.com/Encinet/mikdata/blob/main/openapi.yaml) for API documentation. Update it when changing an API, and check MikWeb and plugin callers. For account operations, verify authentication and resource ownership.
+
+</Tab>
+</Tabs>

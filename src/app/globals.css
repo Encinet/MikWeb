@@ -24,6 +24,7 @@
 @import "./styles/modules/map.css";
 @import "./styles/base/forms.css";
 @import "./styles/modules/wiki.css";
+@import "./styles/modules/wiki-mdx.css";
 @import "./styles/modules/building-archive.css";
 @import "./styles/modules/building-gallery.css";
 @import "./styles/modules/bans.css";
