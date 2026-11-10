@@ -26,7 +26,11 @@ export function AnnouncementFeedContent({
   const commonT = useTranslations('common');
 
   if (isLoading) {
-    return <AnnouncementSkeletonList />;
+    return (
+      <div role="status" aria-label={commonT('states.loading')}>
+        <AnnouncementSkeletonList />
+      </div>
+    );
   }
 
   if (errorMessage) {

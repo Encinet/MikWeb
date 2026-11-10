@@ -1,26 +1,12 @@
 'use client';
 
 import { Bell } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
+import { AnnouncementFeedContent } from '@/modules/announcement/ui/announcement-feed-content';
 
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
-import { LoadingState } from '@/shared/ui/feedback/loading-state';
-
-const AnnouncementFeedContent = dynamic(
-  () =>
-    import('@/modules/announcement/ui/announcement-feed-content').then(
-      (module) => module.AnnouncementFeedContent,
-    ),
-  { loading: () => <AnnouncementLoading /> },
-);
-
-function AnnouncementLoading() {
-  const t = useTranslations('common');
-  return <LoadingState message={t('states.loading')} />;
-}
 
 interface AnnouncementFeedDialogProps {
   announcements: AnnouncementItem[];

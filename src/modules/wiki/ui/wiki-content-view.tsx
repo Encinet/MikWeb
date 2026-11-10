@@ -1,6 +1,5 @@
 'use client';
 
-import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { getWikiNavigationScrollMinimum } from '@/modules/wiki/lib/wiki-navigation-scroll';
@@ -271,102 +270,93 @@ export default function WikiContent({
   };
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="wiki-page page-shell">
-        <div className="wiki-page__inner">
-          <ContentBrowserHeader
-            title={pageTitle}
-            search={
-              <WikiSearchBox
-                clearSearchLabel={clearSearchLabel}
-                onChange={setSearchQuery}
-                onClear={handleSearchClear}
-                onCompositionEnd={(event) => {
-                  const nextQuery = event.currentTarget.value.trim();
+    <div className="wiki-page page-shell">
+      <div className="wiki-page__inner">
+        <ContentBrowserHeader
+          title={pageTitle}
+          search={
+            <WikiSearchBox
+              clearSearchLabel={clearSearchLabel}
+              onChange={setSearchQuery}
+              onClear={handleSearchClear}
+              onCompositionEnd={(event) => {
+                const nextQuery = event.currentTarget.value.trim();
 
-                  setIsSearchComposing(false);
-                  setSearchQuery(event.currentTarget.value);
-                  setDebouncedSearchQuery(nextQuery);
-                }}
-                onCompositionStart={() => setIsSearchComposing(true)}
-                placeholder={searchPlaceholder}
-                searchQuery={searchQuery}
-              />
-            }
-          />
-          {staffStatus}
+                setIsSearchComposing(false);
+                setSearchQuery(event.currentTarget.value);
+                setDebouncedSearchQuery(nextQuery);
+              }}
+              onCompositionStart={() => setIsSearchComposing(true)}
+              placeholder={searchPlaceholder}
+              searchQuery={searchQuery}
+            />
+          }
+        />
+        {staffStatus}
 
-          <div
-            className={`wiki-page__layout ${!isSearching && activeOutline.length > 0 ? 'has-outline' : ''}`}
-          >
-            <aside className="wiki-page__navigation" ref={navigationRef}>
-              <WikiNavigation
-                activeSection={activeSection}
-                isSearching={isSearching}
-                navigationLabel={navigation}
-                onSectionChange={handleSectionChange}
-                sectionGroups={sectionGroups}
+        <div
+          className={`wiki-page__layout ${!isSearching && activeOutline.length > 0 ? 'has-outline' : ''}`}
+        >
+          <aside className="wiki-page__navigation" ref={navigationRef}>
+            <WikiNavigation
+              activeSection={activeSection}
+              isSearching={isSearching}
+              navigationLabel={navigation}
+              onSectionChange={handleSectionChange}
+              sectionGroups={sectionGroups}
+            />
+          </aside>
+
+          <div className="wiki-page__content-column">
+            <WikiReadingToolbar
+              activeSection={activeSection}
+              activeSlug={activeSlug}
+              isSearching={isSearching}
+              items={activeOutline}
+              navigationLabel={navigation}
+              outlineLabel={onThisPage}
+              sectionGroups={sectionGroups}
+              panel={navigationPanel}
+              onPanelChange={setNavigationPanel}
+              onSectionChange={handleSectionChange}
+              onOutlineOpen={handleOutlineOpen}
+            />
+            <div className="wiki-page__content-panel">
+              {isSearching ? (
+                <WikiSearchResults
+                  emptyDescription={searchEmptyDescription}
+                  emptyTitle={searchEmptyTitle}
+                  onOpenResult={handleSearchResultOpen}
+                  results={searchResults}
+                  resultsCountLabel={searchResultsCountLabel}
+                  resultsLabel={searchResultsLabel}
+                />
+              ) : (
+                <article
+                  key={activeSection}
+                  data-section={activeSection}
+                  ref={articleRef}
+                  tabIndex={-1}
+                  className="wiki-markdown"
+                >
+                  {compiled[activeSection] ? <WikiMdx code={compiled[activeSection]} /> : null}
+                </article>
+              )}
+            </div>
+          </div>
+          {!isSearching && activeOutline.length > 0 ? (
+            <aside className="wiki-page__outline">
+              <WikiOutlineLinks
+                activeSlug={activeSlug}
+                sectionId={activeSection}
+                items={activeOutline}
+                label={onThisPage}
+                onOpen={handleOutlineOpen}
               />
             </aside>
-
-            <div className="wiki-page__content-column">
-              <WikiReadingToolbar
-                activeSection={activeSection}
-                activeSlug={activeSlug}
-                isSearching={isSearching}
-                items={activeOutline}
-                navigationLabel={navigation}
-                outlineLabel={onThisPage}
-                sectionGroups={sectionGroups}
-                panel={navigationPanel}
-                onPanelChange={setNavigationPanel}
-                onSectionChange={handleSectionChange}
-                onOutlineOpen={handleOutlineOpen}
-              />
-              <div className="wiki-page__content-panel">
-                <AnimatePresence mode="wait" initial={false}>
-                  {isSearching ? (
-                    <WikiSearchResults
-                      emptyDescription={searchEmptyDescription}
-                      emptyTitle={searchEmptyTitle}
-                      isSearching={isSearching}
-                      onOpenResult={handleSearchResultOpen}
-                      results={searchResults}
-                      resultsCountLabel={searchResultsCountLabel}
-                      resultsLabel={searchResultsLabel}
-                    />
-                  ) : (
-                    <motion.article
-                      key={activeSection}
-                      data-section={activeSection}
-                      ref={articleRef}
-                      tabIndex={-1}
-                      initial={false}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                      transition={{ duration: 0.16 }}
-                      className="wiki-markdown"
-                    >
-                      {compiled[activeSection] ? <WikiMdx code={compiled[activeSection]} /> : null}
-                    </motion.article>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-            {!isSearching && activeOutline.length > 0 ? (
-              <aside className="wiki-page__outline">
-                <WikiOutlineLinks
-                  activeSlug={activeSlug}
-                  sectionId={activeSection}
-                  items={activeOutline}
-                  label={onThisPage}
-                  onOpen={handleOutlineOpen}
-                />
-              </aside>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       </div>
-    </MotionConfig>
+    </div>
   );
 }

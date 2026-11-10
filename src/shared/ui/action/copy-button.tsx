@@ -4,6 +4,7 @@ import { AlertCircle, Check, Copy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ComponentPropsWithRef } from 'react';
 import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 type CopyButtonProps = Omit<ComponentPropsWithRef<'button'>, 'children' | 'onClick'> & {
   value: string;
@@ -52,7 +53,9 @@ export function CopyButton({
         aria-label={statusLabel}
         title={statusLabel}
       >
-        {status === 'copied' ? (
+        {copying ? (
+          <ProgressRing size="sm" className="copy-button__icon" />
+        ) : status === 'copied' ? (
           <Check className="copy-button__icon" aria-hidden="true" />
         ) : status === 'error' ? (
           <AlertCircle className="copy-button__icon" aria-hidden="true" />

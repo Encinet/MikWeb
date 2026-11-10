@@ -1,7 +1,7 @@
 'use client';
 
 import type { RefObject } from 'react';
-import { useEffect, useEffectEvent } from 'react';
+import { useEffectEvent, useLayoutEffect } from 'react';
 import { captureFocusReturn } from '@/shared/lib/focus-return';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
@@ -12,9 +12,15 @@ export function useMobileNavigation(
   onClose: () => void,
 ) {
   const close = useEffectEvent(onClose);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const surface = surfaceRef.current;
-    if (!isOpen || !surface) return;
+    if (!surface) return;
+    surface.inert = !isOpen;
+    if (!isOpen) {
+      surface.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    surface.removeAttribute('aria-hidden');
     const focusReturn = captureFocusReturn(openerRef.current);
     let restoreFocus = true;
     const desktop = window.matchMedia('(min-width: 1280px)');
@@ -44,6 +50,9 @@ export function useMobileNavigation(
       document.removeEventListener('pointerdown', leave);
       document.removeEventListener('focusin', leave);
       desktop.removeEventListener('change', resize);
+      // AnimatePresence retains this surface during exit, after navigation has closed.
+      surface.inert = true;
+      surface.setAttribute('aria-hidden', 'true');
       if (
         restoreFocus &&
         (surface.contains(document.activeElement) ||

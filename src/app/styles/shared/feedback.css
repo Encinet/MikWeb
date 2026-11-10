@@ -80,6 +80,12 @@
   .loading-state {
     animation: loading-state-reveal 180ms ease-out 120ms both;
   }
+
+  .copy-button[aria-busy="true"] .progress-ring {
+    animation:
+      progress-ring-turn 2.4s linear infinite,
+      loading-state-reveal 120ms ease-out 120ms both;
+  }
 }
 
 @keyframes progress-ring-turn {
