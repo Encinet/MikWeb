@@ -7,7 +7,7 @@ import {
   SITE_LOGO_PATH,
   SOURCE_CODE_URL,
 } from '@/shared/config/site-config';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 
 const COPYRIGHT_START_YEAR = 2021;
 const COPYRIGHT_BUILD_YEAR = new Date().getFullYear();

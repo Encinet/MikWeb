@@ -13,7 +13,7 @@ import type { CommunityNotice } from '@/modules/community/model/board-types';
 import { isCommunityBoardResponse } from '@/modules/community/model/board-types';
 import { CommunityNoticeEntry } from '@/modules/community/ui/community-notice-entry';
 import { dataApiUrl } from '@/shared/api/data-api-url';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 import { SearchField } from '@/shared/ui/form/search-field';
 import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
 

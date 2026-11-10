@@ -5,7 +5,7 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser';
 import { startAuthentication, WebAuthnAbortService } from '@simplewebauthn/browser';
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
 import { webAuthnError } from '@/modules/auth/lib/webauthn-error';
 import { isAuthMeResponse } from '@/modules/auth/model/auth-types';
@@ -45,11 +45,18 @@ export function useAuthenticationFlow({
     if (phase === 'done') authenticated();
   }, [phase]);
 
-  useEffect(
+  useLayoutEffect(
     () => () => {
       operation.current++;
       abort.current?.abort();
       if (ceremony.current) WebAuthnAbortService.cancelCeremony();
+      ceremony.current = false;
+      completing.current = false;
+      activeChallenge.current = null;
+      setChallenge(null);
+      setPhase('idle');
+      setError(null);
+      setRemainingSeconds(0);
     },
     [],
   );

@@ -49,7 +49,8 @@ import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { SITE_LOGO_PATH } from '@/shared/config/site-config';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
 type ChatPanelMode = 'search' | 'players' | 'participants';
@@ -182,7 +183,7 @@ export function ChatWorkspace({
   useEffect(() => {
     if (!workspaceVisible || overlay !== null) return;
     const shortcut = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
+      if (event.defaultPrevented || isImeComposing(event)) return;
       if (event.key === 'Escape' && panel !== null) {
         event.preventDefault();
         closePanel();

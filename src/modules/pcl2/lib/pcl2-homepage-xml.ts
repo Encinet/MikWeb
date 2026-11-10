@@ -78,6 +78,7 @@ const PCL2_COPY = {
       empty: '暂无玩家在线',
       joinedAt: '上线于',
       noDetails: '已获取在线人数，但暂无详细玩家列表',
+      peak: (count: number) => `历史峰值 ${count} 人`,
       title: '在线玩家',
     },
     server: {
@@ -138,6 +139,7 @@ const PCL2_COPY = {
       empty: 'No players online',
       joinedAt: 'Joined at',
       noDetails: 'Online count is available, but the player list is empty',
+      peak: (count: number) => `Peak: ${count} players`,
       title: 'Online players',
     },
     server: {
@@ -262,7 +264,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
           ]),
           ...(data.onlinePlayers.peak_online != null
             ? [
-                tb(`  ·  历史峰值 ${data.onlinePlayers.peak_online} 人`, [
+                tb(`  ·  ${copy.players.peak(data.onlinePlayers.peak_online)}`, [
                   attr('FontSize', 13),
                   attr('Foreground', '#888888'),
                   attr('Margin', '4,0,0,0'),

@@ -42,7 +42,7 @@ export interface BuildingSubmissionFormState {
   sourceNoteEn: string;
 }
 
-export function createInitialBuildingSubmissionForm(): BuildingSubmissionFormState {
+export function createInitialBuildingSubmissionForm(buildDate = ''): BuildingSubmissionFormState {
   return {
     nameZh: '',
     nameEn: '',
@@ -53,7 +53,7 @@ export function createInitialBuildingSubmissionForm(): BuildingSubmissionFormSta
     x: '',
     y: '64',
     z: '',
-    buildDate: new Date().toISOString().slice(0, 10),
+    buildDate,
     sourceAuthor: '',
     sourceLink: '',
     sourceNoteZh: '',

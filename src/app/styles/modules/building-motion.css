@@ -1,0 +1,94 @@
+/* Catalog changes preserve card identity as the responsive grid reorders. */
+::view-transition-group(.building-card-move) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ui-transition-easing);
+}
+
+::view-transition-old(.building-card-enter),
+::view-transition-new(.building-card-exit) {
+  animation: none;
+}
+
+::view-transition-new(.building-card-enter) {
+  animation: building-content-in 220ms ease-out both;
+}
+
+::view-transition-old(.building-card-exit) {
+  animation: building-content-out 140ms ease-in both;
+}
+
+::view-transition-old(.building-results) {
+  animation: building-content-out 120ms ease-in both;
+}
+
+::view-transition-new(.building-results) {
+  animation: building-content-in 180ms ease-out both;
+}
+
+/* Short fades connect route galleries without moving the surrounding page chrome. */
+::view-transition-new(.building-gallery-open) {
+  animation: building-content-in 240ms ease-out both;
+}
+
+::view-transition-old(.building-gallery-close) {
+  animation: building-content-out 160ms ease-in both;
+}
+
+/* Images swap together instead of waiting for an exit before loading the next image. */
+::view-transition-group(.building-image-next),
+::view-transition-group(.building-image-prev) {
+  animation-duration: 260ms;
+}
+
+::view-transition-old(.building-image-next),
+::view-transition-old(.building-image-prev) {
+  animation: building-image-out 180ms ease-in both;
+}
+
+::view-transition-new(.building-image-next),
+::view-transition-new(.building-image-prev) {
+  animation: building-image-in 260ms var(--ui-transition-easing) both;
+}
+
+::view-transition-old(.building-image-next),
+::view-transition-new(.building-image-next) {
+  --building-image-offset: 24px;
+}
+
+::view-transition-old(.building-image-prev),
+::view-transition-new(.building-image-prev) {
+  --building-image-offset: -24px;
+}
+
+@keyframes building-content-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes building-content-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes building-image-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--building-image-offset));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes building-image-out {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--building-image-offset) * -1));
+  }
+}

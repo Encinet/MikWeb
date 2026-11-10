@@ -1,0 +1,83 @@
+.page {
+  box-sizing: border-box;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 65svh;
+  padding: max(3rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+    max(3rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+  background: var(--theme-bg-base, #172b36);
+  color: var(--theme-text-heading, #edf5ef);
+  font:
+    1rem / 1.7 system-ui,
+    sans-serif;
+}
+
+.card {
+  width: min(100%, 32rem);
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: var(--theme-accent-strong, #a7d79d);
+  font-size: 1.5rem;
+}
+.card h1 {
+  margin: 1.5rem 0 1rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.25;
+}
+.card p {
+  color: var(--theme-text-muted-strong, #c1ced2);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.actions button,
+.actions a {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 2.75rem;
+  box-sizing: border-box;
+  padding: 0.65rem 1.25rem;
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.actions button {
+  background: var(--theme-accent-strong, #a7d79d);
+  border-color: transparent;
+  color: var(--theme-neutral-ink, #172b36);
+}
+.actions a {
+  background: transparent;
+  color: inherit;
+}
+.actions :focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+@media (prefers-color-scheme: light) {
+  .page {
+    background: var(--theme-bg-base, #f3f6f1);
+    color: var(--theme-text-heading, #172b36);
+  }
+  .card p {
+    color: var(--theme-text-muted-strong, #3f5159);
+  }
+}

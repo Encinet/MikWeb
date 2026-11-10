@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { getAnnouncementKey } from '@/modules/announcement/lib/announcement-feed';
 import {
   formatAnnouncementDate,
@@ -14,7 +14,6 @@ import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-f
 import HomePlayerList from '@/modules/home/ui/home-player-list';
 import { HomeServerStatus } from '@/modules/home/ui/home-server-status';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
-import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
 export default function HomeLiveOverview({ children }: { children: ReactNode }) {
@@ -31,7 +30,7 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
   } = usePlayerStatus();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const mounted = useHasMounted();
+  useLayoutEffect(() => () => setIsOpen(false), []);
   const { announcements, errorMessage, isLoading } = useAnnouncementsFeed({
     fallbackErrorMessage: commonT('states.error'),
   });
@@ -93,15 +92,16 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
           networkError={networkError}
         />
       </div>
-      <AnnouncementFeedDialog
-        announcements={announcements}
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-        isMounted={mounted}
-        isOpen={isOpen}
-        selectedAnnouncementKey={selectedKey}
-        onClose={() => setIsOpen(false)}
-      />
+      {isOpen && (
+        <AnnouncementFeedDialog
+          announcements={announcements}
+          errorMessage={errorMessage}
+          isLoading={isLoading}
+          isOpen={isOpen}
+          selectedAnnouncementKey={selectedKey}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
     </section>
   );
 }

@@ -2,8 +2,7 @@ import 'server-only';
 
 import { isAuthMeResponse, isStaffRole } from '@/modules/auth/model/auth-types';
 import { proxyAuthRequest } from '@/modules/auth/server/auth-bff';
-import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
-import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 
 export async function staffWikiRequest(request: Request): Promise<Response> {
   const headers = new Headers({ 'Cache-Control': 'private, no-store', vary: 'Cookie' });
@@ -29,6 +28,5 @@ export async function staffWikiRequest(request: Request): Promise<Response> {
     return Response.json({ error: 'forbidden' }, { status: 403, headers });
   }
 
-  const documents = await loadWikiSectionDocuments(locale, 'staff');
-  return Response.json(await createWikiContentBundle(locale, documents), { headers });
+  return Response.json(await getWikiContent(locale, 'staff'), { headers });
 }

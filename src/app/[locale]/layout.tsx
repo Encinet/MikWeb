@@ -1,30 +1,35 @@
+import '../globals.css';
+
 import type { Metadata, Viewport } from 'next';
-import { cookies } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { Suspense } from 'react';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
-import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
 import { ChatAccountGuard } from '@/modules/chat/model/chat-account-guard';
 import { PlayerStatusProvider } from '@/modules/player/model/player-status-provider';
+import { SITE_NAME } from '@/shared/config/site-config';
+import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { routing } from '@/shared/i18n/routing';
 import SiteBackground from '@/site/background/ui/site-background';
 import SiteFooter from '@/site/footer/ui/site-footer';
 import SiteHeader from '@/site/header/ui/site-header';
+import SiteDocument from '@/site/layout/site-document';
 import { PrintFooter, PrintHeader } from '@/site/print/ui/print-chrome';
 import { ThemeColor } from '@/site/providers/theme-color';
 import { ThemeProvider } from '@/site/providers/theme-provider';
 import { ViewportMetrics } from '@/site/providers/viewport-metrics';
+import { siteMetadata } from '@/site/seo/site-metadata';
 import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
 import StructuredData from '@/site/structured-data/ui/structured-data';
-import { getAccentProperties, getDailyAccentColor } from '@/site/theme/lib/accent-color';
+import { getAccentProperties } from '@/site/theme/lib/accent-color';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
 export function generateViewport(): Viewport {
-  const defaultPalette = getAccentProperties(getDailyAccentColor());
+  const defaultPalette = getAccentProperties(DEFAULT_ACCENT_COLOR);
 
   return {
     width: 'device-width',
@@ -45,9 +50,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
+  const homeMetadata = await generateSitePageMetadata(locale, 'home');
 
   return {
-    ...(await generateSitePageMetadata(locale, 'home')),
+    ...siteMetadata,
+    ...homeMetadata,
+    title: {
+      default: `${homeMetadata.title} | ${SITE_NAME}`,
+      template: `%s | ${SITE_NAME}`,
+    },
     manifest: `/${locale}/manifest.webmanifest`,
     keywords: [
       'Minecraft',
@@ -74,21 +85,21 @@ export default async function LocaleLayout({
   const locale = requireRouteLocale(rawLocale);
 
   const messages = await getMessages({ locale });
-  const cookieStore = await cookies();
-  const initialSessionPresent = Boolean(cookieStore.get('__Host-mik_sid')?.value);
 
   return (
-    <ThemeProvider>
-      <ViewportMetrics />
-      <NextIntlClientProvider messages={messages}>
-        <PlayerStatusProvider>
-          <AuthProvider initialSessionPresent={initialSessionPresent}>
-            <ChatAccountGuard />
-            <BuildingsProvider>
+    <SiteDocument locale={locale}>
+      <ThemeProvider>
+        <ViewportMetrics />
+        <NextIntlClientProvider messages={messages}>
+          <PlayerStatusProvider>
+            <AuthProvider>
+              <ChatAccountGuard />
               <ThemeColor />
-              <StructuredData />
+              <StructuredData locale={locale} />
               <SiteBackground />
-              <SiteHeader />
+              <Suspense>
+                <SiteHeader />
+              </Suspense>
               <PrintHeader locale={locale} />
               <main className="relative z-10 flex min-h-0 flex-1 flex-col">
                 {children}
@@ -96,10 +107,10 @@ export default async function LocaleLayout({
               </main>
               <PrintFooter />
               <SiteFooter />
-            </BuildingsProvider>
-          </AuthProvider>
-        </PlayerStatusProvider>
-      </NextIntlClientProvider>
-    </ThemeProvider>
+            </AuthProvider>
+          </PlayerStatusProvider>
+        </NextIntlClientProvider>
+      </ThemeProvider>
+    </SiteDocument>
   );
 }

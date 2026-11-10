@@ -1,9 +1,7 @@
-import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { getPcl2HomepagePath } from '@/modules/pcl2/lib/pcl2-homepage-path';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { ArtGuidePage } from '@/shared/ui/page/art-guide-page';
-import { absoluteUrl, getSiteOriginFromHeaders } from '@/shared/url/request-url';
 import { Pcl2HomepageAddress } from './pcl2-homepage-address';
 
 interface Pcl2PageParams {
@@ -15,9 +13,7 @@ export default async function Pcl2Page({ params }: Pcl2PageParams) {
   const locale = requireRouteLocale(rawLocale);
   const t = await getTranslations({ locale, namespace: 'pcl2' });
   const commonT = await getTranslations({ locale, namespace: 'common' });
-  const siteOrigin = getSiteOriginFromHeaders(await headers());
   const homepagePath = getPcl2HomepagePath(locale);
-  const homepageUrl = absoluteUrl(homepagePath, siteOrigin);
   const setupSteps = [
     {
       title: t('steps.settings.title'),
@@ -41,7 +37,7 @@ export default async function Pcl2Page({ params }: Pcl2PageParams) {
       title={t('title')}
     >
       <Pcl2HomepageAddress
-        baseUrl={homepageUrl}
+        baseUrl={homepagePath}
         copyLabel={commonT('actions.copyAddress')}
         detectingLabel={t('detectingTimeZone')}
         label={t('addressLabel')}

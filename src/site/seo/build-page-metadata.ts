@@ -26,7 +26,7 @@ export function buildPageMetadata({
   pathname?: string;
   imagePath?: string;
   imageAlt?: string;
-}): Metadata {
+}) {
   const canonical = getLocalePath(locale, pathname);
   const image = { url: imagePath, ...SOCIAL_IMAGE_SIZE, alt: imageAlt, type: 'image/png' };
 
@@ -58,5 +58,5 @@ export function buildPageMetadata({
       description,
       images: [image],
     },
-  };
+  } satisfies Metadata;
 }

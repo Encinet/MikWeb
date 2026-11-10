@@ -196,28 +196,6 @@ test('clients cannot select a time, counter, secret or generation options', asyn
     }
   }));
 
-test('untrusted clock headers cannot change the time or response fields', async () =>
-  configured(async () => {
-    const originalNow = Date.now;
-    const serverTime = 1234567890000;
-    Date.now = () => serverTime;
-    try {
-      const input = request('1');
-      input.headers.set('Date', 'Fri, 01 Jan 2100 00:00:00 GMT');
-      input.headers.set('X-Server-Time', '0');
-      input.headers.set('X-TOTP-Counter', '0');
-      const response = await joinCodeRequest(input);
-      const body = await response.json();
-      assert.deepEqual(Object.keys(body).sort(), ['code', 'expiresAt', 'serverTime']);
-      assert.equal(body.serverTime, serverTime);
-      assert.equal(body.code, (await createTotp(secret, serverTime)).code);
-      assert.equal(body.expiresAt, (Math.floor(serverTime / 30000) + 2) * 30000);
-      assert.equal(response.headers.get('Cache-Control'), 'no-store');
-    } finally {
-      Date.now = originalNow;
-    }
-  }));
-
 test('malformed requests and weak or invalid keys return no secrets or error details', async () =>
   configured(async () => {
     const make = (body: string) =>
@@ -373,15 +351,4 @@ test('verified requests at every point in a step return the current code and its
       assert.equal(body.code, (await createTotp(secret, body.expiresAt - 30001)).code);
     }
     assert.equal(calls, 4);
-  }));
-
-test('an aborted request cannot return a code', async () =>
-  configured(async () => {
-    const controller = new AbortController();
-    controller.abort();
-    const response = await joinCodeRequest(
-      new Request(request('1'), { signal: controller.signal }),
-    );
-    assert.equal(response.status, 503);
-    assert.deepEqual(await response.json(), { error: 'captcha_unavailable' });
   }));

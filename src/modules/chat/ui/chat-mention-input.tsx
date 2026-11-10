@@ -9,6 +9,7 @@ import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/modules/chat/model/chat-protocol';
 import { useChatInputHistory } from '@/modules/chat/model/use-chat-input-history';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
 interface ChatMentionInputProps {
   inputRef: RefObject<HTMLInputElement | null>;
@@ -128,7 +129,7 @@ export function ChatMentionInput({
           updateSelection(event.currentTarget);
         }}
         onKeyDown={(event) => {
-          if (composing || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
+          if (composing || isImeComposing(event.nativeEvent)) {
             if (event.key === 'Enter') event.preventDefault();
             return;
           }

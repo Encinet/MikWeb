@@ -2,7 +2,8 @@
 
 import { Search, X } from 'lucide-react';
 import type { InputHTMLAttributes } from 'react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
 interface SearchFieldProps
   extends Omit<
@@ -17,6 +18,43 @@ interface SearchFieldProps
 
 export function SearchField({ label, clearLabel, onClear, ...inputProps }: SearchFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const find = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        isImeComposing(event) ||
+        !(event.ctrlKey || event.metaKey) ||
+        event.altKey ||
+        event.shiftKey ||
+        event.key.toLowerCase() !== 'f'
+      ) {
+        return;
+      }
+
+      const input = inputRef.current;
+      if (
+        !input ||
+        input.matches(':disabled') ||
+        input.readOnly ||
+        input.closest('[inert], [hidden]') ||
+        input.getClientRects().length === 0
+      ) {
+        return;
+      }
+
+      input.focus({ preventScroll: true });
+      // Native modal dialogs can make the background unfocusable without an inert attribute.
+      if (document.activeElement !== input) return;
+      event.preventDefault();
+      input.select();
+      input.scrollIntoView({ block: 'center', inline: 'nearest' });
+    };
+
+    document.addEventListener('keydown', find);
+    return () => document.removeEventListener('keydown', find);
+  }, []);
+
   return (
     <div className="content-search-field">
       <Search className="content-search-field__icon" aria-hidden="true" />
@@ -25,6 +63,7 @@ export function SearchField({ label, clearLabel, onClear, ...inputProps }: Searc
         ref={inputRef}
         type="search"
         aria-label={label}
+        aria-keyshortcuts="Control+f Meta+f"
         className="content-search-field__input"
       />
       {inputProps.value.length > 0 ? (

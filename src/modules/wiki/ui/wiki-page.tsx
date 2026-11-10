@@ -1,12 +1,23 @@
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 
-import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
-import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 import WikiContentGateway from '@/modules/wiki/ui/wiki-content-gateway';
+import { WikiLoading } from '@/modules/wiki/ui/wiki-loading';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 
-export default async function WikiPage({
+export default function WikiPage(props: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string; section?: string }>;
+}) {
+  return (
+    <Suspense fallback={<WikiLoading />}>
+      <WikiPageContent {...props} />
+    </Suspense>
+  );
+}
+
+async function WikiPageContent({
   params,
   searchParams,
 }: {
@@ -15,12 +26,12 @@ export default async function WikiPage({
 }) {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const { q, section } = await searchParams;
-  const t = await getTranslations({ locale, namespace: 'wiki' });
-  const commonT = await getTranslations({ locale, namespace: 'common' });
-
-  const wikiDocuments = await loadWikiSectionDocuments(locale);
-  const bundle = await createWikiContentBundle(locale, wikiDocuments);
+  const [{ q, section }, t, commonT, bundle] = await Promise.all([
+    searchParams,
+    getTranslations({ locale, namespace: 'wiki' }),
+    getTranslations({ locale, namespace: 'common' }),
+    getWikiContent(locale),
+  ]);
 
   const availableSectionIds = bundle.sections.map((wikiSection) => wikiSection.id);
   const initialSection =
@@ -28,21 +39,19 @@ export default async function WikiPage({
   const initialQuery = q?.trim() ?? '';
 
   return (
-    <Suspense>
-      <WikiContentGateway
-        {...bundle}
-        pageTitle={t('title')}
-        navigation={t('navigation.title')}
-        onThisPage={t('navigation.onThisPage')}
-        searchPlaceholder={t('search.placeholder')}
-        searchResultsLabel={t('search.resultsTitle')}
-        searchResultsCountTemplate={t('search.resultsCount', { count: '{count}' })}
-        searchEmptyTitle={t('search.empty.title')}
-        searchEmptyDescription={t('search.empty.description')}
-        clearSearchLabel={commonT('actions.clearSearch')}
-        initialSection={initialSection}
-        initialQuery={initialQuery}
-      />
-    </Suspense>
+    <WikiContentGateway
+      {...bundle}
+      pageTitle={t('title')}
+      navigation={t('navigation.title')}
+      onThisPage={t('navigation.onThisPage')}
+      searchPlaceholder={t('search.placeholder')}
+      searchResultsLabel={t('search.resultsTitle')}
+      searchResultsCountTemplate={t('search.resultsCount', { count: '{count}' })}
+      searchEmptyTitle={t('search.empty.title')}
+      searchEmptyDescription={t('search.empty.description')}
+      clearSearchLabel={commonT('actions.clearSearch')}
+      initialSection={initialSection}
+      initialQuery={initialQuery}
+    />
   );
 }

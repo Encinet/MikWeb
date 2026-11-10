@@ -3,7 +3,10 @@ import { test } from 'node:test';
 import { isBuilding } from '@/modules/building/model/building-types';
 import { buildBuildingSubmissionPayload } from '@/modules/building-submission/lib/building-submission-payload';
 import { createInitialBuildingSubmissionForm } from '@/modules/building-submission/model/building-submission-form';
-import { isBuildingSubmissionListResponse } from '@/modules/building-submission/model/building-submission-types';
+import {
+  isBuildingSubmissionCreateResponse,
+  isBuildingSubmissionListResponse,
+} from '@/modules/building-submission/model/building-submission-types';
 
 test('submission payloads remain separate from server-assigned building identities', () => {
   const builder = {
@@ -48,6 +51,15 @@ test('submission payloads remain separate from server-assigned building identiti
     updatedAt: '2026-11-06T00:00:00.000Z',
   };
   assert.equal(isBuildingSubmissionListResponse({ submissions: [submission] }), true);
+  assert.equal(isBuildingSubmissionCreateResponse({ submission }), true);
+  for (const response of [
+    null,
+    {},
+    { submission: null },
+    { submission: { id: submission.id } },
+    { submission: { ...submission, status: 'unknown' } },
+  ])
+    assert.equal(isBuildingSubmissionCreateResponse(response), false);
   const building = { ...payload, id: 'b'.repeat(32) };
   assert.equal(isBuilding(building), true);
   assert.equal(isBuilding({ ...building, id: 'b'.repeat(16) }), false);

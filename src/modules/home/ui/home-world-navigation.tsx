@@ -3,7 +3,7 @@
 import { BookOpen, Compass, MessageCircle, MonitorDown, ScrollText, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 
 export function HomeWorldNavigation() {
   const t = useTranslations();

@@ -23,6 +23,7 @@ import {
   TextField,
 } from '@/modules/building-submission/ui/building-submission-form-controls';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 import { InlineFeedback } from '@/shared/ui/feedback/async-state';
 
 const BUILDER_COLORS = ['#79b86f', '#55a6d9', '#e0a74f', '#d86b7d', '#9b7bd8', '#4fb6a8'];
@@ -84,6 +85,7 @@ function BuildingSubmissionForm() {
   } = useBuildingSubmissionForm();
 
   const handlePlayerKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isImeComposing(event.nativeEvent)) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     void resolvePlayer();

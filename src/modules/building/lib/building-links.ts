@@ -14,7 +14,7 @@ export function getBuildingSocialImagePath(id: string, locale: string) {
   return `/${locale}${getBuildingPath(id)}/opengraph-image`;
 }
 
-export function getBuildingShareImagePath(id: string, imageIndex: number) {
+export function getBuildingImagePath(id: string, imageIndex: number) {
   return `/api/buildings/${id}/images/${imageIndex}`;
 }
 

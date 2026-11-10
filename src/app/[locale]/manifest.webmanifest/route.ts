@@ -2,9 +2,6 @@ import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { routing } from '@/shared/i18n/routing';
 import { buildAppManifest } from '@/site/seo/build-app-manifest';
 
-export const dynamic = 'force-static';
-export const dynamicParams = false;
-
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }

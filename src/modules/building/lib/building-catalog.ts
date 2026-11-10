@@ -14,13 +14,6 @@ export const BUILDING_SORT_KEYS = [
   'random',
 ] as const satisfies readonly BuildingSortKey[];
 
-export const BUILDING_MASONRY_BREAKPOINT_COLUMNS = {
-  default: 4,
-  1280: 3,
-  1024: 2,
-  640: 1,
-} as const;
-
 export function isBuildingSortKey(value: string): value is BuildingSortKey {
   return BUILDING_SORT_KEYS.some((sortKey) => sortKey === value);
 }

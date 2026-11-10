@@ -2,9 +2,6 @@
 
 import type { useTranslations } from 'next-intl';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import Masonry from 'react-masonry-css';
-
-import { BUILDING_MASONRY_BREAKPOINT_COLUMNS } from '@/modules/building/lib/building-catalog';
 import type { Building } from '@/modules/building/model/building-types';
 import { BuildingCard } from '@/modules/building/ui/building-card';
 import {
@@ -19,6 +16,9 @@ interface BuildingsContentAreaProps {
   hasMore: boolean;
   isLoading: boolean;
   error: string | null;
+  onRetry: () => void;
+  retryLabel: string;
+  errorMessage: string;
   filteredCount: number;
   loadMore: () => void;
   locale: string;
@@ -34,6 +34,9 @@ export function BuildingsContentArea({
   hasMore,
   isLoading,
   error,
+  onRetry,
+  retryLabel,
+  errorMessage,
   filteredCount,
   loadMore,
   locale,
@@ -43,14 +46,16 @@ export function BuildingsContentArea({
   emptyMessage,
   endMessage,
 }: BuildingsContentAreaProps) {
-  if (isLoading) {
+  if (isLoading && buildings.length === 0) {
     return <BuildingsLoadingState message={loadingMessage} />;
   }
 
-  if (error) {
+  if (error && buildings.length === 0) {
     return (
       <BuildingsStatusMessage
-        bodyText={error}
+        bodyText={errorMessage}
+        onRetry={onRetry}
+        retryLabel={retryLabel}
         iconColor="var(--theme-accent-strong)"
         title={errorTitle}
       />
@@ -60,6 +65,8 @@ export function BuildingsContentArea({
   if (filteredCount === 0) {
     return <BuildingsStatusMessage bodyText={emptyMessage} iconColor="var(--theme-text-faint)" />;
   }
+
+  const firstCoverId = buildings.find((building) => building.images.length > 0)?.id;
 
   return (
     <InfiniteScroll
@@ -85,15 +92,17 @@ export function BuildingsContentArea({
       style={{ overflow: 'visible' }}
       className="infinite-scroll-component"
     >
-      <Masonry
-        breakpointCols={BUILDING_MASONRY_BREAKPOINT_COLUMNS}
-        className="building-archive-masonry"
-        columnClassName="building-archive-masonry__column"
-      >
+      <div className="building-archive-grid">
         {buildings.map((building) => (
-          <BuildingCard key={building.id} building={building} locale={locale} t={t} />
+          <BuildingCard
+            key={building.id}
+            building={building}
+            locale={locale}
+            t={t}
+            prioritizeCover={building.id === firstCoverId}
+          />
         ))}
-      </Masonry>
+      </div>
     </InfiniteScroll>
   );
 }

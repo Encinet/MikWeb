@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
@@ -23,125 +23,82 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [networkError, setNetworkError] = useState(false);
 
-  const retryCountRef = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const isVisibleRef = useRef(true);
-  const isFetchingRef = useRef(false);
-  const lastUpdatedAtRef = useRef<number | null>(null);
-
-  const resetPlayersState = useCallback(() => {
-    setPlayers([]);
-    setPlayerCount(0);
-    setPeakPlayerCount(null);
-  }, []);
-
-  const getNextInterval = useCallback(() => {
-    if (retryCountRef.current >= MAX_RETRIES) {
-      return BASE_POLL_DELAY_MS * 4;
-    }
-
-    return BASE_POLL_DELAY_MS * 1.5 ** Math.min(retryCountRef.current, 3);
-  }, []);
-
-  const fetchPlayers = useCallback(async () => {
-    if (!isVisibleRef.current || isFetchingRef.current) {
-      return;
-    }
-
-    isFetchingRef.current = true;
-
-    const result = await fetchValidatedJson({
-      url: dataApiUrl('/players'),
-      validate: isPlayerOnlinePayload,
-      timeoutMs: PLAYER_REQUEST_TIMEOUT_MS,
-      cache: 'no-store',
-      browserCache: {
-        ttlMs: PLAYER_BROWSER_CACHE_TTL_MS,
-      },
-      fallbackErrorMessage: 'Failed to load player data',
-      invalidDataMessage: 'Invalid player data format',
-    });
-
-    if (result.status === 'success' && result.data.online === -1) {
-      setIsOnline(false);
-      setNetworkError(false);
-      resetPlayersState();
-      lastUpdatedAtRef.current = Date.now();
-      retryCountRef.current = 0;
-    } else if (result.status === 'success') {
-      setIsOnline(true);
-      setNetworkError(false);
-      setPlayers(result.data.players);
-      setPlayerCount(result.data.online);
-      setPeakPlayerCount(result.data.peak_online ?? null);
-      lastUpdatedAtRef.current = Date.now();
-      retryCountRef.current = 0;
-    } else if (result.status === 'api-error' || result.status === 'http-error') {
-      setIsOnline(false);
-      setNetworkError(false);
-      resetPlayersState();
-      retryCountRef.current += 1;
-    } else {
-      if (result.status === 'network-error') {
-        console.error('Failed to fetch players:', result.cause);
-      }
-      setIsOnline(false);
-      setNetworkError(true);
-      resetPlayersState();
-      retryCountRef.current += 1;
-    }
-
-    setIsLoading(false);
-    isFetchingRef.current = false;
-  }, [resetPlayersState]);
-
   useEffect(() => {
-    const initialFetchTimer = window.setTimeout(() => {
-      void fetchPlayers();
-    }, 0);
+    let active = true;
+    let fetching = false;
+    let retries = 0;
+    let lastUpdatedAt: number | null = null;
+    let timer: number | null = null;
 
-    const setupPolling = () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
-      intervalRef.current = setInterval(fetchPlayers, getNextInterval());
+    const clearTimer = () => {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = null;
     };
-
+    const schedule = () => {
+      clearTimer();
+      if (active && !document.hidden) {
+        const delay = BASE_POLL_DELAY_MS * (retries >= MAX_RETRIES ? 4 : 1.5 ** retries);
+        timer = window.setTimeout(() => void fetchPlayers(), delay);
+      }
+    };
+    const resetPlayersState = () => {
+      setPlayers([]);
+      setPlayerCount(0);
+      setPeakPlayerCount(null);
+    };
+    const fetchPlayers = async () => {
+      if (!active || document.hidden || fetching) return;
+      clearTimer();
+      fetching = true;
+      const result = await fetchValidatedJson({
+        url: dataApiUrl('/players'),
+        validate: isPlayerOnlinePayload,
+        timeoutMs: PLAYER_REQUEST_TIMEOUT_MS,
+        cache: 'no-store',
+        browserCache: { ttlMs: PLAYER_BROWSER_CACHE_TTL_MS },
+        fallbackErrorMessage: 'Failed to load player data',
+        invalidDataMessage: 'Invalid player data format',
+      });
+      if (!active) return;
+      if (result.status === 'success') {
+        const online = result.data.online !== -1;
+        setIsOnline(online);
+        setNetworkError(false);
+        if (online) {
+          setPlayers(result.data.players);
+          setPlayerCount(result.data.online);
+          setPeakPlayerCount(result.data.peak_online ?? null);
+        } else resetPlayersState();
+        lastUpdatedAt = Date.now();
+        retries = 0;
+      } else {
+        setIsOnline(false);
+        // A failed status service does not establish that the Minecraft server is offline.
+        setNetworkError(true);
+        resetPlayersState();
+        retries++;
+      }
+      setIsLoading(false);
+      fetching = false;
+      // Schedule after completion so failure backoff actually applies and requests never overlap.
+      schedule();
+    };
     const handleVisibilityChange = () => {
-      isVisibleRef.current = !document.hidden;
-
-      if (document.hidden) {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-
-        return;
-      }
-
-      const now = Date.now();
-
-      if (!lastUpdatedAtRef.current || now - lastUpdatedAtRef.current > BASE_POLL_DELAY_MS) {
-        fetchPlayers();
-      }
-
-      setupPolling();
+      clearTimer();
+      if (document.hidden) return;
+      if (lastUpdatedAt === null || Date.now() - lastUpdatedAt > BASE_POLL_DELAY_MS)
+        void fetchPlayers();
+      else schedule();
     };
 
-    setupPolling();
+    if (!document.hidden) timer = window.setTimeout(() => void fetchPlayers(), 0);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
     return () => {
-      window.clearTimeout(initialFetchTimer);
-
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
+      active = false;
+      clearTimer();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [fetchPlayers, getNextInterval]);
+  }, []);
 
   return (
     <PlayerStatusContext.Provider

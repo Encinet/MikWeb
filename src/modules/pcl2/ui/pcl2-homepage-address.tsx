@@ -33,7 +33,7 @@ export function Pcl2HomepageAddress({
       // Keep UTC when the browser does not expose Intl time-zone data.
     }
 
-    setHomepageUrl(withPcl2TimeZone(baseUrl, timeZone));
+    setHomepageUrl(withPcl2TimeZone(new URL(baseUrl, window.location.origin).href, timeZone));
   }, [baseUrl]);
 
   return (

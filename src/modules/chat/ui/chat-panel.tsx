@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
 import { useId } from 'react';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
 /** Search and player selection share one nonmodal workspace surface and keyboard behavior. */
 export function ChatPanel({
@@ -24,7 +25,7 @@ export function ChatPanel({
   const t = useTranslations('common');
   const titleId = useId();
   const keyboard = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
+    if (isImeComposing(event.nativeEvent)) {
       if (event.key === 'Enter') event.preventDefault();
       return;
     }

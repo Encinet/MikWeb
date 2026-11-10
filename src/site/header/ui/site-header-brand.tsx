@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { SITE_LOGO_PATH } from '@/shared/config/site-config';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 
 export function SiteHeaderBrand({ subtitle }: { subtitle: string }) {
   return (

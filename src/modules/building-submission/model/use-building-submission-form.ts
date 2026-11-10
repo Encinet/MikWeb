@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { authRequest } from '@/modules/auth/lib/auth-request';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import type { BuildingInput } from '@/modules/building/model/building-types';
@@ -27,11 +28,13 @@ import {
 } from '@/modules/building-submission/model/building-submission-form';
 import type {
   BuildingSubmission,
-  BuildingSubmissionCreateResponse,
   BuildingSubmissionListResponse,
-  ResolvedPlayer,
 } from '@/modules/building-submission/model/building-submission-types';
-import { isBuildingSubmissionListResponse } from '@/modules/building-submission/model/building-submission-types';
+import {
+  isBuildingSubmissionCreateResponse,
+  isBuildingSubmissionListResponse,
+} from '@/modules/building-submission/model/building-submission-types';
+import { isPlayerIdentity } from '@/modules/player/model/player-types';
 import {
   fetchValidatedJson,
   writeFetchValidatedJsonBrowserCache,
@@ -66,9 +69,10 @@ export function useBuildingSubmissionForm() {
   const [draftImages, setDraftImages] = useState<BuildingSubmissionImageDraft[]>([]);
   const [builders, setBuilders] = useState<BuilderDraft[]>([]);
   const draftImagesRef = useRef<BuildingSubmissionImageDraft[]>([]);
-  const [form, setForm] = useState(createInitialBuildingSubmissionForm);
+  const [form, setForm] = useState(() => createInitialBuildingSubmissionForm());
 
   const accountGeneration = useRef(0);
+  const historyRequest = useRef(0);
   const activeAccount = useRef(account?.playerUuid);
   const pendingSubmission = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -82,7 +86,7 @@ export function useBuildingSubmissionForm() {
     setSubmitting(false);
     setUploading(false);
     setFeedback({});
-    setForm(createInitialBuildingSubmissionForm());
+    setForm(createInitialBuildingSubmissionForm(new Date().toISOString().slice(0, 10)));
     setTags([]);
     setTagDraft({ zh: '', en: '' });
     setBuilders((current) =>
@@ -106,6 +110,7 @@ export function useBuildingSubmissionForm() {
         return;
       }
       const generation = accountGeneration.current;
+      const request = ++historyRequest.current;
       showFeedback('history', null);
       setLoadingSubmissions(true);
       try {
@@ -126,16 +131,17 @@ export function useBuildingSubmissionForm() {
           },
           fallbackErrorMessage: 'Failed to load building submissions',
         });
-        if (generation !== accountGeneration.current) return;
+        if (generation !== accountGeneration.current || request !== historyRequest.current) return;
         if (result.status !== 'success') {
           throw new Error('load_failed');
         }
         setSubmissions(result.data.submissions);
       } catch {
-        if (generation !== accountGeneration.current) return;
+        if (generation !== accountGeneration.current || request !== historyRequest.current) return;
         showFeedback('history', { message: t('states.loadFailed'), kind: 'error' });
       } finally {
-        if (generation === accountGeneration.current) setLoadingSubmissions(false);
+        if (generation === accountGeneration.current && request === historyRequest.current)
+          setLoadingSubmissions(false);
       }
     },
     [account, showFeedback, t],
@@ -192,14 +198,11 @@ export function useBuildingSubmissionForm() {
     showFeedback('builders', null);
     setResolvingPlayer(true);
     try {
-      const response = await fetch('/api/account/players/resolve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+      const payload = await authRequest<{ player?: unknown }>('/api/account/players/resolve', {
+        body: { name },
       });
-      const payload = (await response.json().catch(() => ({}))) as { player?: ResolvedPlayer };
       if (generation !== accountGeneration.current) return;
-      if (!response.ok || !payload.player) {
+      if (!isPlayerIdentity(payload.player)) {
         throw new Error('not_found');
       }
       const player = payload.player;
@@ -310,7 +313,7 @@ export function useBuildingSubmissionForm() {
     }
   };
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
     if (!account) {
@@ -354,11 +357,9 @@ export function useBuildingSubmissionForm() {
         images: uploadedImages.map((image) => image.url),
       };
       showFeedback('form', { message: t('states.submitting'), kind: 'loading' });
-      const response = await fetch('/api/account/building-submissions', {
-        method: 'POST',
+      const result = await authRequest<unknown>('/api/account/building-submissions', {
         signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           payload,
           images: uploadedImages.map(({ url, width, height, size, mime }) => ({
             url,
@@ -367,19 +368,21 @@ export function useBuildingSubmissionForm() {
             size,
             mime,
           })),
-        }),
+        },
       });
-      const result = (await response
-        .json()
-        .catch(() => ({}))) as BuildingSubmissionCreateResponse & {
-        error?: string;
-      };
       controller.signal.throwIfAborted();
-      if (!response.ok) {
-        throw new Error(result.error ?? 'submit_failed');
-      }
+      if (
+        !isBuildingSubmissionCreateResponse(result) ||
+        result.submission.submitterUuid !== account.playerUuid
+      )
+        throw new Error('invalid_response');
+      historyRequest.current++;
+      setLoadingSubmissions(false);
       setSubmissions((current) => {
-        const next = [result.submission, ...current.filter(Boolean)];
+        const next = [
+          result.submission,
+          ...current.filter((submission) => submission.id !== result.submission.id),
+        ];
         writeFetchValidatedJsonBrowserCache<BuildingSubmissionListResponse>({
           data: { submissions: next },
           key: buildingSubmissionsCacheKey(account.playerUuid),
@@ -406,7 +409,7 @@ export function useBuildingSubmissionForm() {
 
   const resetForm = (currentAccount: AuthAccount | null) => {
     setFeedback((current) => ({ history: current.history }));
-    setForm(createInitialBuildingSubmissionForm());
+    setForm(createInitialBuildingSubmissionForm(new Date().toISOString().slice(0, 10)));
     setTags([]);
     setTagDraft({ zh: '', en: '' });
     clearDraftImages();

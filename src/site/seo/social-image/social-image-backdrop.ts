@@ -27,7 +27,7 @@ function gradient(direction: 'horizontal' | 'vertical', color: string, stops: [n
 }
 
 export async function frameSocialImagePhoto(
-  source: Buffer,
+  source: Uint8Array,
   size: { width: number; height: number } = SOCIAL_IMAGE_SIZE,
 ) {
   const cover = await sharp(source)
@@ -63,7 +63,7 @@ export async function frameSocialImagePhoto(
     .toBuffer();
 }
 
-async function framePhoto(source: Buffer, style: BackdropStyle) {
+async function framePhoto(source: Uint8Array, style: BackdropStyle) {
   if (style === 'building') return frameSocialImagePhoto(source);
   return sharp(source)
     .resize(SOCIAL_IMAGE_SIZE.width, SOCIAL_IMAGE_SIZE.height, { fit: 'cover' })
@@ -143,7 +143,7 @@ export async function createSocialImageBackdrop(source: Buffer, style: SocialIma
   ]);
 }
 
-export async function createBuildingSocialImageBackdrop(source: Buffer) {
+export async function createBuildingSocialImageBackdrop(source: Uint8Array) {
   const photo = await framePhoto(source, 'building');
   const [palette, softLayer] = await Promise.all([
     readBuildingSocialImagePalette(photo),

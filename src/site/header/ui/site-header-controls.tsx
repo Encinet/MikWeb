@@ -8,12 +8,14 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import type { Player } from '@/modules/player/model/player-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 import { ThemeSettings } from '@/site/theme/ui/theme-settings';
 
 interface SiteHeaderControlsProps {
   isLoadingPlayers: boolean;
   isMobileMenuOpen: boolean;
+  mobileMenuId: string;
+  mobileMenuButtonRef: RefObject<HTMLButtonElement | null>;
   isOnline: boolean;
   localeLabel: string;
   localeTooltip: string;
@@ -37,6 +39,8 @@ interface SiteHeaderControlsProps {
 export function SiteHeaderControls({
   isLoadingPlayers,
   isMobileMenuOpen,
+  mobileMenuId,
+  mobileMenuButtonRef,
   isOnline,
   localeLabel,
   localeTooltip,
@@ -64,11 +68,13 @@ export function SiteHeaderControls({
     <>
       <div className="project-navbar-controls flex shrink-0 items-center">
         <button
+          ref={mobileMenuButtonRef}
           type="button"
           onClick={onMobileMenuToggle}
           className="inline-flex items-center justify-center xl:hidden"
           aria-label={controlsT(isMobileMenuOpen ? 'closeMenu' : 'openMenu')}
           aria-expanded={isMobileMenuOpen}
+          aria-controls={mobileMenuId}
         >
           {isMobileMenuOpen ? (
             <X className="h-4 w-4" aria-hidden="true" />

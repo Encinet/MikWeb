@@ -1,7 +1,5 @@
 import { proxyAuthRequest } from '@/modules/auth/server/auth-bff';
 
-export const dynamic = 'force-dynamic';
-
 interface RouteContext {
   params: Promise<{ path: string[] }>;
 }

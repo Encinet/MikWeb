@@ -1,10 +1,11 @@
+import * as rootParams from 'next/root-params';
 import { getRequestConfig } from 'next-intl/server';
 
-import { isRoutingLocale, routing } from './src/shared/i18n/routing';
+import { getRequestLocale } from './src/shared/i18n/request-locale';
 
-export default getRequestConfig(async ({ requestLocale }) => {
-  const requested = await requestLocale;
-  const locale = requested && isRoutingLocale(requested) ? requested : routing.defaultLocale;
+export default getRequestConfig(async ({ locale: override }) => {
+  const requested = override ?? (await rootParams.locale());
+  const locale = await getRequestLocale(requested);
 
   return {
     locale,

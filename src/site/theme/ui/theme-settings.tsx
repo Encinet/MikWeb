@@ -1,19 +1,23 @@
 'use client';
 
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { RefObject } from 'react';
-import { useCallback, useId, useRef, useState } from 'react';
+import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useAppearancePanel } from '@/site/theme/model/use-appearance-panel';
-import { ThemePreferences } from '@/site/theme/ui/theme-preferences';
+import { AppearancePanel } from '@/site/theme/ui/appearance-panel';
 
 export function ThemeSettings() {
+  const pathname = usePathname();
   const t = useTranslations('nav.theme');
   const [isOpen, setIsOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
   const id = useId();
   const close = useCallback(() => setIsOpen(false), []);
+  useLayoutEffect(() => {
+    if (pathname) close();
+    return close;
+  }, [close, pathname]);
 
   return (
     <>
@@ -36,36 +40,5 @@ export function ThemeSettings() {
           document.body,
         )}
     </>
-  );
-}
-
-function AppearancePanel({
-  id,
-  anchorRef,
-  onClose,
-}: {
-  id: string;
-  anchorRef: RefObject<HTMLButtonElement | null>;
-  onClose: () => void;
-}) {
-  const t = useTranslations('nav.theme');
-  const commonT = useTranslations('common');
-  const ref = useRef<HTMLDialogElement>(null);
-  useAppearancePanel(ref, anchorRef, onClose);
-
-  return (
-    <dialog ref={ref} id={id} aria-label={t('appearance')} className="appearance-panel">
-      <button
-        type="button"
-        className="appearance-panel__close"
-        aria-label={commonT('actions.close')}
-        onClick={onClose}
-      >
-        <X className="h-4 w-4" aria-hidden="true" />
-      </button>
-      <div className="appearance-panel__body">
-        <ThemePreferences />
-      </div>
-    </dialog>
   );
 }

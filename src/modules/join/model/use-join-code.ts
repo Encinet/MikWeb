@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { JoinCodeRequestError, requestJoinCode } from '@/modules/join/lib/request-join-code';
 import type { JoinCaptchaConfig } from '@/modules/join/model/join-captcha';
 import type { JoinCode, JoinCodeError } from '@/modules/join/model/join-code';
@@ -19,10 +19,13 @@ export function useJoinCode(group: JoinGroupId, captcha: JoinCaptchaConfig | nul
   const deadline = state.phase === 'ready' ? state.deadline : null;
   const wallDeadline = state.phase === 'ready' ? state.wallDeadline : null;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     return () => {
       operation.current++;
       controller.current?.abort();
+      controller.current = null;
+      setState({ phase: 'idle' });
+      setRemaining(0);
       controller.current = null;
     };
   }, []);

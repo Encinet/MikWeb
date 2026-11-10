@@ -84,3 +84,9 @@ export function isBuildingSubmissionListResponse(
     value.submissions.every(isBuildingSubmission)
   );
 }
+
+export function isBuildingSubmissionCreateResponse(
+  value: unknown,
+): value is BuildingSubmissionCreateResponse {
+  return isObjectRecord(value) && isBuildingSubmission(value.submission);
+}

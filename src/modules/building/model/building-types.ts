@@ -51,6 +51,12 @@ export interface BuildingsContextValue {
   lastUpdatedAt: number | null;
 }
 
+export interface BuildingCatalogSnapshot {
+  buildings: Building[];
+  error: string | null;
+  updatedAt: number | null;
+}
+
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }

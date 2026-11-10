@@ -2,6 +2,7 @@
   "metadata": {
     "title": "Mik Server - Creative Casual Server",
     "description": "A creative casual Minecraft server that allows any mods, focused on building creation",
+    "organizationDescription": "The Minecraft server community behind the Mik brand, managed by the Encinet team",
     "screenshots": {
       "desktop": "Mik Casual desktop home page with server information and player tools",
       "mobile": "Mik Casual mobile home page with server information, map and guide links"
@@ -37,6 +38,19 @@
       "count": "{count} records",
       "resultsCount": "{count} / {total} records"
     }
+  },
+  "pageError": {
+    "title": "This page could not be loaded",
+    "description": "Please try again. You can also return home and continue browsing.",
+    "retry": "Try again",
+    "retrying": "Trying again…",
+    "home": "Return home"
+  },
+  "browserSupport": {
+    "title": "Your browser is not supported",
+    "description": "Some pages or features may not work correctly. Please update your browser. If you opened this page inside an app, try your system browser.",
+    "requirements": "Supports Chrome 111+, Edge 111+, Firefox 128+, Safari 16.4+, and browsers on iOS / iPadOS 16.4+.",
+    "dismiss": "Continue anyway"
   },
   "nav": {
     "brand": {

@@ -12,12 +12,12 @@ import {
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
-import { usePathname, useRouter } from '@/shared/i18n/routing';
+import { getPathname, usePathname } from '@/shared/i18n/navigation';
 import type { SiteHeaderNavItem } from '@/site/header/lib/site-header-nav-item';
 import { useSiteHeaderBoundary } from '@/site/header/model/use-site-header-boundary';
 import { SiteHeaderBrand } from '@/site/header/ui/site-header-brand';
@@ -29,7 +29,6 @@ import {
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const router = useRouter();
   const t = useTranslations();
   const locale = useLocale();
   const { authenticated, isLoading: isLoadingAuth } = useAuth();
@@ -43,6 +42,13 @@ export default function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [navbarScrollProgress, setNavbarScrollProgress] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [menuPathname, setMenuPathname] = useState(pathname);
+  if (menuPathname !== pathname) {
+    setMenuPathname(pathname);
+    setIsMobileMenuOpen(false);
+  }
+  const mobileMenuId = useId();
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const [isPlayerDropdownOpen, setIsPlayerDropdownOpen] = useState(false);
   const [isPlayerDropdownVisible, setIsPlayerDropdownVisible] = useState(false);
   const [playerDropdownRect, setPlayerDropdownRect] = useState<DOMRect | null>(null);
@@ -118,7 +124,9 @@ export default function SiteHeader() {
 
   const switchLocale = () => {
     const newLocale = locale === 'zh-CN' ? 'en' : 'zh-CN';
-    router.replace(pathname, { locale: newLocale });
+    // A locale change replaces the root document, including its pre-paint initialization.
+    const target = getPathname({ href: pathname, locale: newLocale });
+    window.location.replace(`${target}${window.location.search}${window.location.hash}`);
   };
 
   const updatePlayerDropdownRect = useCallback(() => {
@@ -253,6 +261,8 @@ export default function SiteHeader() {
             <SiteHeaderControls
               isLoadingPlayers={isLoadingPlayers}
               isMobileMenuOpen={isMobileMenuOpen}
+              mobileMenuId={mobileMenuId}
+              mobileMenuButtonRef={mobileMenuButtonRef}
               isOnline={isOnline}
               localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
               localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
@@ -275,6 +285,8 @@ export default function SiteHeader() {
           </div>
 
           <MobileSiteHeaderMenu
+            id={mobileMenuId}
+            openerRef={mobileMenuButtonRef}
             activePathname={pathname}
             isOpen={isMobileMenuOpen}
             items={navItems}

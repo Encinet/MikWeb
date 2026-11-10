@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, Suspense, useContext, useEffect, useLayoutEffect, useState } from 'react';
 
 import { isJoinPagePath } from '@/modules/join/lib/join-path';
 import { ACCENT_COLOR_STORAGE_KEY, DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
@@ -34,7 +34,7 @@ export function useAccentColor() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const dailyOnly = isJoinPagePath(usePathname());
+  const [dailyOnly, setDailyOnly] = useState(false);
   const [accentColor, setColor] = useState(DEFAULT_ACCENT_COLOR);
   const [isDailyColor, setIsDailyColor] = useState(true);
 
@@ -106,8 +106,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           resetAccentColor,
         }}
       >
+        <Suspense>
+          <ThemeRoutePolicy onChange={setDailyOnly} />
+        </Suspense>
         {children}
       </AccentColorContext>
     </NextThemesProvider>
   );
+}
+
+function ThemeRoutePolicy({ onChange }: { onChange: (dailyOnly: boolean) => void }) {
+  const dailyOnly = isJoinPagePath(usePathname());
+  useLayoutEffect(() => onChange(dailyOnly), [dailyOnly, onChange]);
+  return null;
 }

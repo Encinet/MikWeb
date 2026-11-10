@@ -3,8 +3,8 @@
 import { Download, ImageUp } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import {
+  getBuildingImagePath,
   getBuildingShareData,
-  getBuildingShareImagePath,
   getBuildingSocialImagePath,
 } from '@/modules/building/lib/building-links';
 import type { Building } from '@/modules/building/model/building-types';
@@ -22,7 +22,7 @@ export function BuildingImageActions({
   const locale = useLocale();
   const t = useTranslations('buildings.share');
   const { ready, share, sharing, failed } = useBuildingImageShare(
-    image ? getBuildingShareImagePath(building.id, imageIndex) : undefined,
+    image ? getBuildingImagePath(building.id, imageIndex) : undefined,
     `${building.id}-${imageIndex + 1}`,
     getBuildingShareData(building, locale),
   );

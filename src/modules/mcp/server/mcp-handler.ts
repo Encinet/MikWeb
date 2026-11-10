@@ -9,43 +9,14 @@ import type { LocalizedText } from '@/modules/building/model/building-types';
 import { getLocalizedText, isBuildingArray } from '@/modules/building/model/building-types';
 import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { WIKI_LOCALES } from '@/modules/wiki/lib/wiki-grouping';
-import { buildWikiSearchIndex, searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
-import type {
-  SearchableWikiBlock,
-  WikiLocale,
-  WikiSectionContentMap,
-} from '@/modules/wiki/model/wiki-section-types';
-import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
+import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { SITE_URL } from '@/shared/config/site-config';
 import {
   RequestBodyLimitError,
   readLimitedRequestBody,
 } from '@/shared/server/limited-request-body';
-
-const wikiIndexCache = new Map<string, Promise<SearchableWikiBlock[]>>();
-
-async function buildWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
-  const wikiDocuments = await loadWikiSectionDocuments(locale);
-  const wikiContentBySection = Object.fromEntries(
-    wikiDocuments.map((wikiDocument) => [wikiDocument.section.id, wikiDocument.content]),
-  ) as WikiSectionContentMap;
-
-  return buildWikiSearchIndex(locale, wikiContentBySection, SITE_URL);
-}
-
-function getWikiIndex(locale: WikiLocale): Promise<SearchableWikiBlock[]> {
-  const cached = wikiIndexCache.get(locale);
-  if (cached) return cached;
-
-  const pending = buildWikiIndex(locale).catch((error) => {
-    wikiIndexCache.delete(locale);
-    throw error;
-  });
-
-  wikiIndexCache.set(locale, pending);
-  return pending;
-}
 
 async function apiFetch<TResponse>(
   url: string,
@@ -305,8 +276,8 @@ const sdkHandler = createMcpHandler(
       async ({ searchPhrases, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
         const maxResults = limit ?? 5;
-        const indexedBlocks = await getWikiIndex(loc);
-        const results = searchWikiBlocks(indexedBlocks, searchPhrases, maxResults);
+        const { searchIndex } = await getWikiContent(loc, 'public');
+        const results = searchWikiBlocks(searchIndex, searchPhrases, maxResults);
 
         if (results.length === 0) {
           return {
@@ -320,7 +291,10 @@ const sdkHandler = createMcpHandler(
         }
 
         const text = results
-          .map((result) => `[${result.path}]\n${result.url}\n\n${result.content}`)
+          .map(
+            (result) =>
+              `[${result.path}]\n${new URL(result.url, SITE_URL).href}\n\n${result.content}`,
+          )
           .join('\n\n---\n\n');
 
         return { content: [{ type: 'text', text: boundedText(text) }] };

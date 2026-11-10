@@ -309,6 +309,9 @@ body:has(.building-gallery-page) :is(.project-navbar-shell, .site-footer) {
 .building-archive-stage-image {
   position: absolute;
   inset: 0 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .building-archive-stage-empty {

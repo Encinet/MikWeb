@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { SITE_LOGO_PATH } from '@/shared/config/site-config';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 
 interface ChatGateProps {
   state: 'pending' | 'error' | 'signed-out';

@@ -267,14 +267,9 @@
     display: none !important;
   }
 
-  .building-archive-masonry {
+  .building-archive-grid {
     display: block;
     margin: 0;
-  }
-
-  .building-archive-masonry__column {
-    width: 100% !important;
-    padding: 0;
   }
 
   .building-archive-card {

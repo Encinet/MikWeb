@@ -10,10 +10,10 @@ import {
   X,
 } from 'lucide-react';
 import type { Transition } from 'motion/react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useState, ViewTransition } from 'react';
 
 import {
   formatBuildingDate,
@@ -30,9 +30,10 @@ import {
   BuildingTags,
   BuildingTypeBadge,
 } from '@/modules/building/ui/building-metadata';
+import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { BuildingShareActions } from '@/modules/building/ui/building-share-actions';
 import { mapPositionUrl } from '@/modules/map/model/map-world';
-import { Link, useRouter } from '@/shared/i18n/routing';
+import { Link, useRouter } from '@/shared/i18n/navigation';
 import { CopyButton } from '@/shared/ui/action/copy-button';
 
 export function BuildingGallery({
@@ -50,7 +51,6 @@ export function BuildingGallery({
     activeImage,
     imageIndex: currentImageIndex,
     loading: imageLoading,
-    direction: imageTransitionDirection,
     isImageError,
     handleImageError: onImageError,
     handleImageLoad: onImageLoad,
@@ -96,15 +96,15 @@ export function BuildingGallery({
     : { duration: 0.34, ease: [0.22, 1, 0.36, 1] };
 
   return (
-    <BuildingGalleryFrame
-      modal={modal}
-      onClose={onClose}
-      titleId={titleId}
-      reducedMotion={Boolean(shouldReduceMotion)}
-    >
+    <BuildingGalleryFrame modal={modal} onClose={onClose} titleId={titleId}>
       <div className="building-gallery-toolbar">
         {!modal ? (
-          <Link href="/buildings" className="building-gallery-back" scroll={false}>
+          <Link
+            href="/buildings"
+            className="building-gallery-back"
+            scroll={false}
+            transitionTypes={['building-close']}
+          >
             <ArrowLeft aria-hidden="true" />
             <span>{t('title')}</span>
           </Link>
@@ -130,35 +130,36 @@ export function BuildingGallery({
 
       {/* Image stage */}
       <div className="building-archive-stage" aria-busy={imageLoading || undefined}>
-        {activeImage && !isImageError(activeImage) ? (
-          <AnimatePresence custom={imageTransitionDirection} mode="wait" initial={false}>
-            <motion.div
-              key={activeImage}
-              custom={imageTransitionDirection}
-              initial={{ opacity: 0, x: shouldReduceMotion ? 0 : imageTransitionDirection * 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: shouldReduceMotion ? 0 : imageTransitionDirection * -40 }}
-              transition={{ duration: shouldReduceMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="building-archive-stage-image"
-            >
+        <ViewTransition
+          default="none"
+          update={{
+            'building-image-next': 'building-image-next',
+            'building-image-prev': 'building-image-prev',
+            default: 'none',
+          }}
+        >
+          <div className="building-archive-stage-image">
+            {activeImage && !isImageError(activeImage) ? (
               <Image
+                key={activeImage}
                 src={activeImage}
                 alt={buildingName}
                 fill
                 sizes="100vw"
                 className="object-contain"
                 unoptimized
-                priority
+                loading="eager"
+                fetchPriority="high"
                 onLoad={() => onImageLoad(activeImage)}
                 onError={() => onImageError(activeImage)}
               />
-            </motion.div>
-          </AnimatePresence>
-        ) : (
-          <div className="building-archive-stage-empty">
-            <p>{buildingName}</p>
+            ) : (
+              <div className="building-archive-stage-empty">
+                <p>{buildingName}</p>
+              </div>
+            )}
           </div>
-        )}
+        </ViewTransition>
 
         {/* Loading overlay */}
         {imageLoading && activeImage && !isImageError(activeImage) ? (
@@ -275,14 +276,14 @@ export function BuildingGallery({
                         {isImageError(url) ? (
                           <span>{i + 1}</span>
                         ) : (
-                          <Image
-                            src={url}
+                          <BuildingPreviewImage
+                            building={building}
+                            imageIndex={i}
                             alt=""
-                            fill
                             sizes="64px"
                             className="object-cover"
-                            unoptimized
                             loading="lazy"
+                            fetchPriority="low"
                             onError={() => onImageError(url)}
                           />
                         )}

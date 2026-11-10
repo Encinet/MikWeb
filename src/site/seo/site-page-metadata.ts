@@ -30,12 +30,15 @@ export async function generateSitePageMetadata(locale: AppLocale, page: SitePage
     locale,
     page,
   );
-  return buildPageMetadata({
-    locale,
-    title,
-    description,
-    pathname,
-    imageAlt: `${imageTitle.replace(/\s+/g, ' ')}${locale === 'zh-CN' ? '。' : '. '}${imageDescription}`,
-    imagePath: page === 'home' ? `/${locale}/opengraph-image` : `/${locale}/opengraph/${page}`,
-  });
+  return {
+    ...buildPageMetadata({
+      locale,
+      title,
+      description,
+      pathname,
+      imageAlt: `${imageTitle.replace(/\s+/g, ' ')}${locale === 'zh-CN' ? '。' : '. '}${imageDescription}`,
+      imagePath: page === 'home' ? `/${locale}/opengraph-image` : `/${locale}/opengraph/${page}`,
+    }),
+    ...(!('sitemap' in SITE_PAGES[page]) ? { robots: { index: false, follow: false } } : {}),
+  };
 }

@@ -12,10 +12,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  return {
-    ...(await generateSitePageMetadata(locale, 'chat')),
-    robots: { index: false, follow: false },
-  };
+  return generateSitePageMetadata(locale, 'chat');
 }
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {

@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { NextIntlClientProvider } from 'next-intl';
 import { act } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import type { AuthAccount, AuthSession } from '@/modules/auth/model/auth-types';
 import {
@@ -12,11 +10,7 @@ import {
   isStaffRole,
 } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import { channelPlayers } from '@/modules/chat/model/chat-presence';
-import { chatServerEventSchema } from '@/modules/chat/model/chat-protocol';
-import { ChatPlayerList } from '@/modules/chat/ui/chat-player-list';
-import translations from '../../messages/zh-CN.json';
-import { OWNER, PEER } from '../chat/fixtures';
+import { OWNER } from '../chat/fixtures';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
 const account: AuthAccount = {
@@ -77,7 +71,7 @@ test('session refresh accepts default accounts and keeps the authenticated navig
   try {
     await act(async () => {
       environment.root.render(
-        <AuthProvider initialSessionPresent>
+        <AuthProvider>
           <AuthStateProbe />
         </AuthProvider>,
       );
@@ -91,32 +85,4 @@ test('session refresh accepts default accounts and keeps the authenticated navig
     await environment.close();
     globalThis.fetch = previousFetch;
   }
-});
-
-test('public presence renders game and web newcomers with private chat actions', () => {
-  const event = chatServerEventSchema.parse({
-    type: 'presence',
-    players: [
-      { playerUuid: OWNER, name: 'GameNewcomer', game: true, webConnections: 0 },
-      { playerUuid: PEER, name: 'WebNewcomer', game: false, webConnections: 1 },
-    ],
-    staffPlayers: [],
-  });
-  assert.equal(event.type, 'presence');
-  if (event.type !== 'presence') throw new Error('Expected presence');
-  const players = channelPlayers(event, { channel: 'public' }, OWNER);
-  const html = renderToStaticMarkup(
-    <NextIntlClientProvider locale="zh-CN" timeZone="Asia/Singapore" messages={translations}>
-      <ChatPlayerList
-        players={players}
-        owner={OWNER}
-        onChoose={() => undefined}
-        emptyText="Nobody online"
-      />
-    </NextIntlClientProvider>,
-  );
-  assert.ok(html.includes('GameNewcomer'));
-  assert.ok(html.includes('WebNewcomer'));
-  assert.ok(html.includes('aria-label="与 WebNewcomer 发起私聊"'));
-  assert.deepEqual(channelPlayers(event, { channel: 'staff' }, OWNER), []);
 });

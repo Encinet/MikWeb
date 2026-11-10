@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { cacheLife } from 'next/cache';
 import { PHASE_PRODUCTION_BUILD } from 'next/constants';
 
 import { getBuildingUrl } from '@/modules/building/lib/building-links';
@@ -9,9 +10,11 @@ import { routing } from '@/shared/i18n/routing';
 import { SITEMAP_PATHS } from '@/site/seo/site-pages';
 
 // Prerender at build time, then refresh in the background as the catalog changes.
-export const revalidate = 86400;
+const REVALIDATE_SECONDS = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  'use cache';
+  cacheLife('days');
   const staticEntries: MetadataRoute.Sitemap = SITEMAP_PATHS.flatMap((page) => {
     const languages = Object.fromEntries(
       routing.locales.map((locale) => [locale, `${SITE_URL}/${locale}${page}`]),
@@ -25,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
   let buildings: Building[];
   try {
-    buildings = await getBuildingCatalog(revalidate);
+    buildings = await getBuildingCatalog(REVALIDATE_SECONDS);
   } catch (error) {
     // At runtime, let ISR retain the complete sitemap instead of caching a partial replacement.
     if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD) throw error;

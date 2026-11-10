@@ -24,7 +24,7 @@ import {
   fetchValidatedJson,
 } from '@/shared/api/fetch-validated-json';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
-import { useRouter } from '@/shared/i18n/routing';
+import { useRouter } from '@/shared/i18n/navigation';
 
 const SECURITY_CACHE_TTL_MS = 60_000;
 interface SecurityDialog {

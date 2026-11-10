@@ -4,6 +4,8 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  partialPrefetching: true,
   async headers() {
     const headers = [
       {
@@ -27,9 +29,10 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    minimumCacheTTL: 864000, // 10 days for optimized site images
+    minimumCacheTTL: 86400, // Match registered building images' daily revalidation.
   },
   experimental: {
+    globalNotFound: true,
     optimizePackageImports: ['motion/react'],
   },
 };

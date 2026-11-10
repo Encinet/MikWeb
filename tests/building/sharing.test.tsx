@@ -5,7 +5,6 @@ import { getBuildingShareData, getBuildingUrl } from '@/modules/building/lib/bui
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
 import { useBuildingImageShare } from '@/modules/building/model/use-building-image-share';
-import { useBuildingShare } from '@/modules/building/model/use-building-share';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
 const building: Building = {
@@ -24,17 +23,6 @@ const building: Building = {
   images: [],
   buildDate: '2026-11-06',
 };
-
-function ShareHarness({
-  locale,
-  onState,
-}: {
-  locale: string;
-  onState: (value: ReturnType<typeof useBuildingShare>) => void;
-}) {
-  onState(useBuildingShare(building, locale));
-  return null;
-}
 
 function GalleryHarness({
   onState,
@@ -56,14 +44,12 @@ function GalleryHarness({
 
 function ImageShareHarness({
   url,
-  filename = 'building-image',
   onState,
 }: {
   url?: string;
-  filename?: string;
   onState: (value: ReturnType<typeof useBuildingImageShare>) => void;
 }) {
-  onState(useBuildingImageShare(url, filename, getBuildingShareData(building, 'en')));
+  onState(useBuildingImageShare(url, 'building-image', getBuildingShareData(building, 'en')));
   return null;
 }
 
@@ -132,120 +118,6 @@ test('image preparation aborts obsolete requests and never shares a previous sel
   }
 });
 
-test('image filenames have independent preparation and collapsed details release the prepared file', async () => {
-  const environment = createBrowserEnvironment();
-  const previousFetch = globalThis.fetch;
-  const responses: ((response: Response) => void)[] = [];
-  let state: ReturnType<typeof useBuildingImageShare> | undefined;
-  let rejectShare: (error: Error) => void = () => {};
-  const shared: ShareData[] = [];
-  Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
-  Object.defineProperty(navigator, 'share', {
-    configurable: true,
-    value: (data: ShareData) => {
-      shared.push(data);
-      return shared.length === 1
-        ? new Promise<void>((_resolve, reject) => {
-            rejectShare = reject;
-          })
-        : Promise.resolve();
-    },
-  });
-  globalThis.fetch = (() =>
-    new Promise<Response>((resolve) => {
-      responses.push(resolve);
-    })) as typeof fetch;
-  const render = (url: string | undefined, filename: string) =>
-    act(async () => {
-      environment.root.render(
-        <ImageShareHarness
-          url={url}
-          filename={filename}
-          onState={(value) => {
-            state = value;
-          }}
-        />,
-      );
-    });
-  const respond = (index: number) =>
-    act(async () => {
-      responses[index](imageResponse('image bytes'));
-    });
-  try {
-    const url = '/api/buildings/first/images/0';
-    await render(url, 'first-name');
-    await respond(0);
-    assert.equal(state?.ready, true);
-    let firstShare: Promise<void> | undefined;
-    await act(async () => {
-      firstShare = state?.share();
-    });
-    await render(url, 'second-name');
-    assert.equal(state?.ready, false);
-    await act(async () => {
-      rejectShare(new Error('Old selection failed'));
-      await firstShare;
-    });
-    assert.equal(state?.failed, false);
-    await respond(1);
-    await act(async () => {
-      await state?.share();
-    });
-    assert.equal(shared[1].files?.[0].name, 'second-name.jpg');
-    await render(undefined, 'second-name');
-    await render(url, 'second-name');
-    assert.equal(state?.ready, false);
-    await respond(2);
-    assert.equal(state?.ready, true);
-    assert.equal(responses.length, 3);
-  } finally {
-    globalThis.fetch = previousFetch;
-    await environment.close();
-  }
-});
-
-test('a copy completed after a locale change cannot open fallback feedback for the new link', async () => {
-  const environment = createBrowserEnvironment();
-  let state: ReturnType<typeof useBuildingShare> | undefined;
-  let rejectCopy: (error: Error) => void = () => {};
-  Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
-  Object.defineProperty(navigator.clipboard, 'writeText', {
-    configurable: true,
-    value: () =>
-      new Promise<void>((_resolve, reject) => {
-        rejectCopy = reject;
-      }),
-  });
-  const render = (locale: string) =>
-    act(async () => {
-      environment.root.render(
-        <ShareHarness
-          locale={locale}
-          onState={(value) => {
-            state = value;
-          }}
-        />,
-      );
-    });
-  try {
-    await render('en');
-    let copying: Promise<boolean> | undefined;
-    await act(async () => {
-      copying = state?.copy();
-    });
-    await render('zh-CN');
-    await act(async () => {
-      rejectCopy(new Error('Clipboard denied'));
-      await copying;
-    });
-    assert.equal(state?.fallbackOpen, false);
-    assert.equal(state?.link, getBuildingUrl(building.id, 'zh-CN'));
-    assert.equal(state?.status, 'idle');
-  } finally {
-    await environment.close();
-  }
-});
-
 test('rapid gallery navigation ignores completion from an earlier image and remains navigable', async () => {
   const environment = createBrowserEnvironment();
   let state: ReturnType<typeof useBuildingGallery> | undefined;
@@ -282,6 +154,17 @@ test('rapid gallery navigation ignores completion from an earlier image and rema
     assert.equal(current().loading, false);
     await act(async () => current().handleSelectImage(99));
     assert.equal(current().imageIndex, 0);
+    // A second click can arrive before a View Transition has committed the first one.
+    await act(async () => {
+      current().next();
+      current().next();
+    });
+    assert.equal(current().imageIndex, 2);
+    await act(async () => {
+      current().prev();
+      current().prev();
+    });
+    assert.equal(current().imageIndex, 0);
   } finally {
     await environment.close();
   }
@@ -301,104 +184,4 @@ test('sharing uses immutable identity across locales, renames and coordinate edi
     data.url,
   );
   assert.equal(getBuildingUrl(building.id, 'en'), `https://mcmik.top/en/buildings/${building.id}`);
-});
-
-test('native cancellation is quiet and does not write the clipboard; real failures offer a separate copy action', async () => {
-  const environment = createBrowserEnvironment();
-  let state: ReturnType<typeof useBuildingShare> | undefined;
-  let nativeCalls = 0;
-  let copies = 0;
-  let rejectShare: (reason: Error) => void = () => {};
-  Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
-  Object.defineProperty(navigator, 'share', {
-    configurable: true,
-    value: () => {
-      nativeCalls++;
-      return new Promise<void>((_resolve, reject) => {
-        rejectShare = reject;
-      });
-    },
-  });
-  Object.defineProperty(navigator.clipboard, 'writeText', {
-    configurable: true,
-    value: async () => {
-      copies++;
-    },
-  });
-  try {
-    await act(async () =>
-      environment.root.render(
-        <ShareHarness
-          locale="zh-CN"
-          onState={(value) => {
-            state = value;
-          }}
-        />,
-      ),
-    );
-    const current = () => {
-      assert.ok(state);
-      return state;
-    };
-    let operation: Promise<void> | undefined;
-    await act(async () => {
-      operation = current().share();
-      await current().share();
-    });
-    assert.equal(nativeCalls, 1);
-    await act(async () => {
-      rejectShare(new DOMException('Cancelled', 'AbortError'));
-      await operation;
-    });
-    assert.equal(current().fallbackOpen, false);
-    assert.equal(copies, 0);
-    await act(async () => {
-      operation = current().share();
-    });
-    await act(async () => {
-      rejectShare(new Error('Unavailable'));
-      await operation;
-    });
-    assert.equal(current().canShare, false);
-    assert.equal(copies, 0);
-    await act(async () => {
-      await current().copy();
-    });
-    assert.equal(copies, 1);
-    assert.equal(current().fallbackOpen, false);
-    assert.equal(current().status, 'copied');
-  } finally {
-    await environment.close();
-  }
-});
-
-test('platforms without native sharing copy immediately and expose a manual link when clipboard access fails', async () => {
-  const environment = createBrowserEnvironment();
-  let state: ReturnType<typeof useBuildingShare> | undefined;
-  Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
-  Object.defineProperty(navigator.clipboard, 'writeText', {
-    configurable: true,
-    value: async () => {
-      throw new DOMException('Denied', 'NotAllowedError');
-    },
-  });
-  try {
-    await act(async () =>
-      environment.root.render(
-        <ShareHarness
-          locale="en"
-          onState={(value) => {
-            state = value;
-          }}
-        />,
-      ),
-    );
-    await act(async () => {
-      await state?.share();
-    });
-    assert.equal(state?.fallbackOpen, true);
-    assert.equal(state?.link, getBuildingUrl(building.id, 'en'));
-  } finally {
-    await environment.close();
-  }
 });

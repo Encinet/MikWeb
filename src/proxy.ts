@@ -16,6 +16,9 @@ const corsHeaders = {
 };
 
 export default function proxy(request: NextRequest) {
+  // The standalone global 404 resolves its own language without entering a locale layout.
+  if (request.nextUrl.pathname === '/_not-found') return NextResponse.next();
+
   const pcl2Rewrite = getPcl2XmlRewrite(request);
   if (pcl2Rewrite) {
     return NextResponse.rewrite(pcl2Rewrite);
@@ -36,16 +39,17 @@ export default function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Image routes validate their locale themselves. Avoid locale cookies and alternate
+  // Localized image routes validate their locale themselves. Avoid locale cookies and alternate
   // HTML links on public image responses, which otherwise prevent CDN caching.
-  if (isLocalizedSocialImage(request.nextUrl.pathname)) {
+  if (isPublicSocialImage(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
   return intlMiddleware(request);
 }
 
-function isLocalizedSocialImage(pathname: string): boolean {
+function isPublicSocialImage(pathname: string): boolean {
+  if (pathname === '/opengraph-image') return true;
   const [, locale, ...segments] = pathname.split('/');
   if (!isRoutingLocale(locale)) return false;
   return (

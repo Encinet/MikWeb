@@ -10,6 +10,7 @@ const { mock } = (await import(bunTestModule)) as {
 
 let sessionId = '';
 mock.module('server-only', () => ({}));
+mock.module('next/cache', () => ({ cacheLife: () => undefined }));
 mock.module('next/headers', () => ({
   cookies: async () => ({
     get: (name: string) => (name === '__Host-mik_sid' ? { value: sessionId } : undefined),

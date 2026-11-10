@@ -3,8 +3,6 @@
 import { useEffect } from 'react';
 import { isStaffRole } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import { announceHistoryChange, syncHistoryAccount } from '@/modules/chat/lib/chat-history';
-import { syncChatNotificationAccount } from '@/modules/chat/lib/chat-notifications';
 
 /** Clear account-scoped history and notification previews, including outside the chat page. */
 export function ChatAccountGuard() {
@@ -14,9 +12,15 @@ export function ChatAccountGuard() {
   useEffect(() => {
     if (!verified || isLoading) return;
     let current = true;
-    void syncChatNotificationAccount(owner, staff, () => current).catch(() => undefined);
-    void syncHistoryAccount(owner, () => current)
-      .then(() => {
+    void import('@/modules/chat/lib/chat-notifications')
+      .then(({ syncChatNotificationAccount }) => {
+        if (current) return syncChatNotificationAccount(owner, staff, () => current);
+      })
+      .catch(() => undefined);
+    void import('@/modules/chat/lib/chat-history')
+      .then(async ({ syncHistoryAccount, announceHistoryChange }) => {
+        if (!current) return;
+        await syncHistoryAccount(owner, () => current);
         if (current) announceHistoryChange();
       })
       .catch(() => undefined);

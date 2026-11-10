@@ -1,9 +1,14 @@
 import { BookOpen, MapIcon } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import { HomeBuildingUpdates } from '@/modules/home/ui/home-building-updates';
+import { Suspense } from 'react';
+import { BuildingCatalogBoundary } from '@/modules/building/ui/building-catalog-boundary';
+import {
+  HomeBuildingUpdates,
+  HomeBuildingUpdatesSkeleton,
+} from '@/modules/home/ui/home-building-updates';
 import HomeLiveOverview from '@/modules/home/ui/home-live-overview';
 import { HomeWorldNavigation } from '@/modules/home/ui/home-world-navigation';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 
 export default async function HomePage() {
   const homeT = await getTranslations('home');
@@ -33,7 +38,11 @@ export default async function HomePage() {
         <HomeLiveOverview>
           <HomeWorldNavigation />
         </HomeLiveOverview>
-        <HomeBuildingUpdates />
+        <Suspense fallback={<HomeBuildingUpdatesSkeleton />}>
+          <BuildingCatalogBoundary>
+            <HomeBuildingUpdates />
+          </BuildingCatalogBoundary>
+        </Suspense>
       </div>
     </div>
   );

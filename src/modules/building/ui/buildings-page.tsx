@@ -1,9 +1,9 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect } from 'react';
-
+import { ViewTransition } from 'react';
 import { useBuildingCatalog } from '@/modules/building/model/use-building-catalog';
+import { useBuildingCatalogQuery } from '@/modules/building/model/use-building-catalog-query';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { BuildingCatalogControls } from '@/modules/building/ui/building-catalog-controls';
 import { BuildingsContentArea } from '@/modules/building/ui/buildings-content-area';
@@ -14,21 +14,19 @@ export default function BuildingsPage() {
   const locale = useLocale();
   const { buildings, isLoading, error, fetchBuildings } = useBuildings();
 
-  const catalog = useBuildingCatalog(buildings, locale, {
-    all: t('filters.options.all'),
-    original: t('filters.options.original'),
-    derivative: t('filters.options.derivative'),
-    replica: t('filters.options.replica'),
-    dateDesc: t('sort.options.dateDesc'),
-    dateAsc: t('sort.options.dateAsc'),
-    nameAsc: t('sort.options.nameAsc'),
-    nameDesc: t('sort.options.nameDesc'),
-    random: t('sort.options.random'),
-  });
-
-  useEffect(() => {
-    fetchBuildings();
-  }, [fetchBuildings]);
+  const controls = useBuildingCatalogQuery();
+  const catalog = useBuildingCatalog(buildings, locale, controls.selection);
+  const filterOptions = (['all', 'original', 'derivative', 'replica'] as const).map((id) => ({
+    id,
+    label: t(`filters.options.${id}`),
+  }));
+  const sortOptions = [
+    { id: 'date-desc' as const, label: t('sort.options.dateDesc') },
+    { id: 'date-asc' as const, label: t('sort.options.dateAsc') },
+    { id: 'name-asc' as const, label: t('sort.options.nameAsc') },
+    { id: 'name-desc' as const, label: t('sort.options.nameDesc') },
+    { id: 'random' as const, label: t('sort.options.random') },
+  ];
 
   return (
     <div
@@ -39,36 +37,44 @@ export default function BuildingsPage() {
         <BuildingCatalogControls
           title={t('title')}
           clearSearchLabel={commonT('actions.clearSearch')}
-          activeFilter={catalog.filter}
-          filterOptions={catalog.filterOptions}
-          onFilterChange={catalog.handleFilterChange}
-          onSearchQueryChange={catalog.handleSearchChange}
-          onSortChange={catalog.handleSortChange}
+          activeFilter={controls.selection.filter}
+          filterOptions={filterOptions}
+          onFilterChange={controls.handleFilterChange}
+          onSearchQueryChange={controls.handleSearchChange}
+          onSortChange={controls.handleSortChange}
           searchPlaceholder={t('search.placeholder')}
           sortLabel={t('sort.label')}
-          searchQuery={catalog.query}
-          sortBy={catalog.sort}
-          sortOptions={catalog.sortOptions}
+          searchQuery={controls.query}
+          sortBy={controls.selection.sort}
+          sortOptions={sortOptions}
         />
       </div>
 
       <div className="building-archive-shell page-shell-content">
-        <div className="page-state-region">
-          <BuildingsContentArea
-            buildings={catalog.displayed}
-            hasMore={catalog.hasMore}
-            isLoading={isLoading}
-            error={error}
-            filteredCount={catalog.filtered.length}
-            loadMore={catalog.loadMore}
-            locale={locale}
-            t={t}
-            loadingMessage={commonT('states.loading')}
-            errorTitle={commonT('states.error')}
-            emptyMessage={t('states.empty')}
-            endMessage={t('states.end')}
-          />
-        </div>
+        <ViewTransition
+          default="none"
+          update={{ 'building-catalog': 'building-results', default: 'none' }}
+        >
+          <div className="page-state-region">
+            <BuildingsContentArea
+              buildings={catalog.displayed}
+              hasMore={catalog.hasMore}
+              isLoading={isLoading}
+              error={error}
+              onRetry={() => void fetchBuildings({ force: true })}
+              retryLabel={commonT('actions.retry')}
+              errorMessage={t('states.loadFailed')}
+              filteredCount={catalog.filtered.length}
+              loadMore={catalog.loadMore}
+              locale={locale}
+              t={t}
+              loadingMessage={commonT('states.loading')}
+              errorTitle={commonT('states.error')}
+              emptyMessage={t('states.empty')}
+              endMessage={t('states.end')}
+            />
+          </div>
+        </ViewTransition>
       </div>
     </div>
   );

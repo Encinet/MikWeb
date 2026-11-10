@@ -3,12 +3,13 @@
 import { Building2, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { sortBuildings } from '@/modules/building/lib/building-catalog';
 import { getBuildingPath } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import { useBuildings } from '@/modules/building/model/use-buildings';
-import { Link } from '@/shared/i18n/routing';
+import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
+import { Link } from '@/shared/i18n/navigation';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
 export function HomeBuildingUpdates() {
@@ -18,10 +19,6 @@ export function HomeBuildingUpdates() {
   const locale = useLocale();
   const { buildings, fetchBuildings, error, lastUpdatedAt, isLoading } = useBuildings();
   const [imageErrors, setImageErrors] = useState<string[]>([]);
-
-  useEffect(() => {
-    void fetchBuildings();
-  }, [fetchBuildings]);
 
   const recentBuildings = sortBuildings(buildings, 'date-desc', locale).slice(0, 2);
   const isPending = lastUpdatedAt === null && !error;
@@ -69,11 +66,10 @@ export function HomeBuildingUpdates() {
               >
                 <span className="home-building-preview__image">
                   {cover ? (
-                    <Image
-                      src={cover}
+                    <BuildingPreviewImage
+                      building={building}
+                      imageIndex={building.images.indexOf(cover)}
                       alt=""
-                      fill
-                      unoptimized
                       sizes="(max-width: 639px) 100vw, (max-width: 900px) 50vw, 33vw"
                       className="object-cover"
                       onError={() => setImageErrors((previous) => [...previous, cover])}
@@ -113,6 +109,30 @@ export function HomeBuildingUpdates() {
             ) : null}
           </div>
         )}
+      </div>
+    </section>
+  );
+}
+
+export function HomeBuildingUpdatesSkeleton() {
+  const t = useTranslations('home.playerHome.buildings');
+  const commonT = useTranslations('common');
+  return (
+    <section className="home-building-section" aria-label={t('title')} aria-busy="true">
+      <div className="home-section-heading">
+        <h2>{t('title')}</h2>
+      </div>
+      <span className="sr-only" role="status">
+        {commonT('states.loading')}
+      </span>
+      <div className="home-building-grid" aria-hidden="true">
+        {['map', 'first', 'second'].map((key) => (
+          <div key={key} className="home-building-skeleton">
+            <div />
+            <SkeletonLine width="60%" />
+            <SkeletonLine width="85%" />
+          </div>
+        ))}
       </div>
     </section>
   );

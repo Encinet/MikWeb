@@ -1,59 +1,97 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useCallback, useState } from 'react';
-
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
-import type { Building } from './building-types';
+import type { BuildingCatalogSnapshot } from './building-types';
 import { isBuildingArray } from './building-types';
 import { BuildingsStateContext } from './buildings-state-context';
 
 const BUILDINGS_CACHE_TTL_MS = 300_000;
-const BUILDINGS_REQUEST_TIMEOUT_MS = 15_000;
 
-export function BuildingsProvider({ children }: { children: ReactNode }) {
-  const [buildings, setBuildings] = useState<Building[]>([]);
+export function BuildingsProvider({
+  children,
+  initialSnapshot,
+}: {
+  children: ReactNode;
+  initialSnapshot: BuildingCatalogSnapshot;
+}) {
+  const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
+  const generation = useRef(0);
+  const inFlight = useRef<Promise<void> | null>(null);
+  const previousInitialSnapshot = useRef(initialSnapshot);
 
-  const fetchBuildings = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
-    setIsLoading(true);
-    const result = await fetchValidatedJson({
-      url: dataApiUrl('/buildings'),
-      validate: isBuildingArray,
-      timeoutMs: BUILDINGS_REQUEST_TIMEOUT_MS,
-      cache: force ? 'reload' : 'default',
-      browserCache: {
-        force,
-        ttlMs: BUILDINGS_CACHE_TTL_MS,
-      },
-      fallbackErrorMessage: 'Failed to load buildings',
-    });
-
-    if (result.status === 'success') {
-      setBuildings(result.data);
-      setError(null);
-      setLastUpdatedAt(Date.now());
-    } else {
-      if (result.status === 'network-error') {
-        console.error('Failed to fetch buildings:', result.cause);
-      }
-      setError(result.error);
-    }
+  useEffect(() => {
+    if (previousInitialSnapshot.current === initialSnapshot) return;
+    previousInitialSnapshot.current = initialSnapshot;
+    // RSC refreshes preserve this provider. Accept new server data without rolling
+    // back a newer browser refresh or replacing usable data with a server failure.
+    if (
+      initialSnapshot.updatedAt === null ||
+      (snapshot.updatedAt !== null && initialSnapshot.updatedAt < snapshot.updatedAt)
+    )
+      return;
+    generation.current++;
+    inFlight.current = null;
+    setSnapshot(initialSnapshot);
     setIsLoading(false);
-  }, []);
+  }, [initialSnapshot, snapshot.updatedAt]);
+
+  useLayoutEffect(
+    () => () => {
+      generation.current++;
+      inFlight.current = null;
+      setIsLoading(false);
+    },
+    [],
+  );
+
+  const fetchBuildings = useCallback(
+    ({ force = false }: { force?: boolean } = {}) => {
+      if (!force && inFlight.current) return inFlight.current;
+      if (
+        !force &&
+        snapshot.updatedAt !== null &&
+        Date.now() - snapshot.updatedAt < BUILDINGS_CACHE_TTL_MS
+      )
+        return Promise.resolve();
+      const requestGeneration = ++generation.current;
+      setIsLoading(true);
+      const request = (async () => {
+        const result = await fetchValidatedJson({
+          url: dataApiUrl('/buildings'),
+          validate: isBuildingArray,
+          timeoutMs: 15_000,
+          cache: force ? 'reload' : 'default',
+          browserCache: { force, ttlMs: BUILDINGS_CACHE_TTL_MS },
+          fallbackErrorMessage: 'building_catalog_unavailable',
+        });
+        if (generation.current !== requestGeneration) return;
+        setSnapshot((previous) =>
+          result.status === 'success'
+            ? { buildings: result.data, error: null, updatedAt: Date.now() }
+            : { ...previous, error: result.error },
+        );
+        setIsLoading(false);
+        inFlight.current = null;
+      })();
+      inFlight.current = request;
+      return request;
+    },
+    [snapshot.updatedAt],
+  );
 
   return (
     <BuildingsStateContext.Provider
       value={{
-        buildings,
-        buildingCount: buildings.length,
+        buildings: snapshot.buildings,
+        buildingCount: snapshot.buildings.length,
+        error: snapshot.error,
+        lastUpdatedAt: snapshot.updatedAt,
         isLoading,
-        error,
         fetchBuildings,
-        lastUpdatedAt,
       }}
     >
       {children}

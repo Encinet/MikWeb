@@ -2,7 +2,7 @@ import { ArrowUpRight, BookOpen, FileText, MessageCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { JoinPageData } from '@/modules/join/model/join-group';
 import { JoinGroupRow } from '@/modules/join/ui/join-group-row';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 
 export function JoinPage({ groups, formUrl, captcha }: JoinPageData) {
   const t = useTranslations('join');

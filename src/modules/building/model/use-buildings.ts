@@ -7,5 +7,7 @@ import type { BuildingsContextValue } from '@/modules/building/model/building-ty
 import { BuildingsStateContext } from './buildings-state-context';
 
 export function useBuildings(): BuildingsContextValue {
-  return useContext(BuildingsStateContext);
+  const context = useContext(BuildingsStateContext);
+  if (!context) throw new Error('useBuildings requires a BuildingsProvider');
+  return context;
 }

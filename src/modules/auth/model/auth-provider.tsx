@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { isAuthMeResponse } from '@/modules/auth/model/auth-types';
@@ -13,16 +13,13 @@ import {
 
 interface AuthProviderProps {
   children: ReactNode;
-  initialSessionPresent: boolean;
 }
 
-export function AuthProvider({ children, initialSessionPresent }: AuthProviderProps) {
+export function AuthProvider({ children }: AuthProviderProps) {
   const [account, setAccount] = useState<AuthAccount | null>(null);
-  const [isLoading, setIsLoading] = useState(initialSessionPresent);
-  const [verified, setVerified] = useState(!initialSessionPresent);
-  const verifiedAccount = useRef<string | null | undefined>(
-    initialSessionPresent ? undefined : null,
-  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [verified, setVerified] = useState(false);
+  const verifiedAccount = useRef<string | null | undefined>(undefined);
   const verificationGeneration = useRef(0);
 
   const refresh = useCallback(async () => {
@@ -42,15 +39,17 @@ export function AuthProvider({ children, initialSessionPresent }: AuthProviderPr
       const nextAccount = payload.authenticated ? payload.account : null;
       const previous = verifiedAccount.current;
       verifiedAccount.current = nextAccount?.playerUuid ?? null;
-      setVerified(true);
+      startTransition(() => {
+        setVerified(true);
+        setAccount(nextAccount);
+      });
       // A verified refresh can follow a new session for the same player.
       clearFetchValidatedJsonBrowserCache({ prefix: 'account:' });
-      setAccount(nextAccount);
       if (previous !== undefined && previous !== verifiedAccount.current) announceAccountChange();
       return nextAccount;
     } finally {
       if (generation === verificationGeneration.current) {
-        setIsLoading(false);
+        startTransition(() => setIsLoading(false));
       }
     }
   }, []);
@@ -88,21 +87,13 @@ export function AuthProvider({ children, initialSessionPresent }: AuthProviderPr
   }, []);
 
   useEffect(() => {
-    if (initialSessionPresent) {
-      void refresh().catch(() => undefined);
-    } else {
-      verificationGeneration.current++;
-      clearFetchValidatedJsonBrowserCache({ prefix: 'account:' });
-      setAccount(null);
-      verifiedAccount.current = null;
-      setVerified(true);
-      setIsLoading(false);
-    }
+    // Session cookies remain HttpOnly. Resolve identity after hydration so public HTML is shared.
+    void refresh().catch(() => undefined);
 
     return () => {
       verificationGeneration.current++;
     };
-  }, [initialSessionPresent, refresh]);
+  }, [refresh]);
 
   useEffect(
     () =>

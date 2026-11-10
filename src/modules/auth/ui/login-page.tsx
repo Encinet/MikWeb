@@ -10,7 +10,7 @@ import {
   AuthenticationMethods,
   AuthenticationProgress,
 } from '@/modules/auth/ui/authentication-flow';
-import { Link, useRouter } from '@/shared/i18n/routing';
+import { Link, useRouter } from '@/shared/i18n/navigation';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
 export function LoginPage() {

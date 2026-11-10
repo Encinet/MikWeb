@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { ChatGate } from '@/modules/chat/ui/chat-gate';
 import { ChatWorkspace } from '@/modules/chat/ui/chat-workspace';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 
 export function ChatPage({ appearance }: { appearance: ReactNode }) {
   const { account, isLoading, verified, refresh } = useAuth();

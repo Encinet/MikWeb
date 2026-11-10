@@ -2,10 +2,10 @@ import { notFound } from 'next/navigation';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { routing } from '@/shared/i18n/routing';
 import { isSitePage, SITE_PAGE_IDS } from '@/site/seo/site-pages';
-import { createSocialImage } from '@/site/seo/social-image/site-social-image';
-
-export const dynamic = 'force-static';
-export const dynamicParams = false;
+import {
+  getSiteSocialImage,
+  socialImageResponse,
+} from '@/site/seo/social-image/cached-social-images';
 
 export function generateStaticParams() {
   return routing.locales.flatMap((locale) =>
@@ -20,5 +20,5 @@ export async function GET(
   const { locale: rawLocale, page } = await params;
   const locale = requireRouteLocale(rawLocale);
   if (!isSitePage(page) || page === 'home') notFound();
-  return createSocialImage(locale, page);
+  return socialImageResponse(await getSiteSocialImage(locale, page));
 }

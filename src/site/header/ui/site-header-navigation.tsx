@@ -1,12 +1,15 @@
 'use client';
 
 import { Globe } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import type { RefObject } from 'react';
+import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
-import { Link } from '@/shared/i18n/routing';
+import { Link } from '@/shared/i18n/navigation';
 import type { SiteHeaderNavItem } from '@/site/header/lib/site-header-nav-item';
+import { useMobileNavigation } from '@/site/header/model/use-mobile-navigation';
 
 interface DesktopSiteHeaderNavigationProps {
   activePathname: string;
@@ -27,6 +30,7 @@ export function DesktopSiteHeaderNavigation({
   underlineInitialScale,
   underlineOrigin,
 }: DesktopSiteHeaderNavigationProps) {
+  const reducedMotion = useReducedMotion();
   return (
     <div className="project-navbar-links relative hidden items-center whitespace-nowrap xl:flex">
       {items.map((item) => {
@@ -56,6 +60,7 @@ export function DesktopSiteHeaderNavigation({
           <Link
             key={item.id}
             href={item.path as string}
+            aria-current={isActive ? 'page' : undefined}
             className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight px-4' : isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
             style={{ position: 'relative' }}
           >
@@ -65,14 +70,24 @@ export function DesktopSiteHeaderNavigation({
               <motion.div
                 key={`${item.id}-${underlineDirection}-${underlineDistance}`}
                 className="absolute right-0 bottom-0 left-0 h-0.5"
-                initial={{
-                  scaleX: underlineInitialScale,
-                  opacity: underlineDistance === 0 ? 0.75 : 0.92,
-                }}
+                initial={
+                  reducedMotion
+                    ? false
+                    : {
+                        scaleX: underlineInitialScale,
+                        opacity: underlineDistance === 0 ? 0.75 : 0.92,
+                      }
+                }
                 animate={{ scaleX: 1, opacity: 1 }}
                 transition={{
-                  scaleX: { duration: underlineDuration, ease: [0.18, 1, 0.3, 1] },
-                  opacity: { duration: Math.min(0.2, underlineDuration), ease: 'easeOut' },
+                  scaleX: {
+                    duration: reducedMotion ? 0 : underlineDuration,
+                    ease: [0.18, 1, 0.3, 1],
+                  },
+                  opacity: {
+                    duration: reducedMotion ? 0 : Math.min(0.2, underlineDuration),
+                    ease: 'easeOut',
+                  },
                 }}
                 style={{
                   backgroundColor: 'var(--theme-accent-strong)',
@@ -88,6 +103,8 @@ export function DesktopSiteHeaderNavigation({
 }
 
 interface MobileSiteHeaderMenuProps {
+  id: string;
+  openerRef: RefObject<HTMLButtonElement | null>;
   activePathname: string;
   isOpen: boolean;
   items: SiteHeaderNavItem[];
@@ -98,6 +115,8 @@ interface MobileSiteHeaderMenuProps {
 }
 
 export function MobileSiteHeaderMenu({
+  id,
+  openerRef,
   activePathname,
   isOpen,
   items,
@@ -107,16 +126,21 @@ export function MobileSiteHeaderMenu({
   onLocaleSwitch,
 }: MobileSiteHeaderMenuProps) {
   const mounted = useHasMounted();
+  const reducedMotion = useReducedMotion();
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  useMobileNavigation(surfaceRef, openerRef, isOpen && mounted, onClose);
   const controlsT = useTranslations('nav.controls');
 
   const menu = (
     <AnimatePresence>
       {isOpen ? (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
+          id={id}
+          ref={surfaceRef}
+          initial={reducedMotion ? false : { opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.28, ease: 'easeInOut' }}
+          transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeInOut' }}
           className="mobile-menu-frame xl:hidden"
         >
           <div className="mobile-menu-panel">
@@ -144,6 +168,7 @@ export function MobileSiteHeaderMenu({
                   <Link
                     key={item.id}
                     href={item.path as string}
+                    aria-current={isActive ? 'page' : undefined}
                     onClick={onClose}
                     className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-2' : isActive ? 'ui-nav-link ui-nav-link--active block' : 'ui-nav-link block'} py-3 px-4`}
                   >

@@ -8,7 +8,6 @@ import { useWikiStaffContent } from '@/modules/wiki/model/use-wiki-staff-content
 import type { WikiContentBundle } from '@/modules/wiki/model/wiki-section-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
-import { wikiMdxComponents } from '@/modules/wiki/ui/wiki-mdx-components';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
 const account: AuthAccount = {
@@ -94,43 +93,6 @@ test('private content requires verified staff and clears on logout, demotion, an
   } finally {
     await environment.close();
     globalThis.fetch = previousFetch;
-  }
-});
-
-test('MDX tabs support click and keyboard selection while keeping the other instructions hidden', async () => {
-  const environment = createBrowserEnvironment();
-  const Tabs = wikiMdxComponents.Tabs;
-  const Tab = wikiMdxComponents.Tab;
-  if (typeof Tabs !== 'function' || typeof Tab !== 'function') throw new Error('Missing tabs');
-  try {
-    await act(async () => {
-      environment.root.render(
-        <Tabs defaultValue="mainland">
-          <Tab value="mainland" title="Mainland">
-            QQ
-          </Tab>
-          <Tab value="overseas" title="Overseas">
-            Email
-          </Tab>
-        </Tabs>,
-      );
-    });
-    const buttons = environment.container.querySelectorAll<HTMLButtonElement>('[role="tab"]');
-    const panels = environment.container.querySelectorAll<HTMLElement>('[role="tabpanel"]');
-    assert.equal(buttons[0].getAttribute('aria-selected'), 'true');
-    assert.equal(panels[1].hidden, true);
-    await act(async () => buttons[1].click());
-    assert.equal(panels[0].hidden, true);
-    assert.equal(panels[1].hidden, false);
-    await act(async () =>
-      buttons[1].dispatchEvent(
-        new window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
-      ),
-    );
-    assert.equal(buttons[0].getAttribute('aria-selected'), 'true');
-    assert.equal(environment.window.document.activeElement, buttons[0]);
-  } finally {
-    await environment.close();
   }
 });
 

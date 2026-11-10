@@ -16,7 +16,7 @@ import { useId, useRef, useState } from 'react';
 import { isMemberRole } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import { Link, usePathname, useRouter } from '@/shared/i18n/routing';
+import { Link, usePathname, useRouter } from '@/shared/i18n/navigation';
 
 interface AccountLayoutProps {
   children: ReactNode;
