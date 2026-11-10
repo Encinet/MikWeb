@@ -34,32 +34,6 @@
   animation: building-content-out 160ms ease-in both;
 }
 
-/* Images swap together instead of waiting for an exit before loading the next image. */
-::view-transition-group(.building-image-next),
-::view-transition-group(.building-image-prev) {
-  animation-duration: 260ms;
-}
-
-::view-transition-old(.building-image-next),
-::view-transition-old(.building-image-prev) {
-  animation: building-image-out 180ms ease-in both;
-}
-
-::view-transition-new(.building-image-next),
-::view-transition-new(.building-image-prev) {
-  animation: building-image-in 260ms var(--ui-transition-easing) both;
-}
-
-::view-transition-old(.building-image-next),
-::view-transition-new(.building-image-next) {
-  --building-image-offset: 24px;
-}
-
-::view-transition-old(.building-image-prev),
-::view-transition-new(.building-image-prev) {
-  --building-image-offset: -24px;
-}
-
 @keyframes building-content-in {
   from {
     opacity: 0;
@@ -72,23 +46,5 @@
 @keyframes building-content-out {
   to {
     opacity: 0;
-  }
-}
-
-@keyframes building-image-in {
-  from {
-    opacity: 0;
-    transform: translateX(var(--building-image-offset));
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes building-image-out {
-  to {
-    opacity: 0;
-    transform: translateX(calc(var(--building-image-offset) * -1));
   }
 }

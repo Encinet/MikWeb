@@ -10,10 +10,10 @@ import {
   X,
 } from 'lucide-react';
 import type { Transition } from 'motion/react';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useId, useState, ViewTransition } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import {
   formatBuildingDate,
@@ -51,6 +51,7 @@ export function BuildingGallery({
   const {
     activeImage,
     imageIndex: currentImageIndex,
+    direction: imageDirection,
     loading: imageLoading,
     isImageError,
     handleImageError: onImageError,
@@ -91,10 +92,19 @@ export function BuildingGallery({
   }, [imageUrls.length, onNextImage, onPreviousImage]);
 
   const buildingName = getBuildingName(building, locale);
+  const buildingDescription = getBuildingDescription(building, locale)
+    .split(/\r\n?|\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('\n');
+  const hasDescription = buildingDescription.length > 0;
   const hasMultipleImages = imageUrls.length > 1;
   const panelTransition: Transition = shouldReduceMotion
     ? { duration: 0 }
     : { duration: 0.34, ease: [0.22, 1, 0.36, 1] };
+  const imageTransition: Transition = shouldReduceMotion
+    ? { duration: 0 }
+    : { duration: 0.26, ease: [0.22, 1, 0.36, 1] };
 
   return (
     <BuildingGalleryFrame modal={modal} onClose={onClose} titleId={titleId}>
@@ -131,18 +141,23 @@ export function BuildingGallery({
 
       {/* Image stage */}
       <div className="building-archive-stage" aria-busy={imageLoading || undefined}>
-        <ViewTransition
-          default="none"
-          update={{
-            'building-image-next': 'building-image-next',
-            'building-image-prev': 'building-image-prev',
-            default: 'none',
-          }}
-        >
-          <div className="building-archive-stage-image">
+        <AnimatePresence initial={false} custom={imageDirection} mode="sync">
+          <motion.div
+            key={activeImage ?? 'empty'}
+            custom={imageDirection}
+            variants={{
+              enter: (direction: number) => ({ opacity: 0, x: direction * 24 }),
+              center: { opacity: 1, x: 0 },
+              exit: (direction: number) => ({ opacity: 0, x: direction * -24 }),
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={imageTransition}
+            className="building-archive-stage-image"
+          >
             {activeImage && !isImageError(activeImage) ? (
               <Image
-                key={activeImage}
                 src={activeImage}
                 alt={buildingName}
                 fill
@@ -159,8 +174,8 @@ export function BuildingGallery({
                 <p>{buildingName}</p>
               </div>
             )}
-          </div>
-        </ViewTransition>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Loading overlay */}
         {imageLoading && activeImage && !isImageError(activeImage) ? (
@@ -248,6 +263,9 @@ export function BuildingGallery({
                   </span>
                 </span>
               </div>
+              {!expanded && hasDescription ? (
+                <p className="building-archive-info-bar__preview">{buildingDescription}</p>
+              ) : null}
             </div>
 
             <div className="building-archive-info-bar__right">
@@ -303,6 +321,9 @@ export function BuildingGallery({
                 aria-controls={detailsId}
                 className={`building-archive-info-bar__expand ${expanded ? 'is-expanded' : ''}`}
               >
+                <span>
+                  {expanded ? commonT('actions.collapseDetails') : t('dialog.expandDetails')}
+                </span>
                 <ChevronDown className="building-archive-expand-icon h-4 w-4" />
               </button>
             </div>
@@ -317,17 +338,11 @@ export function BuildingGallery({
           >
             <div className="building-archive-info-expanded__clip">
               <div className="building-archive-info-expanded__inner">
-                <div className="building-archive-info-expanded__body">
-                  <p className="building-archive-info-expanded__desc">
-                    {getBuildingDescription(building, locale)}
-                  </p>
-                  <BuildingSourceDetails building={building} locale={locale} t={t} />
-                </div>
-                {building.tags && building.tags.length > 0 ? (
-                  <div className="building-archive-info-expanded__tags">
-                    <BuildingTags building={building} locale={locale} compact />
-                  </div>
+                {hasDescription ? (
+                  <p className="building-archive-info-expanded__desc">{buildingDescription}</p>
                 ) : null}
+                <BuildingSourceDetails building={building} locale={locale} t={t} />
+                <BuildingTags building={building} locale={locale} compact />
                 <BuildingImageActions
                   building={building}
                   image={

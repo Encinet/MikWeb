@@ -63,7 +63,7 @@ export function BuildingTags({ building, locale, compact = false }: BuildingTags
   }
 
   return (
-    <div className={`flex flex-wrap gap-2 ${compact ? 'mb-3' : ''}`}>
+    <div className="flex flex-wrap gap-2">
       {building.tags.map((tag) => (
         <span
           key={`${building.id}:${getLocalizedText(tag, locale)}`}

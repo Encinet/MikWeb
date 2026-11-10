@@ -171,7 +171,6 @@
   align-items: center;
   gap: 0.5rem;
   min-height: 2.75rem;
-  margin-top: 0.5rem;
   color: var(--theme-text-muted-strong);
   font-size: 0.8rem;
   text-decoration: none;
@@ -459,6 +458,18 @@ body:has(.building-gallery-page) :is(.project-navbar-shell, .site-footer) {
   color: var(--theme-accent-strong);
 }
 
+.building-archive-info-bar__preview {
+  display: -webkit-box;
+  margin: 0.65rem 0 0;
+  overflow: hidden;
+  color: var(--theme-text-muted-strong);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .building-archive-info-bar__builder-pills {
   display: flex;
   min-width: 0;
@@ -514,15 +525,20 @@ body:has(.building-gallery-page) :is(.project-navbar-shell, .site-footer) {
 
 .building-archive-info-bar__expand {
   display: inline-flex;
-  width: 2.75rem;
+  min-width: 2.75rem;
   height: 2.75rem;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
   border: 0;
   border-radius: 999px;
   background: var(--theme-surface-hover);
   color: var(--theme-text-muted-strong);
   cursor: pointer;
+  padding: 0 0.85rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
   transition: background 180ms ease;
 }
 
@@ -561,10 +577,11 @@ body:has(.building-gallery-page) :is(.project-navbar-shell, .site-footer) {
 }
 
 .building-archive-info-expanded__inner {
-  margin-top: 0.85rem;
-
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
   border-top: 1px solid var(--theme-overlay-expand-border);
-  padding-top: 0.85rem;
+  padding-top: 0.65rem;
   transform: translateY(-0.25rem);
   transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -573,21 +590,12 @@ body:has(.building-gallery-page) :is(.project-navbar-shell, .site-footer) {
   transform: translateY(0);
 }
 
-.building-archive-info-expanded__body {
-  display: grid;
-  gap: 0.75rem;
-}
-
 .building-archive-info-expanded__desc {
   margin: 0;
   color: var(--theme-text-muted-strong);
   font-size: 0.92rem;
   line-height: 1.65;
   white-space: pre-line;
-}
-
-.building-archive-info-expanded__tags {
-  margin-top: 0.8rem;
 }
 
 /* Responsive */

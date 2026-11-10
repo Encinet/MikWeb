@@ -1,11 +1,12 @@
 'use client';
 
-import { addTransitionType, startTransition, useState } from 'react';
+import { useState } from 'react';
 
 import type { Building } from '@/modules/building/model/building-types';
 
 export interface BuildingGalleryState {
   imageIndex: number;
+  direction: -1 | 1;
   loading: boolean;
   activeImage: string | undefined;
   isImageError: (url: string) => boolean;
@@ -18,6 +19,7 @@ export interface BuildingGalleryState {
 
 export function useBuildingGallery(building: Building): BuildingGalleryState {
   const [imageIndex, setImageIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [loaded, setLoaded] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Set<string>>(new Set());
 
@@ -37,18 +39,14 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
 
   const handleSelectImage = (index: number, dir: -1 | 1 = index >= imageIndex ? 1 : -1) => {
     if (!Number.isInteger(index) || index < 0 || index >= images.length) return;
-    startTransition(() => {
-      addTransitionType(dir === 1 ? 'building-image-next' : 'building-image-prev');
-      setImageIndex(index);
-    });
+    setDirection(dir);
+    setImageIndex(index);
   };
 
   const navigate = (dir: -1 | 1) => {
     if (images.length < 2) return;
-    startTransition(() => {
-      addTransitionType(dir === 1 ? 'building-image-next' : 'building-image-prev');
-      setImageIndex((previous) => (previous + dir + images.length) % images.length);
-    });
+    setDirection(dir);
+    setImageIndex((previous) => (previous + dir + images.length) % images.length);
   };
 
   const next = () => navigate(1);
@@ -56,6 +54,7 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
 
   return {
     imageIndex,
+    direction,
     loading,
     activeImage,
     isImageError,
