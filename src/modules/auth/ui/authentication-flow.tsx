@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Check, Copy, Gamepad2, KeyRound, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, Copy, Gamepad2, KeyRound } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef } from 'react';
 import { authenticationErrorKey } from '@/modules/auth/lib/authentication-error-key';
@@ -10,6 +10,7 @@ import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { InlineFeedback } from '@/shared/ui/feedback/async-state';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 type AuthenticationMethod = 'minecraft' | 'passkey';
 
@@ -51,7 +52,7 @@ export function AuthenticationMethods({
           >
             <span className="auth-flow-method__icon" aria-hidden="true">
               {type === 'minecraft' && flow.phase === 'creating' ? (
-                <Loader2 className="h-5 w-5 motion-safe:animate-spin" />
+                <ProgressRing size="sm" />
               ) : (
                 <Icon className="h-5 w-5" />
               )}
@@ -89,7 +90,7 @@ export function AuthenticationProgress({
   return (
     <section className="auth-flow-progress" role="status" aria-live="polite" aria-atomic="true">
       <span className="auth-flow-progress__mark" aria-hidden="true">
-        <Loader2 className="h-8 w-8 motion-safe:animate-spin" />
+        <ProgressRing size="lg" />
       </span>
       <Heading ref={ref} tabIndex={-1}>
         {title}
@@ -155,7 +156,7 @@ export function AuthenticationCode({ flow }: { flow: AuthenticationFlow }) {
         <AuthenticationFeedback error={flow.error} className="auth-code-feedback" />
       ) : (
         <div className="auth-code-status" role="status">
-          <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
+          <ProgressRing size="sm" />
           <span>{t('waiting')}</span>
         </div>
       )}

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 import { useRef } from 'react';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 import { useAppearancePanel } from '@/site/theme/model/use-appearance-panel';
 
 const ThemePreferences = dynamic(
@@ -14,7 +15,7 @@ const ThemePreferences = dynamic(
 
 function AppearanceLoading() {
   const t = useTranslations('common');
-  return <p role="status">{t('states.loading')}</p>;
+  return <LoadingState message={t('states.loading')} />;
 }
 
 export function AppearancePanel({

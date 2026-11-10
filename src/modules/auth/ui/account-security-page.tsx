@@ -5,7 +5,7 @@ import type {
   RegistrationResponseJSON,
 } from '@simplewebauthn/browser';
 import { startRegistration, WebAuthnAbortService } from '@simplewebauthn/browser';
-import { KeyRound, Loader2, LogOut, MonitorSmartphone, Plus, RefreshCw } from 'lucide-react';
+import { KeyRound, LogOut, MonitorSmartphone, Plus, RefreshCw } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
@@ -25,6 +25,7 @@ import {
 } from '@/shared/api/fetch-validated-json';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { useRouter } from '@/shared/i18n/navigation';
+import { LoadingState, ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 const SECURITY_CACHE_TTL_MS = 60_000;
 interface SecurityDialog {
@@ -257,10 +258,11 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
             void loadSecurity({ force: true });
           }}
         >
-          <RefreshCw
-            className={`h-4 w-4${loading ? ' motion-safe:animate-spin' : ''}`}
-            aria-hidden="true"
-          />
+          {loading ? (
+            <ProgressRing size="sm" />
+          ) : (
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          )}
         </button>
         {message && !visibleDialog ? (
           <p className="ui-inline-message" role="status">
@@ -268,11 +270,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
           </p>
         ) : null}
       </header>
-      {!security && loading ? (
-        <p className="security-loading" role="status">
-          {t('states.loading')}
-        </p>
-      ) : null}
+      {!security && loading ? <LoadingState message={t('states.loading')} /> : null}
       {security ? (
         <>
           <section className="account-section" aria-labelledby="account-sessions-title">
@@ -343,7 +341,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
                 aria-busy={running?.type === 'add-passkey' || undefined}
               >
                 {running?.type === 'add-passkey' ? (
-                  <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
+                  <ProgressRing size="sm" />
                 ) : (
                   <Plus className="h-4 w-4" aria-hidden="true" />
                 )}

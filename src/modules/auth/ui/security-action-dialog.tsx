@@ -1,6 +1,6 @@
 'use client';
 
-import { KeyRound, Loader2, LogOut, Pencil, Trash2 } from 'lucide-react';
+import { KeyRound, LogOut, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
@@ -9,6 +9,7 @@ import {
   AuthenticationProgress,
 } from '@/modules/auth/ui/authentication-flow';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 export type SecurityAction =
   | { type: 'add-passkey'; displayName: string }
@@ -148,9 +149,7 @@ export function SecurityActionDialog({
               disabled={busy}
               aria-busy={busy}
             >
-              {busy ? (
-                <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
-              ) : null}
+              {busy ? <ProgressRing size="sm" /> : null}
               {action.type === 'rename' ? t('actions.save') : actionLabel}
             </button>
           </div>

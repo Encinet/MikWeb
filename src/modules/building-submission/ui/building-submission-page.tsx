@@ -1,6 +1,6 @@
 'use client';
 
-import { ImagePlus, LoaderCircle, Minus, Plus, Send, Trash2, UserPlus, X } from 'lucide-react';
+import { ImagePlus, Minus, Plus, Send, Trash2, UserPlus, X } from 'lucide-react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
@@ -25,6 +25,7 @@ import {
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
 import { InlineFeedback } from '@/shared/ui/feedback/async-state';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 const BUILDER_COLORS = ['#79b86f', '#55a6d9', '#e0a74f', '#d86b7d', '#9b7bd8', '#4fb6a8'];
 
@@ -203,7 +204,7 @@ function BuildingSubmissionForm() {
                   onChange={(event) => setPlayerInput(event.target.value)}
                   onKeyDown={handlePlayerKeyDown}
                 />
-                {resolvingPlayer ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                {resolvingPlayer ? <ProgressRing size="sm" /> : null}
               </div>
               <div className="building-submission-builder-list">
                 {builders.map((builder, index) => (
@@ -407,11 +408,7 @@ function BuildingSubmissionForm() {
                 disabled={!canSubmit}
                 type="submit"
               >
-                {submitting ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
+                {submitting ? <ProgressRing size="sm" /> : <Send className="h-4 w-4" />}
                 {t('actions.submit')}
               </button>
             </div>
@@ -425,7 +422,7 @@ function BuildingSubmissionForm() {
                 type="button"
                 onClick={() => void loadSubmissions()}
               >
-                {loadingSubmissions ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                {loadingSubmissions ? <ProgressRing size="sm" /> : null}
                 {commonT('actions.refresh')}
               </button>
             </div>

@@ -1,13 +1,3 @@
-/* 加载旋转动画 */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Buildings 页：搜索框占位符 */
 input::placeholder {
   color: var(--theme-text-muted);

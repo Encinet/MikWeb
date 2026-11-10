@@ -235,15 +235,6 @@
   margin: 0;
 }
 
-.community-board__loader {
-  width: 1.75rem;
-  height: 1.75rem;
-  border: 2px solid var(--theme-border-glass);
-  border-top-color: var(--theme-accent-strong);
-  border-radius: 999px;
-  animation: spin 900ms linear infinite;
-}
-
 .community-board__show-more {
   display: block;
   margin: 1.5rem auto 0;
@@ -287,9 +278,5 @@
   .community-board__show-more,
   .community-board__state button {
     transition: none;
-  }
-
-  .community-board__loader {
-    animation: none;
   }
 }

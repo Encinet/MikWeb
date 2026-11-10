@@ -1,11 +1,12 @@
 'use client';
 
-import { Loader2, MessageCircle, ShieldAlert } from 'lucide-react';
+import { MessageCircle, ShieldAlert } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { SITE_LOGO_PATH } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/navigation';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 interface ChatGateProps {
   state: 'pending' | 'error' | 'signed-out';
@@ -16,7 +17,7 @@ interface ChatGateProps {
 export function ChatGate({ state, message, children }: ChatGateProps) {
   const t = useTranslations('chat');
   const pending = state === 'pending';
-  const Icon = pending ? Loader2 : state === 'error' ? ShieldAlert : MessageCircle;
+  const Icon = state === 'error' ? ShieldAlert : MessageCircle;
 
   return (
     <section className="chat-workspace chat-gate" aria-label={t('title')}>
@@ -25,7 +26,7 @@ export function ChatGate({ state, message, children }: ChatGateProps) {
         <span>Mik</span>
       </Link>
       <div className="chat-gate__content">
-        <Icon className={pending ? 'chat-spinner' : undefined} size={28} aria-hidden="true" />
+        {pending ? <ProgressRing size="lg" /> : <Icon size={28} aria-hidden="true" />}
         <h1>{t('title')}</h1>
         {message ? <p role={state === 'error' ? 'alert' : 'status'}>{message}</p> : null}
         {children}

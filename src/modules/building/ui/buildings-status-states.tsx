@@ -1,16 +1,10 @@
 import { Building2 } from 'lucide-react';
 
 import { SectionMessage } from '@/shared/ui/feedback/async-state';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 export function BuildingsLoadingState({ message }: { message: string }) {
-  return (
-    <div className="building-archive-loading" role="status" aria-live="polite">
-      <span className="building-archive-loader building-archive-loader--large" aria-hidden="true">
-        <span className="building-archive-loader__core" />
-      </span>
-      <p>{message}</p>
-    </div>
-  );
+  return <LoadingState message={message} variant="page" />;
 }
 
 interface BuildingsStatusMessageProps {

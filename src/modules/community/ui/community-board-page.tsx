@@ -14,6 +14,7 @@ import { isCommunityBoardResponse } from '@/modules/community/model/board-types'
 import { CommunityNoticeEntry } from '@/modules/community/ui/community-notice-entry';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { Link } from '@/shared/i18n/navigation';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 import { SearchField } from '@/shared/ui/form/search-field';
 import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
 
@@ -190,10 +191,7 @@ export function CommunityBoardPage() {
           aria-busy={loading}
         >
           {loading ? (
-            <div className="community-board__state" role="status">
-              <span className="community-board__loader" aria-hidden="true" />
-              <p>{t('records.loading')}</p>
-            </div>
+            <LoadingState message={t('records.loading')} variant="page" />
           ) : loadError ? (
             <div role="alert" className="community-board__state">
               <p>{t('records.error')}</p>

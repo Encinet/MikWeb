@@ -1,9 +1,10 @@
 'use client';
 
-import { Check, CircleAlert, LoaderCircle } from 'lucide-react';
+import { Check, CircleAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 /** Delivery feedback belongs to the message line, beneath the shared author heading. */
 export function ChatDeliveryFeedback({
@@ -25,7 +26,7 @@ export function ChatDeliveryFeedback({
         ) : problem ? (
           <CircleAlert size={12} />
         ) : (
-          <LoaderCircle size={12} className="chat-spinner" />
+          <ProgressRing size="sm" />
         )}
       </span>
       {problem ? (

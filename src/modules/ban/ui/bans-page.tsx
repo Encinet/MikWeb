@@ -5,6 +5,7 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { BANS_PAGE_SIZE, filterBanEntries } from '@/modules/ban/lib/ban-catalog';
 import { useBans } from '@/modules/ban/model/use-bans';
 import { BanRecordList } from '@/modules/ban/ui/ban-record-list';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 import { SearchField } from '@/shared/ui/form/search-field';
 import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
 
@@ -46,10 +47,7 @@ export default function BansPage() {
         />
         <div className="page-state-region" aria-busy={isLoading}>
           {isLoading ? (
-            <div className="bans-loading" role="status">
-              <span className="bans-loading__indicator" aria-hidden="true" />
-              <p>{commonT('states.loading')}</p>
-            </div>
+            <LoadingState message={commonT('states.loading')} variant="page" />
           ) : error ? (
             <div className="bans-state" role="alert">
               <h2>{t('states.error')}</h2>

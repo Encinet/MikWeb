@@ -142,7 +142,6 @@
   font-size: 0.75rem;
 }
 
-.bans-loading,
 .bans-state {
   display: grid;
   min-height: 16rem;
@@ -154,7 +153,6 @@
   text-align: center;
 }
 
-.bans-loading p,
 .bans-state p,
 .bans-state h2 {
   margin: 0;
@@ -164,15 +162,6 @@
   color: var(--theme-text-heading);
   font-size: 1.1rem;
   font-weight: 600;
-}
-
-.bans-loading__indicator {
-  width: 1.75rem;
-  height: 1.75rem;
-  border: 2px solid var(--theme-border-glass);
-  border-top-color: var(--theme-accent-strong);
-  border-radius: 999px;
-  animation: spin 900ms linear infinite;
 }
 
 .bans-action {
@@ -286,9 +275,5 @@
 @media (prefers-reduced-motion: reduce) {
   .bans-action {
     transition: none;
-  }
-
-  .bans-loading__indicator {
-    animation: none;
   }
 }

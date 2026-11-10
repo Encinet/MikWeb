@@ -1,9 +1,10 @@
 'use client';
 
-import { Bell, LoaderCircle, X } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 import type { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 export function ChatNotificationSuggestion({
   notifications,
@@ -16,7 +17,6 @@ export function ChatNotificationSuggestion({
   const t = useTranslations('chat.notifications');
   const errorId = useId();
   if (!notifications.suggestion) return null;
-  const Icon = notifications.busy ? LoaderCircle : Bell;
   return (
     <div className="chat-notification-suggestion">
       <div>
@@ -27,11 +27,7 @@ export function ChatNotificationSuggestion({
           disabled={notifications.busy}
           aria-describedby={notifications.status === 'error' ? errorId : undefined}
         >
-          <Icon
-            size={16}
-            className={notifications.busy ? 'chat-spinner' : undefined}
-            aria-hidden="true"
-          />
+          {notifications.busy ? <ProgressRing size="sm" /> : <Bell size={16} aria-hidden="true" />}
           {t('enable')}
         </button>
         {notifications.status === 'error' ? (

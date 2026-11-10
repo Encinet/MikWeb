@@ -337,8 +337,7 @@
   color: var(--theme-text-muted);
 }
 
-.security-empty,
-.security-loading {
+.security-empty {
   padding: 1rem;
   color: var(--theme-text-muted-strong);
   font-size: 0.875rem;

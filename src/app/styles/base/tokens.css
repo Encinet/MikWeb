@@ -149,8 +149,6 @@
   --theme-overlay-nav-hover-border: rgba(255, 255, 255, 0.18);
   --theme-overlay-title-color: #ffffff;
   --theme-overlay-expand-border: rgba(255, 255, 255, 0.15);
-  --theme-overlay-loader-bg: rgba(0, 0, 0, 0.4);
-  --theme-overlay-loader-border: rgba(255, 255, 255, 0.15);
 
   /* Card image overlays */
 }
@@ -223,8 +221,6 @@
   --theme-overlay-nav-hover-border: rgba(0, 0, 0, 0.13);
   --theme-overlay-title-color: var(--theme-text-heading);
   --theme-overlay-expand-border: rgba(0, 0, 0, 0.13);
-  --theme-overlay-loader-bg: color-mix(in srgb, var(--theme-surface-glass) 68%, transparent);
-  --theme-overlay-loader-border: rgba(0, 0, 0, 0.12);
 
   /* Card image overlays */
 }

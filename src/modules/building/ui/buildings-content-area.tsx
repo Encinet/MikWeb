@@ -8,6 +8,7 @@ import {
   BuildingsLoadingState,
   BuildingsStatusMessage,
 } from '@/modules/building/ui/buildings-status-states';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 type BuildingsTranslator = ReturnType<typeof useTranslations<'buildings'>>;
 
@@ -75,11 +76,8 @@ export function BuildingsContentArea({
       next={loadMore}
       hasMore={hasMore}
       loader={
-        <div className="building-archive-scroll-loader" role="status" aria-live="polite">
-          <span className="building-archive-loader" aria-hidden="true">
-            <span className="building-archive-loader__core" />
-          </span>
-          <span className="sr-only">{loadingMessage}</span>
+        <div className="building-archive-scroll-loader">
+          <LoadingState message={loadingMessage} variant="inline" />
         </div>
       }
       endMessage={

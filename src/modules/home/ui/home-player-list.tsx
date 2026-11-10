@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import type { Player } from '@/modules/player/model/player-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 interface HomePlayerListProps {
   players: Player[];
@@ -37,8 +38,7 @@ export default function HomePlayerList({
       {/* States */}
       {isLoading ? (
         <div className="home-player-list__state">
-          <div className="home-player-list__spinner" />
-          <p>{homeT('live.status.loading')}</p>
+          <LoadingState message={homeT('live.status.loading')} variant="inline" />
         </div>
       ) : networkError ? (
         <div className="home-player-list__state">

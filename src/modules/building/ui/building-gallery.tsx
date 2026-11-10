@@ -35,6 +35,7 @@ import { BuildingShareActions } from '@/modules/building/ui/building-share-actio
 import { mapPositionUrl } from '@/modules/map/model/map-world';
 import { Link, useRouter } from '@/shared/i18n/navigation';
 import { CopyButton } from '@/shared/ui/action/copy-button';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 export function BuildingGallery({
   building,
@@ -164,9 +165,7 @@ export function BuildingGallery({
         {/* Loading overlay */}
         {imageLoading && activeImage && !isImageError(activeImage) ? (
           <div className="building-archive-stage-loader">
-            <span className="building-archive-loader" aria-hidden="true">
-              <span className="building-archive-loader__core" />
-            </span>
+            <LoadingState message={commonT('states.loading')} />
           </div>
         ) : null}
 

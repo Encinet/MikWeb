@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 const AnnouncementFeedContent = dynamic(
   () =>
@@ -18,7 +19,7 @@ const AnnouncementFeedContent = dynamic(
 
 function AnnouncementLoading() {
   const t = useTranslations('common');
-  return <p role="status">{t('states.loading')}</p>;
+  return <LoadingState message={t('states.loading')} />;
 }
 
 interface AnnouncementFeedDialogProps {

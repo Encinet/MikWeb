@@ -219,14 +219,6 @@
   color: var(--theme-text-muted-strong);
   font-size: 0.875rem;
 }
-.home-player-list__spinner {
-  width: 1.5rem;
-  height: 1.5rem;
-  border: 2px solid var(--theme-border-glass);
-  border-top-color: var(--theme-accent-strong);
-  border-radius: 50%;
-  animation: spin 800ms linear infinite;
-}
 .home-player-list__dot {
   width: 0.5rem;
   height: 0.5rem;
@@ -442,9 +434,6 @@
   .home-live-announcements__list > button,
   .home-player-shortcuts a {
     transition: none;
-  }
-  .home-player-list__spinner {
-    animation: none;
   }
 }
 @media print {
