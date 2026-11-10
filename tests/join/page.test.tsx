@@ -61,12 +61,12 @@ async function getCode(container: ParentNode, index = 0) {
   await verify(container, index);
 }
 
-test('copying highlights QQ, and expiry restores the request action and focus', async () => {
+test('selected and button-copied codes preserve all six digits; expiry restores the request action', async () => {
   const previous = globalThis.fetch;
   const originalClock = Object.getOwnPropertyDescriptor(performance, 'now');
   let now = 1000;
   Object.defineProperty(performance, 'now', { configurable: true, value: () => now });
-  globalThis.fetch = Object.assign(async () => code(), previous);
+  globalThis.fetch = Object.assign(async () => code('012345'), previous);
   const env = await mount('zh-CN');
   let copied = '';
   Object.defineProperty(env.window.navigator, 'clipboard', {
@@ -80,16 +80,24 @@ test('copying highlights QQ, and expiry restores the request action and focus', 
   try {
     button(env.container).focus();
     await getCode(env.container);
-    assert.equal(env.container.querySelector('output')?.textContent, '123 456');
+    const output = env.container.querySelector('output');
+    assert.ok(output);
+    const range = document.createRange();
+    range.selectNodeContents(output);
+    assert.equal(range.toString(), '012345', 'manual selection contains no formatting spaces');
     assert.equal(env.container.querySelectorAll('.join-group-actions a').length, 2);
     assert.equal(document.activeElement, env.container.querySelector('.copy-button'));
+    assert.equal(button(env.container).textContent, '复制验证码');
     await act(async () => button(env.container).click());
-    assert.equal(copied, '123456');
+    assert.equal(copied, '012345');
     assert.ok(env.container.querySelector('.join-group-actions a.ui-action-button--primary'));
-    assert.match(env.container.querySelector('.join-message')?.textContent ?? '', /入群验证中粘贴/);
+    assert.match(
+      env.container.querySelector('.join-message')?.textContent ?? '',
+      /粘贴到 QQ 入群验证/,
+    );
     now += 31_000;
     await act(async () => document.dispatchEvent(new Event('visibilitychange')));
-    assert.equal(env.container.querySelector('output')?.textContent, '123 456');
+    assert.equal(env.container.querySelector('output')?.textContent, '012345');
     now += 30_000;
     await act(async () => document.dispatchEvent(new Event('visibilitychange')));
     assert.equal(env.container.querySelector('output'), null);

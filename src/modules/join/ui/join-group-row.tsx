@@ -93,6 +93,7 @@ export function JoinGroupRow({
             ref={copyButton}
             value={state.value.code}
             label={t('code.copy')}
+            aria-describedby={`join-message-${group.id}`}
             showLabel
             onCopied={() => markCopied(state.value.code)}
             className={`ui-action-button${copied ? '' : ' ui-action-button--primary'}`}
@@ -144,11 +145,17 @@ export function JoinGroupRow({
       ) : null}
       {state.phase === 'ready' ? (
         <section className="join-code" aria-label={t('code.label')}>
-          <span className="join-code-label">{t('code.label')}</span>
+          <span className="join-code-label" id={`join-code-label-${group.id}`}>
+            {t('code.label')}
+          </span>
           <output
             className="join-code-value"
+            aria-labelledby={`join-code-label-${group.id}`}
+            dir="ltr"
             translate="no"
-          >{`${state.value.code.slice(0, 3)} ${state.value.code.slice(3)}`}</output>
+          >
+            {state.value.code}
+          </output>
           <div className="join-code-timer">
             <span>{t('code.remaining', { seconds: Math.ceil(remaining / 1000) })}</span>
             <progress

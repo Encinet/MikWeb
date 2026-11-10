@@ -125,6 +125,7 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.12em;
   text-align: center;
+  white-space: nowrap;
   user-select: all;
 }
 .join-code-timer {
