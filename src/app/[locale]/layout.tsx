@@ -16,6 +16,7 @@ import SiteFooter from '@/site/footer/ui/site-footer';
 import SiteHeader from '@/site/header/ui/site-header';
 import SiteDocument from '@/site/layout/site-document';
 import { PrintFooter, PrintHeader } from '@/site/print/ui/print-chrome';
+import { PrintPreparation } from '@/site/print/ui/print-preparation';
 import { ThemeColor } from '@/site/providers/theme-color';
 import { ThemeProvider } from '@/site/providers/theme-provider';
 import { ViewportMetrics } from '@/site/providers/viewport-metrics';
@@ -101,6 +102,7 @@ export default async function LocaleLayout({
                 <SiteHeader />
               </Suspense>
               <PrintHeader locale={locale} />
+              <PrintPreparation />
               <main className="relative z-10 flex min-h-0 flex-1 flex-col">
                 {children}
                 {building}

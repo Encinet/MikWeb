@@ -436,31 +436,3 @@
     transition: none;
   }
 }
-@media print {
-  .home-daily-columns,
-  .home-building-grid {
-    display: block;
-  }
-  .home-player-list {
-    max-height: none;
-    border-left: 0;
-    padding-left: 0;
-  }
-  .home-player-list__list {
-    overflow: visible;
-  }
-  .home-world-map {
-    min-height: 0;
-    margin-block: 1rem;
-    aspect-ratio: auto;
-  }
-  .home-world-map__image {
-    display: none;
-  }
-  .home-building-preview {
-    display: block;
-    width: 100%;
-    margin-block: 1rem;
-    break-inside: avoid-page;
-  }
-}

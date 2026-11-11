@@ -7,13 +7,14 @@ import {
   ChevronLeft,
   ChevronRight,
   MapPin,
+  RotateCcw,
   X,
 } from 'lucide-react';
 import type { Transition } from 'motion/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 
 import {
   formatBuildingDate,
@@ -22,8 +23,9 @@ import {
 } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
+import { useBuildingGalleryControls } from '@/modules/building/model/use-building-gallery-controls';
+import { BuildingCardActions } from '@/modules/building/ui/building-card-actions';
 import { BuildingGalleryFrame } from '@/modules/building/ui/building-gallery-frame';
-import { BuildingImageActions } from '@/modules/building/ui/building-image-actions';
 import {
   BuilderNames,
   BuildingSourceDetails,
@@ -56,6 +58,7 @@ export function BuildingGallery({
     isImageError,
     handleImageError: onImageError,
     handleImageLoad: onImageLoad,
+    retryImage,
     next: onNextImage,
     prev: onPreviousImage,
     handleSelectImage: onSelectImage,
@@ -68,28 +71,14 @@ export function BuildingGallery({
   const [expanded, setExpanded] = useState(!modal);
   const Heading = modal ? 'h2' : 'h1';
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        imageUrls.length < 2 ||
-        (event.target instanceof Element &&
-          event.target.closest('input, textarea, select, [contenteditable="true"]'))
-      )
-        return;
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        onPreviousImage();
-      }
-      if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        onNextImage();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [imageUrls.length, onNextImage, onPreviousImage]);
+  const [thumbnailErrors, setThumbnailErrors] = useState<Set<string>>(new Set());
+  const { stageRef, thumbnailsRef, ...touchHandlers } = useBuildingGalleryControls({
+    imageIndex: currentImageIndex,
+    imageCount: imageUrls.length,
+    next: onNextImage,
+    prev: onPreviousImage,
+    reduceMotion: Boolean(shouldReduceMotion),
+  });
 
   const buildingName = getBuildingName(building, locale);
   const buildingDescription = getBuildingDescription(building, locale)
@@ -140,7 +129,12 @@ export function BuildingGallery({
       </div>
 
       {/* Image stage */}
-      <div className="building-archive-stage" aria-busy={imageLoading || undefined}>
+      <div
+        ref={stageRef}
+        className="building-archive-stage"
+        aria-busy={imageLoading || undefined}
+        {...touchHandlers}
+      >
         <AnimatePresence initial={false} custom={imageDirection} mode="sync">
           <motion.div
             key={activeImage ?? 'empty'}
@@ -166,12 +160,19 @@ export function BuildingGallery({
                 unoptimized
                 loading="eager"
                 fetchPriority="high"
+                draggable={false}
                 onLoad={() => onImageLoad(activeImage)}
                 onError={() => onImageError(activeImage)}
               />
             ) : (
               <div className="building-archive-stage-empty">
-                <p>{buildingName}</p>
+                <p role="status">{activeImage ? t('states.imageFailed') : t('states.noImages')}</p>
+                {activeImage ? (
+                  <button type="button" className="building-gallery-retry" onClick={retryImage}>
+                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                    {commonT('actions.retry')}
+                  </button>
+                ) : null}
               </div>
             )}
           </motion.div>
@@ -268,8 +269,8 @@ export function BuildingGallery({
               ) : null}
             </div>
 
-            <div className="building-archive-info-bar__right">
-              {hasMultipleImages ? (
+            {hasMultipleImages ? (
+              <div className="building-archive-info-bar__right">
                 <div className="building-archive-image-picker">
                   <p className="building-archive-image-picker__count" aria-live="polite">
                     {t('dialog.currentImage', {
@@ -277,7 +278,7 @@ export function BuildingGallery({
                       total: imageUrls.length,
                     })}
                   </p>
-                  <div className="building-archive-thumbnails">
+                  <div ref={thumbnailsRef} className="building-archive-thumbnails">
                     {imageUrls.map((url, i) => (
                       <button
                         key={url}
@@ -290,7 +291,7 @@ export function BuildingGallery({
                         aria-pressed={i === currentImageIndex}
                         className={i === currentImageIndex ? 'is-active' : ''}
                       >
-                        {isImageError(url) ? (
+                        {thumbnailErrors.has(url) ? (
                           <span>{i + 1}</span>
                         ) : (
                           <BuildingPreviewImage
@@ -301,32 +302,17 @@ export function BuildingGallery({
                             className="object-cover"
                             loading="lazy"
                             fetchPriority="low"
-                            onError={() => onImageError(url)}
+                            onError={() =>
+                              setThumbnailErrors((previous) => new Set(previous).add(url))
+                            }
                           />
                         )}
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : null}
-
-              {/* Expand toggle */}
-              <button
-                type="button"
-                onClick={() => setExpanded((previous) => !previous)}
-                aria-label={
-                  expanded ? commonT('actions.collapseDetails') : t('dialog.expandDetails')
-                }
-                aria-expanded={expanded}
-                aria-controls={detailsId}
-                className={`building-archive-info-bar__expand ${expanded ? 'is-expanded' : ''}`}
-              >
-                <span>
-                  {expanded ? commonT('actions.collapseDetails') : t('dialog.expandDetails')}
-                </span>
-                <ChevronDown className="building-archive-expand-icon h-4 w-4" />
-              </button>
-            </div>
+              </div>
+            ) : null}
           </motion.div>
 
           {/* Expanded details */}
@@ -343,15 +329,23 @@ export function BuildingGallery({
                 ) : null}
                 <BuildingSourceDetails building={building} locale={locale} t={t} />
                 <BuildingTags building={building} locale={locale} compact />
-                <BuildingImageActions
-                  building={building}
-                  image={
-                    expanded && activeImage && !isImageError(activeImage) ? activeImage : undefined
-                  }
-                  imageIndex={currentImageIndex}
-                />
               </div>
             </div>
+          </div>
+          <div className="building-archive-info-bar__actions">
+            <BuildingCardActions building={building} />
+            <button
+              type="button"
+              onClick={() => setExpanded((previous) => !previous)}
+              aria-expanded={expanded}
+              aria-controls={detailsId}
+              className={`building-archive-info-bar__expand ${expanded ? 'is-expanded' : ''}`}
+            >
+              <span>
+                {expanded ? commonT('actions.collapseDetails') : t('dialog.expandDetails')}
+              </span>
+              <ChevronDown className="building-archive-expand-icon h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         </motion.div>
       </div>

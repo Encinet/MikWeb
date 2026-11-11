@@ -182,6 +182,7 @@ function Tabs({ defaultValue, children }: { defaultValue: string; children?: Rea
           aria-labelledby={`${id}-${props.value}-tab`}
           hidden={active !== props.value}
           className="wiki-tabs__panel"
+          data-print-title={props.title}
         >
           {props.children}
         </div>

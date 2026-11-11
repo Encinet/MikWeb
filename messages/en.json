@@ -169,6 +169,13 @@
         "random": "Random"
       }
     },
+    "print": {
+      "action": "Print",
+      "mode": "Print style",
+      "photos": "With photos",
+      "list": "Compact list",
+      "preparing": "Preparing photos…"
+    },
     "imagesCount": "{count} images",
     "dialog": {
       "close": "Close building details",
@@ -178,6 +185,8 @@
       "expandDetails": "Show details"
     },
     "states": {
+      "imageFailed": "This image could not be loaded.",
+      "noImages": "No building images yet.",
       "empty": "No buildings yet",
       "end": "No more buildings to load",
       "notFound": "Building not found",
@@ -189,9 +198,9 @@
       "copyLink": "Copy link",
       "copied": "Link copied",
       "copyCoordinates": "Copy coordinates",
-      "saveCard": "Save share card",
-      "shareImage": "Share this image",
-      "imageUnavailable": "Image sharing could not be completed. You can share the building link above."
+      "saveCard": "Save card",
+      "shareCard": "Share card",
+      "cardUnavailable": "Card sharing is unavailable. Save the card to send it."
     },
     "actions": {
       "viewOnMap": "View on map"

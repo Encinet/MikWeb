@@ -1,28 +1,39 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import {
+  getBuildingShareData,
+  getBuildingSocialImagePath,
+} from '@/modules/building/lib/building-links';
+import type { Building } from '@/modules/building/model/building-types';
 import { canNativeShare, isShareCancellation } from '@/shared/lib/native-share';
 import { readLimitedResponse } from '@/shared/lib/read-limited-response';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
-const MAX_SHARE_IMAGE_BYTES = 10 * 1024 * 1024;
-export function useBuildingImageShare(url: string | undefined, filename: string, data: ShareData) {
+const MAX_SHARE_CARD_BYTES = 10 * 1024 * 1024;
+
+export function useBuildingCardShare(building: Building, locale: string) {
+  const url = getBuildingSocialImagePath(building.id, locale);
+  const filename = `${building.id}-${locale}.png`;
+  const data = getBuildingShareData(building, locale);
   const [prepared, setPrepared] = useState<{ url: string; filename: string; file: File } | null>(
     null,
   );
+  const [preparingUrl, setPreparingUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const pending = useRef(false);
   const preparation = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    // Release the previous binary when the selection changes or details are collapsed.
+    // The card belongs to the building and locale; changing photos does not prepare it again.
     setPrepared(null);
     setFailedUrl(null);
-    if (!url || typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function')
-      return;
+    setPreparingUrl(null);
+    if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return;
     const controller = new AbortController();
     preparation.current = controller;
+    setPreparingUrl(url);
     const prepare = async () => {
       try {
         const file = await withRequestTimeout(
@@ -31,19 +42,21 @@ export function useBuildingImageShare(url: string | undefined, filename: string,
             const response = await fetch(url, { signal });
             const type =
               response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() ?? '';
-            // The same-origin image endpoint always produces JPEG.
-            if (!response.ok || type !== 'image/jpeg') {
+            if (!response.ok || type !== 'image/png') {
               await response.body?.cancel().catch(() => {});
-              throw new Error('Image unavailable');
+              throw new Error('Card unavailable');
             }
-            const bytes = await readLimitedResponse(response, MAX_SHARE_IMAGE_BYTES);
-            return new File([bytes], `${filename}.jpg`, { type: 'image/jpeg' });
+            const bytes = await readLimitedResponse(response, MAX_SHARE_CARD_BYTES);
+            if (bytes.byteLength === 0) throw new Error('Card unavailable');
+            return new File([bytes], filename, { type: 'image/png' });
           },
           controller.signal,
         );
         if (!controller.signal.aborted) setPrepared({ url, filename, file });
       } catch {
-        // Link sharing stays available when the image cannot be prepared.
+        if (!controller.signal.aborted) setFailedUrl(url);
+      } finally {
+        if (!controller.signal.aborted) setPreparingUrl(null);
       }
     };
     void prepare();
@@ -52,7 +65,7 @@ export function useBuildingImageShare(url: string | undefined, filename: string,
 
   const file =
     prepared && prepared.url === url && prepared.filename === filename ? prepared.file : null;
-  const payload = file ? { ...data, files: [file] } : null;
+  const payload = file ? { title: data.title, files: [file] } : null;
   const ready = payload !== null && canNativeShare(payload);
   const share = async () => {
     if (!ready || !payload || pending.current) return;
@@ -61,14 +74,22 @@ export function useBuildingImageShare(url: string | undefined, filename: string,
     setSharing(true);
     setFailedUrl(null);
     try {
-      // The image is prepared before the click so Safari retains user activation.
+      // Preparing before the click preserves the user gesture required by native sharing.
       await navigator.share(payload);
     } catch (error) {
-      if (!selection?.signal.aborted && !isShareCancellation(error)) setFailedUrl(url ?? null);
+      if (!selection?.signal.aborted && !isShareCancellation(error)) setFailedUrl(url);
     } finally {
       pending.current = false;
       setSharing(false);
     }
   };
-  return { ready, share, sharing, failed: Boolean(url && failedUrl === url) };
+  return {
+    url,
+    filename,
+    ready,
+    preparing: preparingUrl === url,
+    share,
+    sharing,
+    failed: failedUrl === url,
+  };
 }

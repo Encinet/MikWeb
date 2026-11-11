@@ -12,6 +12,7 @@ export interface BuildingGalleryState {
   isImageError: (url: string) => boolean;
   handleImageError: (url: string) => void;
   handleImageLoad: (url: string) => void;
+  retryImage: () => void;
   handleSelectImage: (index: number, dir?: -1 | 1) => void;
   next: () => void;
   prev: () => void;
@@ -35,6 +36,26 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
 
   const handleImageLoad = (url: string) => {
     setLoaded((previous) => new Set(previous).add(url));
+    setErrors((previous) => {
+      if (!previous.has(url)) return previous;
+      const next = new Set(previous);
+      next.delete(url);
+      return next;
+    });
+  };
+
+  const retryImage = () => {
+    if (!activeImage) return;
+    setErrors((previous) => {
+      const next = new Set(previous);
+      next.delete(activeImage);
+      return next;
+    });
+    setLoaded((previous) => {
+      const next = new Set(previous);
+      next.delete(activeImage);
+      return next;
+    });
   };
 
   const handleSelectImage = (index: number, dir: -1 | 1 = index >= imageIndex ? 1 : -1) => {
@@ -60,6 +81,7 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
     isImageError,
     handleImageError,
     handleImageLoad,
+    retryImage,
     handleSelectImage,
     next,
     prev,

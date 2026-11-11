@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowUpDown, ChevronDown } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, Printer } from 'lucide-react';
 
 import type { BuildingFilterId, BuildingSortKey } from '@/modules/building/lib/building-catalog';
 import { isBuildingSortKey } from '@/modules/building/lib/building-catalog';
@@ -25,6 +25,16 @@ interface BuildingCatalogControlsProps {
   sortBy: BuildingSortKey;
   sortLabel: string;
   sortOptions: BuildingCatalogOption<BuildingSortKey>[];
+  printMode: 'list' | 'photos';
+  onPrintModeChange: (mode: 'list' | 'photos') => void;
+  onPrint: () => void;
+  isPreparingPrint: boolean;
+  canPrint: boolean;
+  printLabel: string;
+  printModeLabel: string;
+  printPhotosLabel: string;
+  printListLabel: string;
+  printPreparingLabel: string;
 }
 
 export function BuildingCatalogControls({
@@ -40,6 +50,16 @@ export function BuildingCatalogControls({
   sortBy,
   sortLabel,
   sortOptions,
+  printMode,
+  onPrintModeChange,
+  onPrint,
+  isPreparingPrint,
+  canPrint,
+  printLabel,
+  printModeLabel,
+  printPhotosLabel,
+  printListLabel,
+  printPreparingLabel,
 }: BuildingCatalogControlsProps) {
   return (
     <ContentBrowserHeader
@@ -89,6 +109,31 @@ export function BuildingCatalogControls({
         </select>
         <ChevronDown className="building-catalog-controls__sort-chevron" aria-hidden="true" />
       </label>
+      <div className="building-catalog-controls__print">
+        <label className="building-catalog-controls__print-mode">
+          <span className="sr-only">{printModeLabel}</span>
+          <select
+            value={printMode}
+            disabled={isPreparingPrint}
+            onChange={(event) =>
+              onPrintModeChange(event.target.value === 'photos' ? 'photos' : 'list')
+            }
+          >
+            <option value="list">{printListLabel}</option>
+            <option value="photos">{printPhotosLabel}</option>
+          </select>
+          <ChevronDown aria-hidden="true" />
+        </label>
+        <button
+          type="button"
+          onClick={onPrint}
+          disabled={isPreparingPrint || !canPrint}
+          aria-busy={isPreparingPrint}
+        >
+          <Printer className="building-catalog-controls__print-icon" aria-hidden="true" />
+          <span>{isPreparingPrint ? printPreparingLabel : printLabel}</span>
+        </button>
+      </div>
     </ContentBrowserHeader>
   );
 }
