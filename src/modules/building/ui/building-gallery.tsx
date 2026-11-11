@@ -22,6 +22,7 @@ import { BuildingGalleryViewer } from '@/modules/building/ui/building-gallery-vi
 import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { BuildingShareActions } from '@/modules/building/ui/building-share-actions';
 import { Link, useRouter } from '@/shared/i18n/navigation';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
 export function BuildingGallery({
   building,
@@ -38,6 +39,12 @@ export function BuildingGallery({
   const reduceMotion = useReducedMotion();
   const [focused, setFocused] = useState(false);
   const [thumbnailErrors, setThumbnailErrors] = useState<Set<string>>(new Set());
+  const imageOccurrences = new Map<string, number>();
+  const thumbnails = building.images.map((url) => {
+    const occurrence = imageOccurrences.get(url) ?? 0;
+    imageOccurrences.set(url, occurrence + 1);
+    return { url, key: JSON.stringify([url, occurrence]) };
+  });
   const { stageRef, thumbnailsRef } = useBuildingGalleryControls({
     imageIndex: gallery.imageIndex,
     imageCount: building.images.length,
@@ -62,7 +69,7 @@ export function BuildingGallery({
     else if (modal) close();
   };
   const onDirectEscape = useEffectEvent((event: KeyboardEvent) => {
-    if (event.key === 'Escape' && focused) {
+    if (event.key === 'Escape' && focused && !event.defaultPrevented && !isImeComposing(event)) {
       event.preventDefault();
       changeFocus(false);
     }
@@ -148,9 +155,9 @@ export function BuildingGallery({
                   className="building-archive-thumbnails"
                   aria-label={t('viewer.thumbnails')}
                 >
-                  {building.images.map((url, index) => (
+                  {thumbnails.map(({ url, key }, index) => (
                     <button
-                      key={url}
+                      key={key}
                       type="button"
                       onClick={() => gallery.handleSelectImage(index)}
                       aria-label={t('dialog.currentImage', {

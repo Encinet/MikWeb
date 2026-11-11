@@ -101,10 +101,10 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PlayerStatusContext.Provider
+    <PlayerStatusContext
       value={{ players, playerCount, peakPlayerCount, isOnline, isLoading, networkError }}
     >
       {children}
-    </PlayerStatusContext.Provider>
+    </PlayerStatusContext>
   );
 }

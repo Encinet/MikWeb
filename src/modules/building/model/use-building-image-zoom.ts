@@ -8,6 +8,7 @@ import {
   INITIAL_IMAGE_TRANSFORM,
   scaleImageAtPoint,
 } from '@/modules/building/lib/building-image-transform';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
 interface Point {
   x: number;
@@ -111,7 +112,14 @@ export function useBuildingImageZoom({
   });
   const onResize = useEffectEvent(() => update(current.current));
   const onEscape = useEffectEvent((event: globalThis.KeyboardEvent) => {
-    if (event.key !== 'Escape' || current.current.scale <= 1) return;
+    if (
+      event.key !== 'Escape' ||
+      event.defaultPrevented ||
+      isImeComposing(event) ||
+      viewportRef.current?.closest('[inert]') ||
+      current.current.scale <= 1
+    )
+      return;
     event.preventDefault();
     event.stopImmediatePropagation();
     reset();
@@ -233,7 +241,15 @@ export function useBuildingImageZoom({
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (!enabled || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (
+      !enabled ||
+      event.defaultPrevented ||
+      isImeComposing(event.nativeEvent) ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    )
+      return;
     if (['+', '=', '-', '0', 'Enter', ' '].includes(event.key)) {
       event.preventDefault();
       if (event.key === '0') reset();

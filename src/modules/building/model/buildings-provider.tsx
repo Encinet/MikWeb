@@ -84,7 +84,7 @@ export function BuildingsProvider({
   );
 
   return (
-    <BuildingsStateContext.Provider
+    <BuildingsStateContext
       value={{
         buildings: snapshot.buildings,
         buildingCount: snapshot.buildings.length,
@@ -95,6 +95,6 @@ export function BuildingsProvider({
       }}
     >
       {children}
-    </BuildingsStateContext.Provider>
+    </BuildingsStateContext>
   );
 }

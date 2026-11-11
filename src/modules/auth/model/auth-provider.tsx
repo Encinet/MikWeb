@@ -10,6 +10,7 @@ import {
   announceAccountChange,
   onOtherTabAccountChange,
 } from '@/shared/lib/account-browser-events';
+import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -26,14 +27,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const generation = ++verificationGeneration.current;
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/me', {
-        method: 'POST',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10_000),
+      const payload = await withRequestTimeout(10_000, async (signal) => {
+        const response = await fetch('/api/auth/me', {
+          method: 'POST',
+          cache: 'no-store',
+          signal,
+        });
+        if (!response.ok) throw new Error('Account verification unavailable');
+        return (await response.json()) as unknown;
       });
-      if (generation !== verificationGeneration.current) return null;
-      if (!response.ok) throw new Error('Account verification unavailable');
-      const payload: unknown = await response.json();
       if (generation !== verificationGeneration.current) return null;
       if (!isAuthMeResponse(payload)) throw new Error('Invalid account verification response');
       const nextAccount = payload.authenticated ? payload.account : null;
@@ -66,17 +68,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(async (options: { allSessions?: boolean } = {}) => {
     const all = options.allSessions === true;
-    const response = await fetch(all ? '/api/account/sessions/revoke' : '/api/auth/logout', {
-      method: 'POST',
-      headers: all ? { 'Content-Type': 'application/json' } : undefined,
-      body: all ? JSON.stringify({ all: true }) : undefined,
-      cache: 'no-store',
-      signal: AbortSignal.timeout(10_000),
+    await withRequestTimeout(10_000, async (signal) => {
+      const response = await fetch(all ? '/api/account/sessions/revoke' : '/api/auth/logout', {
+        method: 'POST',
+        headers: all ? { 'Content-Type': 'application/json' } : undefined,
+        body: all ? JSON.stringify({ all: true }) : undefined,
+        cache: 'no-store',
+        signal,
+      });
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error ?? 'logout_failed');
+      }
     });
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      throw new Error(payload?.error ?? 'logout_failed');
-    }
     verificationGeneration.current++;
     clearFetchValidatedJsonBrowserCache({ prefix: 'account:' });
     setAccount(null);
@@ -120,5 +124,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [account, isLoading, logout, refresh, verified, acceptAuthentication],
   );
 
-  return <AuthStateContext.Provider value={value}>{children}</AuthStateContext.Provider>;
+  return <AuthStateContext value={value}>{children}</AuthStateContext>;
 }

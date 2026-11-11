@@ -1,3 +1,4 @@
+import { withRequestTimeout } from '@/shared/lib/request-timeout';
 import type { ApiErrorPayload } from '@/shared/types/api-error-payload';
 import { isApiErrorPayload } from '@/shared/types/api-error-payload';
 
@@ -142,12 +143,11 @@ async function fetchAndValidateJson<TData>({
   FetchValidatedJsonResult<TData>
 > {
   try {
-    const response = await fetch(url, {
-      ...request,
-      cache,
-      signal: AbortSignal.timeout(timeoutMs),
+    const { response, payload } = await withRequestTimeout(timeoutMs, async (signal) => {
+      const response = await fetch(url, { ...request, cache, signal });
+      const payload: unknown = await response.json();
+      return { response, payload };
     });
-    const payload: unknown = await response.json();
 
     if (isApiErrorPayload(payload)) {
       return {

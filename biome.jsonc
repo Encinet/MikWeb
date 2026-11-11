@@ -76,7 +76,9 @@
         "useNodejsImportProtocol": "error"
       },
       "suspicious": {
-        "noExplicitAny": "error"
+        "noExplicitAny": "error",
+        "noImportCycles": "error",
+        "noDeprecatedImports": "error"
       }
     }
   },

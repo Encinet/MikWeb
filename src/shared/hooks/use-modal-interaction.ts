@@ -3,6 +3,7 @@
 import type { RefObject } from 'react';
 import { useEffect, useEffectEvent } from 'react';
 import { captureFocusReturn } from '@/shared/lib/focus-return';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
 /** Shared keyboard, focus and background handling for both window and immersive dialogs. */
 export function useModalInteraction(
@@ -45,6 +46,7 @@ export function useModalInteraction(
     ).focus({ preventScroll: true });
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || isImeComposing(event) || dialog.closest('[inert]')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         close();

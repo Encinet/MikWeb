@@ -6,25 +6,31 @@ import type { Building } from '@/modules/building/model/building-types';
 
 export interface BuildingGalleryState {
   imageIndex: number;
-  direction: -1 | 1;
   loading: boolean;
   activeImage: string | undefined;
   isImageError: (url: string) => boolean;
   handleImageError: (url: string) => void;
   handleImageLoad: (url: string) => void;
   retryImage: () => void;
-  handleSelectImage: (index: number, dir?: -1 | 1) => void;
+  handleSelectImage: (index: number) => void;
   next: () => void;
   prev: () => void;
 }
 
 export function useBuildingGallery(building: Building): BuildingGalleryState {
-  const [imageIndex, setImageIndex] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1);
+  const [selection, setSelection] = useState<{ url: string; index: number } | null>(null);
   const [loaded, setLoaded] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Set<string>>(new Set());
 
   const images = building.images;
+  // A refreshed catalog may reorder or remove photos while the detail page stays mounted.
+  const resolveIndex = (selected: typeof selection) =>
+    !selected
+      ? 0
+      : images[selected.index] === selected.url
+        ? selected.index
+        : Math.max(0, images.indexOf(selected.url));
+  const imageIndex = resolveIndex(selection);
   const activeImage = images[imageIndex];
   const loading = Boolean(activeImage && !loaded.has(activeImage) && !errors.has(activeImage));
 
@@ -58,16 +64,17 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
     });
   };
 
-  const handleSelectImage = (index: number, dir: -1 | 1 = index >= imageIndex ? 1 : -1) => {
+  const handleSelectImage = (index: number) => {
     if (!Number.isInteger(index) || index < 0 || index >= images.length) return;
-    setDirection(dir);
-    setImageIndex(index);
+    setSelection({ url: images[index], index });
   };
 
   const navigate = (dir: -1 | 1) => {
     if (images.length < 2) return;
-    setDirection(dir);
-    setImageIndex((previous) => (previous + dir + images.length) % images.length);
+    setSelection((previous) => {
+      const index = (resolveIndex(previous) + dir + images.length) % images.length;
+      return { url: images[index], index };
+    });
   };
 
   const next = () => navigate(1);
@@ -75,7 +82,6 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
 
   return {
     imageIndex,
-    direction,
     loading,
     activeImage,
     isImageError,

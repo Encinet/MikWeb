@@ -34,7 +34,7 @@ export default async function SiteDocument({
       <body className="app-body">
         <BrowserSupportNotice locale={locale} />
         {children}
-        <Analytics />
+        {process.env.VERCEL === '1' ? <Analytics /> : null}
       </body>
     </html>
   );

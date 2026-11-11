@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useEffectEvent, useRef } from 'react';
+import { isImeComposing } from '@/shared/lib/keyboard-composition';
 
 export function useBuildingGalleryControls({
   imageIndex,
@@ -23,6 +24,7 @@ export function useBuildingGalleryControls({
     if (
       imageCount < 2 ||
       event.defaultPrevented ||
+      isImeComposing(event) ||
       event.altKey ||
       event.ctrlKey ||
       event.metaKey ||

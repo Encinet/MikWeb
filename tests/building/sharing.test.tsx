@@ -26,21 +26,68 @@ const building: Building = {
 
 function GalleryHarness({
   onState,
+  images = [
+    'https://example.test/1.webp',
+    'https://example.test/2.webp',
+    'https://example.test/3.webp',
+  ],
 }: {
   onState: (value: ReturnType<typeof useBuildingGallery>) => void;
+  images?: string[];
 }) {
   onState(
     useBuildingGallery({
       ...building,
-      images: [
-        'https://example.test/1.webp',
-        'https://example.test/2.webp',
-        'https://example.test/3.webp',
-      ],
+      images,
     }),
   );
   return null;
 }
+
+test('catalog refresh keeps the selected photo through reordering and recovers from deletion', async () => {
+  const environment = createBrowserEnvironment();
+  let state: ReturnType<typeof useBuildingGallery> | undefined;
+  const current = () => {
+    assert.ok(state);
+    return state;
+  };
+  const render = (images: string[]) =>
+    act(async () =>
+      environment.root.render(
+        <GalleryHarness
+          images={images}
+          onState={(value) => {
+            state = value;
+          }}
+        />,
+      ),
+    );
+  try {
+    await render(['first', 'second', 'third']);
+    await act(async () => current().handleSelectImage(2));
+    assert.equal(current().activeImage, 'third');
+    await render(['third', 'first', 'second']);
+    assert.equal(current().activeImage, 'third');
+    assert.equal(current().imageIndex, 0);
+    await render(['first', 'second']);
+    assert.equal(current().activeImage, 'first');
+    await act(async () => current().prev());
+    assert.equal(current().activeImage, 'second');
+    await render([]);
+    assert.equal(current().activeImage, undefined);
+    assert.equal(current().loading, false);
+    await render(['new']);
+    assert.equal(current().activeImage, 'new');
+    assert.equal(current().imageIndex, 0);
+    await render(['duplicate', 'duplicate']);
+    await act(async () => current().handleSelectImage(1));
+    assert.equal(current().imageIndex, 1);
+    await act(async () => current().next());
+    assert.equal(current().imageIndex, 0);
+  } finally {
+    await environment.close();
+  }
+});
 
 function CardShareHarness({
   locale,

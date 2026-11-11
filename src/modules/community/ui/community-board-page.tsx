@@ -7,12 +7,10 @@ import {
   filterCommunityNotices,
   getCommunityNoticeAnchor,
   getLinkedCommunityNoticeId,
-  mergeCommunityNotices,
 } from '@/modules/community/lib/community-notices';
+import { loadCommunityNotices } from '@/modules/community/lib/load-community-notices';
 import type { CommunityNotice } from '@/modules/community/model/board-types';
-import { isCommunityBoardResponse } from '@/modules/community/model/board-types';
 import { CommunityNoticeEntry } from '@/modules/community/ui/community-notice-entry';
-import { dataApiUrl } from '@/shared/api/data-api-url';
 import { Link } from '@/shared/i18n/navigation';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';
 import { SearchField } from '@/shared/ui/form/search-field';
@@ -47,29 +45,7 @@ export function CommunityBoardPage() {
     setLoadError(false);
     setLinkedMissing(false);
     try {
-      const response = await fetch(dataApiUrl('/community/notices'), {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(15_000),
-      });
-      const data: unknown = await response.json();
-      if (!response.ok || !isCommunityBoardResponse(data)) throw new Error('invalid_response');
-      let notices = mergeCommunityNotices(data.notices);
-      if (targetId && !notices.some((entry) => entry.id.toLowerCase() === targetId)) {
-        try {
-          const detailResponse = await fetch(dataApiUrl(`/community/notices/${targetId}`), {
-            cache: 'no-store',
-            signal: AbortSignal.timeout(15_000),
-          });
-          const detail: unknown = await detailResponse.json();
-          if (detailResponse.ok && detail && typeof detail === 'object' && 'notice' in detail) {
-            const linked = { notices: [detail.notice] };
-            if (isCommunityBoardResponse(linked) && linked.notices[0].id.toLowerCase() === targetId)
-              notices = mergeCommunityNotices(notices, linked.notices[0]);
-          }
-        } catch {
-          // Keep recent records available when a linked record cannot be fetched.
-        }
-      }
+      const notices = await loadCommunityNotices(targetId);
       if (currentRequest !== requestId.current) return;
       setLinkedMissing(
         Boolean(
