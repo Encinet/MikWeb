@@ -169,13 +169,6 @@
         "random": "Random"
       }
     },
-    "print": {
-      "action": "Print",
-      "mode": "Print style",
-      "photos": "With photos",
-      "list": "Compact list",
-      "preparing": "Preparing photos…"
-    },
     "imagesCount": "{count} images",
     "dialog": {
       "close": "Close building details",

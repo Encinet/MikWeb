@@ -116,97 +116,6 @@
   background-image: none;
 }
 
-.building-catalog-controls__print {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.building-catalog-controls__print-mode {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  min-height: 2.75rem;
-  border: 1px solid var(--theme-border-glass);
-  border-radius: 999px;
-  color: var(--theme-text-muted-strong);
-}
-
-.building-catalog-controls__print-mode:focus-within {
-  border-color: var(--theme-accent-strong);
-}
-
-.building-catalog-controls__print-mode select {
-  min-width: 0;
-  min-height: 2.75rem;
-  padding: 0.5rem 2.15rem 0.5rem 0.9rem;
-  border: 0;
-  border-radius: inherit;
-  outline: 0;
-  appearance: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.875rem;
-}
-
-.building-catalog-controls__print-mode select option {
-  background: var(--theme-surface-modal);
-  color: var(--theme-text-primary);
-}
-
-.building-catalog-controls__print-mode svg {
-  position: absolute;
-  right: 0.8rem;
-  width: 0.9rem;
-  height: 0.9rem;
-  pointer-events: none;
-}
-
-.building-catalog-controls__print button {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--theme-border-glass);
-  border-radius: 999px;
-  background: var(--theme-surface-glass-light);
-  color: var(--theme-text-heading);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.building-catalog-controls__print button:hover:not(:disabled) {
-  border-color: var(--theme-accent-strong);
-  color: var(--theme-accent-strong);
-}
-
-.building-catalog-controls__print button:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.building-catalog-controls__print button[aria-busy="true"] {
-  cursor: progress;
-}
-
-.building-catalog-controls__print button:focus-visible {
-  outline: 2px solid var(--theme-accent-strong);
-  outline-offset: 2px;
-}
-
-.building-catalog-controls__print-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
 /* Native layout is responsive before hydration and preserves sorted reading order. */
 .building-archive-grid {
   display: grid;
@@ -473,15 +382,6 @@
     --building-archive-gap: 0.85rem;
   }
   .building-catalog-controls__sort {
-    width: 100%;
-  }
-
-  .building-catalog-controls__print,
-  .building-catalog-controls__print-mode {
-    width: 100%;
-  }
-
-  .building-catalog-controls__print-mode select {
     width: 100%;
   }
 }

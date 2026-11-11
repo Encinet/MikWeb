@@ -351,31 +351,33 @@
 
   .building-archive-print-index {
     display: block;
+    columns: 2;
+    column-gap: 5mm;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   .building-archive-print-item {
-    display: inline-block;
+    display: grid;
+    grid-template-columns: 28mm minmax(0, 1fr);
+    align-items: start;
+    gap: 2.5mm;
     width: 100%;
+    min-height: 19mm;
     border-bottom: 1px solid #c9cec9 !important;
-    padding: 0.25rem 0;
+    padding: 0 0 1mm;
+    margin-bottom: 1mm;
     break-inside: avoid-page;
   }
 
   .building-archive-print-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    align-items: start;
-    gap: 0.15rem 0.8rem;
+    display: block;
+    min-width: 0;
   }
 
   .building-archive-print-heading {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 0.1rem 0.35rem;
+    display: block;
   }
 
   .building-archive-print-heading a {
@@ -386,11 +388,15 @@
   }
 
   .building-archive-print-heading small {
+    display: block;
+    margin-top: 0.5mm;
     font-size: 8pt;
   }
 
   .building-archive-print-coordinates,
   .building-archive-print-builders {
+    display: block;
+    margin-top: 1mm;
     font-size: 8.5pt;
     line-height: 1.3;
     overflow-wrap: anywhere;
@@ -398,26 +404,6 @@
 
   .building-archive-print-coordinates {
     font-variant-numeric: tabular-nums;
-  }
-
-  .building-archive-print-builders {
-    grid-column: 1 / -1;
-  }
-
-  .building-archive-page[data-print-mode="photos"] .building-archive-print-index {
-    display: block;
-    columns: 2;
-    column-gap: 5mm;
-  }
-
-  .building-archive-page[data-print-mode="photos"] .building-archive-print-item {
-    display: grid;
-    grid-template-columns: 28mm minmax(0, 1fr);
-    align-items: start;
-    gap: 2.5mm;
-    min-height: 19mm;
-    padding: 0 0 1mm;
-    margin-bottom: 1mm;
   }
 
   .building-archive-print-image {
@@ -434,38 +420,17 @@
     object-fit: cover;
   }
 
-  .building-archive-page[data-print-mode="photos"] .building-archive-print-row {
-    display: block;
-    min-width: 0;
-  }
-
-  .building-archive-page[data-print-mode="photos"] .building-archive-print-heading {
-    display: block;
-  }
-
-  .building-archive-page[data-print-mode="photos"] .building-archive-print-heading small {
-    display: block;
-    margin-top: 0.5mm;
-  }
-
-  .building-archive-page[data-print-mode="photos"]
-    .building-archive-print-item:not(:has(.building-archive-print-image))
+  .building-archive-print-item:not(:has(.building-archive-print-image))
     .building-archive-print-row {
     grid-column: 1 / -1;
   }
 
-  .building-archive-page[data-print-mode="photos"]
-    :is(.building-archive-print-coordinates, .building-archive-print-builders) {
-    display: block;
-    margin-top: 1mm;
-  }
-
   @media (max-width: 150mm) {
-    .building-archive-page[data-print-mode="photos"] .building-archive-print-index {
+    .building-archive-print-index {
       columns: auto;
     }
 
-    .building-archive-page[data-print-mode="photos"] .building-archive-print-item {
+    .building-archive-print-item {
       grid-template-columns: 25mm minmax(0, 1fr);
       min-height: 20mm;
       gap: 2.5mm;

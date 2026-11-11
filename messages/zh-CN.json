@@ -169,13 +169,6 @@
         "random": "随机排序"
       }
     },
-    "print": {
-      "action": "打印",
-      "mode": "打印样式",
-      "photos": "图文版",
-      "list": "清单版",
-      "preparing": "准备图片…"
-    },
     "imagesCount": "{count} 张图片",
     "dialog": {
       "close": "关闭建筑详情",

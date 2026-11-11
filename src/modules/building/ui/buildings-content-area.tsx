@@ -26,7 +26,6 @@ interface BuildingsContentAreaProps {
   retryLabel: string;
   errorMessage: string;
   filteredBuildings: Building[];
-  printMode: 'list' | 'photos';
   loadMore: () => void;
   locale: string;
   t: BuildingsTranslator;
@@ -45,7 +44,6 @@ export function BuildingsContentArea({
   retryLabel,
   errorMessage,
   filteredBuildings,
-  printMode,
   loadMore,
   locale,
   t,
@@ -113,14 +111,16 @@ export function BuildingsContentArea({
       <ul className="building-archive-print-index">
         {filteredBuildings.map((building) => (
           <li className="building-archive-print-item" key={building.id}>
-            {printMode === 'photos' && building.images.length > 0 ? (
+            {building.images.length > 0 ? (
               <div className="building-archive-print-image">
+                {/* Native print has no image-preparation step, so these covers load in advance. */}
                 <BuildingPreviewImage
                   building={building}
                   imageIndex={0}
                   alt=""
                   sizes="320px"
                   loading="eager"
+                  fetchPriority="low"
                 />
               </div>
             ) : null}
