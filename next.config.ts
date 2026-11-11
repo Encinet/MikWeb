@@ -1,11 +1,22 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { routing } from './src/shared/i18n/routing';
 
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  async rewrites() {
+    // Filesystem routes run first. Send remaining non-locale paths through the unlocalized
+    // root's global 404 instead of treating missing resource names as locale parameters.
+    return [
+      {
+        source: `/:path((?!(?:${routing.locales.join('|')}|api|_next|_vercel)(?:/|$)).+)`,
+        destination: '/',
+      },
+    ];
+  },
   async headers() {
     const headers = [
       {

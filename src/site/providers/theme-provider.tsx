@@ -96,6 +96,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       defaultTheme="dark"
       enableSystem={true}
       themes={['light', 'dark', 'system']}
+      scriptProps={{
+        // Client mounts apply the theme through effects; server HTML needs the bootstrap.
+        type: typeof window === 'undefined' ? 'text/javascript' : 'text/plain',
+      }}
     >
       <AccentColorContext
         value={{

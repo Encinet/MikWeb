@@ -4,7 +4,7 @@ import { Globe, MessageCircle, Play } from 'lucide-react';
 import { AnimatePresence, useReducedMotion } from 'motion/react';
 import * as m from 'motion/react-m';
 import { useTranslations } from 'next-intl';
-import type { RefObject } from 'react';
+import type { CSSProperties, RefObject } from 'react';
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/modules/auth/model/use-auth';
@@ -32,7 +32,6 @@ export function DesktopSiteHeaderNavigation({
   underlineInitialScale,
   underlineOrigin,
 }: DesktopSiteHeaderNavigationProps) {
-  const reducedMotion = useReducedMotion();
   return (
     <div className="project-navbar-links relative hidden items-center whitespace-nowrap xl:flex">
       {items.map((item) => {
@@ -48,32 +47,19 @@ export function DesktopSiteHeaderNavigation({
             <item.icon className="relative z-10 h-4 w-4" aria-hidden="true" />
             <span className="relative z-10 whitespace-nowrap">{item.label}</span>
             {isActive ? (
-              <m.div
+              <div
                 key={`${item.id}-${underlineDirection}-${underlineDistance}`}
-                className="absolute right-0 bottom-0 left-0 h-0.5"
-                initial={
-                  reducedMotion
-                    ? false
-                    : {
-                        scaleX: underlineInitialScale,
-                        opacity: underlineDistance === 0 ? 0.75 : 0.92,
-                      }
+                className="project-navbar-underline absolute right-0 bottom-0 left-0 h-0.5"
+                aria-hidden="true"
+                style={
+                  {
+                    '--project-navbar-underline-scale': underlineInitialScale,
+                    '--project-navbar-underline-opacity': underlineDistance === 0 ? 0.75 : 0.92,
+                    '--project-navbar-underline-duration': `${underlineDuration}s`,
+                    '--project-navbar-underline-fade-duration': `${Math.min(0.2, underlineDuration)}s`,
+                    transformOrigin: underlineOrigin,
+                  } as CSSProperties
                 }
-                animate={{ scaleX: 1, opacity: 1 }}
-                transition={{
-                  scaleX: {
-                    duration: reducedMotion ? 0 : underlineDuration,
-                    ease: [0.18, 1, 0.3, 1],
-                  },
-                  opacity: {
-                    duration: reducedMotion ? 0 : Math.min(0.2, underlineDuration),
-                    ease: 'easeOut',
-                  },
-                }}
-                style={{
-                  backgroundColor: 'var(--theme-accent-strong)',
-                  transformOrigin: underlineOrigin,
-                }}
               />
             ) : null}
           </Link>
@@ -84,7 +70,7 @@ export function DesktopSiteHeaderNavigation({
   );
 }
 
-/** Both variants share a slot in public HTML; the pre-paint hint selects the visible one. */
+/** Both variants render in public HTML; the pre-paint hint selects the visible one. */
 function SiteHeaderSessionActions({
   activePathname,
   mobile = false,

@@ -9,7 +9,8 @@ import { Link } from '@/shared/i18n/navigation';
 export function SiteHeaderAccount() {
   const t = useTranslations();
   const { account } = useAuth();
-  const accountLabel = account?.currentName ?? t('auth.account.title');
+  const accountLabel = t('auth.account.title');
+  const accountDescription = account ? `${accountLabel} · ${account.currentName}` : accountLabel;
   const loginLabel = t('common.actions.login');
 
   return (
@@ -19,8 +20,8 @@ export function SiteHeaderAccount() {
         prefetch={account ? undefined : false}
         className="project-account-link project-account-link--signed-in project-auth-variant"
         data-auth-audience="signed-in"
-        title={accountLabel}
-        aria-label={accountLabel}
+        title={accountDescription}
+        aria-label={accountDescription}
       >
         <span className="project-account-avatar-frame">
           <span className="project-account-avatar project-account-avatar--pending">
@@ -35,7 +36,7 @@ export function SiteHeaderAccount() {
             />
           ) : null}
         </span>
-        <span className="project-account-name">{accountLabel}</span>
+        <span className="project-account-label">{accountLabel}</span>
       </Link>
       <Link
         href="/login"

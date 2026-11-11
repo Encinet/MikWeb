@@ -162,21 +162,16 @@
   gap: var(--project-navbar-control-gap);
 }
 
-/* Keep auth-dependent entries measurable while excluding the inactive variant from interaction. */
+/* The pre-paint hint selects the only auth entry that participates in layout. */
 .project-navbar-session-actions,
 .project-account-links {
   display: grid;
   align-items: center;
 }
 
-.project-auth-variant {
-  grid-area: 1 / 1;
-}
-
 :root:not([data-auth-navigation="signed-in"]) .project-auth-variant[data-auth-audience="signed-in"],
 :root[data-auth-navigation="signed-in"] .project-auth-variant[data-auth-audience="signed-out"] {
-  visibility: hidden;
-  pointer-events: none;
+  display: none;
 }
 
 @media (min-width: 640px) {
@@ -337,6 +332,38 @@
   line-height: 1;
   text-shadow: none;
   box-shadow: none;
+}
+
+.project-navbar-underline {
+  background: var(--theme-accent-strong);
+  animation:
+    project-navbar-underline-scale var(--project-navbar-underline-duration)
+    cubic-bezier(0.18, 1, 0.3, 1) both,
+    project-navbar-underline-fade var(--project-navbar-underline-fade-duration) ease-out both;
+}
+
+@keyframes project-navbar-underline-scale {
+  from {
+    transform: scaleX(var(--project-navbar-underline-scale));
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes project-navbar-underline-fade {
+  from {
+    opacity: var(--project-navbar-underline-opacity);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-navbar-underline {
+    animation: none;
+  }
 }
 
 .project-player-control {
@@ -554,7 +581,7 @@
   opacity: 0;
 }
 
-.project-account-name,
+.project-account-label,
 .project-account-login-label {
   display: none;
   max-width: 8rem;
@@ -594,7 +621,11 @@
 
 @media (min-width: 1024px) {
   .project-account-links {
-    width: 7.5rem;
+    width: auto;
+  }
+
+  .project-account-link {
+    width: auto;
   }
 
   .project-account-link--signed-in {
@@ -603,7 +634,7 @@
     gap: 0.48rem;
   }
 
-  .project-account-name {
+  .project-account-label {
     display: inline-block;
   }
 }
