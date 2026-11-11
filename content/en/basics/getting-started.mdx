@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Supported versions, whitelist applications, server address, and first steps
+description: Supported versions, joining the community, account linking, server address, and first steps
 order: 10
 icon: Home
 ---
@@ -25,15 +25,15 @@ The latest few stable releases are supported. Complete [Geyser account linking](
 ## Joining the Server
 
 <Steps>
-<Step title="Apply for the whitelist">
+<Step title="Join the community">
 
-[Server Rules](?section=rules) · [Apply](/en/join)
+[Server Rules](?section=rules) · [Join through QQ or Matrix](/en/join)
 
-- **QQ group:** join the QQ group and apply according to its notice. Results are posted in the group.
-- **Application form:** submit the form with your Java username, email, and a short introduction. Results arrive by email.
+- **QQ:** get a join code on the join page, complete verification, and enter the group.
+- **Matrix:** use the join page to join the community Space, then join a chat room with the bot.
 
 </Step>
-<Step title="Connect to the server">
+<Step title="Connect to get a linking command">
 
 Java Edition address:
 
@@ -41,10 +41,22 @@ Java Edition address:
 mcmik.top
 ```
 
-The application channel provides the Bedrock address and port.
+Ask in the community for the Bedrock address and port.
+
+If your account is not linked, the disconnect screen provides a complete linking command for each available platform. Choose a platform and copy its command. The six-digit code is valid for 5 minutes.
+
+</Step>
+<Step title="Link your account and reconnect">
+
+- **QQ:** mention the bot in a connected group and send `/bind <code>` from the disconnect screen.
+- **Matrix:** send `!bind <code>` from the disconnect screen in a connected chat room.
+
+After either platform is linked, reconnect to the server. The six-digit QQ join code is separate from your game account linking code.
 
 </Step>
 </Steps>
+
+Keep at least one valid platform link and remain in a connected community to retain access. For Matrix, membership of the community Space provides access; chat rooms are where you send commands.
 
 ## Your First Login
 
@@ -137,15 +149,21 @@ Optional Java Edition mods.
 
 ## If Something Does Not Work
 
-<Details title="Not whitelisted, or still unable to join after applying?">
+<Details title="Asked to link your account, or still unable to enter after linking?">
 
-Check QQ or email for the approval result. If access still fails, send staff your Java username and the full error message. Bedrock players should also provide the linked Java account.
+Follow the disconnect screen's command in a connected QQ group or Matrix room, then reconnect. Reconnect to get a new code if yours expires. If membership cannot be verified, try again later or contact staff. If access still fails, provide your Java username and the full error message. Bedrock players should also provide the linked Java account.
+
+</Details>
+
+<Details title="What happens if I leave a QQ group or the Matrix Space?">
+
+A link remains while that account is still in another connected community on the same platform. Once the server confirms the account has left all connected communities on that platform, that link is removed. Other valid links remain. If no valid links remain, rejoin a community and link your account again before reconnecting.
 
 </Details>
 
 <Details title="Version mismatch, or unable to connect after Bedrock linking?">
 
-Check the game version. For Bedrock, also check account linking, whitelist approval, address, and port. Include your game version and full error message when asking for help.
+Check the game version. For Bedrock, also check Geyser account linking, your community platform link, the address, and the port. Include your game version and full error message when asking for help.
 
 </Details>
 

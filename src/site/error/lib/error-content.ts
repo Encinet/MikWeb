@@ -1,9 +1,7 @@
 import type { AppLocale } from '@/shared/i18n/routing';
-import en from '../../../../messages/en.json';
-import zhCN from '../../../../messages/zh-CN.json';
-
-const errorContent = { en: en.pageError, 'zh-CN': zhCN.pageError };
+// Generated from the canonical catalogs before dev/build; checked by check:i18n.
+import errorMessages from '@/site/error/lib/error-messages.generated.json';
 
 export function getErrorContent(locale: AppLocale) {
-  return errorContent[locale];
+  return errorMessages[locale];
 }

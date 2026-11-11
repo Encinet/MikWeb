@@ -1,6 +1,6 @@
 # MikWeb
 
-[Mik Casual](https://mcmik.top) 官网，使用 Next.js，支持中文与英文。提供 Wiki、建筑展示、网页聊天和入服申请。
+[Mik Casual](https://mcmik.top) 官网，使用 Next.js，支持中文与英文。提供 Wiki、建筑展示、网页聊天和社区加入入口。
 
 ## 本地运行
 
@@ -19,7 +19,7 @@ bun dev
 | 登录与账号 | `MIKWEB_AUTH_CLIENT_SECRET`，与 Mik Data 保持一致；`MIKDATA_AUTH_ORIGIN` 默认指向 `https://data.mcmik.top` |
 | 建筑投稿图片上传 | 服务端 `IMGBB_API_KEY` |
 | 网页聊天 | `NEXT_PUBLIC_WEB_CHAT_PUBLIC_KEY`，取自 Mik 插件启动日志中的 `Web chat public key` |
-| 入服申请 | 表单与 QQ 群入口；入群码还需配置 Cap 和两组独立的 TOTP 密钥 |
+| 加入社区 | `MATRIX_JOIN_URL` 与 QQ 群入口；QQ 入群码还需配置 Cap 和两组独立的 TOTP 密钥。加入后绑定游戏账号即可入服 |
 
 登录和聊天需要配套的 [Mik Data](https://github.com/Encinet/mikdata) 与 [Mik 插件](https://github.com/Encinet/mik)，部署说明见各自项目文档。私密凭据仅供服务端使用。
 

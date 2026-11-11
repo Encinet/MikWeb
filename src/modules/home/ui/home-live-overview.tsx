@@ -2,19 +2,27 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { useLayoutEffect, useState } from 'react';
+import { lazy, Suspense, useLayoutEffect, useState } from 'react';
 import { getAnnouncementKey } from '@/modules/announcement/lib/announcement-feed';
 import {
   formatAnnouncementDate,
   getAnnouncementDateTimeValue,
 } from '@/modules/announcement/lib/format-announcement-date';
 import { useAnnouncementsFeed } from '@/modules/announcement/model/use-announcements-feed';
-import { AnnouncementPreview } from '@/modules/announcement/ui/announcement-body';
 import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-feed-dialog';
+import {
+  loadAnnouncementBody,
+  loadAnnouncementFeedContent,
+} from '@/modules/announcement/ui/announcement-loaders';
 import HomePlayerList from '@/modules/home/ui/home-player-list';
 import { HomeServerStatus } from '@/modules/home/ui/home-server-status';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
+import { useBackgroundPrefetch } from '@/shared/hooks/use-background-prefetch';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
+
+const AnnouncementPreview = lazy(() =>
+  loadAnnouncementBody().then((module) => ({ default: module.AnnouncementPreview })),
+);
 
 export default function HomeLiveOverview({ children }: { children: ReactNode }) {
   const locale = useLocale();
@@ -30,6 +38,7 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
   } = usePlayerStatus();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  useBackgroundPrefetch(loadAnnouncementFeedContent);
   useLayoutEffect(() => () => setIsOpen(false), []);
   const { announcements, errorMessage, isLoading } = useAnnouncementsFeed({
     fallbackErrorMessage: commonT('states.error'),
@@ -47,7 +56,13 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
         <section className="home-live-announcements" aria-labelledby="home-announcements-title">
           <div className="home-live-announcements__head">
             <h2 id="home-announcements-title">{announcementsT('section.title')}</h2>
-            <button type="button" aria-haspopup="dialog" onClick={() => openAnnouncements()}>
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => openAnnouncements()}
+              onPointerEnter={() => void loadAnnouncementFeedContent().catch(() => undefined)}
+              onFocus={() => void loadAnnouncementFeedContent().catch(() => undefined)}
+            >
               {announcementsT('actions.viewAll')}
             </button>
           </div>
@@ -72,11 +87,21 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
                   type="button"
                   aria-haspopup="dialog"
                   onClick={() => openAnnouncements(getAnnouncementKey(announcement))}
+                  onPointerEnter={() => void loadAnnouncementFeedContent().catch(() => undefined)}
+                  onFocus={() => void loadAnnouncementFeedContent().catch(() => undefined)}
                 >
                   <time dateTime={getAnnouncementDateTimeValue(announcement.timestamp)}>
                     {formatAnnouncementDate(announcement.timestamp, locale)}
                   </time>
-                  <AnnouncementPreview content={announcement.content} />
+                  <Suspense
+                    fallback={
+                      <span className="announcement-preview" role="status">
+                        {commonT('states.loading')}
+                      </span>
+                    }
+                  >
+                    <AnnouncementPreview content={announcement.content} />
+                  </Suspense>
                 </button>
               ))
             ) : (

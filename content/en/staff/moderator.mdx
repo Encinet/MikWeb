@@ -1,6 +1,6 @@
 ---
 title: In-game operations
-description: Incident investigation and recovery, inventory checks, whitelists, voice moderation, player records, and account security
+description: Incident investigation and recovery, inventory checks, admission links, voice moderation, player records, and account security
 order: 80
 icon: Shield
 ---
@@ -60,28 +60,26 @@ Inventory and ender chest controls, item searches, and container tools.
 </Card>
 </Cards>
 
-## Whitelist
+## Server admission and manual unlinking
+
+Server access requires a valid community account link and membership, including for OP accounts. See [Getting Started](?section=getting-started#joining-the-server) for the player workflow.
+
+These administrative commands require `group.custodian` permission and also work in the console.
 
 <Definitions>
-<Definition title="Java accounts">
+<Definition title="Look up a player's links">
 
-Add with `/whitelist add <player>`, remove with `/whitelist remove <player>`, and view entries with `/whitelist list`.
+Use `/bindadmin lookup <player or UUID>` to view all links for a player. In game, select Unlink on the specific record.
 
 </Definition>
-<Definition title="Floodgate identities">
+<Definition title="Remove one selected link">
 
-Use `/fwhitelist add <gamertag or UUID>` or `/fwhitelist remove <gamertag or UUID>`. Omit the Floodgate username prefix.
+Use `/bindadmin unlink <binding ID> confirm`. Console lookup results include the full command. Only the selected record is removed; other platforms and independent scopes are unaffected.
 
 </Definition>
 </Definitions>
 
-<Cards>
-<Card title="Floodgate official documentation" href="https://geysermc.org/wiki/floodgate/features/">
-
-Whitelist commands and how to use gamertags and UUIDs.
-
-</Card>
-</Cards>
+Once the server confirms an account has left all connected communities on that platform, its link is removed automatically. Manually revoking the last valid link also disconnects an online player. The player must link an account again before rejoining.
 
 ## Player records and promotion
 

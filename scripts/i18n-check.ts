@@ -3,6 +3,7 @@ import { isStructurallySame, parse } from '@formatjs/icu-messageformat-parser';
 import enMessages from '../messages/en.json';
 import zhMessages from '../messages/zh-CN.json';
 import type { AppLocale } from '../src/shared/i18n/routing';
+import errorMessages from '../src/site/error/lib/error-messages.generated.json';
 
 function flattenMessages(
   value: unknown,
@@ -39,6 +40,9 @@ const reference = flattenMessages(catalogs['zh-CN']);
 const errors: string[] = [];
 
 for (const [locale, messages] of Object.entries(catalogs)) {
+  if (JSON.stringify(messages.pageError) !== JSON.stringify(errorMessages[locale as AppLocale])) {
+    errors.push(`${locale}: error messages are stale; run bun run prepare:messages`);
+  }
   const current = flattenMessages(messages);
   for (const [key, message] of reference) {
     const translated = current.get(key);

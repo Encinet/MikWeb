@@ -85,6 +85,11 @@ body {
   min-height: max(var(--viewport-height-small), var(--viewport-height-dynamic));
 }
 
+/* Reserve the first screen while streamed content replaces its loading state. */
+.app-main {
+  min-height: var(--viewport-height-small);
+}
+
 .page-shell {
   box-sizing: border-box;
   padding-top: calc(var(--app-header-offset) + var(--viewport-top-inset));

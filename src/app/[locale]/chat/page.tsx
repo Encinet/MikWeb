@@ -1,3 +1,7 @@
+import '../../styles/modules/chat.css';
+import '../../styles/modules/chat-tools.css';
+import '../../styles/modules/chat-motion.css';
+
 import type { Metadata } from 'next';
 import { ChatPage } from '@/modules/chat/ui/chat-page';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';

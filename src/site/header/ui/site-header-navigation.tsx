@@ -1,7 +1,8 @@
 'use client';
 
 import { Globe } from 'lucide-react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, useReducedMotion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 import { useRef } from 'react';
@@ -67,7 +68,7 @@ export function DesktopSiteHeaderNavigation({
             <item.icon className="relative z-10 h-4 w-4" aria-hidden="true" />
             <span className="relative z-10 whitespace-nowrap">{item.label}</span>
             {isActive && !item.highlight ? (
-              <motion.div
+              <m.div
                 key={`${item.id}-${underlineDirection}-${underlineDistance}`}
                 className="absolute right-0 bottom-0 left-0 h-0.5"
                 initial={
@@ -134,7 +135,7 @@ export function MobileSiteHeaderMenu({
   const menu = (
     <AnimatePresence>
       {isOpen ? (
-        <motion.div
+        <m.div
           id={id}
           ref={surfaceRef}
           initial={reducedMotion ? false : { opacity: 0, height: 0 }}
@@ -192,7 +193,7 @@ export function MobileSiteHeaderMenu({
               </button>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       ) : null}
     </AnimatePresence>
   );

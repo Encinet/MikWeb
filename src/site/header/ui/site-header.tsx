@@ -10,6 +10,7 @@ import {
   Play,
   Shield,
 } from 'lucide-react';
+import { domAnimation, LazyMotion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -234,69 +235,71 @@ export default function SiteHeader() {
   }, [activeDesktopNavIndex]);
 
   return (
-    <div
-      ref={headerRef}
-      className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}${pathname === '/wiki' || pathname === '/map' ? ' is-docked-page' : ''}`}
-      style={
-        {
-          '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
-        } as CSSProperties
-      }
-    >
-      <nav className="project-navbar-card">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
-          <div className="project-navbar-row flex items-center justify-between">
-            <SiteHeaderBrand subtitle={t('nav.brand.subtitle')} />
+    <LazyMotion features={domAnimation} strict>
+      <div
+        ref={headerRef}
+        className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}${pathname === '/wiki' || pathname === '/map' ? ' is-docked-page' : ''}`}
+        style={
+          {
+            '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
+          } as CSSProperties
+        }
+      >
+        <nav className="project-navbar-card">
+          <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
+            <div className="project-navbar-row flex items-center justify-between">
+              <SiteHeaderBrand subtitle={t('nav.brand.subtitle')} />
 
-            <DesktopSiteHeaderNavigation
+              <DesktopSiteHeaderNavigation
+                activePathname={pathname}
+                items={navItems}
+                underlineDirection={desktopUnderlineDirection}
+                underlineDistance={desktopUnderlineDistance}
+                underlineDuration={desktopUnderlineDuration}
+                underlineInitialScale={desktopUnderlineInitialScale}
+                underlineOrigin={desktopUnderlineOrigin}
+              />
+
+              <SiteHeaderControls
+                isLoadingPlayers={isLoadingPlayers}
+                isMobileMenuOpen={isMobileMenuOpen}
+                mobileMenuId={mobileMenuId}
+                mobileMenuButtonRef={mobileMenuButtonRef}
+                isOnline={isOnline}
+                localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
+                localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
+                localeTooltip={localeTooltip}
+                mounted={mounted}
+                networkError={networkError}
+                onLocaleSwitch={switchLocale}
+                onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onPlayerDropdownClose={closePlayerDropdown}
+                onPlayerDropdownOpen={openPlayerDropdown}
+                playerCount={playerCount}
+                playerDropdownAnchorRef={playerDropdownAnchorRef}
+                playerDropdownRect={playerDropdownRect}
+                playerDropdownVisible={isPlayerDropdownOpen && isPlayerDropdownVisible}
+                players={players}
+                statusNetworkErrorLabel={t('common.states.networkError')}
+                statusOfflineLabel={t('common.states.offline')}
+                statusOnlineLabel={t('common.states.online')}
+              />
+            </div>
+
+            <MobileSiteHeaderMenu
+              id={mobileMenuId}
+              openerRef={mobileMenuButtonRef}
               activePathname={pathname}
+              isOpen={isMobileMenuOpen}
               items={navItems}
-              underlineDirection={desktopUnderlineDirection}
-              underlineDistance={desktopUnderlineDistance}
-              underlineDuration={desktopUnderlineDuration}
-              underlineInitialScale={desktopUnderlineInitialScale}
-              underlineOrigin={desktopUnderlineOrigin}
-            />
-
-            <SiteHeaderControls
-              isLoadingPlayers={isLoadingPlayers}
-              isMobileMenuOpen={isMobileMenuOpen}
-              mobileMenuId={mobileMenuId}
-              mobileMenuButtonRef={mobileMenuButtonRef}
-              isOnline={isOnline}
+              onClose={() => setIsMobileMenuOpen(false)}
               localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
               localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
-              localeTooltip={localeTooltip}
-              mounted={mounted}
-              networkError={networkError}
               onLocaleSwitch={switchLocale}
-              onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              onPlayerDropdownClose={closePlayerDropdown}
-              onPlayerDropdownOpen={openPlayerDropdown}
-              playerCount={playerCount}
-              playerDropdownAnchorRef={playerDropdownAnchorRef}
-              playerDropdownRect={playerDropdownRect}
-              playerDropdownVisible={isPlayerDropdownOpen && isPlayerDropdownVisible}
-              players={players}
-              statusNetworkErrorLabel={t('common.states.networkError')}
-              statusOfflineLabel={t('common.states.offline')}
-              statusOnlineLabel={t('common.states.online')}
             />
           </div>
-
-          <MobileSiteHeaderMenu
-            id={mobileMenuId}
-            openerRef={mobileMenuButtonRef}
-            activePathname={pathname}
-            isOpen={isMobileMenuOpen}
-            items={navItems}
-            onClose={() => setIsMobileMenuOpen(false)}
-            localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
-            localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
-            onLocaleSwitch={switchLocale}
-          />
-        </div>
-      </nav>
-    </div>
+        </nav>
+      </div>
+    </LazyMotion>
   );
 }

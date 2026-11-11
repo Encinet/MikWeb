@@ -21,6 +21,6 @@ export function getJoinPageData(): JoinPageData {
         ? [{ id, number: process.env[`QQ_GROUP_${id}_NUMBER`]?.trim() || null, joinUrl }]
         : [];
     }),
-    formUrl: publicUrl(process.env.JOIN_FORM_URL),
+    matrixUrl: publicUrl(process.env.MATRIX_JOIN_URL),
   };
 }

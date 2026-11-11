@@ -1,6 +1,6 @@
 # App Styles
 
-`src/app/globals.css` is the only global stylesheet imported by the root layout. Keep it as an import manifest and place rules in the closest scoped file here.
+`src/app/globals.css` is the shared stylesheet imported by the root layout. Keep it as an import manifest and place rules in the closest scoped file here. Chat, Wiki, and building submission styles are imported by their route entry points so other pages do not wait for them on first load. Keep these selectors scoped to their feature because route styles remain loaded after client navigation.
 
 - `base/`: design tokens, document defaults, native element defaults, global animations.
 - `layout/`: viewport-safe layout helpers.

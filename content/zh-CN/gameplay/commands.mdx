@@ -50,6 +50,8 @@ icon: Wrench
 
 ## 账号与社区
 
+首次入服按[新手入门](?section=getting-started#如何加入服务器)完成社区绑定。下列 `/bind` 指令用于游戏内管理绑定，平台填写 `qq` 或 `matrix`。
+
 <WikiTable>
 <thead>
 <tr><th scope="col">功能</th><th scope="col">常用用法</th><th scope="col">说明</th></tr>
@@ -59,10 +61,10 @@ icon: Wrench
 <tr><td><code>/password set</code></td><td>首次设置自己的账号密码</td></tr>
 <tr><td><code>/password change</code></td><td>验证当前密码后修改密码</td></tr>
 <tr><td><code>/password remove</code></td><td>验证当前密码并检查账号条件后移除密码</td></tr>
-<tr><td rowSpan="4">平台绑定</td><td><code>/bind &lt;平台&gt;</code></td><td>为已启用的平台生成一次性验证码；验证码 5 分钟后过期</td></tr>
-<tr><td><code>/bind list</code></td><td>查看自己的平台绑定</td></tr>
+<tr><td rowSpan="4">平台绑定</td><td><code>/bind &lt;平台&gt;</code></td><td>为已启用的平台生成六位数字绑定码，5 分钟内有效</td></tr>
+<tr><td><code>/bind list</code></td><td>查看自己的绑定，点击对应条目的「解绑」可精确解除一条记录</td></tr>
 <tr><td><code>/bind cancel &lt;平台&gt;</code></td><td>作废该平台尚未使用的验证码</td></tr>
-<tr><td><code>/bind unlink &lt;平台&gt;</code></td><td>解除自己在该平台的绑定</td></tr>
+<tr><td><code>/bind unlink</code> 或 <code>/bind unlink &lt;绑定ID&gt;</code></td><td>打开绑定列表，或精确解除所选绑定；其他平台和独立作用域不受影响</td></tr>
 <tr><td rowSpan="4">社区治理</td><td><code>/gov</code> 或 <code>/governance menu</code></td><td>打开社区治理菜单</td></tr>
 <tr><td><code>/governance status</code></td><td>查看自己的晋升或活跃成员资格</td></tr>
 <tr><td><code>/governance nominate</code> 或 <code>/governance withdraw</code></td><td>符合条件的活跃成员可申请管理或撤回申请</td></tr>
@@ -125,13 +127,12 @@ icon: Wrench
 <tbody>
 <tr><td rowSpan="2">清理掉落物</td><td><code>/rmitems</code> 或 <code>/removeitems</code></td><td>按默认 50 格半径清理周围掉落物</td></tr>
 <tr><td><code>/rmitems &lt;半径&gt;</code></td><td>按指定半径清理掉落物，例如 <code>/rmitems 20</code>，半径范围为 1 到 300</td></tr>
-<tr><td>临时白名单</td><td><code>/tempwhitelist &lt;玩家名&gt;</code>、<code>/twl &lt;玩家名&gt;</code> 或 <code>/tempwl &lt;玩家名&gt;</code></td><td>为朋友添加 1 小时临时白名单，需要成员权限</td></tr>
 </tbody>
 </WikiTable>
 
 <Callout title="权限限制">
 
-新人无法使用 `/rmitems` 和 `/tempwhitelist`。
+新人无法使用 `/rmitems`。
 
 </Callout>
 

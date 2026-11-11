@@ -87,7 +87,7 @@ test('selected and button-copied codes preserve all six digits; expiry restores 
     assert.equal(range.toString(), '012345', 'manual selection contains no formatting spaces');
     assert.equal(env.container.querySelectorAll('.join-group-actions a').length, 2);
     assert.equal(document.activeElement, env.container.querySelector('.copy-button'));
-    assert.equal(button(env.container).textContent, '复制验证码');
+    assert.equal(button(env.container).textContent, '复制入群码');
     await act(async () => button(env.container).click());
     assert.equal(copied, '012345');
     assert.ok(env.container.querySelector('.join-group-actions a.ui-action-button--primary'));
@@ -105,8 +105,8 @@ test('selected and button-copied codes preserve all six digits; expiry restores 
     assert.equal(document.activeElement, button(env.container));
     assert.equal(env.container.querySelectorAll('.join-group-actions a').length, 2);
     assert.equal(
-      env.container.querySelector('.join-form-link')?.getAttribute('href'),
-      joinPageData.formUrl,
+      env.container.querySelector('.join-matrix-link')?.getAttribute('href'),
+      joinPageData.matrixUrl,
     );
   } finally {
     await env.close();

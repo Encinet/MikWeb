@@ -1,13 +1,23 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AppearancePanel } from '@/site/theme/ui/appearance-panel';
+import { useBackgroundPrefetch } from '@/shared/hooks/use-background-prefetch';
+
+const loadAppearancePanel = () => import('@/site/theme/ui/appearance-panel');
+const AppearancePanel = dynamic(
+  () => loadAppearancePanel().then((module) => module.AppearancePanel),
+  {
+    ssr: false,
+  },
+);
 
 export function ThemeSettings() {
+  useBackgroundPrefetch(loadAppearancePanel);
   const pathname = usePathname();
   const t = useTranslations('nav.theme');
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +35,8 @@ export function ThemeSettings() {
         ref={anchorRef}
         type="button"
         onClick={() => setIsOpen((open) => !open)}
+        onPointerEnter={() => void loadAppearancePanel().catch(() => undefined)}
+        onFocus={() => void loadAppearancePanel().catch(() => undefined)}
         className="project-appearance-toggle"
         aria-expanded={isOpen}
         aria-controls={isOpen ? id : undefined}

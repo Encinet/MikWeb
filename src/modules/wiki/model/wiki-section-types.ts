@@ -60,6 +60,12 @@ export interface WikiContentBundle {
   searchIndex: SearchableWikiBlock[];
 }
 
+export interface WikiSectionPayload {
+  id: WikiSectionId;
+  compiled: string;
+  outline: WikiSectionOutlineItem[];
+}
+
 export interface WikiSectionOutlineItem {
   heading: string;
   level: number;

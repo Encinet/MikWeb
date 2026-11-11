@@ -1,3 +1,5 @@
+import '../../../styles/modules/building-submission.css';
+
 import type { Metadata } from 'next';
 import { BuildingSubmissionPage } from '@/modules/building-submission/ui/building-submission-page';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';

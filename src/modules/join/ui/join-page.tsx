@@ -1,10 +1,10 @@
-import { ArrowUpRight, BookOpen, FileText, MessageCircle } from 'lucide-react';
+import { ArrowUpRight, BookOpen, MessageCircle, MessagesSquare } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { JoinPageData } from '@/modules/join/model/join-group';
 import { JoinGroupRow } from '@/modules/join/ui/join-group-row';
 import { Link } from '@/shared/i18n/navigation';
 
-export function JoinPage({ groups, formUrl, captcha }: JoinPageData) {
+export function JoinPage({ groups, matrixUrl, captcha }: JoinPageData) {
   const t = useTranslations('join');
   return (
     <div className="join-page page-shell">
@@ -32,29 +32,25 @@ export function JoinPage({ groups, formUrl, captcha }: JoinPageData) {
               <p className="join-unavailable">{t('qq.unavailable')}</p>
             )}
           </section>
-          <section className="join-form" aria-labelledby="join-form-title">
+          <section className="join-matrix" aria-labelledby="join-matrix-title">
             <header className="join-method-heading">
-              <h2 id="join-form-title">
-                <FileText aria-hidden="true" />
-                {t('form.title')}
+              <h2 id="join-matrix-title">
+                <MessagesSquare aria-hidden="true" />
+                {t('matrix.title')}
               </h2>
-              {formUrl ? <p>{t('form.description')}</p> : null}
             </header>
-            {formUrl ? (
-              <>
-                <a
-                  className="ui-action-button join-form-link"
-                  href={formUrl}
-                  target="_blank"
-                  rel="noopener noreferrer external"
-                >
-                  {t('form.open')}
-                  <ArrowUpRight aria-hidden="true" />
-                </a>
-                <p className="join-form-note">{t('form.note')}</p>
-              </>
+            {matrixUrl ? (
+              <a
+                className="ui-action-button join-matrix-link"
+                href={matrixUrl}
+                target="_blank"
+                rel="noopener noreferrer external"
+              >
+                {t('matrix.open')}
+                <ArrowUpRight aria-hidden="true" />
+              </a>
             ) : (
-              <p className="join-unavailable">{t('form.unavailable')}</p>
+              <p className="join-unavailable">{t('matrix.unavailable')}</p>
             )}
           </section>
         </div>

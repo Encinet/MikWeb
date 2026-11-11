@@ -2,26 +2,30 @@
 
 import { Building2, MapPin } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { sortBuildings } from '@/modules/building/lib/building-catalog';
+import { useState, useTransition } from 'react';
 import { getBuildingPath } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
-import { useBuildings } from '@/modules/building/model/use-buildings';
+import type { Building } from '@/modules/building/model/building-types';
 import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { Link } from '@/shared/i18n/navigation';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
-export function HomeBuildingUpdates() {
+export function HomeBuildingUpdates({
+  buildings: recentBuildings,
+  unavailable,
+}: {
+  buildings: Building[];
+  unavailable: boolean;
+}) {
   const t = useTranslations('home.playerHome.buildings');
   const mapT = useTranslations('map');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const { buildings, fetchBuildings, error, lastUpdatedAt, isLoading } = useBuildings();
+  const router = useRouter();
+  const [isRefreshing, startRefresh] = useTransition();
   const [imageErrors, setImageErrors] = useState<string[]>([]);
-
-  const recentBuildings = sortBuildings(buildings, 'date-desc', locale).slice(0, 2);
-  const isPending = lastUpdatedAt === null && !error;
 
   return (
     <section className="home-building-section" aria-labelledby="home-buildings-title">
@@ -32,7 +36,7 @@ export function HomeBuildingUpdates() {
         <Link href="/buildings">{t('viewAll')}</Link>
       </div>
       <div
-        className={`home-building-grid${!isPending && recentBuildings.length === 1 ? ' home-building-grid--single' : ''}`}
+        className={`home-building-grid${recentBuildings.length === 1 ? ' home-building-grid--single' : ''}`}
       >
         <Link href="/map" className="home-world-map">
           <Image
@@ -44,15 +48,7 @@ export function HomeBuildingUpdates() {
           />
           <h3>{mapT('title')}</h3>
         </Link>
-        {isPending ? (
-          ['first', 'second'].map((key) => (
-            <div key={key} className="home-building-skeleton" aria-hidden="true">
-              <div />
-              <SkeletonLine width="60%" />
-              <SkeletonLine width="85%" />
-            </div>
-          ))
-        ) : recentBuildings.length > 0 ? (
+        {recentBuildings.length > 0 ? (
           recentBuildings.map((building) => {
             const name = getBuildingName(building, locale);
             const cover = building.images.find((url) => !imageErrors.includes(url));
@@ -96,15 +92,15 @@ export function HomeBuildingUpdates() {
           })
         ) : (
           <div className="home-building-empty">
-            <p>{error ? t('unavailable') : t('empty')}</p>
-            {error ? (
+            <p>{unavailable ? t('unavailable') : t('empty')}</p>
+            {unavailable ? (
               <button
                 type="button"
                 className="home-building-retry"
-                disabled={isLoading}
-                onClick={() => void fetchBuildings({ force: true })}
+                disabled={isRefreshing}
+                onClick={() => startRefresh(() => router.refresh())}
               >
-                {isLoading ? t('retrying') : commonT('actions.retry')}
+                {isRefreshing ? t('retrying') : commonT('actions.retry')}
               </button>
             ) : null}
           </div>

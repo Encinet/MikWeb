@@ -40,7 +40,11 @@ async function WikiPageContent({
 
   return (
     <WikiContentGateway
-      {...bundle}
+      sections={bundle.sections}
+      sectionGroups={bundle.sectionGroups}
+      compiled={{ [initialSection]: bundle.compiled[initialSection] }}
+      outlines={{ [initialSection]: bundle.outlines[initialSection] }}
+      searchIndex={[]}
       pageTitle={t('title')}
       navigation={t('navigation.title')}
       onThisPage={t('navigation.onThisPage')}

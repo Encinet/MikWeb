@@ -1043,7 +1043,8 @@
     display: block;
   }
 
-  .join-form {
+  .join-matrix {
+    display: block;
     margin-top: 0.8rem;
     border-left: 0;
     border-top: 1px solid #c9cec9;
@@ -1063,19 +1064,16 @@
     break-inside: avoid-page;
   }
 
-  .join-form-note {
-    margin-top: 0.4rem;
-  }
-
   .join-rules-link {
     min-height: 0;
     margin-top: 0.6rem;
   }
 
-  a.join-form-link {
+  a.join-matrix-link {
     display: block !important;
     width: 100%;
     min-height: 0;
+    margin-top: 0.4rem;
     padding: 0;
     font-size: 9pt;
     font-weight: 650;
@@ -1083,7 +1081,7 @@
     text-decoration: none !important;
   }
 
-  .join-form-link::after {
+  .join-matrix-link::after {
     display: block;
     content: attr(href);
     margin-top: 0.2rem;
@@ -1093,7 +1091,7 @@
     overflow-wrap: anywhere;
   }
 
-  .join-form-link svg {
+  .join-matrix-link svg {
     display: none;
   }
 }

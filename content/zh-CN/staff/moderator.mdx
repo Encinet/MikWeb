@@ -1,6 +1,6 @@
 ---
 title: 服务器内操作
-description: 现场查证与恢复、背包核查、白名单、语音管理，以及玩家档案与账号安全
+description: 现场查证与恢复、背包核查、入服绑定、语音管理，以及玩家档案与账号安全
 order: 80
 icon: Shield
 ---
@@ -60,28 +60,26 @@ icon: Shield
 </Card>
 </Cards>
 
-## 白名单
+## 入服绑定与手动解绑
+
+入服资格由社区账号绑定与成员身份共同决定，OP 同样需要完成绑定。玩家操作见[新手入门](?section=getting-started#如何加入服务器)。
+
+以下管理指令需要 `group.custodian` 权限，控制台也可执行。
 
 <Definitions>
-<Definition title="Java 账号">
+<Definition title="查询玩家绑定">
 
-用 `/whitelist add <玩家名>` 添加，`/whitelist remove <玩家名>` 移除；`/whitelist list` 查看名单。
+使用 `/bindadmin lookup <玩家名或UUID>` 查看该玩家的所有绑定，游戏内可点击某条记录的「解绑」。
 
 </Definition>
-<Definition title="Floodgate 身份">
+<Definition title="精确解除一条绑定">
 
-用 `/fwhitelist add <游戏名或UUID>` 添加，`/fwhitelist remove <游戏名或UUID>` 移除。游戏名不附加 Floodgate 前缀。
+使用 `/bindadmin unlink <绑定ID> confirm`。控制台查询结果会提供完整指令；只移除选中的绑定，不影响其他平台或独立作用域。
 
 </Definition>
 </Definitions>
 
-<Cards>
-<Card title="Floodgate 官方文档" href="https://geysermc.org/wiki/floodgate/features/">
-
-白名单命令、游戏名与 UUID 的使用方法。
-
-</Card>
-</Cards>
+系统确认账号离开该平台全部接入社区后，会自动解除对应绑定。手动撤销绑定后，没有其他有效绑定的在线玩家会被移出；重新入服需完成新绑定。
 
 ## 玩家档案与晋升
 

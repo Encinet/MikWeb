@@ -17,7 +17,6 @@ export default function WikiContentGateway(props: ComponentProps<typeof WikiCont
     return {
       sections,
       sectionGroups: createWikiSectionGroups(sections),
-      content: { ...props.content, ...staff.bundle.content },
       compiled: { ...props.compiled, ...staff.bundle.compiled },
       outlines: { ...props.outlines, ...staff.bundle.outlines },
       searchIndex: [...props.searchIndex, ...staff.bundle.searchIndex],
@@ -26,6 +25,7 @@ export default function WikiContentGateway(props: ComponentProps<typeof WikiCont
 
   return (
     <WikiContentView
+      key={locale}
       {...props}
       {...bundle}
       staffStatus={

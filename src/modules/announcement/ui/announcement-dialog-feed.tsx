@@ -35,6 +35,12 @@ export function AnnouncementDialogFeed({
     const target = selectedRef.current;
     const scroller = target?.closest('.app-dialog-body');
     if (!target || !scroller) return;
+    // The dialog may have focused Close while this lazy content was still loading.
+    if (
+      document.activeElement === scroller.closest('dialog')?.querySelector('[data-dialog-close]')
+    ) {
+      target.focus({ preventScroll: true });
+    }
     const frame = requestAnimationFrame(() => {
       scroller.scrollTo({
         top:

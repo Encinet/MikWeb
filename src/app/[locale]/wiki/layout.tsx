@@ -1,3 +1,6 @@
+import '../../styles/modules/wiki.css';
+import '../../styles/modules/wiki-mdx.css';
+
 import type { Metadata } from 'next';
 
 import { requireRouteLocale } from '@/shared/i18n/route-locale';

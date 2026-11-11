@@ -1,0 +1,16 @@
+{
+  "en": {
+    "title": "This page could not be loaded",
+    "description": "Please try again. You can also return home and continue browsing.",
+    "retry": "Try again",
+    "retrying": "Trying again…",
+    "home": "Return home"
+  },
+  "zh-CN": {
+    "title": "页面暂时无法加载",
+    "description": "请重试，也可以返回首页继续浏览。",
+    "retry": "重试",
+    "retrying": "正在重试…",
+    "home": "返回首页"
+  }
+}

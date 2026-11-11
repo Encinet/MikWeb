@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { getWikiNavigationScrollMinimum } from '@/modules/wiki/lib/wiki-navigation-scroll';
@@ -10,10 +11,10 @@ import {
 } from '@/modules/wiki/lib/wiki-outline';
 import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import type { WikiNavigationPanel } from '@/modules/wiki/model/use-wiki-navigation-panel';
+import { useWikiPublicContent } from '@/modules/wiki/model/use-wiki-public-content';
 import { useWikiReading } from '@/modules/wiki/model/use-wiki-reading';
 import type {
   SearchableWikiBlock,
-  WikiSectionContentMap,
   WikiSectionDefinition,
   WikiSectionGroupDefinition,
   WikiSectionId,
@@ -26,6 +27,7 @@ import { WikiOutlineLinks } from '@/modules/wiki/ui/wiki-outline-links';
 import { WikiReadingToolbar } from '@/modules/wiki/ui/wiki-reading-toolbar';
 import { WikiSearchBox } from '@/modules/wiki/ui/wiki-search-box';
 import { WikiSearchResults } from '@/modules/wiki/ui/wiki-search-results';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 import { ContentBrowserHeader } from '@/shared/ui/page/content-browser-header';
 
 const emptyOutline: WikiSectionOutlineItem[] = [];
@@ -42,7 +44,6 @@ interface WikiContentProps {
   clearSearchLabel: string;
   sections: WikiSectionDefinition[];
   sectionGroups: WikiSectionGroupDefinition[];
-  content: WikiSectionContentMap;
   compiled: Record<string, string>;
   outlines: WikiSectionOutlineMap;
   searchIndex: SearchableWikiBlock[];
@@ -63,7 +64,6 @@ export default function WikiContent({
   clearSearchLabel,
   sections,
   sectionGroups,
-  content,
   compiled,
   outlines,
   searchIndex,
@@ -71,6 +71,8 @@ export default function WikiContent({
   initialQuery = '',
   staffStatus,
 }: WikiContentProps) {
+  const locale = useLocale();
+  const common = useTranslations('common');
   const fallbackSection = sections[0]?.id || '';
   const [activeSection, setActiveSection] = useState(initialSection || fallbackSection);
   const [navigationPanel, setNavigationPanel] = useState<WikiNavigationPanel>(null);
@@ -81,37 +83,60 @@ export default function WikiContent({
   const deferredLiveSearchQuery = useDeferredValue(liveSearchQuery);
   const committedSearchQuery = useRef(initialQuery);
   const navigationRef = useRef<HTMLElement>(null);
-  const activeOutline = outlines[activeSection] ?? emptyOutline;
   const activeSearchQuery = isSearchComposing
     ? debouncedSearchQuery
     : liveSearchQuery.length > 0
       ? deferredLiveSearchQuery
       : '';
   const isSearching = activeSearchQuery.length > 0;
+  const sectionIds = useMemo(() => new Set(sections.map((section) => section.id)), [sections]);
+  const prefetchSectionIds = useMemo(
+    () =>
+      sections
+        .filter((section) => section.access === 'public' && !Object.hasOwn(compiled, section.id))
+        .map((section) => section.id),
+    [sections, compiled],
+  );
+  const publicSectionId =
+    sections.find((section) => section.id === activeSection && section.access === 'public')?.id ??
+    null;
+  const resources = useWikiPublicContent({
+    locale,
+    sectionId: publicSectionId,
+    hasInitialSection: Boolean(compiled[activeSection]),
+    searchEnabled: liveSearchQuery.length > 0,
+    prefetchSectionIds,
+  });
+  const activeCode = compiled[activeSection] ?? resources.section?.compiled;
+  const activeOutline = outlines[activeSection] ?? resources.section?.outline ?? emptyOutline;
+  const fullSearchIndex = useMemo(
+    () => [...(resources.searchIndex ?? []), ...searchIndex],
+    [resources.searchIndex, searchIndex],
+  );
   useEffect(() => {
     if (isSearching) setNavigationPanel(null);
   }, [isSearching]);
   const { articleRef, activeSlug, requestScroll } = useWikiReading(
     activeSection,
     activeOutline,
-    !isSearching,
+    !isSearching && Boolean(activeCode),
   );
   const searchResults = useMemo(() => {
     if (!isSearching) return [];
 
-    return searchWikiBlocks(searchIndex, [activeSearchQuery], 12);
-  }, [activeSearchQuery, isSearching, searchIndex]);
+    return searchWikiBlocks(fullSearchIndex, [activeSearchQuery], 12);
+  }, [activeSearchQuery, isSearching, fullSearchIndex]);
   const searchResultsCountLabel = useMemo(() => {
     return searchResultsCountTemplate.replace('{count}', String(searchResults.length));
   }, [searchResults.length, searchResultsCountTemplate]);
 
   useEffect(() => {
-    if (Object.hasOwn(content, activeSection)) {
+    if (sectionIds.has(activeSection)) {
       return;
     }
 
     setActiveSection(fallbackSection);
-  }, [activeSection, content, fallbackSection]);
+  }, [activeSection, sectionIds, fallbackSection]);
 
   useEffect(() => {
     if (isSearchComposing || liveSearchQuery === debouncedSearchQuery) {
@@ -139,7 +164,7 @@ export default function WikiContent({
       const nextQuery = params.get('q')?.trim() ?? '';
       const selectedSectionId = params.get('section');
       const nextSection =
-        selectedSectionId && Object.hasOwn(content, selectedSectionId)
+        selectedSectionId && sectionIds.has(selectedSectionId)
           ? selectedSectionId
           : fallbackSection;
 
@@ -172,7 +197,7 @@ export default function WikiContent({
       window.removeEventListener('popstate', syncLocationState);
       window.removeEventListener('hashchange', syncLocationState);
     };
-  }, [content, fallbackSection, requestScroll]);
+  }, [sectionIds, fallbackSection, requestScroll]);
 
   useEffect(() => {
     if (debouncedSearchQuery === committedSearchQuery.current) {
@@ -322,7 +347,15 @@ export default function WikiContent({
               onOutlineOpen={handleOutlineOpen}
             />
             <div className="wiki-page__content-panel">
-              {isSearching ? (
+              {isSearching && !resources.searchIndex ? (
+                <WikiResourceStatus
+                  failed={resources.searchFailed}
+                  onRetry={resources.retrySearch}
+                  loadingLabel={common('states.loading')}
+                  errorLabel={common('states.error')}
+                  retryLabel={common('actions.retry')}
+                />
+              ) : isSearching ? (
                 <WikiSearchResults
                   emptyDescription={searchEmptyDescription}
                   emptyTitle={searchEmptyTitle}
@@ -339,7 +372,17 @@ export default function WikiContent({
                   tabIndex={-1}
                   className="wiki-markdown"
                 >
-                  {compiled[activeSection] ? <WikiMdx code={compiled[activeSection]} /> : null}
+                  {activeCode ? (
+                    <WikiMdx code={activeCode} />
+                  ) : (
+                    <WikiResourceStatus
+                      failed={resources.sectionFailed}
+                      onRetry={resources.retrySection}
+                      loadingLabel={common('states.loading')}
+                      errorLabel={common('states.error')}
+                      retryLabel={common('actions.retry')}
+                    />
+                  )}
                 </article>
               )}
             </div>
@@ -357,6 +400,30 @@ export default function WikiContent({
           ) : null}
         </div>
       </div>
+    </div>
+  );
+}
+
+function WikiResourceStatus({
+  failed,
+  onRetry,
+  loadingLabel,
+  errorLabel,
+  retryLabel,
+}: {
+  failed: boolean;
+  onRetry: () => void;
+  loadingLabel: string;
+  errorLabel: string;
+  retryLabel: string;
+}) {
+  if (!failed) return <LoadingState message={loadingLabel} />;
+  return (
+    <div className="wiki-staff-status" role="status">
+      <p>{errorLabel}</p>
+      <button type="button" onClick={onRetry}>
+        {retryLabel}
+      </button>
     </div>
   );
 }

@@ -5,6 +5,6 @@ export const joinPageData: JoinPageData = {
     { id: '1', number: '123456789', joinUrl: 'https://qm.qq.com/q/test-first' },
     { id: '2', number: null, joinUrl: 'https://qm.qq.com/q/test-second' },
   ],
-  formUrl: 'https://docs.google.com/forms/d/e/test-form/viewform',
+  matrixUrl: 'https://matrix.to/#/#mikcasual:matrix.org',
   captcha: { apiEndpoint: 'https://cap.example.test/test-site/' },
 };

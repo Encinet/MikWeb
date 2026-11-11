@@ -50,6 +50,8 @@ icon: Wrench
 
 ## Accounts & Community
 
+For your first login, follow [Getting Started](?section=getting-started#joining-the-server) to link a community account. Use the `/bind` commands below to manage links in game. Platform values are `qq` and `matrix`.
+
 <WikiTable>
 <thead>
 <tr><th scope="col">Feature</th><th scope="col">Common Usage</th><th scope="col">Notes</th></tr>
@@ -59,10 +61,10 @@ icon: Wrench
 <tr><td><code>/password set</code></td><td>Set your account password for the first time</td></tr>
 <tr><td><code>/password change</code></td><td>Change your password after verifying the current one</td></tr>
 <tr><td><code>/password remove</code></td><td>Remove your password after verifying it and checking account requirements</td></tr>
-<tr><td rowSpan="4">Platform linking</td><td><code>/bind &lt;platform&gt;</code></td><td>Generate a one-time code for an enabled platform. Codes expire after 5 minutes</td></tr>
-<tr><td><code>/bind list</code></td><td>View your linked platforms</td></tr>
+<tr><td rowSpan="4">Platform linking</td><td><code>/bind &lt;platform&gt;</code></td><td>Generate a six-digit linking code for an enabled platform, valid for 5 minutes</td></tr>
+<tr><td><code>/bind list</code></td><td>View your links and select Unlink on the specific record to remove</td></tr>
 <tr><td><code>/bind cancel &lt;platform&gt;</code></td><td>Invalidate an unused code for that platform</td></tr>
-<tr><td><code>/bind unlink &lt;platform&gt;</code></td><td>Unlink your account from that platform</td></tr>
+<tr><td><code>/bind unlink</code> or <code>/bind unlink &lt;binding ID&gt;</code></td><td>Open the link list or remove one selected link. Other platforms and independent scopes are unaffected</td></tr>
 <tr><td rowSpan="4">Community governance</td><td><code>/gov</code> or <code>/governance menu</code></td><td>Open the community governance menu</td></tr>
 <tr><td><code>/governance status</code></td><td>Check your promotion or active-member eligibility</td></tr>
 <tr><td><code>/governance nominate</code> or <code>/governance withdraw</code></td><td>Eligible active Members can nominate themselves for moderator or withdraw an application</td></tr>
@@ -125,13 +127,12 @@ Replace `PlayerID` with the target player's username:
 <tbody>
 <tr><td rowSpan="2">Dropped item cleanup</td><td><code>/rmitems</code> or <code>/removeitems</code></td><td>Remove nearby dropped items with the default 50-block radius</td></tr>
 <tr><td><code>/rmitems &lt;radius&gt;</code></td><td>Remove dropped items within a custom radius, for example <code>/rmitems 20</code>. Radius must be between 1 and 300</td></tr>
-<tr><td>Temporary whitelist</td><td><code>/tempwhitelist &lt;player&gt;</code>, <code>/twl &lt;player&gt;</code>, or <code>/tempwl &lt;player&gt;</code></td><td>Add a 1-hour temporary whitelist entry for a friend. Requires Member status</td></tr>
 </tbody>
 </WikiTable>
 
 <Callout title="Permission limits">
 
-Newcomers cannot use `/rmitems` or `/tempwhitelist`.
+Newcomers cannot use `/rmitems`.
 
 </Callout>
 

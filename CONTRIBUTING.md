@@ -31,7 +31,7 @@
 ```yaml
 ---
 title: 新手入门
-description: 从申请加入到首次进入服务器的说明。
+description: 从加入社区到首次进入服务器的说明。
 order: 10
 icon: Home
 ---

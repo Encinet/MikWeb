@@ -18,7 +18,7 @@ const keys = [
   'CAP_SECRET_KEY',
   'QQ_GROUP_1_TOTP_SECRET',
   'QQ_GROUP_2_TOTP_SECRET',
-  'JOIN_FORM_URL',
+  'MATRIX_JOIN_URL',
   'QQ_GROUP_1_NUMBER',
   'QQ_GROUP_2_NUMBER',
   'QQ_GROUP_1_JOIN_URL',
@@ -43,7 +43,7 @@ async function configured(run: () => Promise<void>) {
   process.env.CAP_SECRET_KEY = 'server-only-cap-secret';
   process.env.QQ_GROUP_1_TOTP_SECRET = secret;
   process.env.QQ_GROUP_2_TOTP_SECRET = secondSecret;
-  process.env.JOIN_FORM_URL = joinPageData.formUrl ?? '';
+  process.env.MATRIX_JOIN_URL = joinPageData.matrixUrl ?? '';
   for (const group of joinPageData.groups) {
     process.env[`QQ_GROUP_${group.id}_NUMBER`] = group.number ?? '';
     process.env[`QQ_GROUP_${group.id}_JOIN_URL`] = group.joinUrl ?? '';
@@ -99,11 +99,11 @@ test('public join information comes from runtime environment without exposing se
       new RegExp(`${secret}|${secondSecret}|server-only-cap-secret`),
     );
 
-    process.env.JOIN_FORM_URL = 'https://forms.example.test/updated';
+    process.env.MATRIX_JOIN_URL = 'https://matrix.to/#/#updated:example.test';
     process.env.QQ_GROUP_1_NUMBER = '987654321';
     process.env.QQ_GROUP_1_JOIN_URL = 'https://qm.qq.com/q/updated';
     const updated = await getJoinPageData();
-    assert.equal(updated.formUrl, 'https://forms.example.test/updated');
+    assert.equal(updated.matrixUrl, 'https://matrix.to/#/#updated:example.test');
     assert.equal(updated.groups[0].number, '987654321');
     assert.equal(updated.groups[0].joinUrl, 'https://qm.qq.com/q/updated');
   }));
@@ -117,11 +117,11 @@ test('missing and unsafe configured links are not sent to the browser', async ()
       'http://example.test',
       'https://user:password@example.test',
     ]) {
-      if (value === undefined) delete process.env.JOIN_FORM_URL;
-      else process.env.JOIN_FORM_URL = value;
+      if (value === undefined) delete process.env.MATRIX_JOIN_URL;
+      else process.env.MATRIX_JOIN_URL = value;
       process.env.QQ_GROUP_1_JOIN_URL = value ?? '';
       const data = await getJoinPageData();
-      assert.equal(data.formUrl, null);
+      assert.equal(data.matrixUrl, null);
       assert.equal(data.groups.length, 1);
       assert.equal(data.groups[0].id, '2');
       assert.equal(data.groups[0].joinUrl, joinPageData.groups[1].joinUrl);

@@ -1,7 +1,7 @@
+import { CHAT_HISTORY_DATABASE_NAME } from '@/modules/chat/lib/chat-history-presence';
 import { upgradeChatHistoryMessage } from '@/modules/chat/lib/chat-history-upgrade';
 import { UnsupportedChatHistoryError } from '@/modules/chat/model/chat-history-compatibility';
 
-const DATABASE_NAME = 'mik-chat';
 const DATABASE_VERSION = 3;
 const INDEXES = {
   ownerTime: ['owner', 'createdAt', 'sequence'],
@@ -31,7 +31,7 @@ export function openChatHistoryDatabase(): Promise<IDBDatabase> {
   if (deletion) return deletion.then(() => openChatHistoryDatabase());
   if (database) return database;
   const opening = new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+    const request = indexedDB.open(CHAT_HISTORY_DATABASE_NAME, DATABASE_VERSION);
     let failure: Error | undefined;
     let abandoned = false;
     request.onupgradeneeded = (event) => {
@@ -114,7 +114,7 @@ export function deleteChatHistoryDatabase(onBlocked: () => void): Promise<void> 
     const db = await previous?.catch(() => undefined);
     db?.close();
     await new Promise<void>((resolve, reject) => {
-      const request = indexedDB.deleteDatabase(DATABASE_NAME);
+      const request = indexedDB.deleteDatabase(CHAT_HISTORY_DATABASE_NAME);
       request.onblocked = onBlocked;
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();

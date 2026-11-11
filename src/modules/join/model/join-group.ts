@@ -12,7 +12,7 @@ export interface JoinGroup {
 
 export interface JoinPageData {
   groups: JoinGroup[];
-  formUrl: string | null;
+  matrixUrl: string | null;
   captcha: JoinCaptchaConfig | null;
 }
 
