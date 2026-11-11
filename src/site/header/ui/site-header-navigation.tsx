@@ -1,12 +1,13 @@
 'use client';
 
-import { Globe } from 'lucide-react';
+import { Globe, MessageCircle, Play } from 'lucide-react';
 import { AnimatePresence, useReducedMotion } from 'motion/react';
 import * as m from 'motion/react-m';
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from '@/modules/auth/model/use-auth';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { Link } from '@/shared/i18n/navigation';
 import type { SiteHeaderNavItem } from '@/site/header/lib/site-header-nav-item';
@@ -37,37 +38,16 @@ export function DesktopSiteHeaderNavigation({
       {items.map((item) => {
         const isActive = activePathname === item.path;
 
-        if (item.link) {
-          return (
-            <a
-              key={item.id}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={
-                item.highlight
-                  ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-2 whitespace-nowrap px-4 py-2'
-                  : 'ui-nav-link inline-flex items-center gap-2 whitespace-nowrap py-2'
-              }
-              style={{ position: 'relative' }}
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="whitespace-nowrap">{item.label}</span>
-            </a>
-          );
-        }
-
         return (
           <Link
             key={item.id}
-            href={item.path as string}
+            href={item.path}
             aria-current={isActive ? 'page' : undefined}
-            className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight px-4' : isActive ? 'ui-nav-link ui-nav-link--active' : 'ui-nav-link'} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
-            style={{ position: 'relative' }}
+            className={`ui-nav-link${isActive ? ' ui-nav-link--active' : ''} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
           >
             <item.icon className="relative z-10 h-4 w-4" aria-hidden="true" />
             <span className="relative z-10 whitespace-nowrap">{item.label}</span>
-            {isActive && !item.highlight ? (
+            {isActive ? (
               <m.div
                 key={`${item.id}-${underlineDirection}-${underlineDistance}`}
                 className="absolute right-0 bottom-0 left-0 h-0.5"
@@ -99,6 +79,46 @@ export function DesktopSiteHeaderNavigation({
           </Link>
         );
       })}
+      <SiteHeaderSessionActions activePathname={activePathname} />
+    </div>
+  );
+}
+
+/** Both variants share a slot in public HTML; the pre-paint hint selects the visible one. */
+function SiteHeaderSessionActions({
+  activePathname,
+  mobile = false,
+  onNavigate,
+}: {
+  activePathname: string;
+  mobile?: boolean;
+  onNavigate?: () => void;
+}) {
+  const t = useTranslations();
+  const { authenticated, verified } = useAuth();
+  const actions = [
+    { audience: 'signed-in', path: '/chat', label: t('chat.title'), icon: MessageCircle },
+    { audience: 'signed-out', path: '/join', label: t('nav.items.join'), icon: Play },
+  ] as const;
+
+  return (
+    <div className="project-navbar-session-actions">
+      {actions.map((action) => (
+        <Link
+          key={action.audience}
+          href={action.path}
+          prefetch={
+            verified && authenticated === (action.audience === 'signed-in') ? undefined : false
+          }
+          onClick={onNavigate}
+          aria-current={activePathname === action.path ? 'page' : undefined}
+          data-auth-audience={action.audience}
+          className={`project-auth-variant ui-nav-chip ui-nav-chip--highlight inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 ${mobile ? 'py-3' : 'py-2'}`}
+        >
+          <action.icon className="h-4 w-4" aria-hidden="true" />
+          <span>{action.label}</span>
+        </Link>
+      ))}
     </div>
   );
 }
@@ -149,35 +169,23 @@ export function MobileSiteHeaderMenu({
               {items.map((item) => {
                 const isActive = activePathname === item.path;
 
-                if (item.link) {
-                  return (
-                    <a
-                      key={item.id}
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={onClose}
-                      className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-2' : 'ui-nav-link block'} py-3 px-4`}
-                    >
-                      {item.highlight && <item.icon className="h-4 w-4" />}
-                      {item.label}
-                    </a>
-                  );
-                }
-
                 return (
                   <Link
                     key={item.id}
-                    href={item.path as string}
+                    href={item.path}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={onClose}
-                    className={`${item.highlight ? 'ui-nav-chip ui-nav-chip--highlight inline-flex items-center gap-2' : isActive ? 'ui-nav-link ui-nav-link--active block' : 'ui-nav-link block'} py-3 px-4`}
+                    className={`ui-nav-link${isActive ? ' ui-nav-link--active' : ''} block py-3 px-4`}
                   >
-                    {item.highlight && <item.icon className="h-4 w-4" aria-hidden="true" />}
                     {item.label}
                   </Link>
                 );
               })}
+              <SiteHeaderSessionActions
+                activePathname={activePathname}
+                mobile
+                onNavigate={onClose}
+              />
               <button
                 type="button"
                 className="mobile-menu-language"

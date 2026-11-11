@@ -162,6 +162,23 @@
   gap: var(--project-navbar-control-gap);
 }
 
+/* Keep auth-dependent entries measurable while excluding the inactive variant from interaction. */
+.project-navbar-session-actions,
+.project-account-links {
+  display: grid;
+  align-items: center;
+}
+
+.project-auth-variant {
+  grid-area: 1 / 1;
+}
+
+:root:not([data-auth-navigation="signed-in"]) .project-auth-variant[data-auth-audience="signed-in"],
+:root[data-auth-navigation="signed-in"] .project-auth-variant[data-auth-audience="signed-out"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 @media (min-width: 640px) {
   .project-navbar-shell {
     --project-navbar-item-gap: 1rem;
@@ -441,9 +458,15 @@
   }
 }
 
+.project-account-links {
+  width: 2.1rem;
+  flex: 0 0 auto;
+}
+
 .project-account-link {
   display: inline-flex;
-  min-width: 1.8rem;
+  width: 100%;
+  min-width: 0;
   height: 1.8rem;
   align-items: center;
   justify-content: center;
@@ -482,7 +505,6 @@
 
 .project-account-link--signed-in {
   position: relative;
-  width: 2rem;
   height: 1.8rem;
   padding: 0 0.42rem 0 0.5rem;
   overflow: visible;
@@ -508,6 +530,7 @@
 }
 
 .project-account-avatar {
+  position: relative;
   display: block;
   width: 1.84rem;
   height: 1.84rem;
@@ -517,6 +540,18 @@
   box-shadow:
     0 5px 14px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.project-account-avatar--pending {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-account-avatar[data-loaded="false"] {
+  opacity: 0;
 }
 
 .project-account-name,
@@ -558,23 +593,23 @@
 }
 
 @media (min-width: 1024px) {
+  .project-account-links {
+    width: 7.5rem;
+  }
+
   .project-account-link--signed-in {
-    width: auto;
-    min-width: 5.5rem;
     justify-content: flex-start;
     padding: 0 0.62rem 0 0.56rem;
     gap: 0.48rem;
   }
 
-  .project-account-name,
-  .project-account-link--signed-in .project-account-login-label {
+  .project-account-name {
     display: inline-block;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 1023px) {
   .project-account-link--signed-out {
-    width: 2.1rem;
     padding: 0;
   }
 

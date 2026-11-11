@@ -64,6 +64,7 @@ export default function MinecraftAvatar({
       width={size}
       height={size}
       className={className}
+      data-loaded={avatar.loaded}
       style={{
         imageRendering: 'pixelated',
         ...style,

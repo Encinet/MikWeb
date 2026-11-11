@@ -1,14 +1,13 @@
 'use client';
 
-import { Globe, Menu, UserRound, Users, X } from 'lucide-react';
+import { Globe, Menu, Users, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties, RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
-import { useAuth } from '@/modules/auth/model/use-auth';
 import type { Player } from '@/modules/player/model/player-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import { Link } from '@/shared/i18n/navigation';
+import { SiteHeaderAccount } from '@/site/header/ui/site-header-account';
 import { ThemeSettings } from '@/site/theme/ui/theme-settings';
 
 interface SiteHeaderControlsProps {
@@ -60,9 +59,7 @@ export function SiteHeaderControls({
   statusOfflineLabel,
   statusOnlineLabel,
 }: SiteHeaderControlsProps) {
-  const commonT = useTranslations('common');
   const controlsT = useTranslations('nav.controls');
-  const { account, authenticated, isLoading: isLoadingAuth } = useAuth();
 
   return (
     <>
@@ -99,39 +96,7 @@ export function SiteHeaderControls({
           </button>
         </fieldset>
 
-        {isLoadingAuth ? null : (
-          <Link
-            href={authenticated ? '/account' : '/login'}
-            className={`project-account-link${
-              authenticated && account
-                ? ' project-account-link--signed-in'
-                : ' project-account-link--signed-out'
-            }`}
-            title={authenticated && account ? account.currentName : commonT('actions.login')}
-            aria-label={authenticated && account ? account.currentName : commonT('actions.login')}
-          >
-            {authenticated && account ? (
-              <>
-                <span className="project-account-avatar-frame">
-                  <MinecraftAvatar
-                    uuid={account.playerUuid}
-                    name={account.currentName}
-                    size={28}
-                    className="project-account-avatar"
-                  />
-                </span>
-                <span className="project-account-name">{account.currentName}</span>
-              </>
-            ) : (
-              <>
-                <span className="project-account-login-icon">
-                  <UserRound className="h-4 w-4" />
-                </span>
-                <span className="project-account-login-label">{commonT('actions.login')}</span>
-              </>
-            )}
-          </Link>
-        )}
+        <SiteHeaderAccount />
 
         <div ref={playerDropdownAnchorRef} className="project-player-control relative">
           <button

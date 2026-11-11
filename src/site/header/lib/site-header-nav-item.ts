@@ -4,7 +4,5 @@ export interface SiteHeaderNavItem {
   id: string;
   icon: LucideIcon;
   label: string;
-  path?: string;
-  link?: string;
-  highlight?: boolean;
+  path: string;
 }

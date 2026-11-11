@@ -7,8 +7,8 @@ import { useAuth } from '@/modules/auth/model/use-auth';
 import type { WikiContentBundle } from '@/modules/wiki/model/wiki-section-types';
 
 export function useWikiStaffContent(locale: string) {
-  const { account, verified, isLoading: authLoading } = useAuth();
-  const owner = verified && !authLoading && isStaffRole(account?.role) ? account?.playerUuid : null;
+  const { account, verified } = useAuth();
+  const owner = verified && isStaffRole(account?.role) ? account?.playerUuid : null;
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{
     owner: string;

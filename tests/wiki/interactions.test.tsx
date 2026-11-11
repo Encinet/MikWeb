@@ -75,6 +75,12 @@ test('private content requires verified staff and clears on logout, demotion, an
       resolvePending?.(Response.json(bundle));
     });
     assert.equal(environment.container.textContent, 'private-content');
+    // Routine session refreshes keep the verified owner and do not reload private content.
+    await render({ ...authState(account), isLoading: true });
+    assert.equal(environment.container.textContent, 'private-content');
+    await render(authState(account));
+    assert.equal(requests, 1);
+    assert.equal(environment.container.textContent, 'private-content');
     await render(authState({ ...account, role: 'member' }));
     assert.equal(environment.container.textContent, 'public-only');
     await render(authState(account));

@@ -414,13 +414,16 @@
     },
     "account": {
       "title": "个人中心",
-      "loading": "加载中",
       "navigation": {
         "label": "个人中心导航"
       },
       "signedOut": {
         "title": "尚未登录",
         "description": "请先通过游戏内验证码或 Passkey 登录"
+      },
+      "verificationFailed": {
+        "title": "暂时无法读取账号",
+        "description": "未能确认登录状态，请稍后重试。"
       },
       "fields": {
         "uuid": "玩家 UUID"

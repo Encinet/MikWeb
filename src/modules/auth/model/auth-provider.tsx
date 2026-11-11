@@ -2,6 +2,10 @@
 
 import type { ReactNode } from 'react';
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  rememberAuthNavigation,
+  restoreAuthNavigation,
+} from '@/modules/auth/lib/auth-navigation-hint';
 import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { isAuthMeResponse } from '@/modules/auth/model/auth-types';
@@ -41,13 +45,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const nextAccount = payload.authenticated ? payload.account : null;
       const previous = verifiedAccount.current;
       verifiedAccount.current = nextAccount?.playerUuid ?? null;
+      const navigationChanged = rememberAuthNavigation(nextAccount !== null);
       startTransition(() => {
         setVerified(true);
         setAccount(nextAccount);
       });
       // A verified refresh can follow a new session for the same player.
       clearFetchValidatedJsonBrowserCache({ prefix: 'account:' });
-      if (previous !== undefined && previous !== verifiedAccount.current) announceAccountChange();
+      // Initial verification can discover expiry while an older tab still holds verified identity.
+      const accountChanged =
+        previous === undefined ? navigationChanged : previous !== verifiedAccount.current;
+      if (accountChanged) announceAccountChange();
       return nextAccount;
     } finally {
       if (generation === verificationGeneration.current) {
@@ -59,6 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const acceptAuthentication = useCallback((nextAccount: AuthAccount) => {
     verificationGeneration.current++;
     verifiedAccount.current = nextAccount.playerUuid;
+    rememberAuthNavigation(true);
     clearFetchValidatedJsonBrowserCache({ prefix: 'account:' });
     setAccount(nextAccount);
     setVerified(true);
@@ -82,6 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     });
     verificationGeneration.current++;
+    rememberAuthNavigation(false);
     clearFetchValidatedJsonBrowserCache({ prefix: 'account:' });
     setAccount(null);
     verifiedAccount.current = null;
@@ -102,6 +112,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(
     () =>
       onOtherTabAccountChange(() => {
+        restoreAuthNavigation();
         verifiedAccount.current = undefined;
         setVerified(false);
         setAccount(null);

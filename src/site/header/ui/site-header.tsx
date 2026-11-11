@@ -1,21 +1,11 @@
 'use client';
 
-import {
-  BookOpen,
-  Building2,
-  ClipboardList,
-  Home,
-  MapIcon,
-  MessageCircle,
-  Play,
-  Shield,
-} from 'lucide-react';
+import { BookOpen, Building2, ClipboardList, Home, MapIcon, Shield } from 'lucide-react';
 import { domAnimation, LazyMotion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import { useAuth } from '@/modules/auth/model/use-auth';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { getPathname, usePathname } from '@/shared/i18n/navigation';
@@ -32,7 +22,6 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const t = useTranslations();
   const locale = useLocale();
-  const { authenticated, isLoading: isLoadingAuth } = useAuth();
   const {
     players,
     playerCount,
@@ -66,8 +55,8 @@ export default function SiteHeader() {
 
   const localeTooltip = locale === 'zh-CN' ? 'English' : '中文 (简体)';
 
-  const navItems = useMemo<SiteHeaderNavItem[]>(() => {
-    const items: SiteHeaderNavItem[] = [
+  const navItems = useMemo<SiteHeaderNavItem[]>(
+    () => [
       { id: 'home', icon: Home, label: t('nav.items.home'), path: '/' },
       { id: 'buildings', icon: Building2, label: t('nav.items.buildings'), path: '/buildings' },
       { id: 'wiki', icon: BookOpen, label: t('nav.items.wiki'), path: '/wiki' },
@@ -79,28 +68,9 @@ export default function SiteHeader() {
       },
       { id: 'map', icon: MapIcon, label: t('map.title'), path: '/map' },
       { id: 'bans', icon: Shield, label: t('bans.title'), path: '/bans' },
-    ];
-
-    if (authenticated) {
-      items.push({
-        id: 'chat',
-        icon: MessageCircle,
-        label: t('chat.title'),
-        path: '/chat',
-        highlight: true,
-      });
-    } else if (!isLoadingAuth) {
-      items.push({
-        id: 'apply',
-        icon: Play,
-        label: t('nav.items.join'),
-        path: '/join',
-        highlight: true,
-      });
-    }
-
-    return items;
-  }, [authenticated, isLoadingAuth, t]);
+    ],
+    [t],
+  );
   const activeDesktopNavIndex = navItems.findIndex((item) => item.path === pathname);
   const previousActiveDesktopNavIndex = previousActiveNavIndexRef.current;
   const desktopUnderlineDirection =

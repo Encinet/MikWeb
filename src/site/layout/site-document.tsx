@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next';
 import type { CSSProperties } from 'react';
 import { Suspense } from 'react';
+import { getAuthNavigationInitializationScript } from '@/modules/auth/lib/auth-navigation-hint';
 import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { ServerInsertedScript } from '@/shared/ui/server-inserted-script';
@@ -30,6 +31,7 @@ export default async function SiteDocument({
           <ShareThumbnailMetadata />
         </Suspense>
         <ServerInsertedScript code={getAccentInitializationScript()} />
+        <ServerInsertedScript code={getAuthNavigationInitializationScript()} />
       </head>
       <body className="app-body">
         <BrowserSupportNotice locale={locale} />

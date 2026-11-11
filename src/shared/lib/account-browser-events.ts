@@ -3,7 +3,7 @@ const ACCOUNT_CHANGE_KEY = 'mik-account-change';
 
 export function announceAccountChange(): void {
   try {
-    localStorage.setItem(ACCOUNT_CHANGE_KEY, crypto.randomUUID());
+    window.localStorage.setItem(ACCOUNT_CHANGE_KEY, crypto.randomUUID());
   } catch {
     // Storage may be disabled; server-side session expiry remains authoritative.
   }

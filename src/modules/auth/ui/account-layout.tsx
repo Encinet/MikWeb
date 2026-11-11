@@ -2,7 +2,6 @@
 
 import {
   ChevronDown,
-  Fingerprint,
   KeyRound,
   Landmark,
   LayoutDashboard,
@@ -17,6 +16,7 @@ import { isMemberRole } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { Link, usePathname, useRouter } from '@/shared/i18n/navigation';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 interface AccountLayoutProps {
   children: ReactNode;
@@ -31,7 +31,7 @@ export function AccountLayout({ children }: AccountLayoutProps) {
   const [navigationOpen, setNavigationOpen] = useState(false);
   const navigationId = useId();
   const navigationToggle = useRef<HTMLButtonElement>(null);
-  const { account, authenticated, isLoading, logout } = useAuth();
+  const { account, isLoading, verified, logout, refresh } = useAuth();
 
   const navItems = [
     {
@@ -80,16 +80,37 @@ export function AccountLayout({ children }: AccountLayoutProps) {
     }
   };
 
-  if (!isLoading && !authenticated) {
+  if (!verified || !account) {
+    const verificationFailed = !isLoading && !verified;
+    let heading = t('auth.account.signedOut.title');
+    if (isLoading) heading = t('auth.account.title');
+    else if (verificationFailed) heading = t('auth.account.verificationFailed.title');
     return (
       <div className="account-workspace page-shell page-shell-stable">
         <div className="page-shell-content mx-auto w-full max-w-3xl">
-          <section className="account-empty-state">
-            <h1>{t('auth.account.signedOut.title')}</h1>
-            <p>{t('auth.account.signedOut.description')}</p>
-            <Link href="/login" className="ui-action-button ui-action-button--primary">
-              {t('common.actions.login')}
-            </Link>
+          <section className="account-empty-state" aria-busy={isLoading}>
+            <h1>{heading}</h1>
+            {isLoading ? (
+              <LoadingState message={t('common.states.loading')} variant="inline" />
+            ) : verificationFailed ? (
+              <>
+                <p role="alert">{t('auth.account.verificationFailed.description')}</p>
+                <button
+                  type="button"
+                  className="ui-action-button ui-action-button--primary"
+                  onClick={() => void refresh().catch(() => undefined)}
+                >
+                  {t('common.actions.retry')}
+                </button>
+              </>
+            ) : (
+              <>
+                <p>{t('auth.account.signedOut.description')}</p>
+                <Link href="/login" className="ui-action-button ui-action-button--primary">
+                  {t('common.actions.login')}
+                </Link>
+              </>
+            )}
           </section>
         </div>
       </div>
@@ -102,15 +123,11 @@ export function AccountLayout({ children }: AccountLayoutProps) {
         <aside className="account-sidebar" aria-label={t('auth.account.title')}>
           <div className="account-identity">
             <div className="account-identity__avatar">
-              {account ? (
-                <MinecraftAvatar uuid={account.playerUuid} name={account.currentName} size={48} />
-              ) : (
-                <Fingerprint className="h-9 w-9" aria-hidden="true" />
-              )}
+              <MinecraftAvatar uuid={account.playerUuid} name={account.currentName} size={48} />
             </div>
             <div className="account-identity__copy">
-              <strong>{account?.currentName ?? t('auth.account.loading')}</strong>
-              {account ? <p>{t(`auth.account.roles.${account.role}`)}</p> : null}
+              <strong>{account.currentName}</strong>
+              <p>{t(`auth.account.roles.${account.role}`)}</p>
             </div>
           </div>
 
