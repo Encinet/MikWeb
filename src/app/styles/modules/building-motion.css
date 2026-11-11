@@ -34,6 +34,64 @@
   animation: building-content-out 160ms ease-in both;
 }
 
+/* Only focus-mode changes move these surfaces; route transitions keep their own fade. */
+::view-transition-group(.building-image-focus),
+::view-transition-group(.building-controls-focus),
+::view-transition-group(.building-details-focus) {
+  animation-duration: 300ms;
+  animation-timing-function: var(--ui-transition-easing);
+}
+
+::view-transition-old(.building-image-focus),
+::view-transition-new(.building-image-focus) {
+  height: 100%;
+  object-fit: contain;
+}
+
+::view-transition-old(.building-controls-focus) {
+  animation: building-content-out 160ms ease-out both;
+}
+
+::view-transition-new(.building-controls-focus) {
+  animation: building-content-in 220ms ease-out both;
+}
+
+/* This is the same photo at a new size, so its brightness must stay constant. */
+::view-transition-old(.building-image-focus) {
+  display: none;
+}
+
+::view-transition-new(.building-image-focus) {
+  animation: none;
+  opacity: 1;
+}
+
+::view-transition-old(.building-details-focus) {
+  animation: building-details-leave 160ms ease-in both;
+}
+
+::view-transition-new(.building-details-focus) {
+  animation: building-details-arrive 260ms var(--ui-transition-easing) both;
+}
+
+@keyframes building-details-arrive {
+  from {
+    opacity: 0;
+    translate: 0 0.75rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0;
+  }
+}
+
+@keyframes building-details-leave {
+  to {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+
 @keyframes building-content-in {
   from {
     opacity: 0;

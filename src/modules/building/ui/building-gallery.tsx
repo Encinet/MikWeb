@@ -1,43 +1,27 @@
 'use client';
 
-import {
-  ArrowLeft,
-  CalendarDays,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  RotateCcw,
-  X,
-} from 'lucide-react';
-import type { Transition } from 'motion/react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import Image from 'next/image';
+import { ArrowLeft, X } from 'lucide-react';
+import { useReducedMotion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-
 import {
-  formatBuildingDate,
-  getBuildingDescription,
-  getBuildingName,
-} from '@/modules/building/lib/building-view-helpers';
+  addTransitionType,
+  startTransition,
+  useEffect,
+  useEffectEvent,
+  useId,
+  useState,
+  ViewTransition,
+} from 'react';
+import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
 import { useBuildingGalleryControls } from '@/modules/building/model/use-building-gallery-controls';
-import { BuildingCardActions } from '@/modules/building/ui/building-card-actions';
+import { BuildingGalleryDetails } from '@/modules/building/ui/building-gallery-details';
 import { BuildingGalleryFrame } from '@/modules/building/ui/building-gallery-frame';
-import {
-  BuilderNames,
-  BuildingSourceDetails,
-  BuildingTags,
-  BuildingTypeBadge,
-} from '@/modules/building/ui/building-metadata';
+import { BuildingGalleryViewer } from '@/modules/building/ui/building-gallery-viewer';
 import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { BuildingShareActions } from '@/modules/building/ui/building-share-actions';
-import { mapPositionUrl } from '@/modules/map/model/map-world';
 import { Link, useRouter } from '@/shared/i18n/navigation';
-import { CopyButton } from '@/shared/ui/action/copy-button';
-import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 export function BuildingGallery({
   building,
@@ -49,54 +33,55 @@ export function BuildingGallery({
   const locale = useLocale();
   const t = useTranslations('buildings');
   const router = useRouter();
-  const onClose = () => router.back();
-  const {
-    activeImage,
-    imageIndex: currentImageIndex,
-    direction: imageDirection,
-    loading: imageLoading,
-    isImageError,
-    handleImageError: onImageError,
-    handleImageLoad: onImageLoad,
-    retryImage,
-    next: onNextImage,
-    prev: onPreviousImage,
-    handleSelectImage: onSelectImage,
-  } = useBuildingGallery(building);
-  const commonT = useTranslations('common');
   const titleId = useId();
-  const detailsId = useId();
-  const shouldReduceMotion = useReducedMotion();
-  const imageUrls = building.images;
-  const [expanded, setExpanded] = useState(!modal);
-  const Heading = modal ? 'h2' : 'h1';
-
+  const gallery = useBuildingGallery(building);
+  const reduceMotion = useReducedMotion();
+  const [focused, setFocused] = useState(false);
   const [thumbnailErrors, setThumbnailErrors] = useState<Set<string>>(new Set());
-  const { stageRef, thumbnailsRef, ...touchHandlers } = useBuildingGalleryControls({
-    imageIndex: currentImageIndex,
-    imageCount: imageUrls.length,
-    next: onNextImage,
-    prev: onPreviousImage,
-    reduceMotion: Boolean(shouldReduceMotion),
+  const { stageRef, thumbnailsRef } = useBuildingGalleryControls({
+    imageIndex: gallery.imageIndex,
+    imageCount: building.images.length,
+    next: gallery.next,
+    prev: gallery.prev,
+    reduceMotion: Boolean(reduceMotion),
   });
-
-  const buildingName = getBuildingName(building, locale);
-  const buildingDescription = getBuildingDescription(building, locale)
-    .split(/\r\n?|\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .join('\n');
-  const hasDescription = buildingDescription.length > 0;
-  const hasMultipleImages = imageUrls.length > 1;
-  const panelTransition: Transition = shouldReduceMotion
-    ? { duration: 0 }
-    : { duration: 0.34, ease: [0.22, 1, 0.36, 1] };
-  const imageTransition: Transition = shouldReduceMotion
-    ? { duration: 0 }
-    : { duration: 0.26, ease: [0.22, 1, 0.36, 1] };
+  const name = getBuildingName(building, locale);
+  const close = () => router.back();
+  const changeFocus = (next: boolean) => {
+    if (reduceMotion) {
+      setFocused(next);
+      return;
+    }
+    startTransition(() => {
+      addTransitionType('building-focus');
+      setFocused(next);
+    });
+  };
+  const handleEscape = () => {
+    if (focused) changeFocus(false);
+    else if (modal) close();
+  };
+  const onDirectEscape = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === 'Escape' && focused) {
+      event.preventDefault();
+      changeFocus(false);
+    }
+  });
+  useEffect(() => {
+    if (modal) return;
+    const handle = (event: KeyboardEvent) => onDirectEscape(event);
+    document.addEventListener('keydown', handle);
+    return () => document.removeEventListener('keydown', handle);
+  }, [modal]);
 
   return (
-    <BuildingGalleryFrame modal={modal} onClose={onClose} titleId={titleId}>
+    <BuildingGalleryFrame
+      modal={modal}
+      onClose={close}
+      onEscape={handleEscape}
+      titleId={titleId}
+      focused={focused}
+    >
       <div className="building-gallery-toolbar">
         {!modal ? (
           <Link
@@ -109,14 +94,14 @@ export function BuildingGallery({
             <span>{t('title')}</span>
           </Link>
         ) : (
-          <span />
+          <span className="building-gallery-toolbar__name">{name}</span>
         )}
         <div className="building-gallery-toolbar__actions">
           <BuildingShareActions building={building} />
           {modal ? (
             <button
               type="button"
-              onClick={onClose}
+              onClick={close}
               aria-label={t('dialog.close')}
               title={t('dialog.close')}
               data-dialog-close
@@ -128,227 +113,83 @@ export function BuildingGallery({
         </div>
       </div>
 
-      {/* Image stage */}
-      <div
-        ref={stageRef}
-        className="building-archive-stage"
-        aria-busy={imageLoading || undefined}
-        {...touchHandlers}
+      <BuildingGalleryViewer
+        gallery={gallery}
+        imageCount={building.images.length}
+        stageRef={stageRef}
+        name={name}
+        focused={focused}
+        onToggleFocus={() => changeFocus(!focused)}
       >
-        <AnimatePresence initial={false} custom={imageDirection} mode="sync">
-          <motion.div
-            key={activeImage ?? 'empty'}
-            custom={imageDirection}
-            variants={{
-              enter: (direction: number) => ({ opacity: 0, x: direction * 24 }),
-              center: { opacity: 1, x: 0 },
-              exit: (direction: number) => ({ opacity: 0, x: direction * -24 }),
-            }}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={imageTransition}
-            className="building-archive-stage-image"
+        {building.images.length > 0 ? (
+          <ViewTransition
+            default={{ default: 'none', 'building-focus': 'building-controls-focus' }}
           >
-            {activeImage && !isImageError(activeImage) ? (
-              <Image
-                src={activeImage}
-                alt={buildingName}
-                fill
-                sizes="100vw"
-                className="object-contain"
-                unoptimized
-                loading="eager"
-                fetchPriority="high"
-                draggable={false}
-                onLoad={() => onImageLoad(activeImage)}
-                onError={() => onImageError(activeImage)}
-              />
-            ) : (
-              <div className="building-archive-stage-empty">
-                <p role="status">{activeImage ? t('states.imageFailed') : t('states.noImages')}</p>
-                {activeImage ? (
-                  <button type="button" className="building-gallery-retry" onClick={retryImage}>
-                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                    {commonT('actions.retry')}
-                  </button>
-                ) : null}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Loading overlay */}
-        {imageLoading && activeImage && !isImageError(activeImage) ? (
-          <div className="building-archive-stage-loader">
-            <LoadingState message={commonT('states.loading')} />
-          </div>
-        ) : null}
-
-        {/* Navigation arrows */}
-        {hasMultipleImages ? (
-          <>
-            <button
-              type="button"
-              onClick={onPreviousImage}
-              aria-label={t('dialog.previousImage')}
-              className="building-archive-nav building-archive-nav--prev"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button
-              type="button"
-              onClick={onNextImage}
-              aria-label={t('dialog.nextImage')}
-              className="building-archive-nav building-archive-nav--next"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          </>
-        ) : null}
-      </div>
-
-      {/* Bottom info bar */}
-      <div className="building-archive-info-bar-frame">
-        <motion.div
-          layout
-          transition={panelTransition}
-          className={`building-archive-info-bar ${expanded ? 'is-expanded' : 'is-collapsed'}`}
-        >
-          <motion.div layout="position" className="building-archive-info-bar__main">
-            <div className="building-archive-info-bar__left">
-              {/* Type badge + name */}
-              <div className="building-archive-info-bar__header">
-                <BuildingTypeBadge buildType={building.buildType} compact t={t} />
-                <Heading id={titleId}>{buildingName}</Heading>
-              </div>
-
-              <div className="building-archive-info-bar__meta-grid">
-                <span className="building-archive-info-bar__meta-item building-archive-info-bar__meta-item--wide">
-                  <span className="building-archive-info-bar__builder-pills">
-                    <BuilderNames builders={building.builders} compact />
-                  </span>
+            <div className="building-gallery-filmstrip">
+              <p
+                className="building-archive-image-picker__count"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <span className="sr-only">
+                  {t('dialog.currentImage', {
+                    current: gallery.imageIndex + 1,
+                    total: building.images.length,
+                  })}
                 </span>
-                <span className="building-archive-info-bar__meta-item">
-                  <MapPin
-                    className="building-archive-info-bar__meta-icon h-3.5 w-3.5"
-                    aria-hidden="true"
-                  />
-                  <a
-                    className="building-archive-info-bar__meta-value building-gallery-map-link"
-                    href={mapPositionUrl(
-                      building.coordinates.world,
-                      building.coordinates.x,
-                      building.coordinates.z,
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={t('actions.viewOnMap')}
-                  >
-                    {building.coordinates.world} · {building.coordinates.x},{' '}
-                    {building.coordinates.y}, {building.coordinates.z}
-                  </a>
-                  <CopyButton
-                    value={`${building.coordinates.world} · ${building.coordinates.x}, ${building.coordinates.y}, ${building.coordinates.z}`}
-                    label={t('share.copyCoordinates')}
-                    className="building-coordinate-copy"
-                  />
+                <span aria-hidden="true">
+                  <strong>{String(gallery.imageIndex + 1).padStart(2, '0')}</strong> /{' '}
+                  {String(building.images.length).padStart(2, '0')}
                 </span>
-                <span className="building-archive-info-bar__meta-item">
-                  <CalendarDays
-                    className="building-archive-info-bar__meta-icon h-3.5 w-3.5"
-                    aria-hidden="true"
-                  />
-                  <span className="building-archive-info-bar__meta-value">
-                    {formatBuildingDate(building.buildDate, locale)}
-                  </span>
-                </span>
-              </div>
-              {!expanded && hasDescription ? (
-                <p className="building-archive-info-bar__preview">{buildingDescription}</p>
+              </p>
+              {building.images.length > 1 ? (
+                <section
+                  ref={thumbnailsRef}
+                  className="building-archive-thumbnails"
+                  aria-label={t('viewer.thumbnails')}
+                >
+                  {building.images.map((url, index) => (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => gallery.handleSelectImage(index)}
+                      aria-label={t('dialog.currentImage', {
+                        current: index + 1,
+                        total: building.images.length,
+                      })}
+                      aria-pressed={index === gallery.imageIndex}
+                      className={index === gallery.imageIndex ? 'is-active' : ''}
+                    >
+                      {thumbnailErrors.has(url) ? (
+                        <span>{index + 1}</span>
+                      ) : (
+                        <BuildingPreviewImage
+                          building={building}
+                          imageIndex={index}
+                          alt=""
+                          sizes="72px"
+                          className="object-cover"
+                          loading="lazy"
+                          fetchPriority="low"
+                          onError={() =>
+                            setThumbnailErrors((previous) => new Set(previous).add(url))
+                          }
+                        />
+                      )}
+                    </button>
+                  ))}
+                </section>
               ) : null}
             </div>
+          </ViewTransition>
+        ) : null}
+      </BuildingGalleryViewer>
 
-            {hasMultipleImages ? (
-              <div className="building-archive-info-bar__right">
-                <div className="building-archive-image-picker">
-                  <p className="building-archive-image-picker__count" aria-live="polite">
-                    {t('dialog.currentImage', {
-                      current: currentImageIndex + 1,
-                      total: imageUrls.length,
-                    })}
-                  </p>
-                  <div ref={thumbnailsRef} className="building-archive-thumbnails">
-                    {imageUrls.map((url, i) => (
-                      <button
-                        key={url}
-                        type="button"
-                        onClick={() => onSelectImage(i)}
-                        aria-label={t('dialog.currentImage', {
-                          current: i + 1,
-                          total: imageUrls.length,
-                        })}
-                        aria-pressed={i === currentImageIndex}
-                        className={i === currentImageIndex ? 'is-active' : ''}
-                      >
-                        {thumbnailErrors.has(url) ? (
-                          <span>{i + 1}</span>
-                        ) : (
-                          <BuildingPreviewImage
-                            building={building}
-                            imageIndex={i}
-                            alt=""
-                            sizes="64px"
-                            className="object-cover"
-                            loading="lazy"
-                            fetchPriority="low"
-                            onError={() =>
-                              setThumbnailErrors((previous) => new Set(previous).add(url))
-                            }
-                          />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-          </motion.div>
-
-          {/* Expanded details */}
-          <div
-            className={`building-archive-info-expanded ${expanded ? 'is-expanded' : 'is-collapsed'}`}
-            id={detailsId}
-            inert={!expanded}
-            aria-hidden={!expanded}
-          >
-            <div className="building-archive-info-expanded__clip">
-              <div className="building-archive-info-expanded__inner">
-                {hasDescription ? (
-                  <p className="building-archive-info-expanded__desc">{buildingDescription}</p>
-                ) : null}
-                <BuildingSourceDetails building={building} locale={locale} t={t} />
-                <BuildingTags building={building} locale={locale} compact />
-              </div>
-            </div>
-          </div>
-          <div className="building-archive-info-bar__actions">
-            <BuildingCardActions building={building} />
-            <button
-              type="button"
-              onClick={() => setExpanded((previous) => !previous)}
-              aria-expanded={expanded}
-              aria-controls={detailsId}
-              className={`building-archive-info-bar__expand ${expanded ? 'is-expanded' : ''}`}
-            >
-              <span>
-                {expanded ? commonT('actions.collapseDetails') : t('dialog.expandDetails')}
-              </span>
-              <ChevronDown className="building-archive-expand-icon h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        </motion.div>
-      </div>
+      <ViewTransition default={{ default: 'none', 'building-focus': 'building-details-focus' }}>
+        <div className="building-archive-info-bar-frame" hidden={focused}>
+          <BuildingGalleryDetails building={building} titleId={titleId} modal={modal} />
+        </div>
+      </ViewTransition>
     </BuildingGalleryFrame>
   );
 }

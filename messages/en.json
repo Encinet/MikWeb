@@ -197,6 +197,22 @@
     },
     "actions": {
       "viewOnMap": "View on map"
+    },
+    "details": {
+      "builders": "Built by",
+      "buildDate": "Build date"
+    },
+    "viewer": {
+      "imageLabel": "{name}, image viewer",
+      "controls": "Image tools",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetZoom": "Reset zoom",
+      "focus": "Focus on image",
+      "exitFocus": "Exit image focus",
+      "zoomLevel": "Zoom {percentage}%",
+      "thumbnails": "Choose a building image",
+      "keyboardHelp": "Use plus or minus to zoom and 0 to reset. When zoomed in, drag or use arrow keys to move. Press Escape to reset zoom, then Escape again to exit image focus."
     }
   },
   "buildingSubmission": {

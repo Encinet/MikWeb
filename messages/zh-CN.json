@@ -197,6 +197,22 @@
     },
     "actions": {
       "viewOnMap": "在地图中查看"
+    },
+    "details": {
+      "builders": "建造者",
+      "buildDate": "建造日期"
+    },
+    "viewer": {
+      "imageLabel": "{name}，图片查看区域",
+      "controls": "图片查看工具",
+      "zoomIn": "放大图片",
+      "zoomOut": "缩小图片",
+      "resetZoom": "重置缩放",
+      "focus": "专注看图",
+      "exitFocus": "退出专注看图",
+      "zoomLevel": "缩放 {percentage}%",
+      "thumbnails": "选择建筑图片",
+      "keyboardHelp": "按加号或减号缩放，0 重置。放大后可拖动或使用方向键移动。按 Esc 重置缩放，再次按 Esc 退出专注看图。"
     }
   },
   "buildingSubmission": {

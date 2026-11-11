@@ -4,6 +4,7 @@ import { Check, Link2, Share2, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingShare } from '@/modules/building/model/use-building-share';
+import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
 export function BuildingShareActions({ building }: { building: Building }) {
   const t = useTranslations('buildings.share');
@@ -26,8 +27,9 @@ export function BuildingShareActions({ building }: { building: Building }) {
         aria-busy={sharing || copying || undefined}
         aria-label={primaryLabel}
         title={primaryLabel}
+        data-copied={(!canShare && copied) || undefined}
       >
-        <PrimaryIcon aria-hidden="true" />
+        {sharing || copying ? <ProgressRing size="sm" /> : <PrimaryIcon aria-hidden="true" />}
       </button>
       {canShare ? (
         <button
@@ -37,8 +39,16 @@ export function BuildingShareActions({ building }: { building: Building }) {
           disabled={copying}
           aria-label={copyLabel}
           title={copyLabel}
+          aria-busy={copying || undefined}
+          data-copied={copied || undefined}
         >
-          {copied ? <Check aria-hidden="true" /> : <Link2 aria-hidden="true" />}
+          {copying ? (
+            <ProgressRing size="sm" />
+          ) : copied ? (
+            <Check aria-hidden="true" />
+          ) : (
+            <Link2 aria-hidden="true" />
+          )}
         </button>
       ) : null}
       <span role="status" className="sr-only" aria-live="polite">

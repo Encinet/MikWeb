@@ -444,24 +444,24 @@
   }
 
   /* A building opened as a route or dialog becomes a one-column record. */
-  body.app-body:has(dialog.building-archive-overlay[open]) > main {
+  html[data-building-gallery-mode="modal"] body.app-body > main {
     display: none !important;
   }
 
-  body.app-body:has(dialog.building-archive-overlay[open]) {
+  html[data-building-gallery-mode="modal"] body.app-body {
     display: flex;
     flex-direction: column;
   }
 
-  body.app-body:has(dialog.building-archive-overlay[open]) > .print-site-header {
+  html[data-building-gallery-mode="modal"] body.app-body > .print-site-header {
     order: 0;
   }
 
-  body.app-body:has(dialog.building-archive-overlay[open]) > dialog.building-archive-overlay {
+  html[data-building-gallery-mode="modal"] body.app-body > dialog.building-archive-overlay {
     order: 1;
   }
 
-  body.app-body:has(dialog.building-archive-overlay[open]) > .print-site-footer {
+  html[data-building-gallery-mode="modal"] body.app-body > .print-site-footer {
     order: 2;
   }
 
@@ -483,12 +483,21 @@
   }
 
   .building-gallery-toolbar,
+  .building-gallery-image-controls,
   .building-archive-stage-loader,
   .building-archive-nav,
+  .building-image-tools,
+  .building-gallery-filmstrip,
   .building-archive-info-bar__right,
   .building-archive-info-bar__actions,
   .building-archive-info-bar__preview {
     display: none !important;
+  }
+
+  .building-gallery-media {
+    display: block;
+    order: 2;
+    flex: none;
   }
 
   .building-archive-stage {
@@ -501,11 +510,18 @@
     break-inside: avoid-page;
   }
 
+  .building-image-viewport {
+    position: static;
+    height: 100%;
+    overflow: visible;
+  }
+
   .building-archive-stage-image {
     position: relative;
     inset: auto;
     width: 100%;
     height: 100%;
+    transform: none !important;
   }
 
   .building-archive-stage-image img {
@@ -516,6 +532,7 @@
   }
 
   .building-archive-info-bar-frame {
+    display: block !important;
     order: 1;
     width: 100%;
     max-height: none;
@@ -529,6 +546,24 @@
 
   .building-archive-info-bar__main {
     display: block;
+  }
+
+  .building-detail-summary {
+    display: block;
+  }
+
+  .building-detail-facts {
+    margin-top: 0.4rem;
+  }
+
+  .building-detail-body {
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .building-archive-info-bar__expand {
+    display: none !important;
   }
 
   .building-archive-info-bar__header {
@@ -564,6 +599,12 @@
 
   .building-archive-info-expanded__clip {
     overflow: visible;
+  }
+
+  .building-archive-overlay .building-archive-info-expanded .building-detail-body {
+    opacity: 1;
+    translate: none;
+    transition: none;
   }
 
   .building-archive-info-expanded__inner {

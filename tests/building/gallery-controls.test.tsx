@@ -11,7 +11,7 @@ function Harness({
   onNavigate: (direction: number) => void;
   imageIndex?: number;
 }) {
-  const { stageRef, thumbnailsRef, ...touchHandlers } = useBuildingGalleryControls({
+  const { stageRef, thumbnailsRef } = useBuildingGalleryControls({
     imageIndex,
     imageCount: 3,
     next: () => onNavigate(1),
@@ -20,22 +20,22 @@ function Harness({
   });
   return (
     <div className="building-archive-overlay">
-      <div ref={stageRef} {...touchHandlers}>
+      <div ref={stageRef}>
         <button type="button">Next</button>
       </div>
       <input aria-label="Caption" />
-      <div ref={thumbnailsRef} data-thumbnails>
+      <section ref={thumbnailsRef} data-thumbnails>
         {[0, 1, 2].map((index) => (
           <button key={index} type="button" aria-pressed={index === imageIndex}>
             {index + 1}
           </button>
         ))}
-      </div>
+      </section>
     </div>
   );
 }
 
-test('gallery shortcuts and swipes preserve text editing, scrolling, zoom and system gestures', async () => {
+test('gallery shortcuts preserve text editing, selection and browser shortcuts', async () => {
   const environment = createBrowserEnvironment();
   let changes = 0;
   const key = (
@@ -76,41 +76,6 @@ test('gallery shortcuts and swipes preserve text editing, scrolling, zoom and sy
     selection?.selectAllChildren(button);
     key(button);
     selection?.removeAllRanges();
-    assert.equal(changes, 1);
-
-    const touch = (type: string, x: number, y: number, count = 1, target = stage) => {
-      const event = new environment.window.Event(type, { bubbles: true });
-      Object.assign(event, {
-        touches:
-          type === 'touchend'
-            ? []
-            : Array.from({ length: count }, () => ({ clientX: x, clientY: y })),
-        changedTouches: [{ clientX: x, clientY: y }],
-      });
-      target.dispatchEvent(event as unknown as Event);
-    };
-    touch('touchstart', 200, 100);
-    touch('touchend', 100, 105);
-    assert.equal(changes, 2);
-    touch('touchstart', 100, 100);
-    touch('touchend', 200, 105);
-    assert.equal(changes, 1);
-    // Taps, edge navigation, button presses, vertical gestures and pinches do not switch images.
-    touch('touchstart', 200, 100);
-    touch('touchend', 180, 100);
-    touch('touchstart', 10, 100);
-    touch('touchend', 100, 100);
-    touch('touchstart', 200, 100, 1, button);
-    touch('touchend', 100, 100, 1, button);
-    touch('touchstart', 200, 100);
-    touch('touchmove', 200, 125);
-    touch('touchend', 100, 125);
-    touch('touchstart', 200, 100);
-    touch('touchmove', 190, 100, 2);
-    touch('touchend', 100, 100);
-    touch('touchstart', 200, 100);
-    touch('touchcancel', 200, 100);
-    touch('touchend', 100, 100);
     assert.equal(changes, 1);
   } finally {
     await environment.close();
