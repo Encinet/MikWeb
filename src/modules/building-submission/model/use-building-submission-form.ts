@@ -19,13 +19,14 @@ import type {
 import {
   createInitialBuildingSubmissionForm,
   ensureSelfBuilder,
-  gcd,
+  greatestCommonDivisor,
+  normalizeBuilderWeight,
+} from '@/modules/building-submission/model/building-submission-form';
+import {
+  BUILDING_SUBMISSION_IMAGE_LIMITS,
   MAX_BUILDING_SUBMISSION_IMAGES,
   MAX_PENDING_BUILDING_SUBMISSIONS,
-  MIN_BUILDING_SUBMISSION_IMAGE_HEIGHT,
-  MIN_BUILDING_SUBMISSION_IMAGE_WIDTH,
-  safeBuilderWeight,
-} from '@/modules/building-submission/model/building-submission-form';
+} from '@/modules/building-submission/model/building-submission-limits';
 import type {
   BuildingSubmission,
   BuildingSubmissionListResponse,
@@ -33,14 +34,14 @@ import type {
 import {
   isBuildingSubmissionCreateResponse,
   isBuildingSubmissionListResponse,
-} from '@/modules/building-submission/model/building-submission-types';
-import { isPlayerIdentity } from '@/modules/player/model/player-types';
+} from '@/modules/building-submission/model/building-submission-validation';
+import { isPlayerIdentity } from '@/modules/player/model/player-validation';
 import {
   fetchValidatedJson,
   writeFetchValidatedJsonBrowserCache,
 } from '@/shared/api/fetch-validated-json';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
-import type { InlineFeedbackValue } from '@/shared/ui/feedback/async-state';
+import type { FeedbackMessage } from '@/shared/types/feedback';
 
 type SubmissionFeedbackScope = 'form' | 'builders' | 'images' | 'tags' | 'history';
 
@@ -50,20 +51,20 @@ export function useBuildingSubmissionForm() {
   const t = useTranslations('buildingSubmission');
   const { account, authenticated } = useAuth();
   const [feedback, setFeedback] = useState<
-    Partial<Record<SubmissionFeedbackScope, InlineFeedbackValue | null>>
+    Partial<Record<SubmissionFeedbackScope, FeedbackMessage | null>>
   >({});
   const showFeedback = useCallback(
-    (scope: SubmissionFeedbackScope, value: InlineFeedbackValue | null) => {
+    (scope: SubmissionFeedbackScope, value: FeedbackMessage | null) => {
       setFeedback((current) => ({ ...current, [scope]: value }));
     },
     [],
   );
   const [submissions, setSubmissions] = useState<BuildingSubmission[]>([]);
-  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [playerInput, setPlayerInput] = useState('');
-  const [resolvingPlayer, setResolvingPlayer] = useState(false);
+  const [isResolvingPlayer, setIsResolvingPlayer] = useState(false);
   const [tags, setTags] = useState<BuildingSubmissionTagDraft[]>([]);
   const [tagDraft, setTagDraft] = useState<BuildingSubmissionTagDraft>({ zh: '', en: '' });
   const [draftImages, setDraftImages] = useState<BuildingSubmissionImageDraft[]>([]);
@@ -78,13 +79,13 @@ export function useBuildingSubmissionForm() {
   useEffect(() => {
     accountGeneration.current++;
     activeAccount.current = account?.playerUuid;
-    setLoadingSubmissions(false);
-    setResolvingPlayer(false);
+    setIsLoadingSubmissions(false);
+    setIsResolvingPlayer(false);
     setPlayerInput('');
     pendingSubmission.current?.abort();
     setSubmissions([]);
-    setSubmitting(false);
-    setUploading(false);
+    setIsSubmitting(false);
+    setIsUploading(false);
     setFeedback({});
     setForm(createInitialBuildingSubmissionForm(new Date().toISOString().slice(0, 10)));
     setTags([]);
@@ -112,7 +113,7 @@ export function useBuildingSubmissionForm() {
       const generation = accountGeneration.current;
       const request = ++historyRequest.current;
       showFeedback('history', null);
-      setLoadingSubmissions(true);
+      setIsLoadingSubmissions(true);
       try {
         const result = await fetchValidatedJson({
           url: '/api/account/building-submissions/mine',
@@ -141,7 +142,7 @@ export function useBuildingSubmissionForm() {
         showFeedback('history', { message: t('states.loadFailed'), kind: 'error' });
       } finally {
         if (generation === accountGeneration.current && request === historyRequest.current)
-          setLoadingSubmissions(false);
+          setIsLoadingSubmissions(false);
       }
     },
     [account, showFeedback, t],
@@ -180,11 +181,14 @@ export function useBuildingSubmissionForm() {
     [submissions],
   );
   const totalBuilderWeight = useMemo(
-    () => builders.reduce((total, builder) => total + safeBuilderWeight(builder.weight), 0),
+    () => builders.reduce((total, builder) => total + normalizeBuilderWeight(builder.weight), 0),
     [builders],
   );
   const canSubmit =
-    authenticated && pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS && !submitting && !uploading;
+    authenticated &&
+    pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS &&
+    !isSubmitting &&
+    !isUploading;
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -192,11 +196,11 @@ export function useBuildingSubmissionForm() {
 
   const resolvePlayer = async () => {
     const name = playerInput.trim();
-    if (!name || resolvingPlayer) return;
+    if (!name || isResolvingPlayer) return;
 
     const generation = accountGeneration.current;
     showFeedback('builders', null);
-    setResolvingPlayer(true);
+    setIsResolvingPlayer(true);
     try {
       const payload = await authRequest<{ player?: unknown }>('/api/account/players/resolve', {
         body: { name },
@@ -217,7 +221,7 @@ export function useBuildingSubmissionForm() {
       if (generation !== accountGeneration.current) return;
       showFeedback('builders', { message: t('states.playerNotFound'), kind: 'error' });
     } finally {
-      if (generation === accountGeneration.current) setResolvingPlayer(false);
+      if (generation === accountGeneration.current) setIsResolvingPlayer(false);
     }
   };
 
@@ -225,7 +229,7 @@ export function useBuildingSubmissionForm() {
     setBuilders((current) =>
       current.map((builder) =>
         builder.uuid === uuid
-          ? { ...builder, weight: safeBuilderWeight(builder.weight + delta) }
+          ? { ...builder, weight: normalizeBuilderWeight(builder.weight + delta) }
           : builder,
       ),
     );
@@ -238,13 +242,14 @@ export function useBuildingSubmissionForm() {
   const normalizeBuilderWeights = () => {
     setBuilders((current) => {
       const divisor = current.reduce(
-        (currentGcd, builder) => gcd(currentGcd, safeBuilderWeight(builder.weight)),
+        (currentGcd, builder) =>
+          greatestCommonDivisor(currentGcd, normalizeBuilderWeight(builder.weight)),
         0,
       );
       if (divisor <= 1) return current;
       return current.map((builder) => ({
         ...builder,
-        weight: safeBuilderWeight(builder.weight / divisor),
+        weight: normalizeBuilderWeight(builder.weight / divisor),
       }));
     });
   };
@@ -278,15 +283,15 @@ export function useBuildingSubmissionForm() {
     }
 
     showFeedback('images', null);
-    setUploading(true);
+    setIsUploading(true);
     const drafts: BuildingSubmissionImageDraft[] = [];
     const generation = accountGeneration.current;
     try {
       for (const file of selected) {
         const draft = await createBuildingSubmissionImageDraft(file);
         if (
-          draft.width < MIN_BUILDING_SUBMISSION_IMAGE_WIDTH ||
-          draft.height < MIN_BUILDING_SUBMISSION_IMAGE_HEIGHT
+          draft.width < BUILDING_SUBMISSION_IMAGE_LIMITS.minWidth ||
+          draft.height < BUILDING_SUBMISSION_IMAGE_LIMITS.minHeight
         ) {
           URL.revokeObjectURL(draft.previewUrl);
           throw new Error('image_too_small');
@@ -309,7 +314,7 @@ export function useBuildingSubmissionForm() {
         kind: 'error',
       });
     } finally {
-      if (generation === accountGeneration.current) setUploading(false);
+      if (generation === accountGeneration.current) setIsUploading(false);
     }
   };
 
@@ -341,8 +346,8 @@ export function useBuildingSubmissionForm() {
     if (pendingSubmission.current && !pendingSubmission.current.signal.aborted) return;
     const controller = new AbortController();
     pendingSubmission.current = controller;
-    setSubmitting(true);
-    setUploading(true);
+    setIsSubmitting(true);
+    setIsUploading(true);
     showFeedback('form', { message: t('states.uploading'), kind: 'loading' });
     try {
       const uploadedImages = await uploadBuildingSubmissionImageDrafts(
@@ -377,7 +382,7 @@ export function useBuildingSubmissionForm() {
       )
         throw new Error('invalid_response');
       historyRequest.current++;
-      setLoadingSubmissions(false);
+      setIsLoadingSubmissions(false);
       setSubmissions((current) => {
         const next = [
           result.submission,
@@ -401,8 +406,8 @@ export function useBuildingSubmissionForm() {
     } finally {
       if (pendingSubmission.current === controller) pendingSubmission.current = null;
       if (!controller.signal.aborted) {
-        setUploading(false);
-        setSubmitting(false);
+        setIsUploading(false);
+        setIsSubmitting(false);
       }
     }
   };
@@ -439,12 +444,12 @@ export function useBuildingSubmissionForm() {
     feedback,
     account,
     submissions,
-    loadingSubmissions,
-    submitting,
-    uploading,
+    isLoadingSubmissions,
+    isSubmitting,
+    isUploading,
     playerInput,
     setPlayerInput,
-    resolvingPlayer,
+    isResolvingPlayer,
     tags,
     setTags,
     tagDraft,

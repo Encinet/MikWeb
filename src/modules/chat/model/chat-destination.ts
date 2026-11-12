@@ -1,3 +1,4 @@
+import { isRecord } from '@/shared/lib/is-record';
 export type ChatDestination =
   | { channel: 'public' | 'staff' }
   | { channel: 'private'; targetUuid: string; name: string };
@@ -6,8 +7,8 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /** Normalize untrusted notification destinations without pulling message parsers into the worker. */
 export function readChatDestination(value: unknown): ChatDestination | null {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const data = value as Record<string, unknown>;
+  if (!isRecord(value)) return null;
+  const data = value;
   if (data.channel === 'public' || data.channel === 'staff') return { channel: data.channel };
   if (
     data.channel !== 'private' ||

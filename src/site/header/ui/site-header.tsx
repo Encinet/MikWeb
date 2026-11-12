@@ -28,7 +28,7 @@ export default function SiteHeader() {
     playerCount,
     isOnline,
     isLoading: isLoadingPlayers,
-    networkError,
+    hasNetworkError,
   } = usePlayerStatus();
   const [isScrolled, setIsScrolled] = useState(false);
   const [navbarScrollProgress, setNavbarScrollProgress] = useState(0);
@@ -242,7 +242,7 @@ export default function SiteHeader() {
                 localeTarget={localeTarget}
                 localeTooltip={localeChoice.name}
                 mounted={mounted}
-                networkError={networkError}
+                hasNetworkError={hasNetworkError}
                 onLocaleSwitch={switchLocale}
                 onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 onPlayerDropdownClose={closePlayerDropdown}

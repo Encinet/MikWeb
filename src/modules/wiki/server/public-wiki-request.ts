@@ -1,6 +1,6 @@
 import 'server-only';
 
-import type { WikiSectionPayload } from '@/modules/wiki/model/wiki-section-types';
+import type { WikiSectionPayload } from '@/modules/wiki/model/wiki-content-types';
 import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 

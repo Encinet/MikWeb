@@ -8,7 +8,7 @@ import {
 } from '@/modules/auth/lib/auth-navigation-hint';
 import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
-import { isAuthMeResponse } from '@/modules/auth/model/auth-types';
+import { isAuthMeResponse } from '@/modules/auth/model/auth-validation';
 import { clearFetchValidatedJsonBrowserCache } from '@/shared/api/fetch-validated-json';
 import {
   announceAccountChange,

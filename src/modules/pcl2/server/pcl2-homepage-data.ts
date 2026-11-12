@@ -1,15 +1,15 @@
 import { getMessages } from 'next-intl/server';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
-import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
+import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-validation';
 import type { BanItem } from '@/modules/ban/model/ban-types';
-import { isBanItemArray } from '@/modules/ban/model/ban-types';
+import { isBanItemArray } from '@/modules/ban/model/ban-validation';
 import type { Building } from '@/modules/building/model/building-types';
-import { isBuildingArray } from '@/modules/building/model/building-types';
+import { isBuildingArray } from '@/modules/building/model/building-validation';
 import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
-import type { Pcl2HomepageData } from '@/modules/pcl2/lib/pcl2-homepage-xml';
 import { getPcl2TimeZoneFromUrl } from '@/modules/pcl2/lib/pcl2-time-zone';
-import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
-import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
+import type { Pcl2HomepageData } from '@/modules/pcl2/model/pcl2-homepage';
+import { isPlayerStatusResponse, toPlayerStatus } from '@/modules/player/lib/player-status-api';
+import type { PlayerStatus } from '@/modules/player/model/player-types';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { MINECRAFT_SERVER_ADDRESS } from '@/shared/config/site-config';
@@ -21,10 +21,10 @@ interface Pcl2HomepageApiData {
   bans: BanItem[] | null;
   buildingCount: number | null;
   buildings: Building[] | null;
-  onlinePlayers: PlayerOnlinePayload;
+  onlinePlayers: PlayerStatus;
 }
 
-const FALLBACK_ONLINE_PLAYERS: PlayerOnlinePayload = {
+const FALLBACK_ONLINE_PLAYERS: PlayerStatus = {
   online: -1,
   players: [],
 };
@@ -57,7 +57,7 @@ async function loadJson<TData>(
 
 async function loadPcl2HomepageApiData(): Promise<Pcl2HomepageApiData> {
   const [onlinePlayers, announcements, buildings, bans] = await Promise.all([
-    loadJson('/players', isPlayerOnlinePayload, 'Failed to load online players'),
+    loadJson('/players', isPlayerStatusResponse, 'Failed to load online players'),
     loadJson('/announcements', isAnnouncementItemArray, 'Failed to load announcements'),
     loadJson('/buildings', isBuildingArray, 'Failed to load buildings'),
     loadJson('/bans', isBanItemArray, 'Failed to load bans'),
@@ -65,10 +65,10 @@ async function loadPcl2HomepageApiData(): Promise<Pcl2HomepageApiData> {
 
   return {
     announcements: announcements ?? [],
-    bans: bans as BanItem[] | null,
+    bans,
     buildingCount: buildings?.length ?? null,
-    buildings: buildings as Building[] | null,
-    onlinePlayers: onlinePlayers ?? FALLBACK_ONLINE_PLAYERS,
+    buildings,
+    onlinePlayers: onlinePlayers ? toPlayerStatus(onlinePlayers) : FALLBACK_ONLINE_PLAYERS,
   };
 }
 

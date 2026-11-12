@@ -3,6 +3,7 @@
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey, readChatDestination } from '@/modules/chat/model/chat-destination';
 import { SITE_NOTIFICATION_ICON_PATH } from '@/shared/config/site-config';
+import { isRecord } from '@/shared/lib/is-record';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -33,9 +34,6 @@ type NotificationRequest =
       view: string;
     });
 
-function record(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 function isUuid(value: unknown): value is string {
   return typeof value === 'string' && uuid.test(value);
 }
@@ -51,7 +49,7 @@ function text(value: unknown, max: number, min = 0): value is string {
 }
 
 function readRequest(value: unknown): NotificationRequest | null {
-  if (!record(value)) return null;
+  if (!isRecord(value)) return null;
   if (value.type === 'account') {
     return (value.owner === null || isUuid(value.owner)) && typeof value.staff === 'boolean'
       ? { type: 'account', owner: value.owner, staff: value.staff }
@@ -96,7 +94,7 @@ function readRequest(value: unknown): NotificationRequest | null {
 }
 
 function readNotificationData(value: unknown): NotificationData | null {
-  if (!record(value) || !isUuid(value.owner) || !text(value.url, 32) || !chatPath.test(value.url))
+  if (!isRecord(value) || !isUuid(value.owner) || !text(value.url, 32) || !chatPath.test(value.url))
     return null;
   const destination = readChatDestination(value.destination);
   if (!destination || destinationKey(destination) !== value.conversation) return null;

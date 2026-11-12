@@ -1,3 +1,4 @@
+import { isRecord } from '@/shared/lib/is-record';
 /** QQ verifies the current 30-second step and the immediately preceding step. */
 export const JOIN_CODE_PERIOD_SECONDS = 30;
 export const MAX_JOIN_CODE_LIFETIME_MS = JOIN_CODE_PERIOD_SECONDS * 2 * 1000;
@@ -17,8 +18,8 @@ export type JoinCodeError =
   | 'code_expired';
 
 export function isJoinCode(value: unknown): value is JoinCode {
-  if (!value || typeof value !== 'object') return false;
-  const code = value as Record<string, unknown>;
+  if (!isRecord(value)) return false;
+  const code = value;
   return (
     typeof code.code === 'string' &&
     /^\d{6}$/.test(code.code) &&

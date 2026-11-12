@@ -4,7 +4,7 @@ import { act } from 'react';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { loadCommunityNotices } from '@/modules/community/lib/load-community-notices';
-import type { CommunityNotice } from '@/modules/community/model/board-types';
+import type { CommunityNotice } from '@/modules/community/model/community-notice-types';
 import { loadMapWorlds } from '@/modules/map/lib/load-map-worlds';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { OWNER } from '../chat/fixtures';

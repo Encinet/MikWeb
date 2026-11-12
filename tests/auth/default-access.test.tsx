@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { act } from 'react';
+import { isMemberRole, isStaffRole } from '@/modules/auth/model/auth-access';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import type { AuthAccount, AuthSession } from '@/modules/auth/model/auth-types';
-import {
-  isAccountSecurityResponse,
-  isAuthMeResponse,
-  isMemberRole,
-  isStaffRole,
-} from '@/modules/auth/model/auth-types';
+import { isAccountSecurityResponse, isAuthMeResponse } from '@/modules/auth/model/auth-validation';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { OWNER } from '../chat/fixtures';
 import { createBrowserEnvironment } from '../support/browser-environment';

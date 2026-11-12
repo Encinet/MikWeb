@@ -9,7 +9,7 @@ import {
   getLinkedCommunityNoticeId,
 } from '@/modules/community/lib/community-notices';
 import { loadCommunityNotices } from '@/modules/community/lib/load-community-notices';
-import type { CommunityNotice } from '@/modules/community/model/board-types';
+import type { CommunityNotice } from '@/modules/community/model/community-notice-types';
 import { CommunityNoticeEntry } from '@/modules/community/ui/community-notice-entry';
 import { Link } from '@/shared/i18n/navigation';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';

@@ -1,4 +1,4 @@
-import type { CommunityNotice } from '@/modules/community/model/board-types';
+import type { CommunityNotice } from '@/modules/community/model/community-notice-types';
 
 export const COMMUNITY_PAGE_SIZE = 12;
 

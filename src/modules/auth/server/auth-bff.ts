@@ -1,6 +1,8 @@
 import 'server-only';
+
 import { cookies } from 'next/headers';
 import { DATA_API_ORIGIN } from '@/shared/config/service-config';
+import { isRecord } from '@/shared/lib/is-record';
 import {
   RequestBodyLimitError,
   readLimitedRequestBody,
@@ -210,10 +212,10 @@ async function readJsonObject(request: Request): Promise<Record<string, unknown>
   } catch {
     throw new AuthRequestError('invalid_json_body', 400);
   }
-  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+  if (!isRecord(body)) {
     throw new AuthRequestError('body_must_be_object', 400);
   }
-  return body as Record<string, unknown>;
+  return body;
 }
 
 function isAllowedRoute(kind: AuthPathKind, path: string, method: string): boolean {

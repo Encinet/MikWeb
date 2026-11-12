@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { isBuilding } from '@/modules/building/model/building-types';
+import { isBuilding } from '@/modules/building/model/building-validation';
 import { buildBuildingSubmissionPayload } from '@/modules/building-submission/lib/building-submission-payload';
 import { createInitialBuildingSubmissionForm } from '@/modules/building-submission/model/building-submission-form';
 import {
   isBuildingSubmissionCreateResponse,
   isBuildingSubmissionListResponse,
-} from '@/modules/building-submission/model/building-submission-types';
+} from '@/modules/building-submission/model/building-submission-validation';
 
 test('submission payloads remain separate from server-assigned building identities', () => {
   const builder = {

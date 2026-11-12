@@ -1,11 +1,11 @@
 import { UnsupportedChatHistoryError } from '@/modules/chat/model/chat-history-compatibility';
 import { chatMessageSchema } from '@/modules/chat/model/chat-protocol';
+import { isRecord } from '@/shared/lib/is-record';
 
 /** One-time storage conversion; live traffic only accepts the current protocol. */
 export function upgradeChatHistoryMessage(value: unknown) {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
-    throw new UnsupportedChatHistoryError();
-  const record = value as Record<string, unknown>;
+  if (!isRecord(value)) throw new UnsupportedChatHistoryError();
+  const record = value;
   if (record.kind !== 'player') {
     const parsed = chatMessageSchema.safeParse(record);
     if (!parsed.success) throw new UnsupportedChatHistoryError();

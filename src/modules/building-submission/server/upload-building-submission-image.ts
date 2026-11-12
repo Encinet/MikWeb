@@ -3,12 +3,13 @@ import 'server-only';
 import type { OutputInfo } from 'sharp';
 import sharp from 'sharp';
 import { callImageUploadService } from '@/modules/auth/server/auth-bff';
+import { BUILDING_SUBMISSION_IMAGE_LIMITS } from '@/modules/building-submission/model/building-submission-limits';
 import {
   RequestBodyLimitError,
   readLimitedRequestBody,
 } from '@/shared/server/limited-request-body';
 
-const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = BUILDING_SUBMISSION_IMAGE_LIMITS.maxBytes;
 const MAX_MULTIPART_BYTES = MAX_UPLOAD_BYTES + 16 * 1024;
 let activeUploads = 0;
 
@@ -42,23 +43,26 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     }
     let decoded: { data: Buffer; info: OutputInfo };
     try {
-      const decoder = sharp(input, { failOn: 'warning', limitInputPixels: 1920 * 1920 });
+      const decoder = sharp(input, {
+        failOn: 'warning',
+        limitInputPixels: BUILDING_SUBMISSION_IMAGE_LIMITS.maxDimension ** 2,
+      });
       const metadata = await decoder.metadata();
       if (
         metadata.format !== 'webp' ||
         (metadata.pages ?? 1) !== 1 ||
         !metadata.width ||
         !metadata.height ||
-        metadata.width < 960 ||
-        metadata.height < 540 ||
-        metadata.width > 1920 ||
-        metadata.height > 1920
+        metadata.width < BUILDING_SUBMISSION_IMAGE_LIMITS.minWidth ||
+        metadata.height < BUILDING_SUBMISSION_IMAGE_LIMITS.minHeight ||
+        metadata.width > BUILDING_SUBMISSION_IMAGE_LIMITS.maxDimension ||
+        metadata.height > BUILDING_SUBMISSION_IMAGE_LIMITS.maxDimension
       ) {
         return uploadError('invalid_image_dimensions', 422);
       }
       // Decode the entire image and strip metadata before it reaches the hosting service.
       decoded = await decoder
-        .webp({ quality: 86, effort: 3 })
+        .webp({ quality: BUILDING_SUBMISSION_IMAGE_LIMITS.webpQuality, effort: 3 })
         .toBuffer({ resolveWithObject: true });
     } catch {
       return uploadError('invalid_image', 422);

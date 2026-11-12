@@ -4,17 +4,18 @@ import { ImagePlus, Minus, Plus, Send, Trash2, UserPlus, X } from 'lucide-react'
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
-import { isMemberRole } from '@/modules/auth/model/auth-types';
+import { isMemberRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
-import type { BuildType } from '@/modules/building/model/building-types';
-import { getLocalizedText } from '@/modules/building/model/building-types';
+import { BUILDING_TYPES } from '@/modules/building/model/building-types';
 import {
-  formatPercent,
+  formatBuilderContribution,
+  normalizeBuilderWeight,
+} from '@/modules/building-submission/model/building-submission-form';
+import {
   MAX_BUILDING_SUBMISSION_IMAGES,
   MAX_PENDING_BUILDING_SUBMISSIONS,
-  safeBuilderWeight,
-} from '@/modules/building-submission/model/building-submission-form';
+} from '@/modules/building-submission/model/building-submission-limits';
 import { useBuildingSubmissionForm } from '@/modules/building-submission/model/use-building-submission-form';
 import {
   Section,
@@ -23,6 +24,7 @@ import {
   TextField,
 } from '@/modules/building-submission/ui/building-submission-form-controls';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { getLocalizedText } from '@/shared/i18n/localized-text';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
 import { InlineFeedback } from '@/shared/ui/feedback/async-state';
 import { ProgressRing } from '@/shared/ui/feedback/loading-state';
@@ -54,12 +56,12 @@ function BuildingSubmissionForm() {
     feedback,
     account,
     submissions,
-    loadingSubmissions,
-    submitting,
-    uploading,
+    isLoadingSubmissions,
+    isSubmitting,
+    isUploading,
     playerInput,
     setPlayerInput,
-    resolvingPlayer,
+    isResolvingPlayer,
     tags,
     setTags,
     tagDraft,
@@ -138,7 +140,7 @@ function BuildingSubmissionForm() {
               <div className="building-submission-field building-submission-field--half">
                 <span className="building-submission-field-label">{t('fields.buildType')}</span>
                 <div className="building-submission-segments">
-                  {(['original', 'derivative', 'replica'] as BuildType[]).map((type) => (
+                  {BUILDING_TYPES.map((type) => (
                     <button
                       className={form.buildType === type ? 'is-active' : ''}
                       key={type}
@@ -204,7 +206,7 @@ function BuildingSubmissionForm() {
                   onChange={(event) => setPlayerInput(event.target.value)}
                   onKeyDown={handlePlayerKeyDown}
                 />
-                {resolvingPlayer ? <ProgressRing size="sm" /> : null}
+                {isResolvingPlayer ? <ProgressRing size="sm" /> : null}
               </div>
               <div className="building-submission-builder-list">
                 {builders.map((builder, index) => (
@@ -219,13 +221,13 @@ function BuildingSubmissionForm() {
                       <legend className="sr-only">{t('fields.weight')}</legend>
                       <button
                         aria-label={t('actions.decreaseWeight')}
-                        disabled={safeBuilderWeight(builder.weight) <= 1}
+                        disabled={normalizeBuilderWeight(builder.weight) <= 1}
                         type="button"
                         onClick={() => adjustBuilderWeight(builder.uuid, -1)}
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
-                      <strong>{safeBuilderWeight(builder.weight)}</strong>
+                      <strong>{normalizeBuilderWeight(builder.weight)}</strong>
                       <button
                         aria-label={t('actions.increaseWeight')}
                         type="button"
@@ -235,7 +237,10 @@ function BuildingSubmissionForm() {
                       </button>
                     </fieldset>
                     <span className="building-submission-builder-percent">
-                      {formatPercent(safeBuilderWeight(builder.weight), totalBuilderWeight)}
+                      {formatBuilderContribution(
+                        normalizeBuilderWeight(builder.weight),
+                        totalBuilderWeight,
+                      )}
                     </span>
                     {!builder.locked ? (
                       <button
@@ -262,7 +267,7 @@ function BuildingSubmissionForm() {
                         key={builder.uuid}
                         style={{
                           ...builderStyle(index),
-                          flexGrow: safeBuilderWeight(builder.weight),
+                          flexGrow: normalizeBuilderWeight(builder.weight),
                         }}
                       />
                     ))}
@@ -291,7 +296,9 @@ function BuildingSubmissionForm() {
                 <input
                   accept="image/png,image/jpeg,image/webp"
                   disabled={
-                    submitting || uploading || draftImages.length >= MAX_BUILDING_SUBMISSION_IMAGES
+                    isSubmitting ||
+                    isUploading ||
+                    draftImages.length >= MAX_BUILDING_SUBMISSION_IMAGES
                   }
                   multiple
                   type="file"
@@ -408,7 +415,7 @@ function BuildingSubmissionForm() {
                 disabled={!canSubmit}
                 type="submit"
               >
-                {submitting ? <ProgressRing size="sm" /> : <Send className="h-4 w-4" />}
+                {isSubmitting ? <ProgressRing size="sm" /> : <Send className="h-4 w-4" />}
                 {t('actions.submit')}
               </button>
             </div>
@@ -422,7 +429,7 @@ function BuildingSubmissionForm() {
                 type="button"
                 onClick={() => void loadSubmissions()}
               >
-                {loadingSubmissions ? <ProgressRing size="sm" /> : null}
+                {isLoadingSubmissions ? <ProgressRing size="sm" /> : null}
                 {commonT('actions.refresh')}
               </button>
             </div>

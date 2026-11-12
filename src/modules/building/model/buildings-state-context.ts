@@ -1,5 +1,14 @@
 import { createContext } from 'react';
 
-import type { BuildingsContextValue } from '@/modules/building/model/building-types';
+import type { Building } from '@/modules/building/model/building-types';
 
-export const BuildingsStateContext = createContext<BuildingsContextValue | null>(null);
+export interface BuildingsState {
+  buildings: Building[];
+  buildingCount: number;
+  isLoading: boolean;
+  error: string | null;
+  fetchBuildings: (options?: { force?: boolean }) => Promise<void>;
+  lastUpdatedAt: number | null;
+}
+
+export const BuildingsStateContext = createContext<BuildingsState | null>(null);

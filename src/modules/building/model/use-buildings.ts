@@ -2,11 +2,11 @@
 
 import { useContext } from 'react';
 
-import type { BuildingsContextValue } from '@/modules/building/model/building-types';
+import type { BuildingsState } from '@/modules/building/model/buildings-state-context';
 
 import { BuildingsStateContext } from './buildings-state-context';
 
-export function useBuildings(): BuildingsContextValue {
+export function useBuildings(): BuildingsState {
   const context = useContext(BuildingsStateContext);
   if (!context) throw new Error('useBuildings requires a BuildingsProvider');
   return context;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BanItem } from '@/modules/ban/model/ban-types';
-import { isBanItemArray } from '@/modules/ban/model/ban-types';
+import { isBanItemArray } from '@/modules/ban/model/ban-validation';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 

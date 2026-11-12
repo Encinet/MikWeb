@@ -1,7 +1,7 @@
-import type { Building, BuildType } from '@/modules/building/model/building-types';
-import { getLocalizedText } from '@/modules/building/model/building-types';
+import type { Building, BuildingType } from '@/modules/building/model/building-types';
+import { getLocalizedText } from '@/shared/i18n/localized-text';
 
-export type BuildingFilterId = 'all' | BuildType;
+export type BuildingFilterId = 'all' | BuildingType;
 export type BuildingSortKey = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc' | 'random';
 
 export const BUILDINGS_PAGE_SIZE = 12;

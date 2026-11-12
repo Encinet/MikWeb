@@ -1,7 +1,5 @@
-import type {
-  SearchableWikiBlock,
-  WikiSectionPayload,
-} from '@/modules/wiki/model/wiki-section-types';
+import type { WikiSectionPayload } from '@/modules/wiki/model/wiki-content-types';
+import type { SearchableWikiBlock } from '@/modules/wiki/model/wiki-search-types';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 interface WikiResources {

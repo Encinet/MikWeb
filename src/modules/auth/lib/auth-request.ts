@@ -1,3 +1,4 @@
+import { isRecord } from '@/shared/lib/is-record';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 export class AuthRequestError extends Error {
@@ -28,15 +29,14 @@ export async function authRequest<T>(
         cache: 'no-store',
         signal,
       });
-      const payload = await response.json().catch(() => null);
+      const payload: unknown = await response.json().catch(() => null);
       if (!response.ok) {
         throw new AuthRequestError(
-          typeof payload?.error === 'string' ? payload.error : 'request_failed',
+          isRecord(payload) && typeof payload.error === 'string' ? payload.error : 'request_failed',
           response.status,
         );
       }
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload))
-        throw new AuthRequestError('invalid_response', 502);
+      if (!isRecord(payload)) throw new AuthRequestError('invalid_response', 502);
       return payload as T;
     },
     options.signal,

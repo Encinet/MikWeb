@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { isStaffRole } from '@/modules/auth/model/auth-types';
+import { isStaffRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { hasStoredChatHistory } from '@/modules/chat/lib/chat-history-presence';
 

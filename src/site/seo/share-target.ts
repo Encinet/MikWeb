@@ -1,4 +1,4 @@
-import { isBuildingId } from '@/modules/building/model/building-types';
+import { isBuildingId } from '@/modules/building/model/building-validation';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 import type { SitePage } from '@/site/seo/site-pages';

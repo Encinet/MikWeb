@@ -1,5 +1,5 @@
 import type { Building } from '@/modules/building/model/building-types';
-import { getLocalizedText } from '@/modules/building/model/building-types';
+import { getLocalizedText } from '@/shared/i18n/localized-text';
 
 export function getBuildingName(building: Building, locale: string): string {
   return getLocalizedText(building.name, locale);

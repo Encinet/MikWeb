@@ -1,5 +1,3 @@
-import { SITE_URL } from '@/shared/config/site-config';
-
 function firstHeaderValue(value: string | null): string | null {
   return value?.split(',')[0]?.trim() || null;
 }
@@ -23,10 +21,6 @@ export function getRequestOrigin(requestHeaders: Headers): string | null {
 
 export function getRequestOriginFromRequest(request: Request): string {
   return getRequestOrigin(request.headers) ?? new URL(request.url).origin;
-}
-
-export function getSiteOriginFromHeaders(requestHeaders: Headers): string {
-  return getRequestOrigin(requestHeaders) ?? SITE_URL;
 }
 
 export function absoluteUrl(pathname: string, origin: string): string {

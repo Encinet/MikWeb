@@ -1,4 +1,4 @@
-import type { EchoQuote } from './echo-quote-types';
+import type { EchoQuote } from '@/modules/pcl2/model/echo-quote';
 import rawQuotes from './echo-quotes.json';
 
-export const echoQuotes: EchoQuote[] = rawQuotes as EchoQuote[];
+export const echoQuotes: EchoQuote[] = rawQuotes;

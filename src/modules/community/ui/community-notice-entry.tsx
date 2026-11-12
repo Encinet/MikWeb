@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 import { useMemo } from 'react';
 import { getCommunityNoticeAnchor } from '@/modules/community/lib/community-notices';
-import type { CommunityNotice } from '@/modules/community/model/board-types';
+import type { CommunityNotice } from '@/modules/community/model/community-notice-types';
 
 interface CommunityNoticeEntryProps {
   entry: CommunityNotice;

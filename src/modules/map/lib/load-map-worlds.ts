@@ -4,7 +4,7 @@ import { mapWorldSchema } from '@/modules/map/model/map-world';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 const responseSchema = z.object({ worlds: z.array(mapWorldSchema).max(256) });
-const CACHE_MAX_AGE = 300_000;
+const CACHE_MAX_AGE_MS = 300_000;
 let cached: { worlds: MapWorld[]; expiresAt: number } | null = null;
 let request: Promise<MapWorld[]> | null = null;
 
@@ -15,7 +15,7 @@ export function loadMapWorlds() {
     const response = await fetch('/api/map/worlds', { signal });
     if (!response.ok) throw new Error('map_unavailable');
     const { worlds } = responseSchema.parse(await response.json());
-    cached = { worlds, expiresAt: Date.now() + CACHE_MAX_AGE };
+    cached = { worlds, expiresAt: Date.now() + CACHE_MAX_AGE_MS };
     return worlds;
   }).finally(() => {
     request = null;

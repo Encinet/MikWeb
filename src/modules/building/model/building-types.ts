@@ -1,23 +1,18 @@
 import type { PlayerIdentity } from '@/modules/player/model/player-types';
-import { isPlayerIdentity } from '@/modules/player/model/player-types';
+import type { LocalizedText } from '@/shared/i18n/localized-text';
 
-const BUILDING_ID_RE = /^[0-9a-f]{32}$/i;
-
-export type BuildType = 'original' | 'derivative' | 'replica';
+export const BUILDING_TYPES = ['original', 'derivative', 'replica'] as const;
+export type BuildingType = (typeof BUILDING_TYPES)[number];
 
 export interface Builder extends PlayerIdentity {
   weight: number;
 }
 
-export interface Coordinates {
+export interface BuildingCoordinates {
   world: string;
   x: number;
   y: number;
   z: number;
-}
-
-export interface LocalizedText {
-  [locale: string]: string;
 }
 
 export interface BuildingSource {
@@ -29,9 +24,9 @@ export interface BuildingSource {
 export interface BuildingInput {
   name: LocalizedText;
   description: LocalizedText;
-  coordinates: Coordinates;
+  coordinates: BuildingCoordinates;
   builders: Builder[];
-  buildType: BuildType;
+  buildType: BuildingType;
   images: string[];
   buildDate: string;
   tags?: LocalizedText[];
@@ -42,115 +37,8 @@ export interface Building extends BuildingInput {
   readonly id: string;
 }
 
-export interface BuildingsContextValue {
-  buildings: Building[];
-  buildingCount: number;
-  isLoading: boolean;
-  error: string | null;
-  fetchBuildings: (options?: { force?: boolean }) => Promise<void>;
-  lastUpdatedAt: number | null;
-}
-
 export interface BuildingCatalogSnapshot {
   buildings: Building[];
   error: string | null;
   updatedAt: number | null;
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
-}
-
-export function isLocalizedText(value: unknown): value is LocalizedText {
-  return isObjectRecord(value) && Object.values(value).every((item) => typeof item === 'string');
-}
-
-export function isBuilder(value: unknown): value is Builder {
-  return isPlayerIdentity(value) && isObjectRecord(value) && typeof value.weight === 'number';
-}
-
-export function isCoordinates(value: unknown): value is Coordinates {
-  return (
-    isObjectRecord(value) &&
-    isWorldName(value.world) &&
-    typeof value.x === 'number' &&
-    Number.isFinite(value.x) &&
-    typeof value.y === 'number' &&
-    Number.isFinite(value.y) &&
-    typeof value.z === 'number' &&
-    Number.isFinite(value.z)
-  );
-}
-
-export function isWorldName(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.trim().length > 0 &&
-    value.length <= 128 &&
-    [...value].every((character) => {
-      const code = character.codePointAt(0) ?? 0;
-      return code > 31 && (code < 127 || code > 159);
-    })
-  );
-}
-
-export function isBuildingSource(value: unknown): value is BuildingSource {
-  if (value === undefined || value === null) {
-    return true;
-  }
-
-  if (!isObjectRecord(value)) {
-    return false;
-  }
-
-  return (
-    (value.originalAuthor === undefined || typeof value.originalAuthor === 'string') &&
-    (value.originalLink === undefined || typeof value.originalLink === 'string') &&
-    (value.notes === undefined || isLocalizedText(value.notes))
-  );
-}
-
-export function isBuildingInput(value: unknown): value is BuildingInput {
-  return (
-    isObjectRecord(value) &&
-    isLocalizedText(value.name) &&
-    isLocalizedText(value.description) &&
-    isCoordinates(value.coordinates) &&
-    Array.isArray(value.builders) &&
-    value.builders.every(isBuilder) &&
-    (value.buildType === 'original' ||
-      value.buildType === 'derivative' ||
-      value.buildType === 'replica') &&
-    isStringArray(value.images) &&
-    typeof value.buildDate === 'string' &&
-    (value.tags === undefined ||
-      (Array.isArray(value.tags) && value.tags.every(isLocalizedText))) &&
-    isBuildingSource(value.source)
-  );
-}
-
-export function isBuilding(value: unknown): value is Building {
-  return isObjectRecord(value) && isBuildingId(value.id) && isBuildingInput(value);
-}
-
-export function isBuildingId(value: unknown): value is string {
-  return typeof value === 'string' && BUILDING_ID_RE.test(value);
-}
-
-export function isBuildingArray(value: unknown): value is Building[] {
-  return Array.isArray(value) && value.every(isBuilding);
-}
-
-export function getLocalizedText(content: LocalizedText | undefined, locale: string): string {
-  return content?.[locale] || content?.en || content?.['zh-CN'] || '';
-}
-
-export function sortBuildersByWeight(builders: Builder[]): Builder[] {
-  return [...builders].sort(
-    (leftBuilder, rightBuilder) => rightBuilder.weight - leftBuilder.weight,
-  );
 }

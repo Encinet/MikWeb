@@ -1,6 +1,7 @@
 import 'server-only';
 
-import { isAuthMeResponse, isStaffRole } from '@/modules/auth/model/auth-types';
+import { isStaffRole } from '@/modules/auth/model/auth-access';
+import { isAuthMeResponse } from '@/modules/auth/model/auth-validation';
 import { proxyAuthRequest } from '@/modules/auth/server/auth-bff';
 import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 import { isRoutingLocale } from '@/shared/i18n/routing';

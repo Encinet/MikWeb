@@ -1,7 +1,7 @@
 export function registerChatNotificationWorker(): Promise<ServiceWorkerRegistration> {
   return navigator.serviceWorker.register(
     new URL(
-      /* webpackChunkName: "chat-notifications-worker" */ './chat-notifications.worker.ts',
+      /* webpackChunkName: "chat-notifications-worker" */ '../worker/chat-notifications.worker.ts',
       import.meta.url,
     ),
     { scope: '/', updateViaCache: 'none' },

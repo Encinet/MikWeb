@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import { isStaffRole } from '@/modules/auth/model/auth-types';
+import { isStaffRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import type { HistoryLease } from '@/modules/chat/lib/chat-history';
 import {

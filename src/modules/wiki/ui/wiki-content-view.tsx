@@ -13,13 +13,13 @@ import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import type { WikiNavigationPanel } from '@/modules/wiki/model/use-wiki-navigation-panel';
 import { useWikiPublicContent } from '@/modules/wiki/model/use-wiki-public-content';
 import { useWikiReading } from '@/modules/wiki/model/use-wiki-reading';
+import type { WikiSectionOutlineMap } from '@/modules/wiki/model/wiki-content-types';
+import type { SearchableWikiBlock } from '@/modules/wiki/model/wiki-search-types';
 import type {
-  SearchableWikiBlock,
   WikiSectionDefinition,
   WikiSectionGroupDefinition,
   WikiSectionId,
   WikiSectionOutlineItem,
-  WikiSectionOutlineMap,
 } from '@/modules/wiki/model/wiki-section-types';
 import { WikiMdx } from '@/modules/wiki/ui/wiki-mdx';
 import { WikiNavigation } from '@/modules/wiki/ui/wiki-navigation';

@@ -15,6 +15,11 @@
 
 - 路由负责装配，业务逻辑放在对应模块；读取密钥的模块使用 `server-only`。
 - 文件与目录使用 `kebab-case`，组件和类型使用 `PascalCase`，函数与变量使用 `camelCase`。
+- `model/*-types.ts` 保存领域数据结构和枚举值；输入校验放在 `*-validation.ts`，权限判断放在 `auth-access.ts`，Context 类型由对应的 `*-state-context.ts` 维护。不要让共享数据类型依赖 React 组件。
+- `model` 保存状态、Hook 和业务规则，`lib` 保存转换、请求和存储等实现，`server` 保存服务端实现，`ui` 保存组件与展示交互。`model`、`lib`、共享 Hook 不引用 `ui` 或 `server`；Biome 同时检查别名路径和相对路径。
+- 名称说明用途：布尔状态使用 `is`、`has`、`can` 等前缀；时间常量写明 `MS` 或 `SECONDS`，像素阈值写明 `PX`。嵌套回调使用 `building`、`builder`、`player` 等明确名称；坐标 `x/y/z`、标准算法参数等保留惯用写法。
+- 外部 API 的字段名在请求适配处保留，转入应用状态时使用 `camelCase`。解析 JSON 先使用 `unknown`，通过校验后读取字段；对象校验复用 `isRecord`，数组和空值不能当作数据对象。
+- 跨功能的通用概念归入 `shared`，例如 `shared/i18n/localized-text.ts`；业务限制由对应模块的 `*-limits.ts` 维护，浏览器与服务端复用同一份值。聊天通知的 Service Worker 入口放在 `chat/worker`。
 - 聊天连接和存储通过状态 Hook 衔接，UI 不直接创建连接或操作数据库。
 - 登录状态由 `AuthProvider` 统一管理；`verified` 表示服务端已经确认身份，`isLoading` 也可能只是后台刷新。刷新时保留已验证的内容，退出、降权和切换账号时清理私有内容。导航可使用有期限的显示标记提前恢复入口，但该标记只保存时间戳，不恢复账号或授予权限。
 - 删除功能时同步清理路由、样式、翻译和资源引用；注意 Next.js 约定文件也是入口。

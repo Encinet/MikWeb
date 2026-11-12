@@ -1,14 +1,23 @@
 import { createContext } from 'react';
 
-import type { PlayerContextValue } from '@/modules/player/model/player-types';
+import type { Player } from '@/modules/player/model/player-types';
 
-const defaultPlayerContextValue: PlayerContextValue = {
+export interface PlayerStatusState {
+  players: Player[];
+  playerCount: number;
+  peakPlayerCount: number | null;
+  isOnline: boolean;
+  isLoading: boolean;
+  hasNetworkError: boolean;
+}
+
+const defaultPlayerStatusState: PlayerStatusState = {
   players: [],
   playerCount: 0,
   peakPlayerCount: null,
   isOnline: true,
   isLoading: true,
-  networkError: false,
+  hasNetworkError: false,
 };
 
-export const PlayerStatusContext = createContext<PlayerContextValue>(defaultPlayerContextValue);
+export const PlayerStatusContext = createContext<PlayerStatusState>(defaultPlayerStatusState);

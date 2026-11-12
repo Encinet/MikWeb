@@ -1,12 +1,7 @@
-import type { BuildType } from '@/modules/building/model/building-types';
-import type { ResolvedPlayer } from '@/modules/building-submission/model/building-submission-types';
+import type { BuildingType } from '@/modules/building/model/building-types';
+import type { PlayerIdentity } from '@/modules/player/model/player-types';
 
-export const MAX_PENDING_BUILDING_SUBMISSIONS = 10;
-export const MAX_BUILDING_SUBMISSION_IMAGES = 15;
-export const MIN_BUILDING_SUBMISSION_IMAGE_WIDTH = 960;
-export const MIN_BUILDING_SUBMISSION_IMAGE_HEIGHT = 540;
-
-export interface BuilderDraft extends ResolvedPlayer {
+export interface BuilderDraft extends PlayerIdentity {
   weight: number;
   locked?: boolean;
 }
@@ -30,7 +25,7 @@ export interface BuildingSubmissionFormState {
   nameEn: string;
   descriptionZh: string;
   descriptionEn: string;
-  buildType: BuildType;
+  buildType: BuildingType;
   world: string;
   x: string;
   y: string;
@@ -75,23 +70,23 @@ export function ensureSelfBuilder(
   return [self, ...withoutSelf];
 }
 
-export function safeBuilderWeight(weight: number): number {
+export function normalizeBuilderWeight(weight: number): number {
   if (!Number.isFinite(weight)) return 1;
   return Math.max(1, Math.min(999, Math.round(weight)));
 }
 
-export function gcd(left: number, right: number): number {
-  let a = Math.abs(left);
-  let b = Math.abs(right);
-  while (b > 0) {
-    const next = a % b;
-    a = b;
-    b = next;
+export function greatestCommonDivisor(left: number, right: number): number {
+  let dividend = Math.abs(left);
+  let divisor = Math.abs(right);
+  while (divisor > 0) {
+    const remainder = dividend % divisor;
+    dividend = divisor;
+    divisor = remainder;
   }
-  return a;
+  return dividend;
 }
 
-export function formatPercent(weight: number, totalWeight: number): string {
+export function formatBuilderContribution(weight: number, totalWeight: number): string {
   if (totalWeight <= 0) return '0%';
   const percent = (weight / totalWeight) * 100;
   return `${percent >= 10 ? Math.round(percent) : percent.toFixed(1)}%`;

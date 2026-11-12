@@ -1,15 +1,12 @@
 import type { Messages } from 'next-intl';
 import { createTranslator } from 'next-intl';
-import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
-import type { BanItem } from '@/modules/ban/model/ban-types';
-import type { Building } from '@/modules/building/model/building-types';
-import { getLocalizedText, sortBuildersByWeight } from '@/modules/building/model/building-types';
-import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
-import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
+import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import { getPcl2HomepagePath } from '@/modules/pcl2/lib/pcl2-homepage-path';
 import { formatPcl2Time, withPcl2TimeZone } from '@/modules/pcl2/lib/pcl2-time-zone';
-import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { getEchoText } from '@/modules/pcl2/model/echo-quote';
+import type { Pcl2HomepageData } from '@/modules/pcl2/model/pcl2-homepage';
 import { SITE_TRANSLATION_VALUES } from '@/shared/config/site-config';
+import { getLocalizedText } from '@/shared/i18n/localized-text';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
 import type { XamlAttributeList, XamlNode } from './xaml-builder';
@@ -20,46 +17,36 @@ const MAX_PCL2_ANNOUNCEMENTS = 5;
 const MAX_PCL2_BUILDINGS = 6;
 const MAX_BUILDING_IMAGES = 3;
 
-export interface Pcl2HomepageData {
-  announcements: AnnouncementItem[];
-  bans: BanItem[] | null;
-  buildingCount: number | null;
-  buildings: Building[] | null;
-  buildingTypes: Messages['buildings']['types'];
-  description: string;
-  echoQuotes: EchoQuote[];
-  locale: AppLocale;
-  messages: Messages['pcl2']['homepage'];
-  onlinePlayers: PlayerOnlinePayload;
-  siteOrigin: string;
-  serverAddress: string;
-  displayAddress: string;
-  timeZone: string;
-}
-
 type HomepageTranslator = ReturnType<typeof createTranslator<Messages['pcl2']['homepage']>>;
 
-function hasAttr(attrs: XamlAttributeList, name: string): boolean {
-  return attrs.some(([n]) => n === name);
+function hasAttribute(attributes: XamlAttributeList, name: string): boolean {
+  return attributes.some(([attributeName]) => attributeName === name);
 }
 
-function withDefault(attrs: XamlAttributeList, name: string, value: string): XamlAttributeList {
-  return hasAttr(attrs, name) ? attrs : [attr(name, value), ...attrs];
+function withDefaultAttribute(
+  attributes: XamlAttributeList,
+  name: string,
+  value: string,
+): XamlAttributeList {
+  return hasAttribute(attributes, name) ? attributes : [attr(name, value), ...attributes];
 }
 
-function sp(attrs: XamlAttributeList = [], children: XamlNode[] = []): XamlNode {
-  return xaml('StackPanel', attrs, children);
+function stackPanel(attributes: XamlAttributeList = [], children: XamlNode[] = []): XamlNode {
+  return xaml('StackPanel', attributes, children);
 }
 
-function tb(text: string, attrs: XamlAttributeList = []): XamlNode {
-  return xaml('TextBlock', [attr('Text', text), ...withDefault(attrs, 'TextWrapping', 'Wrap')]);
+function textBlock(text: string, attributes: XamlAttributeList = []): XamlNode {
+  return xaml('TextBlock', [
+    attr('Text', text),
+    ...withDefaultAttribute(attributes, 'TextWrapping', 'Wrap'),
+  ]);
 }
 
-function btn(text: string, attrs: XamlAttributeList = []): XamlNode {
-  return xaml('local:MyButton', [attr('Text', text), ...attrs]);
+function button(text: string, attributes: XamlAttributeList = []): XamlNode {
+  return xaml('local:MyButton', [attr('Text', text), ...attributes]);
 }
 
-function li(title: string, info: string, url: string): XamlNode {
+function linkItem(title: string, info: string, url: string): XamlNode {
   return xaml('local:MyListItem', [
     attr('EventData', url),
     attr('EventType', '打开网页'),
@@ -73,17 +60,17 @@ function li(title: string, info: string, url: string): XamlNode {
 function card(
   title: string,
   children: XamlNode[],
-  opts: { isSwapped?: boolean; margin?: string } = {},
+  options: { isSwapped?: boolean; margin?: string } = {},
 ): XamlNode {
   return xaml(
     'local:MyCard',
     [
       attr('CanSwap', true),
-      attr('IsSwapped', opts.isSwapped),
-      attr('Margin', opts.margin ?? '0,0,0,15'),
+      attr('IsSwapped', options.isSwapped),
+      attr('Margin', options.margin ?? '0,0,0,15'),
       attr('Title', title),
     ],
-    [sp([attr('Margin', '25,40,23,15')], children)],
+    [stackPanel([attr('Margin', '25,40,23,15')], children)],
   );
 }
 
@@ -96,7 +83,7 @@ function innerCard(title: string, children: XamlNode[]): XamlNode {
       attr('Margin', '0,0,0,10'),
       attr('Title', title),
     ],
-    [sp([attr('Margin', '25,40,23,15')], children)],
+    [stackPanel([attr('Margin', '25,40,23,15')], children)],
   );
 }
 
@@ -119,32 +106,32 @@ function buildStatusCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNod
   return card(
     t('server.statusTitle', SITE_TRANSLATION_VALUES),
     [
-      sp(
+      stackPanel(
         [attr('Margin', '0,0,0,8'), attr('Orientation', 'Horizontal')],
         [
-          tb('●', [
+          textBlock('●', [
             attr('FontSize', 14),
             attr('Foreground', status.color),
             attr('Margin', '0,0,6,0'),
             attr('TextWrapping', null),
             attr('VerticalAlignment', 'Center'),
           ]),
-          tb(status.text, [
+          textBlock(status.text, [
             attr('FontSize', 16),
             attr('Foreground', status.color),
             attr('TextWrapping', null),
             attr('VerticalAlignment', 'Center'),
           ]),
-          tb(`   ${data.displayAddress}`, [
+          textBlock(`   ${data.displayAddress}`, [
             attr('FontSize', 13),
             attr('Foreground', '#888888'),
             attr('Margin', '8,0,0,0'),
             attr('TextWrapping', null),
             attr('VerticalAlignment', 'Center'),
           ]),
-          ...(data.onlinePlayers.peak_online != null
+          ...(data.onlinePlayers.peakOnline != null
             ? [
-                tb(`  ·  ${t('players.peak', { count: data.onlinePlayers.peak_online })}`, [
+                textBlock(`  ·  ${t('players.peak', { count: data.onlinePlayers.peakOnline })}`, [
                   attr('FontSize', 13),
                   attr('Foreground', '#888888'),
                   attr('Margin', '4,0,0,0'),
@@ -160,10 +147,10 @@ function buildStatusCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNod
         attr('Text', t('hint')),
         attr('Theme', 'Blue'),
       ]),
-      sp(
+      stackPanel(
         [attr('HorizontalAlignment', 'Center'), attr('Orientation', 'Horizontal')],
         [
-          btn(t('server.refreshButton'), [
+          button(t('server.refreshButton'), [
             attr('ColorType', 'Highlight'),
             attr('EventType', '刷新主页'),
             attr('Height', 36),
@@ -171,7 +158,7 @@ function buildStatusCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNod
             attr('Padding', '13,0,13,0'),
             attr('Width', 80),
           ]),
-          btn(t('server.joinButton'), [
+          button(t('server.joinButton'), [
             attr('ColorType', 'Highlight'),
             attr('EventData', `\\current|${data.serverAddress}`),
             attr('EventType', '启动游戏'),
@@ -215,7 +202,7 @@ function buildStatusCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNod
           ),
         ],
       ),
-      tb(data.description, [
+      textBlock(data.description, [
         attr('FontSize', 12),
         attr('Foreground', '#CCAA55'),
         attr('Margin', '0,14,0,0'),
@@ -230,17 +217,17 @@ function buildPlayerCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNod
   const players = data.onlinePlayers.players ?? [];
   if (players.length === 0) {
     const text = data.onlinePlayers.online > 0 ? t('players.noDetails') : t('players.empty');
-    return card(t('players.title'), [tb(text)], { isSwapped: false });
+    return card(t('players.title'), [textBlock(text)], { isSwapped: false });
   }
   const visible = players.slice(0, MAX_PCL2_PLAYERS);
   return card(
     `${t('players.title')} (${players.length})`,
-    visible.map((p) =>
-      sp(
+    visible.map((player) =>
+      stackPanel(
         [attr('Margin', '0,0,0,4')],
         [
-          tb(p.name, [attr('FontWeight', 'Bold'), attr('TextWrapping', null)]),
-          tb(`${t('players.joinedAt')} ${formatPcl2Time(p.joined_at, data.timeZone)}`, [
+          textBlock(player.name, [attr('FontWeight', 'Bold'), attr('TextWrapping', null)]),
+          textBlock(`${t('players.joinedAt')} ${formatPcl2Time(player.joinedAt, data.timeZone)}`, [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
             attr('Margin', '0,2,0,0'),
@@ -255,15 +242,16 @@ function buildPlayerCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNod
 
 function buildAnnouncementCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
   const items = data.announcements.slice(0, MAX_PCL2_ANNOUNCEMENTS);
-  if (items.length === 0) return card(t('announcements.title'), [tb(t('announcements.empty'))]);
+  if (items.length === 0)
+    return card(t('announcements.title'), [textBlock(t('announcements.empty'))]);
   return card(
     `${t('announcements.title')} (${items.length})`,
-    items.map((a, i) =>
-      sp(
-        [attr('Margin', `0,${i > 0 ? '14' : '0'},0,0`)],
+    items.map((announcement, index) =>
+      stackPanel(
+        [attr('Margin', `0,${index > 0 ? '14' : '0'},0,0`)],
         [
-          tb(a.content),
-          tb(formatPcl2Time(a.timestamp, data.timeZone), [
+          textBlock(announcement.content),
+          textBlock(formatPcl2Time(announcement.timestamp, data.timeZone), [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
             attr('Margin', '0,4,0,0'),
@@ -276,27 +264,28 @@ function buildAnnouncementCard(data: Pcl2HomepageData, t: HomepageTranslator): X
 }
 
 function buildBanCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
-  if (!data.bans || data.bans.length === 0) return card(t('bans.title'), [tb(t('bans.empty'))]);
+  if (!data.bans || data.bans.length === 0)
+    return card(t('bans.title'), [textBlock(t('bans.empty'))]);
   return card(
     `${t('bans.title')} (${data.bans.length})`,
-    data.bans.map((b, i) =>
-      sp(
-        [attr('Margin', `0,${i > 0 ? '14' : '0'},0,0`)],
+    data.bans.map((ban, index) =>
+      stackPanel(
+        [attr('Margin', `0,${index > 0 ? '14' : '0'},0,0`)],
         [
-          tb(b.playerName ?? '?', [attr('FontWeight', 'Bold')]),
-          tb(t('bans.reason', { reason: b.reason || '?' }), [attr('Margin', '0,2,0,0')]),
-          tb(
+          textBlock(ban.playerName ?? '?', [attr('FontWeight', 'Bold')]),
+          textBlock(t('bans.reason', { reason: ban.reason || '?' }), [attr('Margin', '0,2,0,0')]),
+          textBlock(
             t('bans.bannedBy', {
-              name: b.bannedBy ?? '?',
-              time: formatPcl2Time(b.bannedAt, data.timeZone),
+              name: ban.bannedBy ?? '?',
+              time: formatPcl2Time(ban.bannedAt, data.timeZone),
             }),
             [attr('FontSize', 11), attr('Foreground', '#888888'), attr('Margin', '0,2,0,0')],
           ),
-          tb(
-            b.isPermanent
+          textBlock(
+            ban.isPermanent
               ? t('bans.permanent')
-              : t('bans.expiresAt', { time: formatPcl2Time(b.expiresAt, data.timeZone) }),
-            [attr('FontSize', 11), attr('Foreground', b.isPermanent ? '#E05555' : '#D4941E')],
+              : t('bans.expiresAt', { time: formatPcl2Time(ban.expiresAt, data.timeZone) }),
+            [attr('FontSize', 11), attr('Foreground', ban.isPermanent ? '#E05555' : '#D4941E')],
           ),
         ],
       ),
@@ -307,41 +296,45 @@ function buildBanCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
 
 function buildBuildingCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
   if (!data.buildings || data.buildings.length === 0)
-    return card(t('buildings.title'), [tb(t('buildings.empty'))]);
+    return card(t('buildings.title'), [textBlock(t('buildings.empty'))]);
   const visible = data.buildings.slice(0, MAX_PCL2_BUILDINGS);
-  const innerCards = visible.map((b) => {
-    const name = getLocalizedText(b.name, data.locale) || '?';
-    const description = getLocalizedText(b.description, data.locale);
-    const builders = sortBuildersByWeight(b.builders)
+  const innerCards = visible.map((building) => {
+    const name = getLocalizedText(building.name, data.locale) || '?';
+    const description = getLocalizedText(building.description, data.locale);
+    const builders = sortBuildersByWeight(building.builders)
       .map((builder) => builder.name)
       .join(', ');
-    const coordText = `${t('buildings.coordinates')}: ${b.coordinates.world} [${b.coordinates.x}, ${b.coordinates.y}, ${b.coordinates.z}]  ·  ${data.buildingTypes[b.buildType]}`;
+    const coordinateText = `${t('buildings.coordinates')}: ${building.coordinates.world} [${building.coordinates.x}, ${building.coordinates.y}, ${building.coordinates.z}]  ·  ${data.buildingTypes[building.buildType]}`;
 
     const imageNodes: XamlNode[] = [];
-    const imgs = b.images ?? [];
-    for (let i = 0; i < Math.min(imgs.length, MAX_BUILDING_IMAGES); i++) {
+    const images = building.images ?? [];
+    for (
+      let imageIndex = 0;
+      imageIndex < Math.min(images.length, MAX_BUILDING_IMAGES);
+      imageIndex++
+    ) {
       imageNodes.push(
         xaml('local:MyImage', [
           attr('Height', 150),
           attr('HorizontalAlignment', 'Center'),
-          attr('Margin', i > 0 ? '0,6,0,0' : '0,0,0,0'),
-          attr('Source', imgs[i]),
+          attr('Margin', imageIndex > 0 ? '0,6,0,0' : '0,0,0,0'),
+          attr('Source', images[imageIndex]),
         ]),
       );
     }
 
     return innerCard(name, [
       ...imageNodes,
-      sp(
+      stackPanel(
         [attr('Margin', '10,10,10,4')],
         [
-          tb(description, [attr('FontSize', 12), attr('Foreground', '#BBBBBB')]),
-          tb(coordText, [
+          textBlock(description, [attr('FontSize', 12), attr('Foreground', '#BBBBBB')]),
+          textBlock(coordinateText, [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
             attr('Margin', '0,6,0,0'),
           ]),
-          tb(`${t('buildings.builders')}: ${builders}`, [
+          textBlock(`${t('buildings.builders')}: ${builders}`, [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
           ]),
@@ -357,7 +350,7 @@ function buildBuildingCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlN
       attr('Margin', '0,0,0,15'),
       attr('Title', `${t('buildings.title')} (${data.buildings.length})`),
     ],
-    [sp([attr('Margin', '25,40,23,15')], innerCards)],
+    [stackPanel([attr('Margin', '25,40,23,15')], innerCards)],
   );
 }
 
@@ -370,14 +363,18 @@ function buildLinksCard(
   return card(
     t('links.title'),
     [
-      tb(t('links.intro'), [attr('Margin', '0,0,0,8')]),
-      li(
+      textBlock(t('links.intro'), [attr('Margin', '0,0,0,8')]),
+      linkItem(
         t('links.buildingsTitle'),
         t('links.buildingsInfo'),
         absoluteUrl(`/${locale}/buildings`, siteOrigin),
       ),
-      li(t('links.wikiTitle'), t('links.wikiInfo'), absoluteUrl(`/${locale}/wiki`, siteOrigin)),
-      li(mapTitle, t('links.mapInfo'), absoluteUrl(`/${locale}/map`, siteOrigin)),
+      linkItem(
+        t('links.wikiTitle'),
+        t('links.wikiInfo'),
+        absoluteUrl(`/${locale}/wiki`, siteOrigin),
+      ),
+      linkItem(mapTitle, t('links.mapInfo'), absoluteUrl(`/${locale}/map`, siteOrigin)),
     ],
     { isSwapped: true },
   );
@@ -397,8 +394,8 @@ function buildAboutCard(
   return card(
     t('about.title'),
     [
-      tb(description, [attr('Margin', '0,0,0,6')]),
-      tb(`${t('about.updatedAt')}: {time}  ·  PCL {pcl_version}  ·  ${homepageUrl}`, [
+      textBlock(description, [attr('Margin', '0,0,0,6')]),
+      textBlock(`${t('about.updatedAt')}: {time}  ·  PCL {pcl_version}  ·  ${homepageUrl}`, [
         attr('FontSize', 11),
         attr('Foreground', '#666666'),
         attr('HorizontalAlignment', 'Center'),

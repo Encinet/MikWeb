@@ -2,13 +2,11 @@
 
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-
+import { isPlayerStatusResponse, toPlayerStatus } from '@/modules/player/lib/player-status-api';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
-
 import { PlayerStatusContext } from './player-status-state-context';
 import type { Player } from './player-types';
-import { isPlayerOnlinePayload } from './player-types';
 
 const PLAYER_REQUEST_TIMEOUT_MS = 10_000;
 const PLAYER_BROWSER_CACHE_TTL_MS = 8_000;
@@ -21,7 +19,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
   const [peakPlayerCount, setPeakPlayerCount] = useState<number | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [networkError, setNetworkError] = useState(false);
+  const [hasNetworkError, setHasNetworkError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -52,7 +50,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
       fetching = true;
       const result = await fetchValidatedJson({
         url: dataApiUrl('/players'),
-        validate: isPlayerOnlinePayload,
+        validate: isPlayerStatusResponse,
         timeoutMs: PLAYER_REQUEST_TIMEOUT_MS,
         cache: 'no-store',
         browserCache: { ttlMs: PLAYER_BROWSER_CACHE_TTL_MS },
@@ -61,20 +59,21 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
       });
       if (!active) return;
       if (result.status === 'success') {
-        const online = result.data.online !== -1;
+        const status = toPlayerStatus(result.data);
+        const online = status.online !== -1;
         setIsOnline(online);
-        setNetworkError(false);
+        setHasNetworkError(false);
         if (online) {
-          setPlayers(result.data.players);
-          setPlayerCount(result.data.online);
-          setPeakPlayerCount(result.data.peak_online ?? null);
+          setPlayers(status.players);
+          setPlayerCount(status.online);
+          setPeakPlayerCount(status.peakOnline ?? null);
         } else resetPlayersState();
         lastUpdatedAt = Date.now();
         retries = 0;
       } else {
         setIsOnline(false);
         // A failed status service does not establish that the Minecraft server is offline.
-        setNetworkError(true);
+        setHasNetworkError(true);
         resetPlayersState();
         retries++;
       }
@@ -102,7 +101,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
 
   return (
     <PlayerStatusContext
-      value={{ players, playerCount, peakPlayerCount, isOnline, isLoading, networkError }}
+      value={{ players, playerCount, peakPlayerCount, isOnline, isLoading, hasNetworkError }}
     >
       {children}
     </PlayerStatusContext>

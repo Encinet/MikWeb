@@ -5,7 +5,7 @@ import type { AuthState } from '@/modules/auth/model/auth-state-context';
 import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useWikiStaffContent } from '@/modules/wiki/model/use-wiki-staff-content';
-import type { WikiContentBundle } from '@/modules/wiki/model/wiki-section-types';
+import type { WikiContentBundle } from '@/modules/wiki/model/wiki-content-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
 import { createBrowserEnvironment } from '../support/browser-environment';

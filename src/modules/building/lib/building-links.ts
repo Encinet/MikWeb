@@ -1,6 +1,7 @@
+import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import type { Building } from '@/modules/building/model/building-types';
-import { getLocalizedText, sortBuildersByWeight } from '@/modules/building/model/building-types';
 import { SITE_NAME, SITE_URL } from '@/shared/config/site-config';
+import { getLocalizedText } from '@/shared/i18n/localized-text';
 
 export function getBuildingPath(id: string) {
   return `/buildings/${id}`;

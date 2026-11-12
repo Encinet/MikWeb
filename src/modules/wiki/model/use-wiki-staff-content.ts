@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { authRequest } from '@/modules/auth/lib/auth-request';
-import { isStaffRole } from '@/modules/auth/model/auth-types';
+import { isStaffRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import type { WikiContentBundle } from '@/modules/wiki/model/wiki-section-types';
+import type { WikiContentBundle } from '@/modules/wiki/model/wiki-content-types';
 
 export function useWikiStaffContent(locale: string) {
   const { account, verified } = useAuth();

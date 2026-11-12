@@ -1,17 +1,14 @@
 import GithubSlugger from 'github-slugger';
-
+import type { WikiSectionContentMap } from '@/modules/wiki/model/wiki-content-types';
 import type {
-  FuzzyMatchScore,
-  MarkdownBlock,
-  PreparedQuery,
+  PreparedWikiQuery,
   SearchableWikiBlock,
-  WikiLocale,
+  WikiMarkdownBlock,
   WikiSearchResult,
-  WikiSectionContentMap,
-  WikiSectionId,
-} from '@/modules/wiki/model/wiki-section-types';
+} from '@/modules/wiki/model/wiki-search-types';
+import type { WikiLocale, WikiSectionId } from '@/modules/wiki/model/wiki-section-types';
 
-export function prepareWikiQuery(query: string): PreparedQuery {
+export function prepareWikiQuery(query: string): PreparedWikiQuery {
   const lower = query.trim().toLowerCase();
 
   return {
@@ -20,43 +17,47 @@ export function prepareWikiQuery(query: string): PreparedQuery {
   };
 }
 
-export function fuzzyMatchWikiText(query: PreparedQuery, text: string): FuzzyMatchScore {
-  const q = query.lower;
-  const t = text.toLowerCase();
+export function fuzzyMatchWikiText(query: PreparedWikiQuery, text: string): number {
+  const queryText = query.lower;
+  const normalizedText = text.toLowerCase();
 
-  if (!q || !t) return 0;
-  if (t.includes(q)) return 3;
+  if (!queryText || !normalizedText) return 0;
+  if (normalizedText.includes(queryText)) return 3;
 
-  let qi = 0;
+  let queryIndex = 0;
   let consecutive = 0;
   let maxConsecutive = 0;
-  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
-    if (t[ti] === q[qi]) {
-      qi++;
+  for (
+    let textIndex = 0;
+    textIndex < normalizedText.length && queryIndex < queryText.length;
+    textIndex++
+  ) {
+    if (normalizedText[textIndex] === queryText[queryIndex]) {
+      queryIndex++;
       consecutive++;
       maxConsecutive = Math.max(maxConsecutive, consecutive);
     } else {
       consecutive = 0;
     }
   }
-  if (qi === q.length) {
-    return 2 + maxConsecutive / q.length;
+  if (queryIndex === queryText.length) {
+    return 2 + maxConsecutive / queryText.length;
   }
 
   const { tokens } = query;
   if (tokens.length > 1) {
-    const allFound = tokens.every((token) => t.includes(token));
+    const allFound = tokens.every((token) => normalizedText.includes(token));
     if (allFound) return 1 + tokens.length * 0.1;
   }
 
-  if (tokens.some((token) => token.length >= 2 && t.includes(token))) {
+  if (tokens.some((token) => token.length >= 2 && normalizedText.includes(token))) {
     return 0.5;
   }
 
   return 0;
 }
 
-export function normalizeWikiSearchPhrases(searchPhrases: string[]): PreparedQuery[] {
+export function normalizeWikiSearchPhrases(searchPhrases: string[]): PreparedWikiQuery[] {
   const uniqueQueries = new Set<string>();
 
   for (const phrase of searchPhrases) {
@@ -135,7 +136,7 @@ export function stripWikiMarkdown(text: string): string {
     .trim();
 }
 
-export function parseWikiMarkdownBlocks(sectionId: string, raw: string): MarkdownBlock[] {
+export function parseWikiMarkdownBlocks(sectionId: string, raw: string): WikiMarkdownBlock[] {
   const lines = raw.replace(/\r\n?/g, '\n').split('\n');
   let fence: { marker: string; length: number } | null = null;
   const headingMatches = lines
@@ -257,7 +258,7 @@ export function buildWikiSearchIndex(
   return blocks;
 }
 
-function createWikiSearchSnippet(text: string, preparedQueries: PreparedQuery[]): string {
+function createWikiSearchSnippet(text: string, preparedQueries: PreparedWikiQuery[]): string {
   const normalizedText = text.replace(/\s+/g, ' ').trim();
 
   if (!normalizedText) return '';

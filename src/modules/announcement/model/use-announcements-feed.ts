@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { sortAnnouncements } from '@/modules/announcement/lib/announcement-feed';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
-import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
+import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-validation';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 

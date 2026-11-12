@@ -1,5 +1,4 @@
 import type { BuildingInput } from '@/modules/building/model/building-types';
-import { isBuildingId, isBuildingInput } from '@/modules/building/model/building-types';
 
 export interface BuildingSubmissionImage {
   url: string;
@@ -7,11 +6,6 @@ export interface BuildingSubmissionImage {
   height: number;
   size: number;
   mime: 'image/webp';
-}
-
-export interface ResolvedPlayer {
-  uuid: string;
-  name: string;
 }
 
 export interface BuildingSubmission {
@@ -37,56 +31,4 @@ export interface BuildingSubmissionListResponse {
 
 export interface BuildingSubmissionCreateResponse {
   submission: BuildingSubmission;
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-export function isBuildingSubmissionImage(value: unknown): value is BuildingSubmissionImage {
-  return (
-    isObjectRecord(value) &&
-    typeof value.url === 'string' &&
-    typeof value.width === 'number' &&
-    typeof value.height === 'number' &&
-    typeof value.size === 'number' &&
-    value.mime === 'image/webp'
-  );
-}
-
-export function isBuildingSubmission(value: unknown): value is BuildingSubmission {
-  return (
-    isObjectRecord(value) &&
-    isBuildingId(value.id) &&
-    (value.status === 'pending' || value.status === 'approved' || value.status === 'rejected') &&
-    typeof value.submitterUuid === 'string' &&
-    typeof value.submitterName === 'string' &&
-    typeof value.submitterRole === 'string' &&
-    isBuildingInput(value.payload) &&
-    Array.isArray(value.images) &&
-    value.images.every(isBuildingSubmissionImage) &&
-    (value.reviewer === undefined || typeof value.reviewer === 'string') &&
-    (value.reviewNote === undefined || typeof value.reviewNote === 'string') &&
-    (value.rejectedAt === undefined || typeof value.rejectedAt === 'string') &&
-    (value.expiresAt === undefined || typeof value.expiresAt === 'string') &&
-    (value.buildingId === undefined || isBuildingId(value.buildingId)) &&
-    typeof value.createdAt === 'string' &&
-    typeof value.updatedAt === 'string'
-  );
-}
-
-export function isBuildingSubmissionListResponse(
-  value: unknown,
-): value is BuildingSubmissionListResponse {
-  return (
-    isObjectRecord(value) &&
-    Array.isArray(value.submissions) &&
-    value.submissions.every(isBuildingSubmission)
-  );
-}
-
-export function isBuildingSubmissionCreateResponse(
-  value: unknown,
-): value is BuildingSubmissionCreateResponse {
-  return isObjectRecord(value) && isBuildingSubmission(value.submission);
 }

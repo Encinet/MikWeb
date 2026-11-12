@@ -20,7 +20,7 @@ interface SiteHeaderControlsProps {
   localeTooltip: string;
   localeTarget: string;
   mounted: boolean;
-  networkError: boolean;
+  hasNetworkError: boolean;
   onLocaleSwitch: () => void;
   onMobileMenuToggle: () => void;
   onPlayerDropdownClose: () => void;
@@ -45,7 +45,7 @@ export function SiteHeaderControls({
   localeTooltip,
   localeTarget,
   mounted,
-  networkError,
+  hasNetworkError,
   onLocaleSwitch,
   onMobileMenuToggle,
   onPlayerDropdownClose,
@@ -142,7 +142,7 @@ export function SiteHeaderControls({
               </>
             ) : (
               <span className="text-xs sm:text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-                {networkError ? statusNetworkErrorLabel : statusOfflineLabel}
+                {hasNetworkError ? statusNetworkErrorLabel : statusOfflineLabel}
               </span>
             )}
           </button>

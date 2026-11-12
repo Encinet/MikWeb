@@ -1,6 +1,6 @@
+import type { ApiErrorPayload } from '@/shared/api/api-error-payload';
+import { isApiErrorPayload } from '@/shared/api/api-error-payload';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
-import type { ApiErrorPayload } from '@/shared/types/api-error-payload';
-import { isApiErrorPayload } from '@/shared/types/api-error-payload';
 
 interface FetchValidatedJsonOptions<TData> {
   url: string;

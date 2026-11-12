@@ -1,5 +1,5 @@
 import { mergeCommunityNotices } from '@/modules/community/lib/community-notices';
-import { isCommunityBoardResponse } from '@/modules/community/model/board-types';
+import { isCommunityBoardResponse } from '@/modules/community/model/community-notice-validation';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 

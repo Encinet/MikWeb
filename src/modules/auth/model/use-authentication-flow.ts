@@ -8,7 +8,7 @@ import { startAuthentication, WebAuthnAbortService } from '@simplewebauthn/brows
 import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
 import { webAuthnError } from '@/modules/auth/lib/webauthn-error';
-import { isAuthMeResponse } from '@/modules/auth/model/auth-types';
+import { isAuthMeResponse } from '@/modules/auth/model/auth-validation';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 

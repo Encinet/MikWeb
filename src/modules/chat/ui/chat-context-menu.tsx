@@ -5,8 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatMenuSurface } from '@/modules/chat/ui/chat-menu-surface';
 import { useChatMenu } from '@/modules/chat/ui/use-chat-menu';
 
-const LONG_PRESS_DELAY = 550;
-const MOVEMENT_TOLERANCE = 10;
+const LONG_PRESS_DELAY_MS = 550;
+const MOVEMENT_TOLERANCE_PX = 10;
 const NATIVE_TARGETS =
   'a, button, input, textarea, select, [contenteditable]:not([contenteditable="false"]), [data-chat-context-ignore]';
 
@@ -153,14 +153,14 @@ export function ChatContextMenu({
         if (press.current !== pending || !menu.anchor.current?.isConnected) return;
         suppressClick.current = true;
         menu.show({ x: pending.x, y: pending.y });
-      }, LONG_PRESS_DELAY);
+      }, LONG_PRESS_DELAY_MS);
     },
     onPointerMove(event) {
       const pending = press.current;
       if (
         pending &&
         (event.pointerId !== pending.id ||
-          Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > MOVEMENT_TOLERANCE)
+          Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > MOVEMENT_TOLERANCE_PX)
       )
         cancel();
     },

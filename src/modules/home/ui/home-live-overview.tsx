@@ -35,7 +35,7 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
     playerCount,
     isLoading: isLoadingPlayers,
     isOnline,
-    networkError,
+    hasNetworkError,
   } = usePlayerStatus();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -120,7 +120,7 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
           playerCount={playerCount}
           isOnline={isOnline}
           isLoading={isLoadingPlayers}
-          networkError={networkError}
+          hasNetworkError={hasNetworkError}
         />
       </div>
       {isOpen && (

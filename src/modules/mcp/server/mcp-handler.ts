@@ -3,22 +3,24 @@ import 'server-only';
 import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 
-import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
-import { isBanItemArray } from '@/modules/ban/model/ban-types';
-import type { LocalizedText } from '@/modules/building/model/building-types';
-import { getLocalizedText, isBuildingArray } from '@/modules/building/model/building-types';
-import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
+import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-validation';
+import { isBanItemArray } from '@/modules/ban/model/ban-validation';
+import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
+import { isBuildingArray } from '@/modules/building/model/building-validation';
+import { isPlayerStatusResponse } from '@/modules/player/lib/player-status-api';
 import { WIKI_LOCALES } from '@/modules/wiki/lib/wiki-grouping';
 import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { SITE_URL } from '@/shared/config/site-config';
+import type { LocalizedText } from '@/shared/i18n/localized-text';
+import { getLocalizedText } from '@/shared/i18n/localized-text';
 import {
   RequestBodyLimitError,
   readLimitedRequestBody,
 } from '@/shared/server/limited-request-body';
 
-async function apiFetch<TResponse>(
+async function fetchDataServiceJson<TResponse>(
   url: string,
   validate: (value: unknown) => value is TResponse,
 ): Promise<TResponse> {
@@ -72,7 +74,7 @@ const sdkHandler = createMcpHandler(
         inputSchema: z.object({}),
       },
       async () => {
-        const data = await apiFetch(dataApiUrl('/players'), isPlayerOnlinePayload);
+        const data = await fetchDataServiceJson(dataApiUrl('/players'), isPlayerStatusResponse);
 
         if (data.online === -1) {
           return { content: [{ type: 'text', text: 'Server offline.' }] };
@@ -82,7 +84,9 @@ const sdkHandler = createMcpHandler(
           return { content: [{ type: 'text', text: 'Server online, no players.' }] };
         }
 
-        const playerList = data.players.map((p) => `${p.name} (UUID: ${p.uuid})`).join('\n');
+        const playerList = data.players
+          .map((player) => `${player.name} (UUID: ${player.uuid})`)
+          .join('\n');
 
         return {
           content: [
@@ -109,7 +113,7 @@ const sdkHandler = createMcpHandler(
         }),
       },
       async ({ locale }) => {
-        const data = await apiFetch(dataApiUrl('/buildings'), isBuildingArray);
+        const data = await fetchDataServiceJson(dataApiUrl('/buildings'), isBuildingArray);
 
         if (data.length === 0) {
           return {
@@ -119,46 +123,48 @@ const sdkHandler = createMcpHandler(
 
         const resolve = (localized: LocalizedText): string => getLocalizedText(localized, locale);
 
-        const lines = data.map((b, i) => {
-          const name = resolve(b.name);
-          const desc = resolve(b.description);
-          const notes = b.source?.notes ? resolve(b.source.notes) : null;
-          const tags = b.tags?.map(resolve).filter(Boolean).join(',');
-          const { world, x, y, z } = b.coordinates;
+        const lines = data.map((building, index) => {
+          const name = resolve(building.name);
+          const description = resolve(building.description);
+          const notes = building.source?.notes ? resolve(building.source.notes) : null;
+          const tags = building.tags?.map(resolve).filter(Boolean).join(',');
+          const { world, x, y, z } = building.coordinates;
 
-          const sortedBuilders = [...b.builders].sort((a, b) => b.weight - a.weight);
-          const showWeight =
+          const sortedBuilders = sortBuildersByWeight(building.builders);
+          const showContribution =
             sortedBuilders.length > 1 &&
-            sortedBuilders.some((b) => b.weight !== sortedBuilders[0].weight);
-          const total = sortedBuilders.reduce((s, b) => s + b.weight, 0);
+            sortedBuilders.some((builder) => builder.weight !== sortedBuilders[0].weight);
+          const totalWeight = sortedBuilders.reduce((sum, builder) => sum + builder.weight, 0);
           const builders = sortedBuilders
-            .map((b) =>
-              showWeight ? `${b.name}(${Math.round((b.weight / total) * 100)}%)` : b.name,
+            .map((builder) =>
+              showContribution
+                ? `${builder.name}(${Math.round((builder.weight / totalWeight) * 100)}%)`
+                : builder.name,
             )
             .join(',');
 
           const fields = [
-            `type:${b.buildType}`,
+            `type:${building.buildType}`,
             `world:${world} x:${x} y:${y} z:${z}`,
-            `date:${b.buildDate}`,
+            `date:${building.buildDate}`,
             builders && `builders:${builders}`,
             tags && `tags:${tags}`,
-            b.source?.originalAuthor && `author:${b.source.originalAuthor}`,
-            b.source?.originalLink && `source:${b.source.originalLink}`,
-            desc && !desc.includes('\n') && `desc:${desc}`,
+            building.source?.originalAuthor && `author:${building.source.originalAuthor}`,
+            building.source?.originalLink && `source:${building.source.originalLink}`,
+            description && !description.includes('\n') && `desc:${description}`,
             notes && !notes.includes('\n') && `notes:${notes}`,
           ]
             .filter(Boolean)
             .join(' | ');
 
           const blocks = [
-            desc?.includes('\n') ? `desc:\n\`\`\`\n${desc}\n\`\`\`` : null,
+            description?.includes('\n') ? `desc:\n\`\`\`\n${description}\n\`\`\`` : null,
             notes?.includes('\n') ? `notes:\n\`\`\`\n${notes}\n\`\`\`` : null,
           ]
             .filter(Boolean)
             .join('\n');
 
-          return `[${i + 1}] ${name}\n${fields}${blocks ? `\n${blocks}` : ''}`;
+          return `[${index + 1}] ${name}\n${fields}${blocks ? `\n${blocks}` : ''}`;
         });
 
         return {
@@ -180,7 +186,7 @@ const sdkHandler = createMcpHandler(
         inputSchema: z.object({}),
       },
       async () => {
-        const data = await apiFetch(dataApiUrl('/bans'), isBanItemArray);
+        const data = await fetchDataServiceJson(dataApiUrl('/bans'), isBanItemArray);
 
         if (data.length === 0) {
           return {
@@ -224,7 +230,10 @@ const sdkHandler = createMcpHandler(
         }),
       },
       async ({ count }) => {
-        const data = await apiFetch(dataApiUrl('/announcements'), isAnnouncementItemArray);
+        const data = await fetchDataServiceJson(
+          dataApiUrl('/announcements'),
+          isAnnouncementItemArray,
+        );
 
         if (data.length === 0) {
           return {
@@ -232,7 +241,9 @@ const sdkHandler = createMcpHandler(
           };
         }
 
-        const lines = data.slice(0, count).map((a) => `[${a.timestamp}] ${a.content}`);
+        const lines = data
+          .slice(0, count)
+          .map((announcement) => `[${announcement.timestamp}] ${announcement.content}`);
 
         return {
           content: [

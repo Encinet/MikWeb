@@ -99,7 +99,7 @@ test('submission history keeps the newest refresh when older same-account reques
       1,
       'late initial data cannot replace the refreshed history',
     );
-    assert.equal(current().loadingSubmissions, false);
+    assert.equal(current().isLoadingSubmissions, false);
   } finally {
     globalThis.fetch = previousFetch;
     clearFetchValidatedJsonBrowserCache();

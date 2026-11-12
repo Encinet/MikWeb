@@ -2,10 +2,10 @@
 
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { isBuildingArray } from '@/modules/building/model/building-validation';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import type { BuildingCatalogSnapshot } from './building-types';
-import { isBuildingArray } from './building-types';
 import { BuildingsStateContext } from './buildings-state-context';
 
 const BUILDINGS_CACHE_TTL_MS = 300_000;

@@ -2,10 +2,11 @@
 
 import { CheckCircle, Copy, MapPin, User } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
+import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import { getBuildingSourceNotes } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
-import { getLocalizedText, sortBuildersByWeight } from '@/modules/building/model/building-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { getLocalizedText } from '@/shared/i18n/localized-text';
 
 export type BuildingsTranslator = ReturnType<typeof useTranslations<'buildings'>>;
 

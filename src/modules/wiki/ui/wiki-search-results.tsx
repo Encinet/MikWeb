@@ -1,6 +1,6 @@
 'use client';
 
-import type { WikiSearchResult } from '@/modules/wiki/model/wiki-section-types';
+import type { WikiSearchResult } from '@/modules/wiki/model/wiki-search-types';
 
 interface WikiSearchResultsProps {
   emptyDescription: string;

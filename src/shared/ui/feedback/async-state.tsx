@@ -2,21 +2,17 @@
 
 import type { LucideIcon } from 'lucide-react';
 import type { CSSProperties } from 'react';
+import type { FeedbackMessage } from '@/shared/types/feedback';
 
 function joinClassNames(...classNames: Array<string | undefined>) {
   return classNames.filter(Boolean).join(' ');
-}
-
-export interface InlineFeedbackValue {
-  message: string;
-  kind: 'info' | 'success' | 'error' | 'loading';
 }
 
 export function InlineFeedback({
   value,
   className,
 }: {
-  value?: InlineFeedbackValue | null;
+  value?: FeedbackMessage | null;
   className?: string;
 }) {
   return (

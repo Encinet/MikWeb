@@ -12,7 +12,7 @@ import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
 import { authenticationErrorKey } from '@/modules/auth/lib/authentication-error-key';
 import { webAuthnError } from '@/modules/auth/lib/webauthn-error';
 import type { AccountSecurityResponse, AuthAccount } from '@/modules/auth/model/auth-types';
-import { isAccountSecurityResponse } from '@/modules/auth/model/auth-types';
+import { isAccountSecurityResponse } from '@/modules/auth/model/auth-validation';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
 import { ReauthenticationDialog } from '@/modules/auth/ui/reauthentication-dialog';

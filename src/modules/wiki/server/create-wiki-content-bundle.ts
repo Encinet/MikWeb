@@ -3,11 +3,8 @@ import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import { createWikiSectionGroups, sortWikiSections } from '@/modules/wiki/lib/wiki-grouping';
 import { buildWikiSearchIndex, parseWikiMarkdownBlocks } from '@/modules/wiki/lib/wiki-search';
-import type {
-  WikiContentBundle,
-  WikiLocale,
-  WikiSectionDocument,
-} from '@/modules/wiki/model/wiki-section-types';
+import type { WikiContentBundle } from '@/modules/wiki/model/wiki-content-types';
+import type { WikiLocale, WikiSectionDocument } from '@/modules/wiki/model/wiki-section-types';
 
 export async function createWikiContentBundle(
   locale: WikiLocale,

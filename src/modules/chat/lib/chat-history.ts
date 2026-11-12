@@ -39,7 +39,7 @@ interface HistoryReadChange {
 }
 
 const CHANGE_EVENT = 'mik-chat-history-change';
-const MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+const HISTORY_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 function range(owner: string): IDBKeyRange {
   return IDBKeyRange.bound(
@@ -188,7 +188,7 @@ export async function enableHistory(
       state.put(next, 'current');
       for (const message of records) {
         if (
-          message.createdAt <= Date.now() - MAX_AGE ||
+          message.createdAt <= Date.now() - HISTORY_MAX_AGE_MS ||
           !mayReadMessage(message, owner, next.staff)
         )
           continue;
@@ -271,7 +271,7 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
         if (
           record.owner !== owner ||
           !parsed.success ||
-          parsed.data.createdAt <= Date.now() - MAX_AGE ||
+          parsed.data.createdAt <= Date.now() - HISTORY_MAX_AGE_MS ||
           !mayReadMessage(parsed.data, owner, active.staff)
         ) {
           cursor.delete();

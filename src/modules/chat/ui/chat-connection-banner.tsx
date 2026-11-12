@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 
-const CONNECTION_NOTICE_DELAY = 1500;
+const CONNECTION_NOTICE_DELAY_MS = 1500;
 
 export function ChatConnectionBanner({
   connection,
@@ -20,7 +20,7 @@ export function ChatConnectionBanner({
   const [visible, setVisible] = useState(false);
   // The workspace mounts this for one outage, across reconnect/authorization transitions.
   useEffect(() => {
-    const timer = window.setTimeout(() => setVisible(true), CONNECTION_NOTICE_DELAY);
+    const timer = window.setTimeout(() => setVisible(true), CONNECTION_NOTICE_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, []);
   const failed = connection.status === 'error';

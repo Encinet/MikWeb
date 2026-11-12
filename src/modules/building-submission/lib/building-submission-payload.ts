@@ -1,11 +1,11 @@
 import type { BuildingInput } from '@/modules/building/model/building-types';
-import { isWorldName } from '@/modules/building/model/building-types';
+import { isWorldName } from '@/modules/building/model/building-validation';
 import type {
   BuilderDraft,
   BuildingSubmissionFormState,
   BuildingSubmissionTagDraft,
 } from '@/modules/building-submission/model/building-submission-form';
-import { safeBuilderWeight } from '@/modules/building-submission/model/building-submission-form';
+import { normalizeBuilderWeight } from '@/modules/building-submission/model/building-submission-form';
 
 export function buildBuildingSubmissionPayload(
   form: BuildingSubmissionFormState,
@@ -58,7 +58,7 @@ export function buildBuildingSubmissionPayload(
     builders: builders.map((builder) => ({
       uuid: builder.uuid,
       name: builder.name,
-      weight: safeBuilderWeight(builder.weight),
+      weight: normalizeBuilderWeight(builder.weight),
     })),
     buildType: form.buildType,
     images: imageUrls,

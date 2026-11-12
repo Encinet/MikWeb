@@ -110,7 +110,14 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@/app/**", "@/modules/**", "@/site/**"],
+                    "group": [
+                      "@/app/**",
+                      "@/modules/**",
+                      "@/site/**",
+                      "**/app/**",
+                      "**/modules/**",
+                      "**/site/**"
+                    ],
                     "message": "Keep dependencies directed toward shared; compose pages in app and site."
                   }
                 ]
@@ -130,7 +137,7 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@/app/**", "@/site/**"],
+                    "group": ["@/app/**", "@/site/**", "**/app/**", "**/site/**"],
                     "message": "Keep dependencies directed toward shared; compose pages in app and site."
                   }
                 ]
@@ -150,8 +157,87 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@/app/**"],
+                    "group": ["@/app/**", "**/app/**"],
                     "message": "Keep dependencies directed toward shared; compose pages in app and site."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/*/model/**", "src/modules/*/lib/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/app/**", "@/site/**", "**/app/**", "**/site/**"],
+                    "message": "Keep business and shared logic independent of route and site composition."
+                  },
+                  {
+                    "group": ["**/ui/**", "**/server/**"],
+                    "message": "State and browser utilities must not depend on UI components or server implementation. Put shared contracts in model/types."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/site/*/model/**", "src/site/*/lib/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/app/**", "**/app/**"],
+                    "message": "Keep site capabilities independent of route entry points."
+                  },
+                  {
+                    "group": ["**/ui/**", "**/server/**"],
+                    "message": "Site state and utilities must not depend on UI components or server implementation."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/shared/hooks/**", "src/shared/lib/**", "src/shared/types/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/app/**",
+                      "@/modules/**",
+                      "@/site/**",
+                      "**/app/**",
+                      "**/modules/**",
+                      "**/site/**"
+                    ],
+                    "message": "Shared utilities must be independent of application and business code."
+                  },
+                  {
+                    "group": ["**/ui/**", "**/server/**"],
+                    "message": "Shared hooks, utilities and contracts must not depend on components or server implementation."
                   }
                 ]
               }

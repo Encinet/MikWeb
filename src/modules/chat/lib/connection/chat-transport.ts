@@ -1,12 +1,13 @@
 import type { RecipientContext, SenderContext } from '@hpke/core';
 import { Aes256Gcm, CipherSuite, DhkemP256HkdfSha256, HkdfSha256 } from '@hpke/core';
 import { CHAT_WEBSOCKET_URL } from '@/shared/config/service-config';
+import { isRecord } from '@/shared/lib/is-record';
 
 const PROTOCOL = 'mik-chat-hpke-2026-11-08\0https://mcmik.top\0';
-const KEY_LIFETIME = 30 * 60 * 1000;
-const EXCHANGE_TIMEOUT = 5000;
-const APPLICATION = 0;
-const KEY_EXCHANGE = 1;
+const KEY_LIFETIME_MS = 30 * 60 * 1000;
+const EXCHANGE_TIMEOUT_MS = 5000;
+const APPLICATION_RECORD_TYPE = 0;
+const KEY_EXCHANGE_RECORD_TYPE = 1;
 // Allow bounded records already in flight when the server starts rotating at 16,384.
 const HARD_RECORD_LIMIT = 16_384 + 256;
 const encoder = new TextEncoder();
@@ -55,10 +56,9 @@ function decode(value: unknown, size: number): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-function object(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value))
-    throw new Error('invalid_chat_record');
-  return value as Record<string, unknown>;
+function readChatRecord(value: unknown): Record<string, unknown> {
+  if (!isRecord(value)) throw new Error('invalid_chat_record');
+  return value;
 }
 
 /** Owns wire encryption and key lifetimes; authorization and logical presence stay above it. */
@@ -232,7 +232,7 @@ export class ChatTransport {
   private async writeProtected(
     session: Session,
     clear: Uint8Array<ArrayBuffer>,
-    kind = APPLICATION,
+    kind = APPLICATION_RECORD_TYPE,
   ): Promise<void> {
     if (!this.usable(session)) return;
     const record = new Uint8Array(clear.length + 1);
@@ -268,10 +268,10 @@ export class ChatTransport {
         session.received++;
         if (record.length < 2) throw new Error('invalid_chat_record');
         const json = decoder.decode(record.subarray(1));
-        if (record[0] === KEY_EXCHANGE) {
+        if (record[0] === KEY_EXCHANGE_RECORD_TYPE) {
           if (record.length > 1025) throw new Error('invalid_key_exchange');
-          await this.keyFrame(object(JSON.parse(json)), true);
-        } else if (record[0] === APPLICATION) {
+          await this.keyFrame(readChatRecord(JSON.parse(json)), true);
+        } else if (record[0] === APPLICATION_RECORD_TYPE) {
           if (this.stage !== 'ready') throw new Error('application_during_key_exchange');
           this.onmessage?.(new MessageEvent('message', { data: json }));
         } else throw new Error('invalid_chat_record');
@@ -282,7 +282,7 @@ export class ChatTransport {
       return;
     }
     if (typeof data !== 'string' || data.length > 1024) throw new Error('invalid_key_exchange');
-    const body = object(JSON.parse(data));
+    const body = readChatRecord(JSON.parse(data));
     if (this.stage === 'hello') {
       if (
         Object.keys(body).length !== 2 ||
@@ -376,7 +376,7 @@ export class ChatTransport {
         }),
       );
       finished = new Uint8Array(json.length + 1);
-      finished[0] = KEY_EXCHANGE;
+      finished[0] = KEY_EXCHANGE_RECORD_TYPE;
       finished.set(json, 1);
       json.fill(0);
       this.cleartext.add(finished);
@@ -392,8 +392,8 @@ export class ChatTransport {
         generation: exchange.generation,
         incoming,
         outgoing: exchange.outgoing,
-        expiresAt: performance.now() + KEY_LIFETIME + EXCHANGE_TIMEOUT,
-        expiresAtWallClock: Date.now() + KEY_LIFETIME + EXCHANGE_TIMEOUT,
+        expiresAt: performance.now() + KEY_LIFETIME_MS + EXCHANGE_TIMEOUT_MS,
+        expiresAtWallClock: Date.now() + KEY_LIFETIME_MS + EXCHANGE_TIMEOUT_MS,
         received: 0,
         sent: 1,
       };
@@ -401,7 +401,10 @@ export class ChatTransport {
       this.stage = 'ready';
       this.destroyExchange();
       if (this.lifetimeTimer) clearTimeout(this.lifetimeTimer);
-      this.lifetimeTimer = setTimeout(() => this.close(4001), KEY_LIFETIME + EXCHANGE_TIMEOUT);
+      this.lifetimeTimer = setTimeout(
+        () => this.close(4001),
+        KEY_LIFETIME_MS + EXCHANGE_TIMEOUT_MS,
+      );
     } finally {
       for (const clear of [ready, proof, finished]) {
         if (clear) {
@@ -421,7 +424,7 @@ export class ChatTransport {
     this.writing = previousWrites.then(() => paused);
     const exchange: Exchange = {
       generation: frame.generation as number,
-      expiresAt: Date.now() + EXCHANGE_TIMEOUT,
+      expiresAt: Date.now() + EXCHANGE_TIMEOUT_MS,
       serverKey: null,
       clientKey: null,
       outgoing: null,
@@ -429,7 +432,7 @@ export class ChatTransport {
     };
     this.exchange = exchange;
     this.stage = 'confirmation';
-    this.exchangeTimer = setTimeout(() => this.close(4001), EXCHANGE_TIMEOUT);
+    this.exchangeTimer = setTimeout(() => this.close(4001), EXCHANGE_TIMEOUT_MS);
     const current = () => {
       if (this.exchange !== exchange) return false;
       if (this.ws.readyState !== WebSocket.OPEN || Date.now() >= exchange.expiresAt) {
@@ -489,7 +492,7 @@ export class ChatTransport {
     if (this.session) {
       const clear = encoder.encode(json);
       try {
-        await this.writeProtected(this.session, clear, KEY_EXCHANGE);
+        await this.writeProtected(this.session, clear, KEY_EXCHANGE_RECORD_TYPE);
       } finally {
         clear.fill(0);
       }

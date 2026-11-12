@@ -2,10 +2,10 @@
 
 import type { useTranslations } from 'next-intl';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import { getBuildingPath } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
-import { sortBuildersByWeight } from '@/modules/building/model/building-types';
 import { BuildingCard } from '@/modules/building/ui/building-card';
 import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import {

@@ -12,7 +12,7 @@ interface HomePlayerListProps {
   playerCount: number;
   isOnline: boolean;
   isLoading: boolean;
-  networkError: boolean;
+  hasNetworkError: boolean;
 }
 
 export default function HomePlayerList({
@@ -20,7 +20,7 @@ export default function HomePlayerList({
   playerCount,
   isOnline,
   isLoading,
-  networkError,
+  hasNetworkError,
 }: HomePlayerListProps) {
   const homeT = useTranslations('home');
 
@@ -30,7 +30,7 @@ export default function HomePlayerList({
       <div className="home-player-list__header">
         <Users className="h-4 w-4" aria-hidden="true" />
         <h2>{homeT('live.playerListTitle')}</h2>
-        {isOnline && !isLoading && !networkError ? (
+        {isOnline && !isLoading && !hasNetworkError ? (
           <strong className="home-player-list__count">{playerCount}</strong>
         ) : null}
       </div>
@@ -40,7 +40,7 @@ export default function HomePlayerList({
         <div className="home-player-list__state">
           <LoadingState message={homeT('live.status.loading')} variant="inline" />
         </div>
-      ) : networkError ? (
+      ) : hasNetworkError ? (
         <div className="home-player-list__state">
           <p>{homeT('live.status.networkError')}</p>
         </div>

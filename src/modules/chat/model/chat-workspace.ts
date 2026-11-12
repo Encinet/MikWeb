@@ -6,7 +6,7 @@ import { CHAT_MESSAGE_MAX_LENGTH, messageDestination } from '@/modules/chat/mode
 import type { ChatReadCursor } from '@/modules/chat/model/chat-reading';
 import { compareCursors, messageCursor } from '@/modules/chat/model/chat-reading';
 
-const MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+const WORKSPACE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_CONVERSATIONS = 512;
 const privateKey = /^private:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const conversationKey = z
@@ -83,7 +83,10 @@ export function readChatWorkspace(
   const workspace = parsed.data;
   workspace.drafts = Object.fromEntries(
     Object.entries(workspace.drafts)
-      .filter(([key, draft]) => (staff || key !== 'staff') && draft.updatedAt > now - MAX_AGE)
+      .filter(
+        ([key, draft]) =>
+          (staff || key !== 'staff') && draft.updatedAt > now - WORKSPACE_MAX_AGE_MS,
+      )
       .sort((a, b) => b[1].updatedAt - a[1].updatedAt)
       .slice(0, MAX_CONVERSATIONS),
   );
@@ -91,7 +94,9 @@ export function readChatWorkspace(
     Object.entries(workspace.threads)
       .filter(
         ([key, thread]) =>
-          thread.pinned || Boolean(workspace.drafts[key]) || thread.updatedAt > now - MAX_AGE,
+          thread.pinned ||
+          Boolean(workspace.drafts[key]) ||
+          thread.updatedAt > now - WORKSPACE_MAX_AGE_MS,
       )
       .sort((a, b) => b[1].updatedAt - a[1].updatedAt)
       .slice(0, MAX_CONVERSATIONS),

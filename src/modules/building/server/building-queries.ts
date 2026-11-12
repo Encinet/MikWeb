@@ -4,7 +4,11 @@ import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 import type { BuildingCatalogSnapshot } from '@/modules/building/model/building-types';
-import { isBuilding, isBuildingArray, isBuildingId } from '@/modules/building/model/building-types';
+import {
+  isBuilding,
+  isBuildingArray,
+  isBuildingId,
+} from '@/modules/building/model/building-validation';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 
 const REVALIDATE_SECONDS = 300;

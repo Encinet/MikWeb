@@ -2,10 +2,10 @@
 
 import { useContext } from 'react';
 
-import type { PlayerContextValue } from '@/modules/player/model/player-types';
+import type { PlayerStatusState } from '@/modules/player/model/player-status-state-context';
 
 import { PlayerStatusContext } from './player-status-state-context';
 
-export function usePlayerStatus(): PlayerContextValue {
+export function usePlayerStatus(): PlayerStatusState {
   return useContext(PlayerStatusContext);
 }

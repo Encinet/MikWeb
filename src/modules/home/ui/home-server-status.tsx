@@ -7,10 +7,10 @@ import { CopyButton } from '@/shared/ui/action/copy-button';
 
 export function HomeServerStatus() {
   const t = useTranslations('home');
-  const { isLoading, isOnline, networkError } = usePlayerStatus();
+  const { isLoading, isOnline, hasNetworkError } = usePlayerStatus();
   const statusKey = isLoading
     ? 'loading'
-    : networkError
+    : hasNetworkError
       ? 'networkError'
       : isOnline
         ? 'online'
@@ -20,7 +20,7 @@ export function HomeServerStatus() {
     <div className="home-server-status">
       <p className="home-server-status__presence" role="status">
         <span
-          className={`home-server-dot${!isLoading && isOnline && !networkError ? ' is-online' : ''}`}
+          className={`home-server-dot${!isLoading && isOnline && !hasNetworkError ? ' is-online' : ''}`}
           aria-hidden="true"
         />
         <span>{t(`live.status.${statusKey}`)}</span>
