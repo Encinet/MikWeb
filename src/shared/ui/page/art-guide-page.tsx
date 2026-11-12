@@ -24,8 +24,8 @@ export function ArtGuidePage({
 }: ArtGuidePageProps) {
   return (
     <div className={['art-guide-page', pageClassName].filter(Boolean).join(' ')}>
-      <section className="art-guide-hero">
-        <div className="art-guide-hero__backdrop" aria-hidden="true" />
+      <section className="art-guide-hero image-hero">
+        <div className="image-hero__backdrop" aria-hidden="true" />
         <div className="art-guide-container art-guide-hero__content">
           <header className="art-guide-hero__copy">
             <h1>{title}</h1>

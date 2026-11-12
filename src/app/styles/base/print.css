@@ -678,10 +678,9 @@
   }
 
   .home-project-hero::after,
-  .home-project-hero__backdrop,
   .home-project-hero__links,
   .art-guide-hero::after,
-  .art-guide-hero__backdrop,
+  .image-hero__backdrop,
   .art-guide-panel::before,
   .not-found-art-page::after,
   .not-found-art-page__backdrop,
@@ -839,7 +838,9 @@
   .art-guide-panel {
     margin-top: 0.8rem;
     overflow: visible;
+    border: 0;
     border-radius: 0;
+    padding: 0;
   }
 
   .art-guide-panel__steps {

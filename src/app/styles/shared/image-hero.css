@@ -1,0 +1,86 @@
+.image-hero {
+  --image-hero-transition-depth: clamp(9rem, 18vw, 16rem);
+  --image-hero-scene:
+    linear-gradient(
+      180deg,
+      rgba(6, 9, 8, 0.16) 0%,
+      rgba(6, 9, 8, 0.22) 56%,
+      rgba(11, 17, 16, 0.38) 100%
+    ),
+    radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.24) 76%),
+    url("/images/home/hero-library.webp") center / cover no-repeat;
+  position: relative;
+  background: var(--image-hero-scene);
+  isolation: isolate;
+}
+
+.image-hero::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  z-index: 1;
+  height: var(--image-hero-transition-depth);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--theme-bg-base) 30%, transparent) 26%,
+    color-mix(in srgb, var(--theme-bg-base) 78%, transparent) 62%,
+    var(--theme-bg-base) 100%
+  );
+  content: "";
+}
+
+.image-hero__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.18),
+      transparent 32%,
+      transparent 68%,
+      rgba(0, 0, 0, 0.18)
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.12), transparent 40%, rgba(11, 17, 16, 0.38));
+  mask-image: linear-gradient(to bottom, black 0%, black 82%, transparent 100%);
+}
+
+[data-theme="light"] .image-hero {
+  --image-hero-transition-depth: clamp(8rem, 34svh, 24rem);
+  --image-hero-scene:
+    linear-gradient(
+      180deg,
+      rgba(8, 19, 29, 0.26) 0%,
+      rgba(8, 19, 29, 0.08) 30%,
+      rgba(8, 19, 29, 0.08) 64%,
+      transparent 100%
+    ),
+    radial-gradient(ellipse at 50% 44%, rgba(8, 19, 29, 0.2), transparent 68%),
+    url("/images/home/hero-city-daylight.webp") center / cover no-repeat;
+  background: var(--theme-bg-base);
+}
+
+/* Fade the entire scene into the page, including its darkening layers. */
+[data-theme="light"] .image-hero__backdrop {
+  --image-hero-scene-mask: linear-gradient(
+    180deg,
+    black calc(100% - var(--image-hero-transition-depth)),
+    rgba(0, 0, 0, 0.98) calc(100% - var(--image-hero-transition-depth) * 0.8),
+    rgba(0, 0, 0, 0.9) calc(100% - var(--image-hero-transition-depth) * 0.64),
+    rgba(0, 0, 0, 0.68) calc(100% - var(--image-hero-transition-depth) * 0.46),
+    rgba(0, 0, 0, 0.36) calc(100% - var(--image-hero-transition-depth) * 0.29),
+    rgba(0, 0, 0, 0.12) calc(100% - var(--image-hero-transition-depth) * 0.14),
+    transparent 100%
+  );
+  background: var(--image-hero-scene);
+  -webkit-mask-image: var(--image-hero-scene-mask);
+  mask-image: var(--image-hero-scene-mask);
+}
+
+[data-theme="light"] .image-hero::after {
+  content: none;
+}

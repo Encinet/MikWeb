@@ -25,28 +25,14 @@
 }
 
 .art-guide-hero {
-  position: relative;
   min-height: var(--viewport-height-dynamic);
   padding: calc(var(--app-header-offset) + var(--viewport-top-inset)) 0
-    calc(5rem + var(--viewport-bottom-inset));
-  background:
-    linear-gradient(rgba(6, 12, 9, 0.78), rgba(6, 12, 9, 0.9)),
-    url("/images/home/hero-library.webp") center / cover no-repeat;
-  isolation: isolate;
-}
-
-.art-guide-hero__backdrop {
-  position: absolute;
-  inset: auto 0 0;
-  z-index: 0;
-  height: 4rem;
-  pointer-events: none;
-  background: linear-gradient(180deg, transparent, var(--art-guide-page-bg));
+    calc(max(5rem, var(--image-hero-transition-depth)) + var(--viewport-bottom-inset));
 }
 
 .art-guide-hero__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(18rem, 0.8fr);
   align-items: start;
@@ -56,6 +42,10 @@
 .art-guide-hero__copy {
   grid-column: 1 / -1;
   min-width: 0;
+  text-shadow:
+    0 1px 2px rgba(4, 12, 20, 0.95),
+    0 2px 8px rgba(4, 12, 20, 0.8),
+    0 4px 24px rgba(4, 12, 20, 0.55);
 }
 
 .art-guide-hero h1 {
@@ -82,6 +72,14 @@
   min-width: 0;
 }
 
+.art-guide-panel {
+  border: 1px solid var(--art-guide-control-border);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  background: var(--theme-surface-modal);
+  color: var(--art-guide-control-text);
+}
+
 .art-guide-address {
   min-width: 0;
 }
@@ -98,6 +96,9 @@
 
 .art-guide-address h2 {
   margin-bottom: 0.85rem;
+  text-shadow:
+    0 1px 2px rgba(4, 12, 20, 0.95),
+    0 2px 8px rgba(4, 12, 20, 0.8);
 }
 
 .art-guide-address__bar {
@@ -138,6 +139,10 @@
   margin-bottom: 0.85rem;
 }
 
+.art-guide-panel__header h2 {
+  color: inherit;
+}
+
 .art-guide-panel__steps {
   display: grid;
   gap: 1.25rem;
@@ -154,7 +159,7 @@
 }
 
 .art-guide-step__number {
-  color: rgba(243, 239, 231, 0.64);
+  color: color-mix(in srgb, var(--art-guide-control-text) 64%, transparent);
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
 }
@@ -166,7 +171,7 @@
 }
 
 .art-guide-step__copy strong {
-  color: #f3efe7;
+  color: var(--art-guide-control-text);
   font-size: 0.95rem;
   font-weight: 500;
   line-height: 1.6;
@@ -174,7 +179,7 @@
 
 .art-guide-step__copy > span {
   max-width: 42ch;
-  color: rgba(243, 239, 231, 0.78);
+  color: color-mix(in srgb, var(--art-guide-control-text) 78%, transparent);
   font-size: 0.9rem;
   line-height: 1.8;
 }

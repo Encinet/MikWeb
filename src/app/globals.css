@@ -3,6 +3,7 @@
 @import "./styles/base/tokens.css";
 @import "./styles/base/document.css";
 @import "./styles/shared/ui-system.css";
+@import "./styles/shared/image-hero.css";
 @import "./styles/modules/auth-login.css";
 @import "./styles/modules/join.css";
 @import "./styles/modules/auth-flow.css";

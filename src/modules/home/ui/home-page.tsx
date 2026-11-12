@@ -15,8 +15,8 @@ export default async function HomePage() {
 
   return (
     <div className="home-project-page">
-      <section className="home-project-hero">
-        <div className="home-project-hero__backdrop" aria-hidden="true" />
+      <section className="home-project-hero image-hero">
+        <div className="image-hero__backdrop" aria-hidden="true" />
         <div className="home-project-container home-project-hero__content">
           <h1>{SITE_NAME}</h1>
           <p className="home-project-hero__description">{metadataT('description')}</p>
