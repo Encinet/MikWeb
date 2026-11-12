@@ -40,10 +40,11 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   useBackgroundPrefetch(loadAnnouncementFeedContent);
   useLayoutEffect(() => () => setIsOpen(false), []);
-  const { announcements, errorMessage, isLoading } = useAnnouncementsFeed({
+  const { announcements, errorMessage, isLoading, refresh } = useAnnouncementsFeed({
     fallbackErrorMessage: commonT('states.error'),
   });
   const openAnnouncements = (key: string | null = null) => {
+    refresh();
     setSelectedKey(key);
     setIsOpen(true);
   };
