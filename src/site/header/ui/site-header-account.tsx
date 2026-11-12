@@ -36,7 +36,7 @@ export function SiteHeaderAccount() {
             />
           ) : null}
         </span>
-        <span className="project-account-label">{accountLabel}</span>
+        <span className="project-account-label">{account?.currentName ?? accountLabel}</span>
       </Link>
       <Link
         href="/login"
