@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next';
 import type { CSSProperties } from 'react';
 import { Suspense } from 'react';
 import { getAuthNavigationInitializationScript } from '@/modules/auth/lib/auth-navigation-hint';
+import { SITE_HOSTNAME, SITE_NAME } from '@/shared/config/site-config';
 import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { ServerInsertedScript } from '@/shared/ui/server-inserted-script';
@@ -22,7 +23,13 @@ export default async function SiteDocument({
     <html
       lang={locale}
       data-scroll-behavior="smooth"
-      style={defaultPalette as CSSProperties}
+      style={
+        {
+          ...defaultPalette,
+          '--site-name': JSON.stringify(SITE_NAME),
+          '--site-host': JSON.stringify(SITE_HOSTNAME),
+        } as CSSProperties
+      }
       suppressHydrationWarning
     >
       {/* biome-ignore lint/style/noHeadElement: Shared root document owns the native head and pre-paint initialization. */}

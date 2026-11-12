@@ -9,6 +9,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { getPathname, usePathname } from '@/shared/i18n/navigation';
+import { LOCALE_NAMES, routing } from '@/shared/i18n/routing';
 import type { SiteHeaderNavItem } from '@/site/header/lib/site-header-nav-item';
 import { useSiteHeaderBoundary } from '@/site/header/model/use-site-header-boundary';
 import { SiteHeaderBrand } from '@/site/header/ui/site-header-brand';
@@ -53,7 +54,9 @@ export default function SiteHeader() {
 
   const mounted = useHasMounted();
 
-  const localeTooltip = locale === 'zh-CN' ? 'English' : '中文 (简体)';
+  const localeTarget =
+    routing.locales[(routing.locales.indexOf(locale) + 1) % routing.locales.length];
+  const localeChoice = LOCALE_NAMES[localeTarget];
 
   const navItems = useMemo<SiteHeaderNavItem[]>(
     () => [
@@ -94,9 +97,8 @@ export default function SiteHeader() {
     | 'right';
 
   const switchLocale = () => {
-    const newLocale = locale === 'zh-CN' ? 'en' : 'zh-CN';
     // A locale change replaces the root document, including its pre-paint initialization.
-    const target = getPathname({ href: pathname, locale: newLocale });
+    const target = getPathname({ href: pathname, locale: localeTarget });
     window.location.replace(`${target}${window.location.search}${window.location.hash}`);
   };
 
@@ -236,9 +238,9 @@ export default function SiteHeader() {
                 mobileMenuId={mobileMenuId}
                 mobileMenuButtonRef={mobileMenuButtonRef}
                 isOnline={isOnline}
-                localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
-                localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
-                localeTooltip={localeTooltip}
+                localeLabel={localeChoice.label}
+                localeTarget={localeTarget}
+                localeTooltip={localeChoice.name}
                 mounted={mounted}
                 networkError={networkError}
                 onLocaleSwitch={switchLocale}
@@ -263,8 +265,8 @@ export default function SiteHeader() {
               isOpen={isMobileMenuOpen}
               items={navItems}
               onClose={() => setIsMobileMenuOpen(false)}
-              localeLabel={locale === 'zh-CN' ? 'English' : '中文'}
-              localeTarget={locale === 'zh-CN' ? 'en' : 'zh-CN'}
+              localeLabel={localeChoice.label}
+              localeTarget={localeTarget}
               onLocaleSwitch={switchLocale}
             />
           </div>

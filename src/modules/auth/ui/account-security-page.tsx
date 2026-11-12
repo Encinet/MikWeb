@@ -23,6 +23,7 @@ import {
   clearFetchValidatedJsonBrowserCache,
   fetchValidatedJson,
 } from '@/shared/api/fetch-validated-json';
+import { SITE_TRANSLATION_VALUES } from '@/shared/config/site-config';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { useRouter } from '@/shared/i18n/navigation';
 import { LoadingState, ProgressRing } from '@/shared/ui/feedback/loading-state';
@@ -207,7 +208,8 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
         router.replace('/login?next=security');
       } else if (code === 'invalid_display_name') setMessage(t('states.invalidName'));
       else if (code === 'passkey_limit') setMessage(t('states.passkeyLimit'));
-      else if (hasTranslationKey(authenticationT, errorKey)) setMessage(authenticationT(errorKey));
+      else if (hasTranslationKey(authenticationT, errorKey))
+        setMessage(authenticationT(errorKey, SITE_TRANSLATION_VALUES));
       else
         setMessage(
           t(
@@ -237,7 +239,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
   const targetName =
     selectedAction?.type === 'delete-passkey'
       ? security?.passkeys.find((key) => key.credentialId === selectedAction.credentialId)
-          ?.displayName || t('passkey.defaultName')
+          ?.displayName || t('passkey.defaultName', SITE_TRANSLATION_VALUES)
       : selectedAction?.type === 'revoke-session'
         ? security?.sessions.find((session) => session.id === selectedAction.sessionId)
             ?.displayName || t('session.defaultName')
@@ -352,7 +354,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
               {security.passkeys.map((passkey) => (
                 <SecurityItem
                   key={passkey.credentialId}
-                  name={passkey.displayName || t('passkey.defaultName')}
+                  name={passkey.displayName || t('passkey.defaultName', SITE_TRANSLATION_VALUES)}
                   icon={<KeyRound className="h-5 w-5" />}
                   disabled={isMutating}
                   removeLabel={t('actions.delete')}

@@ -1,15 +1,14 @@
 {
   "metadata": {
-    "title": "Mik Server - Creative Casual Server",
-    "description": "A creative casual Minecraft server that allows any mods, focused on building creation",
-    "organizationDescription": "The Minecraft server community behind the Mik brand, managed by the Encinet team",
+    "description": "A non-profit creative Minecraft server focused on building and relaxed play.",
+    "organizationDescription": "The Minecraft server community behind the {siteName} brand, managed by the {organizationName} team",
     "screenshots": {
-      "desktop": "Mik Casual desktop home page with server information and player tools",
-      "mobile": "Mik Casual mobile home page with server information, map and guide links"
+      "desktop": "{siteName} desktop home page with server information and player tools",
+      "mobile": "{siteName} mobile home page with server information, map and guide links"
     },
     "social": {
       "title": "Creative & casual\nMinecraft",
-      "description": "Mods welcome, create together"
+      "description": "A non-profit server\nfocused on building"
     }
   },
   "common": {
@@ -54,7 +53,7 @@
   },
   "nav": {
     "brand": {
-      "subtitle": "Creative Casual Server"
+      "subtitle": "Non-profit Creative Minecraft Server"
     },
     "items": {
       "home": "Home",
@@ -83,14 +82,11 @@
   },
   "home": {
     "hero": {
-      "title": "Mik Casual",
       "wikiButton": "View Wiki",
-      "description": "A Minecraft non-profit, casual creation server where you can leave your masterpieces.",
-      "notice": "Server address",
-      "serverAddress": "mcmik.top"
+      "notice": "Server address"
     },
     "live": {
-      "statusTitle": "Mik current status",
+      "statusTitle": "{siteName} current status",
       "playerListTitle": "Online Players",
       "noPlayersOnline": "No players online",
       "status": {
@@ -146,7 +142,7 @@
     },
     "meta": {
       "description": "Showcasing amazing building works by our players",
-      "imageDescription": "Builds from the Mik community"
+      "imageDescription": "Player builds on the server"
     },
     "search": {
       "placeholder": "Search buildings, builders, tags..."
@@ -304,7 +300,7 @@
     "title": "Wiki",
     "meta": {
       "description": "Documentation for joining, building, server mechanics, and open-source contributions",
-      "imageDescription": "Mik server documentation and open source"
+      "imageDescription": "Server documentation and open source"
     },
     "navigation": {
       "title": "Navigation",
@@ -320,8 +316,8 @@
       }
     },
     "staff": {
-      "loading": "Verifying access and loading the Moderator handbook…",
-      "error": "The Moderator handbook could not be loaded. Please try again.",
+      "loading": "Verifying staff access…",
+      "error": "Handbook unavailable",
       "retry": "Reload"
     }
   },
@@ -474,7 +470,7 @@
       },
       "passkey": {
         "description": "Manage devices, platform accounts, and security keys that can sign in.",
-        "defaultName": "Mik Passkey",
+        "defaultName": "{siteName} Passkey",
         "createdAt": "Created at {time}",
         "empty": "This account has no Passkeys yet.",
         "deleteConfirmation": "Revoking this passkey prevents future sign-ins with it. Existing web sessions remain active.",
@@ -543,7 +539,7 @@
         "passkey_verification_failed": "Passkey verification failed. Please retry.",
         "cancelled": "Passkey operation was cancelled.",
         "passkey_already_registered": "This Passkey is already bound.",
-        "passkey_domain_mismatch": "This domain does not support Passkeys. Use mcmik.top.",
+        "passkey_domain_mismatch": "This domain does not support Passkeys. Use {siteHost}.",
         "passkey_unsupported_authenticator": "This device does not support a sign-in Passkey.",
         "passkey_browser_unsupported": "This browser does not support Passkeys.",
         "verificationInvalid": "This verification expired. Start again."
@@ -747,8 +743,7 @@
   },
   "pcl2": {
     "title": "PCL2 Homepage",
-    "subtitle": "View Mik server status, announcements and buildings in your launcher.",
-    "description": "Open Settings -> Personalization -> Custom homepage, choose Online update, paste the URL above into the download address field, then return to the launcher home page.",
+    "subtitle": "View {siteName} server status, announcements and buildings in your launcher.",
     "addressLabel": "Homepage URL",
     "detectingTimeZone": "Preparing homepage URL…",
     "stepsTitle": "Setup",
@@ -763,15 +758,72 @@
       },
       "done": {
         "title": "Return home",
-        "description": "Reopen the launcher home page to see the Mik page."
+        "description": "Reopen the launcher home page to see the {siteName} page."
       }
     },
-    "imageDescription": "Server status, notices and builds in your launcher"
+    "imageDescription": "Server status, notices and builds in your launcher",
+    "homepage": {
+      "about": {
+        "title": "About",
+        "updatedAt": "Updated"
+      },
+      "announcements": {
+        "empty": "No announcements yet",
+        "title": "Announcements"
+      },
+      "bans": {
+        "empty": "No bans",
+        "permanent": "Permanent",
+        "reason": "Reason: {reason}",
+        "title": "Ban list",
+        "bannedBy": "Banned by: {name} · {time}",
+        "expiresAt": "Expires: {time}"
+      },
+      "buildings": {
+        "builders": "Builders",
+        "coordinates": "Coords",
+        "empty": "No buildings yet",
+        "title": "Buildings"
+      },
+      "echo": {
+        "button": "Echo Cave",
+        "title": "Echo Cave",
+        "tooltip": "Click for a random quote"
+      },
+      "hint": "Use the button below to launch the game and join the server.",
+      "links": {
+        "buildingsInfo": "View all building showcases",
+        "buildingsTitle": "Buildings",
+        "intro": "These links will open in your browser.",
+        "mapInfo": "Online map",
+        "title": "Web links",
+        "wikiInfo": "Server help and documentation",
+        "wikiTitle": "Wiki"
+      },
+      "players": {
+        "empty": "No players online",
+        "joinedAt": "Joined at",
+        "noDetails": "Online count is available, but the player list is empty",
+        "peak": "Peak: {count} players",
+        "title": "Online players"
+      },
+      "server": {
+        "joinButton": "🚀 Launch and join server",
+        "joinTooltip": "Launch the currently selected Minecraft version and join {address}",
+        "refreshButton": "Refresh",
+        "statusTitle": "{siteName} server status"
+      },
+      "status": {
+        "empty": "No players online",
+        "offline": "Server offline",
+        "online": "{count} online"
+      }
+    }
   },
   "mcp": {
     "title": "MCP Config",
-    "subtitle": "Query Mik server information from an MCP-capable client.",
-    "description": "The Mik MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
+    "subtitle": "Query {siteName} server information from an MCP-capable client.",
+    "description": "The {siteName} MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
     "configTitle": "JSON configuration",
     "stepsTitle": "Connect your client",
     "steps": {
@@ -809,10 +861,10 @@
     }
   },
   "join": {
-    "title": "Join the Mik community",
+    "title": "Join the server",
     "description": "Join a QQ group or Matrix Space, then link your game account to enter the server",
     "meta": {
-      "description": "Join the Mik Casual community through QQ or Matrix and link your game account to start playing"
+      "description": "Join the {siteName} community through QQ or Matrix and link your game account to start playing"
     },
     "qq": {
       "title": "QQ groups",

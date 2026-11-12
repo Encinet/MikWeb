@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import { ChatAccountGuard } from '@/modules/chat/model/chat-account-guard';
 import { PlayerStatusProvider } from '@/modules/player/model/player-status-provider';
-import { SITE_NAME } from '@/shared/config/site-config';
+import { SITE_NAME, SITE_SHORT_NAME } from '@/shared/config/site-config';
 import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { routing } from '@/shared/i18n/routing';
@@ -64,11 +64,12 @@ export async function generateMetadata({
     keywords: [
       'Minecraft',
       'Server',
-      'Mik',
+      SITE_NAME,
+      SITE_SHORT_NAME,
       'Community',
       'Builds',
       'Wiki',
-      locale === 'zh-CN' ? '我的世界' : 'Minecraft',
+      ...(locale === 'zh-CN' ? ['我的世界'] : []),
     ],
   };
 }

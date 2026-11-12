@@ -73,6 +73,7 @@ export async function createSocialImage(locale: AppLocale, page: SitePage = 'hom
               display: 'block',
               fontSize: 48,
               lineHeight: 1.35,
+              whiteSpace: 'pre-wrap',
               textWrap: 'pretty',
               color: SOCIAL_IMAGE_COLORS.secondary,
               maxWidth: scene ? 650 : 1020,

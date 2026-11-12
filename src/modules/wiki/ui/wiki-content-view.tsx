@@ -299,6 +299,7 @@ export default function WikiContent({
       <div className="wiki-page__inner">
         <ContentBrowserHeader
           title={pageTitle}
+          titleAside={<div className="wiki-access-status-slot">{staffStatus}</div>}
           search={
             <WikiSearchBox
               clearSearchLabel={clearSearchLabel}
@@ -317,8 +318,6 @@ export default function WikiContent({
             />
           }
         />
-        {staffStatus}
-
         <div
           className={`wiki-page__layout ${!isSearching && activeOutline.length > 0 ? 'has-outline' : ''}`}
         >

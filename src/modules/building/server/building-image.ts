@@ -2,6 +2,7 @@ import 'server-only';
 
 import { cacheLife } from 'next/cache';
 import sharp from 'sharp';
+import { SITE_NAME, SITE_URL } from '@/shared/config/site-config';
 import { readLimitedResponse } from '@/shared/lib/read-limited-response';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -22,7 +23,7 @@ export async function readBuildingImage(url: string) {
     signal: AbortSignal.timeout(8000),
     headers: {
       Accept: 'image/webp,image/png,image/jpeg',
-      'User-Agent': 'MikCasual-Preview/1.0 (+https://mcmik.top)',
+      'User-Agent': `${SITE_NAME.replace(/\s+/g, '')}-Preview/1.0 (+${SITE_URL})`,
     },
   });
   const contentType = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase();

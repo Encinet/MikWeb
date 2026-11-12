@@ -4,7 +4,7 @@ import { MessageCircle, ShieldAlert } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { SITE_LOGO_PATH } from '@/shared/config/site-config';
+import { SITE_LOGO_PATH, SITE_SHORT_NAME } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/navigation';
 import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 
@@ -23,7 +23,7 @@ export function ChatGate({ state, message, children }: ChatGateProps) {
     <section className="chat-workspace chat-gate" aria-label={t('title')}>
       <Link href="/" className="chat-back" aria-label={t('backHome')}>
         <Image src={SITE_LOGO_PATH} alt="" width={32} height={32} />
-        <span>Mik</span>
+        <span>{SITE_SHORT_NAME}</span>
       </Link>
       <div className="chat-gate__content">
         {pending ? <ProgressRing size="lg" /> : <Icon size={28} aria-hidden="true" />}

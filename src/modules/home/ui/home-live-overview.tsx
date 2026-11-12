@@ -17,6 +17,7 @@ import {
 import HomePlayerList from '@/modules/home/ui/home-player-list';
 import { HomeServerStatus } from '@/modules/home/ui/home-server-status';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
+import { SITE_TRANSLATION_VALUES } from '@/shared/config/site-config';
 import { useBackgroundPrefetch } from '@/shared/hooks/use-background-prefetch';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
@@ -50,7 +51,11 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
   };
 
   return (
-    <section id="server-updates" className="home-daily" aria-label={homeT('live.statusTitle')}>
+    <section
+      id="server-updates"
+      className="home-daily"
+      aria-label={homeT('live.statusTitle', SITE_TRANSLATION_VALUES)}
+    >
       <HomeServerStatus />
       {children}
       <div className="home-daily-columns">

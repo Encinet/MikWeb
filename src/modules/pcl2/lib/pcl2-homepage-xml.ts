@@ -1,12 +1,15 @@
+import type { Messages } from 'next-intl';
+import { createTranslator } from 'next-intl';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import type { BanItem } from '@/modules/ban/model/ban-types';
 import type { Building } from '@/modules/building/model/building-types';
+import { getLocalizedText, sortBuildersByWeight } from '@/modules/building/model/building-types';
 import type { EchoQuote } from '@/modules/pcl2/lib/echo-quote-types';
 import { getEchoText } from '@/modules/pcl2/lib/echo-quote-types';
 import { getPcl2HomepagePath } from '@/modules/pcl2/lib/pcl2-homepage-path';
 import { formatPcl2Time, withPcl2TimeZone } from '@/modules/pcl2/lib/pcl2-time-zone';
 import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
-import { SITE_NAME } from '@/shared/config/site-config';
+import { SITE_TRANSLATION_VALUES } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { absoluteUrl } from '@/shared/url/request-url';
 import type { XamlAttributeList, XamlNode } from './xaml-builder';
@@ -22,8 +25,11 @@ export interface Pcl2HomepageData {
   bans: BanItem[] | null;
   buildingCount: number | null;
   buildings: Building[] | null;
+  buildingTypes: Messages['buildings']['types'];
+  description: string;
   echoQuotes: EchoQuote[];
   locale: AppLocale;
+  messages: Messages['pcl2']['homepage'];
   onlinePlayers: PlayerOnlinePayload;
   siteOrigin: string;
   serverAddress: string;
@@ -31,131 +37,7 @@ export interface Pcl2HomepageData {
   timeZone: string;
 }
 
-const PCL2_COPY = {
-  'zh-CN': {
-    about: {
-      body: `${SITE_NAME} 是高版本 Minecraft Java 版公益创造休闲服务器。`,
-      title: '关于',
-      updatedAt: '更新时间',
-    },
-    announcements: {
-      empty: '暂无公告',
-      title: '公告',
-    },
-    bans: {
-      bannedAt: '执行者',
-      empty: '暂无封禁记录',
-      expired: '过期时间',
-      permanent: '永久封禁',
-      reason: '原因',
-      title: '封禁列表',
-    },
-    buildings: {
-      builders: '建设者',
-      coordinates: '坐标',
-      empty: '暂无建筑',
-      original: '原创',
-      replica: '复刻',
-      title: '建筑收录',
-    },
-    description: `${SITE_NAME} 是高版本 Minecraft Java 版公益创造休闲服务器`,
-    echo: {
-      button: '回声洞',
-      title: '回声洞',
-      tooltip: '点击弹出随机语录',
-    },
-    hint: '点击下方按钮即可一键启动游戏并加入服务器。',
-    links: {
-      buildingsInfo: '查看所有建筑作品详情',
-      buildingsTitle: '建筑展示',
-      intro: '以下入口将在浏览器中打开对应页面。',
-      mapInfo: '在线地图',
-      title: '网页入口',
-      wikiInfo: '服务器帮助文档',
-      wikiTitle: 'Wiki',
-    },
-    players: {
-      empty: '暂无玩家在线',
-      joinedAt: '上线于',
-      noDetails: '已获取在线人数，但暂无详细玩家列表',
-      peak: (count: number) => `历史峰值 ${count} 人`,
-      title: '在线玩家',
-    },
-    server: {
-      joinButton: '🚀 启动游戏并加入服务器',
-      joinTooltip: (addr: string) => `使用当前选中的 Minecraft 版本启动，并自动进入 ${addr}`,
-      refreshButton: '刷新',
-      statusTitle: `${SITE_NAME} 服务器状态`,
-    },
-    status: {
-      empty: '无人在线',
-      offline: '服务器离线',
-      online: (count: number) => `${count} 人在线`,
-    },
-  },
-  en: {
-    about: {
-      body: `${SITE_NAME} is a modern Minecraft Java creative casual server.`,
-      title: 'About',
-      updatedAt: 'Updated',
-    },
-    announcements: {
-      empty: 'No announcements yet',
-      title: 'Announcements',
-    },
-    bans: {
-      bannedAt: 'Banned by',
-      empty: 'No bans',
-      expired: 'Expires',
-      permanent: 'Permanent',
-      reason: 'Reason',
-      title: 'Ban list',
-    },
-    buildings: {
-      builders: 'Builders',
-      coordinates: 'Coords',
-      empty: 'No buildings yet',
-      original: 'Original',
-      replica: 'Replica',
-      title: 'Buildings',
-    },
-    description: `${SITE_NAME} is a modern Minecraft Java creative casual server`,
-    echo: {
-      button: 'Echo Cave',
-      title: 'Echo Cave',
-      tooltip: 'Click for a random quote',
-    },
-    hint: 'Use the button below to launch the game and join the server.',
-    links: {
-      buildingsInfo: 'View all building showcases',
-      buildingsTitle: 'Buildings',
-      intro: 'These links will open in your browser.',
-      mapInfo: 'Online map',
-      title: 'Web links',
-      wikiInfo: 'Server help and documentation',
-      wikiTitle: 'Wiki',
-    },
-    players: {
-      empty: 'No players online',
-      joinedAt: 'Joined at',
-      noDetails: 'Online count is available, but the player list is empty',
-      peak: (count: number) => `Peak: ${count} players`,
-      title: 'Online players',
-    },
-    server: {
-      joinButton: '🚀 Launch and join server',
-      joinTooltip: (addr: string) =>
-        `Launch the currently selected Minecraft version and join ${addr}`,
-      refreshButton: 'Refresh',
-      statusTitle: `${SITE_NAME} server status`,
-    },
-    status: {
-      empty: 'No players online',
-      offline: 'Server offline',
-      online: (count: number) => `${count} online`,
-    },
-  },
-} satisfies Record<AppLocale, Record<string, unknown>>;
+type HomepageTranslator = ReturnType<typeof createTranslator<Messages['pcl2']['homepage']>>;
 
 function hasAttr(attrs: XamlAttributeList, name: string): boolean {
   return attrs.some(([n]) => n === name);
@@ -218,26 +100,24 @@ function innerCard(title: string, children: XamlNode[]): XamlNode {
   );
 }
 
-function getStatus(data: Pcl2HomepageData) {
+function getStatus(data: Pcl2HomepageData, t: HomepageTranslator) {
   const online = data.onlinePlayers.online ?? -1;
-  const copy = PCL2_COPY[data.locale].status;
-  if (online < 0) return { color: '#E05555', text: copy.offline };
-  if (online === 0) return { color: '#D4941E', text: copy.empty };
-  return { color: '#2ECC40', text: copy.online(online) };
+  if (online < 0) return { color: '#E05555', text: t('status.offline') };
+  if (online === 0) return { color: '#D4941E', text: t('status.empty') };
+  return { color: '#2ECC40', text: t('status.online', { count: online }) };
 }
 
 // Card builders
 
-function buildStatusCard(data: Pcl2HomepageData): XamlNode {
-  const copy = PCL2_COPY[data.locale];
-  const status = getStatus(data);
+function buildStatusCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
+  const status = getStatus(data, t);
   const quote = getEchoText(
     data.echoQuotes[Math.floor(Math.random() * data.echoQuotes.length)],
     data.locale,
   );
 
   return card(
-    copy.server.statusTitle,
+    t('server.statusTitle', SITE_TRANSLATION_VALUES),
     [
       sp(
         [attr('Margin', '0,0,0,8'), attr('Orientation', 'Horizontal')],
@@ -264,7 +144,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
           ]),
           ...(data.onlinePlayers.peak_online != null
             ? [
-                tb(`  ·  ${copy.players.peak(data.onlinePlayers.peak_online)}`, [
+                tb(`  ·  ${t('players.peak', { count: data.onlinePlayers.peak_online })}`, [
                   attr('FontSize', 13),
                   attr('Foreground', '#888888'),
                   attr('Margin', '4,0,0,0'),
@@ -277,13 +157,13 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
       ),
       xaml('local:MyHint', [
         attr('Margin', '0,0,0,12'),
-        attr('Text', copy.hint),
+        attr('Text', t('hint')),
         attr('Theme', 'Blue'),
       ]),
       sp(
         [attr('HorizontalAlignment', 'Center'), attr('Orientation', 'Horizontal')],
         [
-          btn(copy.server.refreshButton, [
+          btn(t('server.refreshButton'), [
             attr('ColorType', 'Highlight'),
             attr('EventType', '刷新主页'),
             attr('Height', 36),
@@ -291,14 +171,14 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
             attr('Padding', '13,0,13,0'),
             attr('Width', 80),
           ]),
-          btn(copy.server.joinButton, [
+          btn(t('server.joinButton'), [
             attr('ColorType', 'Highlight'),
             attr('EventData', `\\current|${data.serverAddress}`),
             attr('EventType', '启动游戏'),
             attr('Height', 36),
             attr('Margin', '0,0,0,0'),
             attr('Padding', '20,0,20,0'),
-            attr('ToolTip', copy.server.joinTooltip(data.serverAddress)),
+            attr('ToolTip', t('server.joinTooltip', { address: data.serverAddress })),
             attr('Width', 190),
           ]),
           // Echo cave button — multi-event: popup + auto-refresh for new random quote
@@ -309,8 +189,8 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
               attr('Height', 36),
               attr('Margin', '10,0,0,0'),
               attr('Padding', '0'),
-              attr('Text', copy.echo.button),
-              attr('ToolTip', copy.echo.tooltip),
+              attr('Text', t('echo.button')),
+              attr('ToolTip', t('echo.tooltip')),
               attr('Width', 80),
             ],
             [
@@ -323,7 +203,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
                     [],
                     [
                       xaml('local:CustomEvent', [
-                        attr('Data', `${copy.echo.title}|${quote}`),
+                        attr('Data', `${t('echo.title')}|${quote}`),
                         attr('Type', '弹出窗口'),
                       ]),
                       xaml('local:CustomEvent', [attr('Data', '-'), attr('Type', '刷新主页')]),
@@ -335,7 +215,7 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
           ),
         ],
       ),
-      tb(copy.description, [
+      tb(data.description, [
         attr('FontSize', 12),
         attr('Foreground', '#CCAA55'),
         attr('Margin', '0,14,0,0'),
@@ -346,22 +226,21 @@ function buildStatusCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildPlayerCard(data: Pcl2HomepageData): XamlNode {
-  const copy = PCL2_COPY[data.locale].players;
+function buildPlayerCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
   const players = data.onlinePlayers.players ?? [];
   if (players.length === 0) {
-    const text = data.onlinePlayers.online > 0 ? copy.noDetails : copy.empty;
-    return card(copy.title, [tb(text)], { isSwapped: false });
+    const text = data.onlinePlayers.online > 0 ? t('players.noDetails') : t('players.empty');
+    return card(t('players.title'), [tb(text)], { isSwapped: false });
   }
   const visible = players.slice(0, MAX_PCL2_PLAYERS);
   return card(
-    `${copy.title} (${players.length})`,
+    `${t('players.title')} (${players.length})`,
     visible.map((p) =>
       sp(
         [attr('Margin', '0,0,0,4')],
         [
           tb(p.name, [attr('FontWeight', 'Bold'), attr('TextWrapping', null)]),
-          tb(`${copy.joinedAt} ${formatPcl2Time(p.joined_at, data.timeZone)}`, [
+          tb(`${t('players.joinedAt')} ${formatPcl2Time(p.joined_at, data.timeZone)}`, [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
             attr('Margin', '0,2,0,0'),
@@ -374,12 +253,11 @@ function buildPlayerCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildAnnouncementCard(data: Pcl2HomepageData): XamlNode {
-  const copy = PCL2_COPY[data.locale].announcements;
+function buildAnnouncementCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
   const items = data.announcements.slice(0, MAX_PCL2_ANNOUNCEMENTS);
-  if (items.length === 0) return card(copy.title, [tb(copy.empty)]);
+  if (items.length === 0) return card(t('announcements.title'), [tb(t('announcements.empty'))]);
   return card(
-    `${copy.title} (${items.length})`,
+    `${t('announcements.title')} (${items.length})`,
     items.map((a, i) =>
       sp(
         [attr('Margin', `0,${i > 0 ? '14' : '0'},0,0`)],
@@ -397,25 +275,27 @@ function buildAnnouncementCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildBanCard(data: Pcl2HomepageData): XamlNode {
-  const copy = PCL2_COPY[data.locale].bans;
-  if (!data.bans || data.bans.length === 0) return card(copy.title, [tb(copy.empty)]);
+function buildBanCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
+  if (!data.bans || data.bans.length === 0) return card(t('bans.title'), [tb(t('bans.empty'))]);
   return card(
-    `${copy.title} (${data.bans.length})`,
+    `${t('bans.title')} (${data.bans.length})`,
     data.bans.map((b, i) =>
       sp(
         [attr('Margin', `0,${i > 0 ? '14' : '0'},0,0`)],
         [
           tb(b.playerName ?? '?', [attr('FontWeight', 'Bold')]),
-          tb(`${copy.reason}：${b.reason || '?'}`, [attr('Margin', '0,2,0,0')]),
+          tb(t('bans.reason', { reason: b.reason || '?' }), [attr('Margin', '0,2,0,0')]),
           tb(
-            `${copy.bannedAt}：${b.bannedBy ?? '?'}  ·  ${formatPcl2Time(b.bannedAt, data.timeZone)}`,
+            t('bans.bannedBy', {
+              name: b.bannedBy ?? '?',
+              time: formatPcl2Time(b.bannedAt, data.timeZone),
+            }),
             [attr('FontSize', 11), attr('Foreground', '#888888'), attr('Margin', '0,2,0,0')],
           ),
           tb(
             b.isPermanent
-              ? copy.permanent
-              : `${copy.expired}：${formatPcl2Time(b.expiresAt, data.timeZone)}`,
+              ? t('bans.permanent')
+              : t('bans.expiresAt', { time: formatPcl2Time(b.expiresAt, data.timeZone) }),
             [attr('FontSize', 11), attr('Foreground', b.isPermanent ? '#E05555' : '#D4941E')],
           ),
         ],
@@ -425,17 +305,17 @@ function buildBanCard(data: Pcl2HomepageData): XamlNode {
   );
 }
 
-function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
-  const copy = PCL2_COPY[data.locale].buildings;
-  if (!data.buildings || data.buildings.length === 0) return card(copy.title, [tb(copy.empty)]);
+function buildBuildingCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
+  if (!data.buildings || data.buildings.length === 0)
+    return card(t('buildings.title'), [tb(t('buildings.empty'))]);
   const visible = data.buildings.slice(0, MAX_PCL2_BUILDINGS);
   const innerCards = visible.map((b) => {
-    const name = b.name?.[data.locale] || b.name?.['zh-CN'] || b.name?.en || '?';
-    const description =
-      b.description?.[data.locale] || b.description?.['zh-CN'] || b.description?.en || '';
-    const builders = (b.builders ?? []).map((bd) => bd.name).join(', ');
-    const isReplica = b.buildType === 'replica';
-    const coordText = `${copy.coordinates}: ${b.coordinates.world} [${b.coordinates.x}, ${b.coordinates.y}, ${b.coordinates.z}]  ·  ${isReplica ? copy.replica : copy.original}`;
+    const name = getLocalizedText(b.name, data.locale) || '?';
+    const description = getLocalizedText(b.description, data.locale);
+    const builders = sortBuildersByWeight(b.builders)
+      .map((builder) => builder.name)
+      .join(', ');
+    const coordText = `${t('buildings.coordinates')}: ${b.coordinates.world} [${b.coordinates.x}, ${b.coordinates.y}, ${b.coordinates.z}]  ·  ${data.buildingTypes[b.buildType]}`;
 
     const imageNodes: XamlNode[] = [];
     const imgs = b.images ?? [];
@@ -461,7 +341,7 @@ function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
             attr('Foreground', '#888888'),
             attr('Margin', '0,6,0,0'),
           ]),
-          tb(`${copy.builders}: ${builders}`, [
+          tb(`${t('buildings.builders')}: ${builders}`, [
             attr('FontSize', 11),
             attr('Foreground', '#888888'),
           ]),
@@ -475,37 +355,50 @@ function buildBuildingCard(data: Pcl2HomepageData): XamlNode {
     [
       attr('CanSwap', true),
       attr('Margin', '0,0,0,15'),
-      attr('Title', `${copy.title} (${data.buildings.length})`),
+      attr('Title', `${t('buildings.title')} (${data.buildings.length})`),
     ],
     [sp([attr('Margin', '25,40,23,15')], innerCards)],
   );
 }
 
-function buildLinksCard(locale: AppLocale, siteOrigin: string, mapTitle: string): XamlNode {
-  const copy = PCL2_COPY[locale].links;
+function buildLinksCard(
+  locale: AppLocale,
+  siteOrigin: string,
+  mapTitle: string,
+  t: HomepageTranslator,
+): XamlNode {
   return card(
-    copy.title,
+    t('links.title'),
     [
-      tb(copy.intro, [attr('Margin', '0,0,0,8')]),
-      li(copy.buildingsTitle, copy.buildingsInfo, absoluteUrl(`/${locale}/buildings`, siteOrigin)),
-      li(copy.wikiTitle, copy.wikiInfo, absoluteUrl(`/${locale}/wiki`, siteOrigin)),
-      li(mapTitle, copy.mapInfo, absoluteUrl(`/${locale}/map`, siteOrigin)),
+      tb(t('links.intro'), [attr('Margin', '0,0,0,8')]),
+      li(
+        t('links.buildingsTitle'),
+        t('links.buildingsInfo'),
+        absoluteUrl(`/${locale}/buildings`, siteOrigin),
+      ),
+      li(t('links.wikiTitle'), t('links.wikiInfo'), absoluteUrl(`/${locale}/wiki`, siteOrigin)),
+      li(mapTitle, t('links.mapInfo'), absoluteUrl(`/${locale}/map`, siteOrigin)),
     ],
     { isSwapped: true },
   );
 }
 
-function buildAboutCard(locale: AppLocale, siteOrigin: string, timeZone: string): XamlNode {
-  const copy = PCL2_COPY[locale].about;
+function buildAboutCard(
+  locale: AppLocale,
+  siteOrigin: string,
+  timeZone: string,
+  description: string,
+  t: HomepageTranslator,
+): XamlNode {
   const homepageUrl = withPcl2TimeZone(
     absoluteUrl(getPcl2HomepagePath(locale), siteOrigin),
     timeZone,
   );
   return card(
-    copy.title,
+    t('about.title'),
     [
-      tb(copy.body, [attr('Margin', '0,0,0,6')]),
-      tb(`${copy.updatedAt}: {time}  ·  PCL {pcl_version}  ·  ${homepageUrl}`, [
+      tb(description, [attr('Margin', '0,0,0,6')]),
+      tb(`${t('about.updatedAt')}: {time}  ·  PCL {pcl_version}  ·  ${homepageUrl}`, [
         attr('FontSize', 11),
         attr('Foreground', '#666666'),
         attr('HorizontalAlignment', 'Center'),
@@ -517,13 +410,15 @@ function buildAboutCard(locale: AppLocale, siteOrigin: string, timeZone: string)
 }
 
 export function buildPcl2HomepageXml(data: Pcl2HomepageData, mapTitle: string): string {
+  const t = createTranslator({ locale: data.locale, messages: data.messages });
+
   return renderXamlFragment([
-    buildStatusCard(data),
-    buildPlayerCard(data),
-    buildAnnouncementCard(data),
-    buildBanCard(data),
-    buildBuildingCard(data),
-    buildLinksCard(data.locale, data.siteOrigin, mapTitle),
-    buildAboutCard(data.locale, data.siteOrigin, data.timeZone),
+    buildStatusCard(data, t),
+    buildPlayerCard(data, t),
+    buildAnnouncementCard(data, t),
+    buildBanCard(data, t),
+    buildBuildingCard(data, t),
+    buildLinksCard(data.locale, data.siteOrigin, mapTitle, t),
+    buildAboutCard(data.locale, data.siteOrigin, data.timeZone, data.description, t),
   ]);
 }

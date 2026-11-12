@@ -1,3 +1,5 @@
+import { withRequestTimeout } from '@/shared/lib/request-timeout';
+
 export class AuthRequestError extends Error {
   constructor(
     readonly code: string,
@@ -40,5 +42,3 @@ export async function authRequest<T>(
     options.signal,
   );
 }
-
-import { withRequestTimeout } from '@/shared/lib/request-timeout';

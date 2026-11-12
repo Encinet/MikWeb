@@ -1,3 +1,5 @@
+import type { MapWorldHint } from '@/modules/map/model/map-world';
+
 export interface ChatCoordinates {
   start: number;
   end: number;
@@ -67,5 +69,3 @@ export function findChatCoordinates(text: string): ChatCoordinates[] {
   }
   return found.sort((a, b) => a.start - b.start);
 }
-
-import type { MapWorldHint } from '@/modules/map/model/map-world';

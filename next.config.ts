@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { CHAT_WEBSOCKET_URL, DATA_API_ORIGIN } from './src/shared/config/service-config';
 import { routing } from './src/shared/i18n/routing';
 
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
@@ -21,8 +22,7 @@ const nextConfig: NextConfig = {
     const headers = [
       {
         key: 'Content-Security-Policy',
-        value:
-          "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; connect-src 'self' https://data.mcmik.top wss://chat.mcmik.top; upgrade-insecure-requests",
+        value: `frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; connect-src 'self' ${DATA_API_ORIGIN} ${new URL(CHAT_WEBSOCKET_URL).origin}; upgrade-insecure-requests`,
       },
       { key: 'X-Frame-Options', value: 'DENY' },
       { key: 'X-Content-Type-Options', value: 'nosniff' },

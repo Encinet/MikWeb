@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { McpConnectionDetails } from '@/modules/mcp/ui/mcp-connection-details';
-import { SITE_URL } from '@/shared/config/site-config';
+import { SITE_TRANSLATION_VALUES, SITE_URL } from '@/shared/config/site-config';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { ArtGuidePage } from '@/shared/ui/page/art-guide-page';
 
@@ -47,7 +47,7 @@ export default async function McpPage({ params }: McpPageParams) {
       guideTitle={t('stepsTitle')}
       pageClassName="mcp-config-page"
       steps={setupSteps}
-      subtitle={t('subtitle')}
+      subtitle={t('subtitle', SITE_TRANSLATION_VALUES)}
       title={t('title')}
     >
       <McpConnectionDetails

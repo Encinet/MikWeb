@@ -1,7 +1,9 @@
+import type { AppLocale } from '@/shared/i18n/routing';
+
 export type WikiSectionId = string;
 export type WikiSectionGroupId = string;
 
-export type WikiLocale = 'zh-CN' | 'en';
+export type WikiLocale = AppLocale;
 
 export type WikiSectionIcon =
   | 'Home'

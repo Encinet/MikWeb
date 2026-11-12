@@ -1,11 +1,12 @@
 import 'server-only';
 import { cookies } from 'next/headers';
+import { DATA_API_ORIGIN } from '@/shared/config/service-config';
 import {
   RequestBodyLimitError,
   readLimitedRequestBody,
 } from '@/shared/server/limited-request-body';
 
-const DATA_AUTH_ORIGIN = process.env.MIKDATA_AUTH_ORIGIN ?? 'https://data.mcmik.top';
+const DATA_AUTH_ORIGIN = process.env.MIKDATA_AUTH_ORIGIN ?? DATA_API_ORIGIN;
 const SESSION_COOKIE_NAME = '__Host-mik_sid';
 const LOGIN_COOKIE_NAME = '__Host-mik_login';
 const MAX_AUTH_BODY_BYTES = 64 * 1024;

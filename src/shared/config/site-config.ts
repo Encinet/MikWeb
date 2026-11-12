@@ -1,5 +1,9 @@
 export const SITE_URL = 'https://mcmik.top';
+export const SITE_HOSTNAME = new URL(SITE_URL).hostname;
+export const MINECRAFT_SERVER_ADDRESS = 'mcmik.top';
 export const SITE_NAME = 'Mik Casual';
+// Compact wordmarks use the short name; titles, metadata and print use the full name.
+export const SITE_SHORT_NAME = 'Mik';
 export const SITE_LOGO_PATH = '/brand/mik/logo.svg';
 export const SITE_FAVICON_PATH = '/brand/mik/favicon.ico';
 export const SITE_APPLE_ICON_PATH = '/brand/mik/apple-touch-icon.png';
@@ -19,6 +23,11 @@ export const SITE_APP_ICONS = [
 ];
 export const SITE_NOTIFICATION_ICON_PATH = SITE_APP_ICONS[0].src;
 export const ORGANIZATION_NAME = 'Encinet';
+export const SITE_TRANSLATION_VALUES = {
+  siteName: SITE_NAME,
+  organizationName: ORGANIZATION_NAME,
+  siteHost: SITE_HOSTNAME,
+} as const;
 export const ORGANIZATION_URL = 'https://encinet.netlify.app/';
 export const SOURCE_CODE_URL = 'https://github.com/Encinet/MikWeb';
 export const ORGANIZATION_LOGO_PATH = '/brand/encinet/logo.webp';

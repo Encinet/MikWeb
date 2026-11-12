@@ -1,3 +1,4 @@
+import { getMessages } from 'next-intl/server';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-types';
 import type { BanItem } from '@/modules/ban/model/ban-types';
@@ -11,6 +12,7 @@ import type { PlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { isPlayerOnlinePayload } from '@/modules/player/model/player-types';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
+import { MINECRAFT_SERVER_ADDRESS } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { getRequestOriginFromRequest } from '@/shared/url/request-url';
 
@@ -26,8 +28,6 @@ const FALLBACK_ONLINE_PLAYERS: PlayerOnlinePayload = {
   online: -1,
   players: [],
 };
-
-const PCL2_SERVER_ADDRESS = 'mcmik.top';
 
 async function loadJson<TData>(
   pathname: string,
@@ -76,14 +76,17 @@ export async function loadPcl2HomepageData(
   request: Request,
   locale: AppLocale,
 ): Promise<Pcl2HomepageData> {
-  const data = await loadPcl2HomepageApiData();
+  const [data, messages] = await Promise.all([loadPcl2HomepageApiData(), getMessages({ locale })]);
 
   return {
     ...data,
-    displayAddress: PCL2_SERVER_ADDRESS,
+    buildingTypes: messages.buildings.types,
+    description: messages.metadata.description,
+    displayAddress: MINECRAFT_SERVER_ADDRESS,
     echoQuotes,
     locale,
-    serverAddress: PCL2_SERVER_ADDRESS,
+    messages: messages.pcl2.homepage,
+    serverAddress: MINECRAFT_SERVER_ADDRESS,
     siteOrigin: getRequestOriginFromRequest(request),
     timeZone: getPcl2TimeZoneFromUrl(request.url),
   };

@@ -7,6 +7,7 @@ import { authenticationErrorKey } from '@/modules/auth/lib/authentication-error-
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import type { AuthenticationFlow } from '@/modules/auth/model/use-authentication-flow';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import { SITE_TRANSLATION_VALUES } from '@/shared/config/site-config';
 import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { InlineFeedback } from '@/shared/ui/feedback/async-state';
@@ -117,7 +118,14 @@ export function AuthenticationFeedback({
   return (
     <InlineFeedback
       className={className}
-      value={error ? { message: t(key), kind: error === 'cancelled' ? 'info' : 'error' } : null}
+      value={
+        error
+          ? {
+              message: t(key, SITE_TRANSLATION_VALUES),
+              kind: error === 'cancelled' ? 'info' : 'error',
+            }
+          : null
+      }
     />
   );
 }

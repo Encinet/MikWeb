@@ -23,6 +23,12 @@
 
 界面文案同时更新 `messages/zh-CN.json` 和 `messages/en.json`，翻译键归入对应业务命名空间。新增、移动或删除键时同步修改调用方；动态外部键通过 `hasTranslationKey` 检查后使用。
 
+站点品牌由 `src/shared/config/site-config.ts` 定义：正式站名使用 `SITE_NAME`，紧凑的导航标识使用 `SITE_SHORT_NAME`，运营团队使用 `ORGANIZATION_NAME`。品牌名不随语言变化。翻译需要品牌名时使用 `{siteName}` 或 `{organizationName}`，调用时传入 `SITE_TRANSLATION_VALUES`；不要在组件中另建按语言划分的文案表。
+
+完整服务器介绍复用 `metadata.description`，简短定位复用 `nav.brand.subtitle`，分享卡的标题和短介绍使用 `metadata.social`。页面标题不再手写品牌前后缀，由布局统一添加站名。Wiki 正文中的首次介绍使用正式站名；插件和仓库名称按项目实际名称保留。
+
+游戏连接地址使用 `MINECRAFT_SERVER_ADDRESS`，网页域名由 `SITE_URL` 派生。API 与聊天服务端点位于 `src/shared/config/service-config.ts`，连接代码和 CSP 引用同一配置。语言范围与语言名称由 `src/shared/i18n/routing.ts` 维护，Wiki 复用站点语言范围。建筑类型的显示名称复用 `buildings.types`。
+
 品牌资源位于 `public/brand/`，页面图片位于 `public/images/`，公共路径集中在 `src/shared/config/site-config.ts`。修改 Logo 时同步更新派生图标，更新字体时保留许可证。
 
 ## Wiki 编辑

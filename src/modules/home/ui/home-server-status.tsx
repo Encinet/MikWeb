@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
+import { MINECRAFT_SERVER_ADDRESS } from '@/shared/config/site-config';
 import { CopyButton } from '@/shared/ui/action/copy-button';
 
 export function HomeServerStatus() {
@@ -26,8 +27,8 @@ export function HomeServerStatus() {
       </p>
       <div className="home-server-status__address">
         <span className="sr-only">{t('hero.notice')}</span>
-        <code>{t('hero.serverAddress')}</code>
-        <CopyButton value={t('hero.serverAddress')} className="home-server-status__copy" />
+        <code>{MINECRAFT_SERVER_ADDRESS}</code>
+        <CopyButton value={MINECRAFT_SERVER_ADDRESS} className="home-server-status__copy" />
       </div>
     </div>
   );

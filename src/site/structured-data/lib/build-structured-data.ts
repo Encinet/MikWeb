@@ -5,6 +5,7 @@ import {
   ORGANIZATION_URL,
   SITE_LOGO_PATH,
   SITE_NAME,
+  SITE_SHORT_NAME,
   SITE_URL,
 } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
@@ -40,7 +41,6 @@ export function buildStructuredData({
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: ORGANIZATION_NAME,
-      alternateName: 'Mik',
       url: ORGANIZATION_URL,
       logo: ORGANIZATION_LOGO_URL,
       description: organizationDescription,
@@ -48,6 +48,7 @@ export function buildStructuredData({
       subOrganization: {
         '@type': 'Organization',
         name: SITE_NAME,
+        alternateName: SITE_SHORT_NAME,
         url,
         logo: `${SITE_URL}${SITE_LOGO_PATH}`,
         description,

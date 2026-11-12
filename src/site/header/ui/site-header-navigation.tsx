@@ -41,6 +41,7 @@ export function DesktopSiteHeaderNavigation({
           <Link
             key={item.id}
             href={item.path}
+            prefetch={item.path === '/wiki' ? true : undefined}
             aria-current={isActive ? 'page' : undefined}
             className={`ui-nav-link${isActive ? ' ui-nav-link--active' : ''} relative inline-flex items-center gap-2 whitespace-nowrap py-2`}
           >
@@ -159,6 +160,7 @@ export function MobileSiteHeaderMenu({
                   <Link
                     key={item.id}
                     href={item.path}
+                    prefetch={item.path === '/wiki' ? true : undefined}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={onClose}
                     className={`ui-nav-link${isActive ? ' ui-nav-link--active' : ''} block py-3 px-4`}

@@ -25,6 +25,50 @@
   padding: 0;
 }
 
+.wiki-access-status-slot {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  min-height: 2.75rem;
+}
+
+.wiki-access-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  color: var(--theme-text-muted-strong);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.wiki-access-status .progress-ring {
+  flex-shrink: 0;
+}
+
+.wiki-access-status__message {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wiki-access-status button {
+  flex-shrink: 0;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  color: var(--theme-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.wiki-access-status button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
 .wiki-staff-status {
   display: flex;
   align-items: center;

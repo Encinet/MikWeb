@@ -1,3 +1,5 @@
+import { SITE_NAME } from '@/shared/config/site-config';
+
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { routing } from '@/shared/i18n/routing';
 import {
@@ -7,7 +9,7 @@ import {
 import { SOCIAL_IMAGE_SIZE } from '@/site/seo/social-image/social-image-config';
 
 export const contentType = 'image/png';
-export const alt = 'Mik Casual Minecraft server';
+export const alt = SITE_NAME;
 export const size = SOCIAL_IMAGE_SIZE;
 
 export function generateStaticParams() {

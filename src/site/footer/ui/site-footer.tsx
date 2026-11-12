@@ -5,6 +5,8 @@ import {
   ORGANIZATION_NAME,
   ORGANIZATION_URL,
   SITE_LOGO_PATH,
+  SITE_NAME,
+  SITE_SHORT_NAME,
   SOURCE_CODE_URL,
 } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/navigation';
@@ -30,15 +32,15 @@ export default async function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div className="site-footer__col site-footer__col--brand">
-          <Link href="/" className="site-footer__brand">
+          <Link href="/" className="site-footer__brand" aria-label={SITE_NAME}>
             <Image
               src={SITE_LOGO_PATH}
-              alt="Mik"
+              alt=""
               width={36}
               height={36}
               className="site-footer__logo"
             />
-            <span>Mik</span>
+            <span>{SITE_SHORT_NAME}</span>
           </Link>
           <p className="site-footer__desc">{t('metadata.description')}</p>
           <p className="site-footer__copyright">

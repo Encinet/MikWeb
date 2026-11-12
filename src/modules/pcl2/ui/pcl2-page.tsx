@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { getPcl2HomepagePath } from '@/modules/pcl2/lib/pcl2-homepage-path';
+import { SITE_TRANSLATION_VALUES } from '@/shared/config/site-config';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { ArtGuidePage } from '@/shared/ui/page/art-guide-page';
 import { Pcl2HomepageAddress } from './pcl2-homepage-address';
@@ -25,7 +26,7 @@ export default async function Pcl2Page({ params }: Pcl2PageParams) {
     },
     {
       title: t('steps.done.title'),
-      description: t('steps.done.description'),
+      description: t('steps.done.description', SITE_TRANSLATION_VALUES),
     },
   ];
 
@@ -33,7 +34,7 @@ export default async function Pcl2Page({ params }: Pcl2PageParams) {
     <ArtGuidePage
       guideTitle={t('stepsTitle')}
       steps={setupSteps}
-      subtitle={t('subtitle')}
+      subtitle={t('subtitle', SITE_TRANSLATION_VALUES)}
       title={t('title')}
     >
       <Pcl2HomepageAddress

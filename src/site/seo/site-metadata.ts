@@ -14,7 +14,7 @@ export const siteMetadata: Metadata = {
   applicationName: SITE_NAME,
   authors: [{ name: `${ORGANIZATION_NAME} Team` }],
   creator: ORGANIZATION_NAME,
-  publisher: 'Mik',
+  publisher: ORGANIZATION_NAME,
   appleWebApp: {
     title: SITE_NAME,
     statusBarStyle: 'black-translucent',

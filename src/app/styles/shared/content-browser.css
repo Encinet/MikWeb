@@ -16,6 +16,17 @@
   text-wrap: balance;
 }
 
+.content-browser-header__heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.content-browser-header__heading > .content-browser-header__title {
+  flex-shrink: 0;
+}
+
 .content-browser-header__search {
   min-width: 0;
 }

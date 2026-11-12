@@ -47,7 +47,7 @@ import { ChatPlayerPicker } from '@/modules/chat/ui/chat-player-picker';
 import { ChatSettings } from '@/modules/chat/ui/chat-settings';
 import { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import { SITE_LOGO_PATH } from '@/shared/config/site-config';
+import { SITE_LOGO_PATH, SITE_SHORT_NAME } from '@/shared/config/site-config';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { Link } from '@/shared/i18n/navigation';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
@@ -363,7 +363,7 @@ export function ChatWorkspace({
   const brand = (
     <Link href="/" className="chat-brand" aria-label={t('backHome')}>
       <Image src={SITE_LOGO_PATH} alt="" width={36} height={36} />
-      <span>Mik</span>
+      <span>{SITE_SHORT_NAME}</span>
     </Link>
   );
   const identity = (

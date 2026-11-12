@@ -1,5 +1,6 @@
 import type { RecipientContext, SenderContext } from '@hpke/core';
 import { Aes256Gcm, CipherSuite, DhkemP256HkdfSha256, HkdfSha256 } from '@hpke/core';
+import { CHAT_WEBSOCKET_URL } from '@/shared/config/service-config';
 
 const PROTOCOL = 'mik-chat-hpke-2026-11-08\0https://mcmik.top\0';
 const KEY_LIFETIME = 30 * 60 * 1000;
@@ -89,7 +90,7 @@ export class ChatTransport {
 
   constructor() {
     this.trustedKey = decode(process.env.NEXT_PUBLIC_WEB_CHAT_PUBLIC_KEY ?? '', 65);
-    this.ws = new WebSocket('wss://chat.mcmik.top/ws');
+    this.ws = new WebSocket(CHAT_WEBSOCKET_URL);
     this.ws.binaryType = 'arraybuffer';
     this.ws.onmessage = (event: MessageEvent<unknown>) => {
       if (this.stage === 'closed') return;

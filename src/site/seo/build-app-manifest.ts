@@ -1,14 +1,22 @@
 import 'server-only';
 
 import type { MetadataRoute } from 'next';
-import { getMessages } from 'next-intl/server';
-import { SITE_APP_ICONS, SITE_NAME } from '@/shared/config/site-config';
+import { getMessages, getTranslations } from 'next-intl/server';
+import {
+  SITE_APP_ICONS,
+  SITE_NAME,
+  SITE_SHORT_NAME,
+  SITE_TRANSLATION_VALUES,
+} from '@/shared/config/site-config';
 import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { getAccentProperties } from '@/site/theme/lib/accent-color';
 
 export async function buildAppManifest(locale: AppLocale): Promise<MetadataRoute.Manifest> {
-  const messages = await getMessages({ locale });
+  const [messages, screenshotT] = await Promise.all([
+    getMessages({ locale }),
+    getTranslations({ locale, namespace: 'metadata.screenshots' }),
+  ]);
   const background = getAccentProperties(DEFAULT_ACCENT_COLOR)['--palette-dark-bg'];
   const shortcutIcons = [SITE_APP_ICONS[0]];
 
@@ -16,7 +24,7 @@ export async function buildAppManifest(locale: AppLocale): Promise<MetadataRoute
     id: '/',
     scope: '/',
     name: SITE_NAME,
-    short_name: SITE_NAME,
+    short_name: SITE_SHORT_NAME,
     description: messages.metadata.description,
     lang: locale,
     dir: 'ltr',
@@ -50,14 +58,14 @@ export async function buildAppManifest(locale: AppLocale): Promise<MetadataRoute
         sizes: '1440x900',
         type: 'image/png',
         form_factor: 'wide',
-        label: messages.metadata.screenshots.desktop,
+        label: screenshotT('desktop', SITE_TRANSLATION_VALUES),
       },
       {
         src: `/images/app/${locale}/mobile.png`,
         sizes: '390x844',
         type: 'image/png',
         form_factor: 'narrow',
-        label: messages.metadata.screenshots.mobile,
+        label: screenshotT('mobile', SITE_TRANSLATION_VALUES),
       },
     ],
   };

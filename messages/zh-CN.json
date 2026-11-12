@@ -1,15 +1,14 @@
 {
   "metadata": {
-    "title": "Mik 米客服务器 - 创造休闲服务器",
-    "description": "一个创造休闲向 Minecraft 服务器，允许任意 Mod，专注于建筑创作",
-    "organizationDescription": "Encinet 团队管理的 Mik 品牌 Minecraft 服务器社区",
+    "description": "一个专注于建筑创作的创造休闲向 Minecraft 公益服务器",
+    "organizationDescription": "{organizationName} 团队管理的 {siteName} 品牌 Minecraft 服务器社区",
     "screenshots": {
-      "desktop": "Mik Casual 桌面首页，展示服务器介绍和玩家常用入口",
-      "mobile": "Mik Casual 手机首页，展示服务器介绍和地图、指南入口"
+      "desktop": "{siteName} 桌面首页，展示服务器介绍和玩家常用入口",
+      "mobile": "{siteName} 手机首页，展示服务器介绍和地图、指南入口"
     },
     "social": {
       "title": "创造休闲\nMinecraft 服务器",
-      "description": "允许任意 Mod，专注建筑创作与社区交流"
+      "description": "专注建筑创作的\n公益服务器"
     }
   },
   "common": {
@@ -54,7 +53,7 @@
   },
   "nav": {
     "brand": {
-      "subtitle": "创造休闲服务器"
+      "subtitle": "创造休闲向 Minecraft 公益服务器"
     },
     "items": {
       "home": "首页",
@@ -83,14 +82,11 @@
   },
   "home": {
     "hero": {
-      "title": "Mik Casual",
       "wikiButton": "查看 Wiki",
-      "description": "一个 Minecraft 公益创造休闲向服务器，在这里留下属于你的杰作",
-      "notice": "服务器地址",
-      "serverAddress": "mcmik.top"
+      "notice": "服务器地址"
     },
     "live": {
-      "statusTitle": "Mik 当前状态",
+      "statusTitle": "{siteName} 当前状态",
       "playerListTitle": "在线玩家",
       "noPlayersOnline": "暂无玩家在线",
       "status": {
@@ -304,7 +300,7 @@
     "title": "Wiki",
     "meta": {
       "description": "入服、建造、服务器机制与开源贡献的文档入口",
-      "imageDescription": "Mik 服务器文档与开源计划"
+      "imageDescription": "服务器文档与开源计划"
     },
     "navigation": {
       "title": "导航",
@@ -320,8 +316,8 @@
       }
     },
     "staff": {
-      "loading": "正在验证权限并加载管理手册…",
-      "error": "管理手册暂时无法加载，请重试。",
+      "loading": "正在验证管理权限…",
+      "error": "管理手册加载失败",
       "retry": "重新加载"
     }
   },
@@ -474,7 +470,7 @@
       },
       "passkey": {
         "description": "管理可用于网页登录的设备、系统账号或安全密钥",
-        "defaultName": "Mik Passkey",
+        "defaultName": "{siteName} Passkey",
         "createdAt": "创建于 {time}",
         "empty": "当前账号还没有绑定 Passkey",
         "deleteConfirmation": "撤销这个 Passkey 后，它将无法再用于登录。已建立的网页会话仍然有效。",
@@ -543,7 +539,7 @@
         "passkey_verification_failed": "Passkey 验证失败，请重试。",
         "cancelled": "Passkey 操作已取消",
         "passkey_already_registered": "这个 Passkey 已经绑定过",
-        "passkey_domain_mismatch": "当前访问域名不支持 Passkey，请使用 mcmik.top",
+        "passkey_domain_mismatch": "当前访问域名不支持 Passkey，请使用 {siteHost}",
         "passkey_unsupported_authenticator": "当前设备不支持可用于登录的 Passkey",
         "passkey_browser_unsupported": "当前浏览器不支持 Passkey",
         "verificationInvalid": "本次验证已失效，请重新开始。"
@@ -747,8 +743,7 @@
   },
   "pcl2": {
     "title": "PCL2 主页",
-    "subtitle": "在启动器中查看 Mik 的服务器状态、公告和建筑。",
-    "description": "设置 -> 个性化 -> 自定义主页，点击“联网更新”，在“下载地址”栏输入上方地址，然后返回启动页即可完成。",
+    "subtitle": "在启动器中查看 {siteName} 的服务器状态、公告和建筑。",
     "addressLabel": "主页地址",
     "detectingTimeZone": "正在准备主页地址…",
     "stepsTitle": "设置步骤",
@@ -763,15 +758,72 @@
       },
       "done": {
         "title": "返回启动页",
-        "description": "重新打开启动页后即可看到 Mik 首页。"
+        "description": "重新打开启动页后即可看到 {siteName} 首页。"
       }
     },
-    "imageDescription": "在启动器中查看状态、公告和建筑"
+    "imageDescription": "在启动器中查看状态、公告和建筑",
+    "homepage": {
+      "about": {
+        "title": "关于",
+        "updatedAt": "更新时间"
+      },
+      "announcements": {
+        "empty": "暂无公告",
+        "title": "公告"
+      },
+      "bans": {
+        "empty": "暂无封禁记录",
+        "permanent": "永久封禁",
+        "reason": "原因：{reason}",
+        "title": "封禁列表",
+        "bannedBy": "执行者：{name} · {time}",
+        "expiresAt": "过期时间：{time}"
+      },
+      "buildings": {
+        "builders": "建设者",
+        "coordinates": "坐标",
+        "empty": "暂无建筑",
+        "title": "建筑收录"
+      },
+      "echo": {
+        "button": "回声洞",
+        "title": "回声洞",
+        "tooltip": "点击弹出随机语录"
+      },
+      "hint": "点击下方按钮即可一键启动游戏并加入服务器。",
+      "links": {
+        "buildingsInfo": "查看所有建筑作品详情",
+        "buildingsTitle": "建筑展示",
+        "intro": "以下入口将在浏览器中打开对应页面。",
+        "mapInfo": "在线地图",
+        "title": "网页入口",
+        "wikiInfo": "服务器帮助文档",
+        "wikiTitle": "Wiki"
+      },
+      "players": {
+        "empty": "暂无玩家在线",
+        "joinedAt": "上线于",
+        "noDetails": "已获取在线人数，但暂无详细玩家列表",
+        "peak": "历史峰值 {count} 人",
+        "title": "在线玩家"
+      },
+      "server": {
+        "joinButton": "🚀 启动游戏并加入服务器",
+        "joinTooltip": "使用当前选中的 Minecraft 版本启动，并自动进入 {address}",
+        "refreshButton": "刷新",
+        "statusTitle": "{siteName} 服务器状态"
+      },
+      "status": {
+        "empty": "无人在线",
+        "offline": "服务器离线",
+        "online": "{count} 人在线"
+      }
+    }
   },
   "mcp": {
     "title": "MCP 配置",
-    "subtitle": "在支持 MCP 的客户端中查询 Mik 服务器信息。",
-    "description": "Mik MCP 服务提供玩家在线状态、建筑收录、封禁记录、公告和 Wiki 搜索工具。",
+    "subtitle": "在支持 MCP 的客户端中查询 {siteName} 服务器信息。",
+    "description": "{siteName} MCP 服务提供玩家在线状态、建筑收录、封禁记录、公告和 Wiki 搜索工具。",
     "configTitle": "JSON 配置",
     "stepsTitle": "接入步骤",
     "steps": {
@@ -809,10 +861,10 @@
     }
   },
   "join": {
-    "title": "加入 Mik 社区",
+    "title": "加入服务器",
     "description": "加入 QQ 群或 Matrix 空间，再绑定游戏账号即可入服",
     "meta": {
-      "description": "加入 Mik Casual 的 QQ 或 Matrix 社区，绑定游戏账号后开始游玩"
+      "description": "加入 {siteName} 的 QQ 或 Matrix 社区，绑定游戏账号后开始游玩"
     },
     "qq": {
       "title": "QQ 群",

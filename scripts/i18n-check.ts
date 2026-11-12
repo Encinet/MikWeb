@@ -2,8 +2,15 @@ import type { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { isStructurallySame, parse } from '@formatjs/icu-messageformat-parser';
 import enMessages from '../messages/en.json';
 import zhMessages from '../messages/zh-CN.json';
+import { SITE_SHORT_NAME, SITE_TRANSLATION_VALUES } from '../src/shared/config/site-config';
 import type { AppLocale } from '../src/shared/i18n/routing';
 import errorMessages from '../src/site/error/lib/error-messages.generated.json';
+
+const identityLiterals = [...Object.values(SITE_TRANSLATION_VALUES), SITE_SHORT_NAME];
+const identityPattern = new RegExp(
+  `\\b(?:${identityLiterals.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
+  'u',
+);
 
 function flattenMessages(
   value: unknown,
@@ -12,6 +19,9 @@ function flattenMessages(
 ) {
   if (typeof value === 'string') {
     if (!value.trim()) throw new Error(`Empty translation: ${path}`);
+    if (identityPattern.test(value)) {
+      throw new Error(`Hardcoded site identity: ${path}; use shared translation values`);
+    }
     try {
       result.set(path, parse(value));
     } catch (cause) {
