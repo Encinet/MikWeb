@@ -5,6 +5,7 @@ import { resolveLocalePreference } from '@/shared/i18n/locale-preference';
 import { LOCALE_COOKIE_NAME, routing } from '@/shared/i18n/routing';
 import { getErrorContent } from '@/site/error/lib/error-content';
 import { ErrorView } from '@/site/error/ui/error-view';
+import { formatPageTitle } from '@/site/seo/page-title';
 
 const subscribe = () => () => {};
 const getServerLocale = () => routing.defaultLocale;
@@ -33,7 +34,7 @@ export function GlobalErrorPage({ retry }: { retry: () => void }) {
   return (
     <html lang={locale}>
       <body style={{ margin: 0, minHeight: '100svh', display: 'flex' }}>
-        <title>{getErrorContent(locale).title}</title>
+        <title>{formatPageTitle(getErrorContent(locale).title)}</title>
         <meta name="robots" content="noindex" />
         <ErrorView locale={locale} retry={retry} />
       </body>

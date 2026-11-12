@@ -5,6 +5,7 @@ import { cache } from 'react';
 import { getRequestLocale } from '@/shared/i18n/request-locale';
 import SiteDocument from '@/site/layout/site-document';
 import NotFoundView from '@/site/not-found/ui/not-found-view';
+import { formatPageTitle } from '@/site/seo/page-title';
 import { siteMetadata } from '@/site/seo/site-metadata';
 
 // The document language is resolved from this request's cookie and headers.
@@ -23,7 +24,12 @@ const getNotFoundContent = cache(async () => {
 
 export async function generateMetadata() {
   const { title, description } = await getNotFoundContent();
-  return { ...siteMetadata, title, description, robots: { index: false, follow: false } };
+  return {
+    ...siteMetadata,
+    title: formatPageTitle(title),
+    description,
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function GlobalNotFound() {

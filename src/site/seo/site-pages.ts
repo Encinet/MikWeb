@@ -3,7 +3,7 @@ export const SITE_PAGES = {
   home: {
     sitemap: true,
     pathname: '',
-    title: 'nav.brand.subtitle',
+    title: 'metadata.homeTitle',
     description: 'metadata.description',
     imageTitle: 'metadata.social.title',
     imageDescription: 'metadata.social.description',

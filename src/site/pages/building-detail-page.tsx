@@ -5,6 +5,7 @@ import { BuildingGalleryLoading } from '@/modules/building/ui/building-route-sta
 import { BuildingsLoading } from '@/modules/building/ui/buildings-loading';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { getBuildingMetadataContent } from '@/site/seo/build-building-metadata';
+import { formatPageTitle } from '@/site/seo/page-title';
 import { ShareTextMetadata } from '@/site/seo/share-text-metadata';
 
 interface BuildingDetailProps {
@@ -24,10 +25,12 @@ async function BuildingDetail({ params, modal = false }: BuildingDetailProps) {
   const { locale, id } = await params;
   const routeLocale = requireRouteLocale(locale);
   const building = await getBuilding(id);
+  const { title, description } = getBuildingMetadataContent(building, routeLocale);
   return (
     <>
       <ShareTextMetadata
-        {...getBuildingMetadataContent(building, routeLocale)}
+        title={formatPageTitle(title)}
+        description={description}
         target={{ kind: 'building', locale: routeLocale, id: building.id }}
       />
       <BuildingGallery key={id} building={building} modal={modal} />

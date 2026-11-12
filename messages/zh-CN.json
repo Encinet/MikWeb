@@ -1,5 +1,6 @@
 {
   "metadata": {
+    "homeTitle": "专注建筑创作的公益服务器",
     "description": "一个专注于建筑创作的创造休闲向 Minecraft 公益服务器",
     "organizationDescription": "{organizationName} 团队管理的 {siteName} 品牌 Minecraft 服务器社区",
     "screenshots": {
@@ -402,14 +403,14 @@
       "passkeys": "Passkey"
     },
     "login": {
-      "title": "玩家登录",
+      "title": "登录",
       "subtitle": "使用游戏内验证码或 Passkey 登录。",
       "actions": {
         "account": "进入个人页"
       }
     },
     "account": {
-      "title": "个人中心",
+      "title": "我的账号",
       "navigation": {
         "label": "个人中心导航"
       },
@@ -440,7 +441,7 @@
       }
     },
     "security": {
-      "title": "登录与安全",
+      "title": "账号安全",
       "subtitle": "管理用于登录的 Passkey 和浏览器会话。",
       "actions": {
         "addPasskey": "添加 Passkey",

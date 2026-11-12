@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { SITE_NAME } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
+import { formatPageTitle } from '@/site/seo/page-title';
 import { SOCIAL_IMAGE_SIZE } from '@/site/seo/social-image/social-image-config';
 
 const OPEN_GRAPH_LOCALE_BY_APP_LOCALE: Record<AppLocale, string> = {
@@ -29,9 +30,10 @@ export function buildPageMetadata({
 }) {
   const canonical = getLocalePath(locale, pathname);
   const image = { url: imagePath, ...SOCIAL_IMAGE_SIZE, alt: imageAlt, type: 'image/png' };
+  const documentTitle = formatPageTitle(title, { home: pathname === '' });
 
   return {
-    title,
+    title: { absolute: documentTitle },
     description,
     alternates: {
       canonical,
@@ -44,7 +46,7 @@ export function buildPageMetadata({
       type: 'website',
       url: canonical,
       siteName: SITE_NAME,
-      title,
+      title: documentTitle,
       description,
       locale: OPEN_GRAPH_LOCALE_BY_APP_LOCALE[locale],
       alternateLocale: Object.entries(OPEN_GRAPH_LOCALE_BY_APP_LOCALE)
@@ -54,7 +56,7 @@ export function buildPageMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: documentTitle,
       description,
       images: [image],
     },

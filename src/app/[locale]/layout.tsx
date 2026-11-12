@@ -20,6 +20,7 @@ import { PrintPreparation } from '@/site/print/ui/print-preparation';
 import { ThemeColor } from '@/site/providers/theme-color';
 import { ThemeProvider } from '@/site/providers/theme-provider';
 import { ViewportMetrics } from '@/site/providers/viewport-metrics';
+import { PAGE_TITLE_TEMPLATE } from '@/site/seo/page-title';
 import { siteMetadata } from '@/site/seo/site-metadata';
 import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
 import StructuredData from '@/site/structured-data/ui/structured-data';
@@ -57,8 +58,8 @@ export async function generateMetadata({
     ...siteMetadata,
     ...homeMetadata,
     title: {
-      default: `${homeMetadata.title} | ${SITE_NAME}`,
-      template: `%s | ${SITE_NAME}`,
+      default: homeMetadata.title.absolute,
+      template: PAGE_TITLE_TEMPLATE,
     },
     manifest: `/${locale}/manifest.webmanifest`,
     keywords: [

@@ -1,5 +1,6 @@
 {
   "metadata": {
+    "homeTitle": "A non-profit creative server",
     "description": "A non-profit creative Minecraft server focused on building and relaxed play.",
     "organizationDescription": "The Minecraft server community behind the {siteName} brand, managed by the {organizationName} team",
     "screenshots": {
@@ -130,7 +131,7 @@
     "latest": "Latest"
   },
   "buildings": {
-    "title": "Building Gallery",
+    "title": "Buildings",
     "types": {
       "original": "Original",
       "derivative": "Derivative",
@@ -212,7 +213,7 @@
     }
   },
   "buildingSubmission": {
-    "title": "Building Submission",
+    "title": "Submit a build",
     "subtitle": "Submit a build you want added to the public showcase. It appears after admin review.",
     "quota": "pending / {max}",
     "sections": {
@@ -322,7 +323,7 @@
     }
   },
   "bans": {
-    "title": "Ban List",
+    "title": "Ban records",
     "meta": {
       "description": "View server ban records"
     },
@@ -402,7 +403,7 @@
       "passkeys": "Passkeys"
     },
     "login": {
-      "title": "Player Login",
+      "title": "Sign in",
       "subtitle": "Sign in with an in-game code or Passkey.",
       "actions": {
         "account": "Open account"
@@ -440,7 +441,7 @@
       }
     },
     "security": {
-      "title": "Login and Security",
+      "title": "Account security",
       "subtitle": "Manage your sign-in Passkeys and browser sessions.",
       "actions": {
         "addPasskey": "Add Passkey",
@@ -742,7 +743,7 @@
     }
   },
   "pcl2": {
-    "title": "PCL2 Homepage",
+    "title": "PCL2 homepage",
     "subtitle": "View {siteName} server status, announcements and buildings in your launcher.",
     "addressLabel": "Homepage URL",
     "detectingTimeZone": "Preparing homepage URL…",
@@ -821,7 +822,7 @@
     }
   },
   "mcp": {
-    "title": "MCP Config",
+    "title": "MCP setup",
     "subtitle": "Query {siteName} server information from an MCP-capable client.",
     "description": "The {siteName} MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
     "configTitle": "JSON configuration",
