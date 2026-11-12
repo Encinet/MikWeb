@@ -30,8 +30,10 @@ export function createWikiMarkdownRenderers() {
     ul: ({ children }: React.PropsWithChildren) => (
       <ul className="wiki-markdown__list wiki-markdown__list--unordered">{children}</ul>
     ),
-    ol: ({ children }: React.PropsWithChildren) => (
-      <ol className="wiki-markdown__list wiki-markdown__list--ordered">{children}</ol>
+    ol: ({ children, start }: React.PropsWithChildren<{ start?: number }>) => (
+      <ol start={start} className="wiki-markdown__list wiki-markdown__list--ordered">
+        {children}
+      </ol>
     ),
     li: ({ children }: React.PropsWithChildren) => (
       <li className="wiki-markdown__li">{children}</li>
