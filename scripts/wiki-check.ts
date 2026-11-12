@@ -1,3 +1,4 @@
+import { createProcessor } from '@mdx-js/mdx';
 import {
   createWikiSectionGroups,
   sortWikiSections,
@@ -12,11 +13,61 @@ import type {
 } from '@/modules/wiki/model/wiki-section-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+import { formatEnglishHeading } from './lib/english-headings';
 
 function createWikiCheckError(title: string, details: string[], suggestion?: string): Error {
   return new Error(
     [title, ...details, suggestion ? `suggestion: ${suggestion}` : null].filter(Boolean).join('\n'),
   );
+}
+
+interface WikiHeadingNode {
+  type: string;
+  name?: string | null;
+  attributes?: { name?: string; value?: unknown }[];
+  children?: WikiHeadingNode[];
+}
+
+const wikiTitleComponents = new Set(['Callout', 'Step', 'Card', 'Details', 'Definition', 'Tab']);
+
+function getWikiComponentHeadings(content: string): string[] {
+  const headings: string[] = [];
+  const visit = (node: WikiHeadingNode) => {
+    if (node.name && wikiTitleComponents.has(node.name)) {
+      const attributes = node.attributes ?? [];
+      const isCodeLabel =
+        node.name === 'Definition' && attributes.some((attribute) => attribute.name === 'code');
+      const title = attributes.find((attribute) => attribute.name === 'title')?.value;
+      if (!isCodeLabel && typeof title === 'string') headings.push(title);
+    }
+    for (const child of node.children ?? []) visit(child);
+  };
+  visit(createProcessor().parse(content));
+  return headings;
+}
+
+function validateEnglishHeadings(locale: WikiLocale, documents: WikiSectionDocument[]): void {
+  if (locale !== 'en') return;
+  for (const document of documents) {
+    const headings = [
+      document.section.label,
+      document.section.groupLabel,
+      ...parseWikiMarkdownBlocks(document.section.id, document.content).map(
+        (block) => block.heading,
+      ),
+      ...getWikiComponentHeadings(document.content),
+    ];
+    for (const heading of headings) {
+      const expected = formatEnglishHeading(heading);
+      if (heading !== expected) {
+        throw createWikiCheckError('English Wiki heading must use title case', [
+          `file: ${document.sourcePath}`,
+          `heading: ${heading}`,
+          `expected: ${expected}`,
+        ]);
+      }
+    }
+  }
 }
 
 function validateNoDuplicateTopLevelHeading(
@@ -205,6 +256,7 @@ async function runWikiCheck(): Promise<void> {
     validateNoDuplicateTopLevelHeading(locale, wikiDocuments);
     validateSectionStructure(locale, wikiDocuments);
     validateUniqueSectionOrder(locale, wikiSections);
+    validateEnglishHeadings(locale, wikiDocuments);
     await createWikiContentBundle(locale, wikiDocuments);
     wikiSectionIdsByLocale.set(locale, wikiSectionIdSet);
     wikiDocumentsByLocale.set(locale, wikiDocumentBySectionId);

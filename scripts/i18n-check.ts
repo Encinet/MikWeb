@@ -5,6 +5,7 @@ import zhMessages from '../messages/zh-CN.json';
 import { SITE_SHORT_NAME, SITE_TRANSLATION_VALUES } from '../src/shared/config/site-config';
 import type { AppLocale } from '../src/shared/i18n/routing';
 import errorMessages from '../src/site/error/lib/error-messages.generated.json';
+import { formatEnglishHeading, isEnglishHeadingKey } from './lib/english-headings';
 
 const identityLiterals = [...Object.values(SITE_TRANSLATION_VALUES), SITE_SHORT_NAME];
 const identityPattern = new RegExp(
@@ -48,6 +49,22 @@ const catalogs = {
 } satisfies Record<AppLocale, unknown>;
 const reference = flattenMessages(catalogs['zh-CN']);
 const errors: string[] = [];
+
+function validateEnglishHeadings(value: unknown, path = ''): void {
+  if (typeof value === 'string') {
+    if (isEnglishHeadingKey(path) && value !== formatEnglishHeading(value)) {
+      errors.push(`en: ${path}: use title case: ${formatEnglishHeading(value)}`);
+    }
+    return;
+  }
+  if (value && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) {
+      validateEnglishHeadings(child, path ? `${path}.${key}` : key);
+    }
+  }
+}
+
+validateEnglishHeadings(enMessages);
 
 for (const [locale, messages] of Object.entries(catalogs)) {
   if (JSON.stringify(messages.pageError) !== JSON.stringify(errorMessages[locale as AppLocale])) {

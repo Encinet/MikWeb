@@ -56,7 +56,7 @@ test('account access distinguishes failed verification from sign-out and preserv
 
     await render({ isLoading: false });
     assert.ok(env.container.querySelector('[role="alert"]'));
-    assert.equal(env.container.textContent?.includes('Not signed in'), false);
+    assert.equal(env.container.textContent?.includes(messages.auth.account.signedOut.title), false);
     assert.equal(env.container.querySelector('a[href="/en/login"]'), null);
     const retry = env.container.querySelector<HTMLButtonElement>('.account-empty-state button');
     assert.ok(retry);
@@ -82,7 +82,7 @@ test('account access distinguishes failed verification from sign-out and preserv
     );
 
     await render({ verified: true, isLoading: false });
-    assert.ok(env.container.textContent?.includes('Not signed in'));
+    assert.ok(env.container.textContent?.includes(messages.auth.account.signedOut.title));
     assert.ok(env.container.querySelector('a[href="/en/login"]'));
     assert.equal(env.container.querySelector('[data-private-account]'), null);
   } finally {

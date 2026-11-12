@@ -32,6 +32,8 @@
 
 完整服务器介绍复用 `metadata.description`，简短定位复用 `nav.brand.subtitle`，分享卡的标题和短介绍使用 `metadata.social`。首页网页标题使用 `metadata.homeTitle`，其他页面复用栏目标题；标题通过 `src/site/seo/page-title.ts` 统一组合，首页为“站名 | 短定位”，内页为“页面名称 | 站名”，浏览器与链接分享使用同一结果。Wiki 正文中的首次介绍使用正式站名；插件和仓库名称按项目实际名称保留。
 
+英文页面、栏目、导航入口与 Wiki 章节标题统一使用 Title Case，例如 `Ban Records`、`MCP Setup`、`PCL2 Homepage`、`Web Chat`。标题中间的短冠词、连词和介词（如 `a`、`the`、`and`、`of`、`to`）小写，首尾单词大写；连字符后的实词也大写，例如 `Non-Profit` 和 `In-Game`。缩写和专有名称保留 `MCP`、`PCL2`、`QQ`、`JSON`、`URL`、`WorldEdit` 等正确写法。说明、状态与操作提示使用句首式；玩家建筑名、公告和聊天内容保留作者原文。`check:i18n` 和 `check:wiki` 检查仓库维护的英文标题，标题格式工具只用于维护检查。
+
 游戏连接地址使用 `MINECRAFT_SERVER_ADDRESS`，网页域名由 `SITE_URL` 派生。API 与聊天服务端点位于 `src/shared/config/service-config.ts`，连接代码和 CSP 引用同一配置。语言范围与语言名称由 `src/shared/i18n/routing.ts` 维护，Wiki 复用站点语言范围。建筑类型的显示名称复用 `buildings.types`。
 
 品牌资源位于 `public/brand/`，页面图片位于 `public/images/`，公共路径集中在 `src/shared/config/site-config.ts`。修改 Logo 时同步更新派生图标，更新字体时保留许可证。

@@ -35,8 +35,8 @@
       "collapseDetails": "收起详情"
     },
     "records": {
-      "count": "{count} 条记录",
-      "resultsCount": "{count} / {total} 条记录"
+      "count": "{count, plural, other {# 条记录}}",
+      "resultsCount": "{count} / {total, plural, other {# 条记录}}"
     }
   },
   "pageError": {
@@ -166,7 +166,7 @@
         "random": "随机排序"
       }
     },
-    "imagesCount": "{count} 张图片",
+    "imagesCount": "{count, plural, other {# 张图片}}",
     "dialog": {
       "close": "关闭建筑详情",
       "previousImage": "上一张图片",
@@ -310,7 +310,7 @@
     "search": {
       "placeholder": "搜索文档、机制或指令…",
       "resultsTitle": "搜索结果",
-      "resultsCount": "{count} 个匹配结果",
+      "resultsCount": "{count, plural, other {# 个匹配结果}}",
       "empty": {
         "title": "没有找到匹配内容",
         "description": "试试更短的关键词、指令别名，或换一种中英文说法。"
@@ -642,7 +642,7 @@
     "readingActions": "消息导航",
     "readMarker": "上次读到这里",
     "jumpUnread": "首条未读（{count}）",
-    "unreadCount": "{count} 条未读消息",
+    "unreadCount": "{count, plural, other {# 条未读消息}}",
     "loadEarlier": "查看更早消息",
     "searchMessages": "搜索消息",
     "searchPlaceholder": "消息或玩家名",
@@ -650,7 +650,7 @@
     "searchScope": "搜索范围",
     "searchCurrent": "当前会话",
     "searchAll": "全部会话",
-    "searchCount": "{count} 条结果",
+    "searchCount": "{count, plural, other {# 条结果}}",
     "searchEmpty": "没有找到相关消息",
     "searchEmptyHint": "试试调整关键词或筛选条件",
     "loadMoreResults": "更多结果",
@@ -669,12 +669,12 @@
     "disableHistoryConfirm": "关闭保存并清空本机消息、草稿和会话列表？",
     "messagePlaceholder": "输入消息…",
     "composePlaceholder": "发送到{channel}…",
-    "navigationUnread": "频道与私聊，{count} 条未读消息",
+    "navigationUnread": "频道与私聊，{count, plural, other {# 条未读消息}}",
     "drafts": {
       "label": "草稿",
       "persistenceHint": "同时保存草稿与会话列表",
       "restoreTooLong": "输入框中的草稿过长，请先处理当前草稿，再恢复这条消息。",
-      "restored": "已恢复 {count} 个会话的草稿",
+      "restored": "已恢复 {count, plural, other {# 个会话}}的草稿",
       "saved": "草稿已保存在本机"
     },
     "connection": {
@@ -805,7 +805,7 @@
         "empty": "暂无玩家在线",
         "joinedAt": "上线于",
         "noDetails": "已获取在线人数，但暂无详细玩家列表",
-        "peak": "历史峰值 {count} 人",
+        "peak": "历史峰值 {count, plural, other {# 人}}",
         "title": "在线玩家"
       },
       "server": {

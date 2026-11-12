@@ -50,7 +50,6 @@ async function WikiPageContent({
       onThisPage={t('navigation.onThisPage')}
       searchPlaceholder={t('search.placeholder')}
       searchResultsLabel={t('search.resultsTitle')}
-      searchResultsCountTemplate={t('search.resultsCount', { count: '{count}' })}
       searchEmptyTitle={t('search.empty.title')}
       searchEmptyDescription={t('search.empty.description')}
       clearSearchLabel={commonT('actions.clearSearch')}

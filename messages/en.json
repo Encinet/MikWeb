@@ -1,24 +1,24 @@
 {
   "metadata": {
-    "homeTitle": "A non-profit creative server",
+    "homeTitle": "A Non-Profit Creative Server",
     "description": "A non-profit creative Minecraft server focused on building and relaxed play.",
-    "organizationDescription": "The Minecraft server community behind the {siteName} brand, managed by the {organizationName} team",
+    "organizationDescription": "The Minecraft server community behind {siteName}, managed by the {organizationName} team.",
     "screenshots": {
-      "desktop": "{siteName} desktop home page with server information and player tools",
-      "mobile": "{siteName} mobile home page with server information, map and guide links"
+      "desktop": "{siteName} desktop homepage with server information and player tools",
+      "mobile": "{siteName} mobile homepage with server information, map, and guide links"
     },
     "social": {
-      "title": "Creative & casual\nMinecraft",
+      "title": "Creative & Casual\nMinecraft",
       "description": "A non-profit server\nfocused on building"
     }
   },
   "common": {
     "states": {
-      "loading": "Loading...",
+      "loading": "Loading…",
       "error": "Failed to load",
       "online": "Online",
       "offline": "Offline",
-      "networkError": "Network Error"
+      "networkError": "Network error"
     },
     "actions": {
       "close": "Close",
@@ -35,37 +35,37 @@
       "collapseDetails": "Hide details"
     },
     "records": {
-      "count": "{count} records",
-      "resultsCount": "{count} / {total} records"
+      "count": "{count, plural, one {# record} other {# records}}",
+      "resultsCount": "{count} / {total, plural, one {# record} other {# records}}"
     }
   },
   "pageError": {
-    "title": "This page could not be loaded",
+    "title": "This Page Could Not Be Loaded",
     "description": "Please try again. You can also return home and continue browsing.",
     "retry": "Try again",
     "retrying": "Trying again…",
     "home": "Return home"
   },
   "browserSupport": {
-    "title": "Your browser is not supported",
+    "title": "Your Browser Is Not Supported",
     "description": "Some pages or features may not work correctly. Please update your browser. If you opened this page inside an app, try your system browser.",
-    "requirements": "Supports Chrome 111+, Edge 111+, Firefox 128+, Safari 16.4+, and browsers on iOS / iPadOS 16.4+.",
+    "requirements": "Requires Chrome 111+, Edge 111+, Firefox 128+, Safari 16.4+, or a browser on iOS or iPadOS 16.4+.",
     "dismiss": "Continue anyway"
   },
   "nav": {
     "brand": {
-      "subtitle": "Non-profit Creative Minecraft Server"
+      "subtitle": "Non-Profit Creative Minecraft Server"
     },
     "items": {
       "home": "Home",
       "buildings": "Buildings",
       "wiki": "Wiki",
-      "join": "Join community",
+      "join": "Join the Community",
       "notices": "Notices"
     },
     "theme": {
-      "title": "Theme color",
-      "appearance": "Style",
+      "title": "Theme Color",
+      "appearance": "Appearance",
       "displayMode": "Display mode",
       "light": "Light",
       "dark": "Dark",
@@ -87,11 +87,11 @@
       "notice": "Server address"
     },
     "live": {
-      "statusTitle": "{siteName} current status",
+      "statusTitle": "{siteName} Current Status",
       "playerListTitle": "Online Players",
       "noPlayersOnline": "No players online",
       "status": {
-        "loading": "Fetching status",
+        "loading": "Fetching status…",
         "online": "Server online",
         "offline": "Server offline",
         "networkError": "Status unavailable"
@@ -99,21 +99,21 @@
     },
     "playerHome": {
       "tools": {
-        "title": "Everyday essentials"
+        "title": "Everyday Essentials"
       },
       "shortcuts": {
         "commands": "Commands",
-        "rules": "Server rules",
-        "launcher": "Launcher homepage",
-        "gettingStarted": "Getting started"
+        "rules": "Server Rules",
+        "launcher": "Launcher Homepage",
+        "gettingStarted": "Getting Started"
       },
       "buildings": {
-        "title": "World and builds",
+        "title": "World and Builds",
         "viewAll": "All builds",
         "open": "View build: {name}",
         "empty": "No builds yet",
         "unavailable": "Could not load builds",
-        "retrying": "Loading"
+        "retrying": "Loading…"
       }
     }
   },
@@ -138,47 +138,47 @@
       "replica": "Replica"
     },
     "fields": {
-      "originalAuthor": "Original Author",
+      "originalAuthor": "Original author",
       "source": "Source"
     },
     "meta": {
-      "description": "Showcasing amazing building works by our players",
+      "description": "Explore builds created by players on the server.",
       "imageDescription": "Player builds on the server"
     },
     "search": {
-      "placeholder": "Search buildings, builders, tags..."
+      "placeholder": "Search builds, builders, or tags…"
     },
     "filters": {
       "options": {
-        "all": "All Buildings",
-        "original": "Original Works",
-        "derivative": "Derivative Works",
+        "all": "All builds",
+        "original": "Original builds",
+        "derivative": "Derivative builds",
         "replica": "Replicas"
       }
     },
     "sort": {
-      "label": "Sort buildings",
+      "label": "Sort builds",
       "options": {
-        "dateDesc": "Newest First",
-        "dateAsc": "Oldest First",
+        "dateDesc": "Newest first",
+        "dateAsc": "Oldest first",
         "nameAsc": "Name A-Z",
         "nameDesc": "Name Z-A",
         "random": "Random"
       }
     },
-    "imagesCount": "{count} images",
+    "imagesCount": "{count, plural, one {# image} other {# images}}",
     "dialog": {
       "close": "Close building details",
       "previousImage": "Previous image",
       "nextImage": "Next image",
-      "currentImage": "Current image {current} / {total}",
+      "currentImage": "Image {current} of {total}",
       "expandDetails": "Show details"
     },
     "states": {
       "imageFailed": "This image could not be loaded.",
       "noImages": "No building images yet.",
       "empty": "No buildings yet",
-      "end": "No more buildings to load",
+      "end": "No more buildings",
       "notFound": "Building not found",
       "notFoundDescription": "This building may have been removed. Return to explore other builds.",
       "loadFailed": "Building details could not be loaded. Please try again."
@@ -196,7 +196,7 @@
       "viewOnMap": "View on map"
     },
     "details": {
-      "builders": "Built by",
+      "builders": "Built By",
       "buildDate": "Build date"
     },
     "viewer": {
@@ -213,8 +213,8 @@
     }
   },
   "buildingSubmission": {
-    "title": "Submit a build",
-    "subtitle": "Submit a build you want added to the public showcase. It appears after admin review.",
+    "title": "Submit a Build",
+    "subtitle": "Submit your build for review. Approved builds appear in the public showcase.",
     "quota": "pending / {max}",
     "sections": {
       "basic": "Basic Info",
@@ -249,22 +249,22 @@
       "increaseWeight": "Increase weight",
       "decreaseWeight": "Decrease weight",
       "equalizeWeights": "Split evenly",
-      "normalizeWeights": "Normalize",
-      "clearBuilders": "Clear others"
+      "normalizeWeights": "Simplify ratio",
+      "clearBuilders": "Remove other builders"
     },
     "states": {
       "loadFailed": "Failed to load submissions.",
-      "memberRequired": "You can submit buildings after becoming a Member.",
+      "memberRequired": "You can submit builds after becoming a member.",
       "playerNotFound": "No player found.",
       "tagRequired": "Tags require both Chinese and English.",
       "imageLimit": "You can upload at most 15 images.",
-      "imageSelectFailed": "Failed to read images.",
-      "uploading": "Uploading images",
+      "imageSelectFailed": "Could not read the selected images.",
+      "uploading": "Uploading images…",
       "uploadFailed": "Image upload failed.",
-      "imageTooSmall": "Image clarity is too low. Minimum size is 960x540.",
-      "submitting": "Submitting",
-      "submitted": "Submission created",
-      "submitFailed": "Submit failed.",
+      "imageTooSmall": "Images must be at least 960 × 540 pixels.",
+      "submitting": "Submitting…",
+      "submitted": "Build submitted",
+      "submitFailed": "Submission failed.",
       "pendingLimit": "You already have 10 pending submissions.",
       "required": "Chinese and English fields are required.",
       "buildersRequired": "At least one builder is required.",
@@ -290,7 +290,7 @@
   "map": {
     "title": "World Map",
     "actions": {
-      "openExternal": "Open map in new window"
+      "openExternal": "Open map in a new window"
     },
     "meta": {
       "description": "Explore builds and landscapes on the server map.",
@@ -300,7 +300,7 @@
   "wiki": {
     "title": "Wiki",
     "meta": {
-      "description": "Documentation for joining, building, server mechanics, and open-source contributions",
+      "description": "Documentation for joining, building, server mechanics, and open-source contributions.",
       "imageDescription": "Server documentation and open source"
     },
     "navigation": {
@@ -310,9 +310,9 @@
     "search": {
       "placeholder": "Search documentation, mechanics, or commands…",
       "resultsTitle": "Search Results",
-      "resultsCount": "{count} matches",
+      "resultsCount": "{count, plural, one {# match} other {# matches}}",
       "empty": {
-        "title": "No matching content found",
+        "title": "No Matching Content Found",
         "description": "Try a shorter keyword, a command alias, or a different phrasing."
       }
     },
@@ -323,9 +323,9 @@
     }
   },
   "bans": {
-    "title": "Ban records",
+    "title": "Ban Records",
     "meta": {
-      "description": "View server ban records"
+      "description": "View server ban records."
     },
     "states": {
       "empty": "No ban records",
@@ -335,13 +335,13 @@
     },
     "fields": {
       "reason": "Reason",
-      "bannedBy": "Banned By",
-      "bannedAt": "Banned At",
+      "bannedBy": "Banned by",
+      "bannedAt": "Banned at",
       "player": "Player",
       "record": "Time and staff"
     },
     "search": {
-      "placeholder": "Search players, UUIDs, reasons or staff"
+      "placeholder": "Search players, UUIDs, reasons, or staff"
     },
     "actions": {
       "retry": "Reload",
@@ -350,21 +350,21 @@
     "shownCount": "Showing {count} of {total}"
   },
   "communityBoard": {
-    "title": "Community notices",
+    "title": "Community Notices",
     "meta": {
-      "description": "Read build notices, impact feedback and outcomes."
+      "description": "Read construction notices, feedback about their impact, and outcomes."
     },
     "hero": {
       "rules": "Read server rules"
     },
     "records": {
-      "title": "Recent records",
+      "title": "Recent Records",
       "loading": "Loading records…",
       "latestLimit": "Showing the latest 300 records. Older records remain available through direct links.",
       "error": "Could not load the notice board.",
-      "empty": "No community records yet.",
+      "empty": "No notices or feedback yet.",
       "by": "{author}",
-      "noticeUntil": "Notice period ends {time} (UTC+8)",
+      "noticeUntil": "Notice period ends: {time} (UTC+8)",
       "relatedNotice": "Related notice",
       "permalink": "Link",
       "permalinkLabel": "Link to {subject}",
@@ -375,11 +375,11 @@
       "unknownTime": "Unknown time"
     },
     "kind": {
-      "notice": "Build notice",
+      "notice": "Construction notice",
       "objection": "Impact feedback"
     },
     "status": {
-      "ruled": "Ruled",
+      "ruled": "Ruling issued",
       "elapsed": "Notice period ended",
       "withdrawn": "Feedback withdrawn",
       "noticeOpen": "Notice period open",
@@ -395,7 +395,7 @@
       "title": "Outcome"
     },
     "search": {
-      "placeholder": "Search notices, players or locations"
+      "placeholder": "Search notices, players, or locations"
     }
   },
   "auth": {
@@ -403,8 +403,8 @@
       "passkeys": "Passkeys"
     },
     "login": {
-      "title": "Sign in",
-      "subtitle": "Sign in with an in-game code or Passkey.",
+      "title": "Sign In",
+      "subtitle": "Sign in with an in-game code or a passkey.",
       "actions": {
         "account": "Open account"
       }
@@ -415,19 +415,19 @@
         "label": "Account navigation"
       },
       "signedOut": {
-        "title": "Not signed in",
-        "description": "Sign in with an in-game code or Passkey first."
+        "title": "Not Signed In",
+        "description": "Sign in with an in-game code or a passkey to continue."
       },
       "verificationFailed": {
-        "title": "Account temporarily unavailable",
+        "title": "Account Temporarily Unavailable",
         "description": "Your sign-in status could not be checked. Please try again."
       },
       "fields": {
         "uuid": "Player UUID"
       },
       "actions": {
-        "logout": "Log out",
-        "managePasskeys": "Manage"
+        "logout": "Sign out",
+        "managePasskeys": "Manage passkeys"
       },
       "roles": {
         "default": "Newcomer",
@@ -441,14 +441,14 @@
       }
     },
     "security": {
-      "title": "Account security",
-      "subtitle": "Manage your sign-in Passkeys and browser sessions.",
+      "title": "Account Security",
+      "subtitle": "Manage your passkeys and browser sessions.",
       "actions": {
-        "addPasskey": "Add Passkey",
+        "addPasskey": "Add passkey",
         "delete": "Delete",
-        "revokeSession": "Revoke",
+        "revokeSession": "Sign out",
         "signOutAllSessions": "Sign out all browsers",
-        "createPasskey": "Create Passkey",
+        "createPasskey": "Create passkey",
         "rename": "Rename",
         "renameItem": "Rename {name}",
         "save": "Save"
@@ -457,11 +457,11 @@
         "sessions": "Browser Sessions"
       },
       "session": {
-        "description": "Review active browser sign-ins and revoke browsers you no longer use.",
+        "description": "Review your browser sessions and sign out of any you no longer use.",
         "signOutAllConfirmation": "Sign out every browser, including this one? Registered passkeys will be kept.",
         "current": "Current",
         "lastSeenAt": "Last active {time}",
-        "expiresAt": "Idle expiry {time}",
+        "expiresAt": "Expires {time} if inactive",
         "method": {
           "minecraft-challenge": "In-game code sign-in",
           "passkey": "Passkey sign-in"
@@ -470,29 +470,29 @@
         "defaultName": "Browser session"
       },
       "passkey": {
-        "description": "Manage devices, platform accounts, and security keys that can sign in.",
-        "defaultName": "{siteName} Passkey",
-        "createdAt": "Created at {time}",
-        "empty": "This account has no Passkeys yet.",
-        "deleteConfirmation": "Revoking this passkey prevents future sign-ins with it. Existing web sessions remain active.",
-        "lastKeyWarning": "This is your last passkey. You can still sign in using an in-game code after revoking it.",
+        "description": "Manage passkeys stored on your devices, in synced accounts, or on security keys.",
+        "defaultName": "{siteName} passkey",
+        "createdAt": "Created {time}",
+        "empty": "This account has no passkeys yet.",
+        "deleteConfirmation": "Deleting this passkey prevents future sign-ins with it. Existing browser sessions remain active.",
+        "lastKeyWarning": "This is your last passkey. You can still sign in using an in-game code after deleting it.",
         "lastUsedAt": "Last used {time}",
         "neverUsed": "Not used to sign in yet"
       },
       "states": {
         "registerFailed": "Passkey registration failed.",
-        "creatingPasskey": "Creating your Passkey",
+        "creatingPasskey": "Creating your passkey…",
         "registered": "Passkey added.",
-        "deleteFailed": "Delete failed.",
+        "deleteFailed": "Could not delete the passkey.",
         "deleted": "Passkey deleted.",
-        "revokeSessionFailed": "Failed to revoke session.",
-        "sessionRevoked": "Session revoked.",
-        "passkeyLimit": "The passkey limit has been reached. Revoke an unused key first.",
+        "revokeSessionFailed": "Could not end the browser session.",
+        "sessionRevoked": "Browser session ended.",
+        "passkeyLimit": "The passkey limit has been reached. Delete an unused passkey first.",
         "loadFailed": "Security settings could not be loaded. Please try again later.",
         "renamed": "Name saved",
         "renameFailed": "Could not save the name. Try again.",
         "invalidName": "Use up to 64 characters, without control characters or line breaks.",
-        "loading": "Loading security settings"
+        "loading": "Loading security settings…"
       },
       "name": {
         "label": "Name",
@@ -503,27 +503,27 @@
     },
     "authentication": {
       "methods": "Authentication method",
-      "verifyTitle": "Verify your identity",
-      "completingLogin": "Completing login",
-      "completingVerification": "Verifying your identity",
-      "passkeyStarting": "Confirm with your Passkey",
-      "creating": "Generating code",
+      "verifyTitle": "Verify Your Identity",
+      "completingLogin": "Completing sign-in…",
+      "completingVerification": "Verifying your identity…",
+      "passkeyStarting": "Confirm with your passkey",
+      "creating": "Generating code…",
       "otherMethod": "Use another method",
       "minecraft": {
-        "title": "In-game Code",
+        "title": "In-Game Code",
         "description": "Confirm your identity with a command on the server."
       },
       "passkey": {
         "title": "Passkey",
-        "description": "Use a linked device or security key."
+        "description": "Use a saved passkey on your device or security key."
       },
       "codePanel": {
         "title": "Code",
-        "waiting": "Waiting for in-game confirmation",
+        "waiting": "Waiting for in-game confirmation…",
         "copyLabel": "Copy identity verification command",
         "remaining": "Expires in {time}",
         "instructions": "Run this command on the server and confirm.",
-        "copyHint": "Click to copy command",
+        "copyHint": "Click to copy the command",
         "copyFailed": "Copy failed. Copy the command above manually."
       },
       "errors": {
@@ -531,34 +531,34 @@
         "expired": "The code expired. Generate a new one.",
         "rate_limited": "Too many requests. Please wait and try again.",
         "account_banned": "This account is currently banned and cannot sign in.",
-        "status_unavailable": "Unable to check confirmation. Retrying…",
+        "status_unavailable": "Could not check the confirmation status. Retrying…",
         "plugin_unavailable": "The game server is unavailable. Please retry shortly.",
-        "account_mismatch": "Verify with the current account.",
+        "account_mismatch": "Verify using the account you are signed in to.",
         "unauthenticated": "Your session has expired. Sign in again.",
         "authentication_invalidated": "Account security has changed. Verify again.",
-        "passkey_unavailable": "No Passkey is available. Use in-game verification.",
+        "passkey_unavailable": "No passkey is available. Use an in-game code.",
         "passkey_verification_failed": "Passkey verification failed. Please retry.",
-        "cancelled": "Passkey operation was cancelled.",
-        "passkey_already_registered": "This Passkey is already bound.",
-        "passkey_domain_mismatch": "This domain does not support Passkeys. Use {siteHost}.",
-        "passkey_unsupported_authenticator": "This device does not support a sign-in Passkey.",
-        "passkey_browser_unsupported": "This browser does not support Passkeys.",
+        "cancelled": "Passkey request canceled.",
+        "passkey_already_registered": "This passkey is already registered.",
+        "passkey_domain_mismatch": "Passkeys are unavailable on this domain. Use {siteHost}.",
+        "passkey_unsupported_authenticator": "This device does not support the required passkey features.",
+        "passkey_browser_unsupported": "This browser does not support passkeys.",
         "verificationInvalid": "This verification expired. Start again."
       }
     }
   },
   "chat": {
-    "title": "Web chat",
+    "title": "Web Chat",
     "send": "Send",
     "you": "you",
     "game": "In game",
     "webCount": "Web ×{count}",
-    "privateList": "Local private conversations",
-    "onlinePlayers": "Online players ({count})",
+    "privateList": "Local Private Conversations",
+    "onlinePlayers": "Online Players ({count})",
     "search": "Find online players",
     "startPrivate": "Message {name}",
-    "newPrivate": "New message",
-    "participants": "Players in this channel",
+    "newPrivate": "New Message",
+    "participants": "Players in This Channel",
     "mentionPlayers": "Mention an online player",
     "nobodyOnline": "No players online",
     "emptyHistory": "No messages yet",
@@ -570,9 +570,9 @@
     "clearConfirm": "Clear local messages, drafts, and conversations? This cannot be undone.",
     "storageFailed": "Messages or drafts could not be saved locally and may be lost when this page closes.",
     "historyRecovery": {
-      "title": "Incompatible local chat data",
+      "title": "Incompatible Local Chat Data",
       "required": "This version cannot read or upgrade your local chat data. Delete it to use chat.",
-      "description": "Delete the chat messages, drafts, conversations, and chat preferences saved in this browser and start again? This cannot be undone. Cancelling keeps the data and leaves chat unavailable.",
+      "description": "Delete the chat messages, drafts, conversations, and chat preferences saved in this browser and start again? This cannot be undone. Canceling keeps the data and leaves chat unavailable.",
       "review": "Review cleanup options",
       "delete": "Delete local data and continue",
       "deleting": "Deleting local chat data…",
@@ -590,7 +590,7 @@
     "channels": {
       "public": "Public",
       "staff": "Staff",
-      "private": "Private messages"
+      "private": "Private Messages"
     },
     "source": {
       "web": "Web",
@@ -614,18 +614,18 @@
       "default": "Chat is unavailable. Please try again later.",
       "connection_failed": "Chat connection failed.",
       "chat_unavailable": "Chat is temporarily unavailable.",
-      "auth_upstream_unavailable": "Login verification is unavailable.",
+      "auth_upstream_unavailable": "Account verification is unavailable.",
       "chat_busy": "Chat is busy. Please try again shortly.",
       "invalid_response": "Chat verification failed. Refresh the page and try again.",
       "invalid_message": "Send a single line of text, up to 256 characters.",
       "recipient_unavailable": "This player is offline or cannot receive private messages.",
       "staff_required": "You do not currently have staff chat permission.",
       "rate_limited": "You are sending too quickly. Please wait.",
-      "request_conflict": "The message request conflicts with an earlier send. Try again.",
+      "request_conflict": "This message conflicts with an earlier send. Try again.",
       "connection_limit": "Your account has reached its web connection limit. Close another chat page first.",
-      "connection_unavailable": "This connection expired. Reconnecting.",
+      "connection_unavailable": "This connection expired. Reconnecting…",
       "session_changed": "The signed-in account changed. Reconnect to chat.",
-      "session_revoked": "This login was signed out and chat was disconnected.",
+      "session_revoked": "Your browser session ended, so chat was disconnected.",
       "credentials_changed": "Your account credentials changed. Sign in again.",
       "chat_forbidden": "This account cannot currently use web chat.",
       "authorization_expired": "Chat authorization expired.",
@@ -634,47 +634,47 @@
       "unauthenticated": "Sign in first.",
       "chat_capacity": "Web chat is at capacity. Please try again later."
     },
-    "staffUnavailable": "Staff permission is no longer available. Choose another channel to send.",
-    "settings": "Chat settings",
-    "backHome": "Back to home",
+    "staffUnavailable": "You no longer have access to staff chat. Choose another channel.",
+    "settings": "Chat Settings",
+    "backHome": "Return home",
     "today": "Today",
     "latest": "Latest messages",
     "readingActions": "Message navigation",
     "readMarker": "Last read here",
     "jumpUnread": "First unread ({count})",
-    "unreadCount": "{count} unread messages",
+    "unreadCount": "{count, plural, one {# unread message} other {# unread messages}}",
     "loadEarlier": "Earlier messages",
-    "searchMessages": "Search messages",
+    "searchMessages": "Search Messages",
     "searchPlaceholder": "Message or player name",
     "searchHint": "Find messages saved in this browser",
     "searchScope": "Search scope",
     "searchCurrent": "This conversation",
     "searchAll": "All conversations",
-    "searchCount": "{count} results",
+    "searchCount": "{count, plural, one {# result} other {# results}}",
     "searchEmpty": "No matching messages",
     "searchEmptyHint": "Try different keywords or filters",
     "loadMoreResults": "More results",
     "noPlayersFound": "No matching players online",
     "confirmClear": "Clear history",
-    "description": "Chat with players in game and on the web.",
+    "description": "Chat with players in Minecraft and on the web.",
     "notifications": {
       "label": "Private messages and mentions",
       "enable": "Enable private message and mention notifications",
       "dismiss": "Dismiss notification suggestion",
       "unsupported": "Notifications are unavailable in this browser",
       "denied": "Notifications are blocked by your browser",
-      "error": "Could not enable notifications. Click to retry",
+      "error": "Could not enable notifications. Try again.",
       "mentionTitle": "{name} mentioned you in {channel}"
     },
     "disableHistoryConfirm": "Stop saving and clear local messages, drafts, and conversations?",
     "messagePlaceholder": "Message…",
     "composePlaceholder": "Message {channel}…",
-    "navigationUnread": "Channels and conversations, {count} unread messages",
+    "navigationUnread": "Channels and conversations, {count, plural, one {# unread message} other {# unread messages}}",
     "drafts": {
       "label": "Draft",
       "persistenceHint": "Also saves drafts and your conversation list",
       "restoreTooLong": "Your current draft is too long. Finish or shorten it before restoring this message.",
-      "restored": "Restored drafts for {count} conversations",
+      "restored": "Restored drafts for {count, plural, one {# conversation} other {# conversations}}",
       "saved": "Draft saved on this device"
     },
     "connection": {
@@ -691,11 +691,11 @@
       "private": "Start private chat"
     },
     "activity": {
-      "count": "{count, plural, one {# player activity} other {# player activities}}",
+      "count": "{count, plural, one {# player event} other {# player events}}",
       "playerSeparator": ", ",
       "morePlayers": ", and others ({count} players total)",
       "repeatCount": "({count, plural, one {# event} other {# events}})",
-      "otherEvents": "{count, plural, one {# other system update} other {# other system updates}}",
+      "otherEvents": "{count, plural, one {# other system event} other {# other system events}}",
       "gameJoined": "<players></players> joined the game",
       "gameLeft": "<players></players> left the game",
       "webJoined": "<players></players> joined web chat",
@@ -743,26 +743,26 @@
     }
   },
   "pcl2": {
-    "title": "PCL2 homepage",
-    "subtitle": "View {siteName} server status, announcements and buildings in your launcher.",
+    "title": "PCL2 Homepage",
+    "subtitle": "View {siteName} server status, announcements, and buildings in your launcher.",
     "addressLabel": "Homepage URL",
     "detectingTimeZone": "Preparing homepage URL…",
     "stepsTitle": "Setup",
     "steps": {
       "settings": {
-        "title": "Open the custom homepage settings",
-        "description": "In PCL2, open Settings, Personalization, then Custom homepage. Choose Online update."
+        "title": "Open the Custom Homepage Settings",
+        "description": "In PCL2, open Settings, then Personalization, then Custom Homepage. Choose Online Update."
       },
       "address": {
         "title": "Paste the URL",
         "description": "Copy the homepage URL into the download address field."
       },
       "done": {
-        "title": "Return home",
-        "description": "Reopen the launcher home page to see the {siteName} page."
+        "title": "Return Home",
+        "description": "Reopen the launcher homepage to see the {siteName} page."
       }
     },
-    "imageDescription": "Server status, notices and builds in your launcher",
+    "imageDescription": "Server status, notices, and builds in your launcher",
     "homepage": {
       "about": {
         "title": "About",
@@ -773,16 +773,16 @@
         "title": "Announcements"
       },
       "bans": {
-        "empty": "No bans",
+        "empty": "No ban records",
         "permanent": "Permanent",
         "reason": "Reason: {reason}",
-        "title": "Ban list",
+        "title": "Ban List",
         "bannedBy": "Banned by: {name} · {time}",
         "expiresAt": "Expires: {time}"
       },
       "buildings": {
         "builders": "Builders",
-        "coordinates": "Coords",
+        "coordinates": "Coordinates",
         "empty": "No buildings yet",
         "title": "Buildings"
       },
@@ -793,26 +793,26 @@
       },
       "hint": "Use the button below to launch the game and join the server.",
       "links": {
-        "buildingsInfo": "View all building showcases",
+        "buildingsInfo": "View all player builds",
         "buildingsTitle": "Buildings",
         "intro": "These links will open in your browser.",
         "mapInfo": "Online map",
-        "title": "Web links",
+        "title": "Web Links",
         "wikiInfo": "Server help and documentation",
         "wikiTitle": "Wiki"
       },
       "players": {
         "empty": "No players online",
         "joinedAt": "Joined at",
-        "noDetails": "Online count is available, but the player list is empty",
-        "peak": "Peak: {count} players",
-        "title": "Online players"
+        "noDetails": "The player count is available, but player details are unavailable.",
+        "peak": "Peak: {count, plural, one {# player} other {# players}}",
+        "title": "Online Players"
       },
       "server": {
-        "joinButton": "🚀 Launch and join server",
+        "joinButton": "🚀 Launch and join the server",
         "joinTooltip": "Launch the currently selected Minecraft version and join {address}",
         "refreshButton": "Refresh",
-        "statusTitle": "{siteName} server status"
+        "statusTitle": "{siteName} Server Status"
       },
       "status": {
         "empty": "No players online",
@@ -822,23 +822,23 @@
     }
   },
   "mcp": {
-    "title": "MCP setup",
+    "title": "MCP Setup",
     "subtitle": "Query {siteName} server information from an MCP-capable client.",
     "description": "The {siteName} MCP service provides tools for online players, buildings, bans, announcements, and Wiki search.",
-    "configTitle": "JSON configuration",
-    "stepsTitle": "Connect your client",
+    "configTitle": "JSON Configuration",
+    "stepsTitle": "Connect Your Client",
     "steps": {
       "client": {
-        "title": "Open MCP settings",
+        "title": "Open MCP Settings",
         "description": "Add a remote MCP server in your client."
       },
       "connect": {
-        "title": "Enter the server URL",
+        "title": "Enter the Server URL",
         "description": "Use the server URL on this page, or add the JSON configuration to your client’s config file."
       },
       "done": {
-        "title": "Connect and query",
-        "description": "Query online players, buildings, announcements and game guides."
+        "title": "Connect and Query",
+        "description": "Look up online players, builds, announcements, and server documentation."
       }
     },
     "addressLabel": "Server URL",
@@ -846,11 +846,11 @@
   },
   "notFound": {
     "hero": {
-      "title": "Page not found",
-      "description": "The page you requested may have been moved, removed, or the link is incorrect."
+      "title": "Page Not Found",
+      "description": "The page may have moved or been removed, or the link may be incorrect."
     },
     "actions": {
-      "returnHome": "Return Home"
+      "returnHome": "Return home"
     }
   },
   "footer": {
@@ -862,55 +862,55 @@
     }
   },
   "join": {
-    "title": "Join the server",
-    "description": "Join a QQ group or Matrix Space, then link your game account to enter the server",
+    "title": "Join the Server",
+    "description": "Join a QQ group or a Matrix space, then link your game account to enter the server.",
     "meta": {
-      "description": "Join the {siteName} community through QQ or Matrix and link your game account to start playing"
+      "description": "Join the {siteName} community through QQ or Matrix and link your game account to start playing."
     },
     "qq": {
-      "title": "QQ groups",
-      "description": "Get a join code to join a group",
+      "title": "QQ Groups",
+      "description": "Get a join code to join a group.",
       "number": "Group {number}",
       "unavailable": "QQ group links are unavailable",
-      "open": "Open QQ"
+      "open": "Join the QQ group"
     },
     "groups": {
       "1": "Group 1",
       "2": "Group 2 (backup)"
     },
     "code": {
-      "get": "Get join code",
+      "get": "Get a join code",
       "copy": "Copy join code",
       "retry": "Get a new code",
       "label": "QQ join code",
-      "help": "Copy and paste into QQ join verification",
-      "paste": "Copied. Paste into QQ join verification",
+      "help": "Paste this code into the QQ group verification field.",
+      "paste": "Copied. Paste it into the QQ group verification field.",
       "remaining": "{seconds}s remaining",
       "remainingLabel": "Time until the join code expires",
-      "expired": "This join code has expired. Get a new one",
-      "loadingHint": "Getting your join code"
+      "expired": "This join code has expired. Get a new one.",
+      "loadingHint": "Getting your join code…"
     },
     "errors": {
-      "unavailable": "Join codes are unavailable. Try again later or join through Matrix",
-      "request_timeout": "The request timed out. Try again or join through Matrix",
-      "request_failed": "Could not get a join code. Try again or join through Matrix",
-      "captcha_failed": "Verification failed or expired. Verify again",
-      "captcha_unavailable": "Verification is unavailable. Try again or join through Matrix",
-      "code_expired": "The join code has expired. Verify again to get a new one"
+      "unavailable": "Join codes are unavailable. Try again later or join through Matrix.",
+      "request_timeout": "The request timed out. Try again or join through Matrix.",
+      "request_failed": "Could not get a join code. Try again or join through Matrix.",
+      "captcha_failed": "Verification failed or expired. Verify again.",
+      "captcha_unavailable": "Human verification is unavailable. Try again or join through Matrix.",
+      "code_expired": "The join code has expired. Verify again to get a new one."
     },
     "rules": "Read the server rules before joining",
     "captcha": {
-      "hint": "Complete verification to display your join code",
+      "hint": "Your join code appears automatically after verification.",
       "pending": "Complete verification",
       "verify": "Verify you are human",
       "loading": "Loading verification…",
-      "failed": "Verification failed, try again",
+      "failed": "Verification failed. Try again.",
       "cancel": "Cancel"
     },
     "matrix": {
       "title": "Matrix",
-      "open": "Join Space",
-      "unavailable": "The Matrix Space link is unavailable"
+      "open": "Join space",
+      "unavailable": "The Matrix space link is unavailable"
     }
   }
 }

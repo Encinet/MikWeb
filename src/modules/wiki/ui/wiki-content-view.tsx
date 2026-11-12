@@ -38,7 +38,6 @@ interface WikiContentProps {
   onThisPage: string;
   searchPlaceholder: string;
   searchResultsLabel: string;
-  searchResultsCountTemplate: string;
   searchEmptyTitle: string;
   searchEmptyDescription: string;
   clearSearchLabel: string;
@@ -58,7 +57,6 @@ export default function WikiContent({
   onThisPage,
   searchPlaceholder,
   searchResultsLabel,
-  searchResultsCountTemplate,
   searchEmptyTitle,
   searchEmptyDescription,
   clearSearchLabel,
@@ -73,6 +71,7 @@ export default function WikiContent({
 }: WikiContentProps) {
   const locale = useLocale();
   const common = useTranslations('common');
+  const searchT = useTranslations('wiki.search');
   const fallbackSection = sections[0]?.id || '';
   const [activeSection, setActiveSection] = useState(initialSection || fallbackSection);
   const [navigationPanel, setNavigationPanel] = useState<WikiNavigationPanel>(null);
@@ -126,9 +125,7 @@ export default function WikiContent({
 
     return searchWikiBlocks(fullSearchIndex, [activeSearchQuery], 12);
   }, [activeSearchQuery, isSearching, fullSearchIndex]);
-  const searchResultsCountLabel = useMemo(() => {
-    return searchResultsCountTemplate.replace('{count}', String(searchResults.length));
-  }, [searchResults.length, searchResultsCountTemplate]);
+  const searchResultsCountLabel = searchT('resultsCount', { count: searchResults.length });
 
   useEffect(() => {
     if (sectionIds.has(activeSection)) {

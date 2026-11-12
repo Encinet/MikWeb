@@ -1,23 +1,23 @@
 ---
-title: Server mechanics
+title: Server Mechanics
 description: How to use elevators, building tools, AFK status, flight, and everyday protection features
 order: 30
 icon: Layers
 ---
 
-## Iron-block elevators
+## Iron-Block Elevators
 
 Connect floors using iron blocks, without commands or registration.
 
-### Build an elevator
+### Build an Elevator
 
 <Steps>
-<Step title="Place iron blocks on each floor">
+<Step title="Place Iron Blocks on Each Floor">
 
 Keep at least one shared X/Z column between levels.
 
 </Step>
-<Step title="Leave a safe landing">
+<Step title="Leave a Safe Landing">
 
 Allow enough standing room above the blocks, without obstacles, liquids, or fire.
 
@@ -26,7 +26,7 @@ Allow enough standing room above the blocks, without obstacles, liquids, or fire
 
 Solid floors between levels are allowed, with no fixed floor spacing. Side-connected iron blocks at the same height form one platform; diagonal contact does not connect them. Each platform supports up to 64 iron blocks.
 
-### Travel between floors
+### Travel Between Floors
 
 | Action | Result |
 | --- | --- |
@@ -34,7 +34,7 @@ Solid floors between levels are allowed, with no fixed floor spacing. Side-conne
 | Press sneak | Travel to the next safe floor below; holding sneak does not repeat |
 | Aim at a floor number and left- or right-click | Travel directly to that floor |
 
-<Callout title="Your position is preserved">
+<Callout title="Your Position Is Preserved">
 
 Travel preserves your X/Z position and view. If your column has no safe landing at a floor, up/down travel searches farther; direct selection is unavailable for that floor.
 
@@ -42,11 +42,11 @@ Travel preserves your X/Z position and view. If your column has no safe landing 
 
 With at least two standable floors, a personal selection panel appears on a nearby wall or platform edge. The current floor has a green underline; unavailable floors have a yellow strikethrough. Longer lists have pages.
 
-### Mounts and leashed animals
+### Mounts and Leashed Animals
 
 Mounts, passengers, and leash-connected animals can travel together. Group members that are not passengers must stand on the same departure platform. Unconnected nearby animals stay behind. Floors without enough room for the whole group are skipped.
 
-<Details title="Elevator not responding">
+<Details title="Elevator Not Responding">
 
 - Leave flight, gliding, swimming, or spectator mode and stand on the iron block.
 - Press sneak again for another downward trip. Successful travel has a 0.5-second cooldown.
@@ -54,7 +54,7 @@ Mounts, passengers, and leash-connected animals can travel together. Group membe
 
 </Details>
 
-## Building and decoration
+## Building and Decoration
 
 ### WorldEdit
 
@@ -64,11 +64,11 @@ WorldEdit is installed on the server for copying, pasting, rotating structures, 
 - [Full command reference (Chinese)](https://www.mcmod.cn/post/3533.html)
 - [FAWE commands and permissions (English)](https://intellectualsites.gitbook.io/fastasyncworldedit/features/main-commands-and-permissions)
 
-### Armor stand editor
+### Armor Stand Editor
 
 Run `/asedit give` to get the editor tool, then right-click an armor stand to open the edit menu. You can rotate individual body parts, toggle invisibility, or lock interaction.
 
-### Invisible item frames
+### Invisible Item Frames
 
 Invisible item frames show only the inserted item. Obtain them with:
 
@@ -77,7 +77,7 @@ Invisible item frames show only the inserted item. Obtain them with:
 | Regular | `/imageframe giveinvisibleframe regular` |
 | Glowing | `/imageframe giveinvisibleframe glowing` |
 
-## Spatial menus
+## Spatial Menus
 
 Sneak and press Swap Item With Offhand (default `Shift + F`) to open the spatial menu, or use `/menu`. Aim at buttons and click.
 
@@ -85,7 +85,7 @@ Sneak and press Swap Item With Offhand (default `Shift + F`) to open the spatial
 - Search fields capture your next chat message; pressing Enter submits it and restores normal chat.
 - Adjust menu size, text size, language, and motion in personal settings.
 
-## Music and jukeboxes
+## Music and Jukeboxes
 
 Run `/music` for the music menu; sneak-right-click a jukebox with an empty hand for its queue. Device control requires the relevant plot permission.
 
@@ -93,13 +93,13 @@ Regular audio requires Plasmo Voice; NBS uses vanilla note-block sounds. In the 
 
 Multiple jukeboxes can form a synchronized group with a shared queue.
 
-<Callout kind="warning" title="Remove physical discs first">
+<Callout kind="warning" title="Remove Physical Discs First">
 
 Manually starting or changing a digital song clears any physical disc in the jukebox without returning it. Inserting a physical disc pauses digital playback.
 
 </Callout>
 
-## AFK and effective playtime
+## AFK and Effective Playtime
 
 Use `/afk` to go AFK, or `/afk Lunch` to set a status message. Running it again only updates or clears the message; you remain AFK.
 
@@ -109,11 +109,11 @@ About three minutes without valid input triggers automatic AFK. Only chatting or
 
 AFK time does not count as effective playtime. Teleports and movement caused by water or pistons do not count as active input. Continuous movement alone cannot keep accumulating effective playtime or activity rewards indefinitely.
 
-## Flight and view distance
+## Flight and View Distance
 
 `/fly` toggles personal flight. Use `/fly speed 2` to set `2x` speed, or `/fly speed reset` to restore `1x`.
 
-<Details title="Why did my flight speed or view distance decrease?">
+<Details title="Why Did My Flight Speed or View Distance Decrease?">
 
 - When the network is busy, the server first reduces chunk sending distance for AFK players. Active players' view distance is reduced only if pressure remains high.
 - High-speed exploration during sustained network or server load can temporarily reduce your chunk range and native flight speed.
@@ -121,19 +121,19 @@ AFK time does not count as effective playtime. Teleports and movement caused by 
 
 </Details>
 
-## Everyday protection and cleanup
+## Everyday Protection and Cleanup
 
-### Clear negative effects
+### Clear Negative Effects
 
 In Creative or Spectator mode, receiving a negative potion effect outside PVP combat produces a chat notice with its source and cleanup buttons.
 
 <Definitions>
-<Definition title="Clear negative effects">
+<Definition title="Clear Negative Effects">
 
 Remove negative effects while keeping beneficial and neutral effects.
 
 </Definition>
-<Definition title="Clear all effects">
+<Definition title="Clear All Effects">
 
 Remove every potion effect. This option appears when beneficial or neutral effects are also present.
 
@@ -142,20 +142,20 @@ Remove every potion effect. This option appears when beneficial or neutral effec
 
 Buttons expire after one minute and can be used once. Enabling PVP alone does not block cleanup; actual combat does.
 
-### Personal trash bin
+### Personal Trash Bin
 
 Open `/trash` or `/garbage` and place unwanted items inside. The Sort button merges matching stacks and sorts items by type.
 
-<Callout kind="warning" title="Items remain for 10 seconds after closing">
+<Callout kind="warning" title="Items Remain for 10 Seconds After Closing">
 
 Reopen within 10 seconds to recover misplaced items; closing again restarts the timer. Items cannot be recovered after the timer expires, you click Clear, or the server restarts.
 
 </Callout>
 
-### Trampling protection
+### Trampling Protection
 
 Players and mobs cannot trample farmland or turtle eggs. Pressure plates and big dripleaves retain their vanilla interactions.
 
-## Share a build
+## Share a Build
 
 Members submit through Account overview → Building submissions after signing in. Include the location, images, contributor credits, and sources. Publication requires the author's consent and review approval.
