@@ -1,26 +1,7 @@
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
-import {
-  countsAsUnread,
-  isPassiveMessage,
-  messageConversation,
-} from '@/modules/chat/model/chat-protocol';
+import { countsAsUnread, messageConversation } from '@/modules/chat/model/chat-protocol';
 
-export const CHAT_HISTORY_LIMIT = 1000;
-export const CHAT_ACTIVITY_LIMIT = 200;
-
-/** Quiet activity has its own budget and cannot evict conversation messages. */
-export function retainChatHistory(messages: ChatMessage[]): ChatMessage[] {
-  let activity = 0;
-  let conversation = 0;
-  return [...messages]
-    .reverse()
-    .filter((message) =>
-      isPassiveMessage(message)
-        ? ++activity <= CHAT_ACTIVITY_LIMIT
-        : ++conversation <= CHAT_HISTORY_LIMIT,
-    )
-    .reverse();
-}
+export const CHAT_READ_POSITION_LIMIT = 1000;
 
 export interface ChatReadCursor {
   messageId: string;
@@ -98,7 +79,7 @@ export function readStoredPositions(value: unknown): ChatReadPositions {
         streamId: cursor.streamId,
         sequence: cursor.sequence,
       });
-    if (result.size >= CHAT_HISTORY_LIMIT) break;
+    if (result.size >= CHAT_READ_POSITION_LIMIT) break;
   }
   return result;
 }

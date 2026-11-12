@@ -7,6 +7,7 @@ import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
 import type { HistoryLease } from '@/modules/chat/lib/chat-history';
 import {
+  clearHistoryThrough,
   loadChatWorkspace,
   resetHistory,
   saveChatWorkspace,
@@ -263,4 +264,42 @@ test('unsaved in-memory drafts survive preference writes while saving is disable
   assert.equal(state().workspace.drafts.public.text, 'Memory only');
   assert.deepEqual((await loadChatWorkspace(lease))?.drafts, {});
   assert.equal((await loadChatWorkspace(lease))?.preferences.membersVisible, false);
+});
+
+test('message-only cleanup preserves unsaved draft mutations while replacing the history write lease', async () => {
+  const lease = await syncHistoryAccount(OWNER);
+  await act(async () => root.render(<Harness lease={lease} />));
+  const original = IDBDatabase.prototype.transaction;
+  let fail = true;
+  Object.defineProperty(IDBDatabase.prototype, 'transaction', {
+    configurable: true,
+    writable: true,
+    value: function (this: IDBDatabase, stores: string[], mode: IDBTransactionMode) {
+      if (fail && mode === 'readwrite') throw new Error('Storage is full');
+      return Reflect.apply(original, this, [stores, mode]);
+    },
+  });
+  try {
+    await act(async () =>
+      state().mutate({ type: 'draft', key: 'public', text: 'Keep unsaved draft', at: Date.now() }),
+    );
+    await until(() => state().storageFailed);
+    fail = false;
+    let next: HistoryLease | null = null;
+    await act(async () => {
+      next = await clearHistoryThrough(OWNER, { channel: 'private', through: Date.now() });
+    });
+    assert.ok(next);
+    await act(async () => root.render(<Harness lease={next as HistoryLease} />));
+    assert.equal(state().getDraft('public'), 'Keep unsaved draft');
+    await act(async () => state().mutate({ type: 'preferences', value: { density: 'compact' } }));
+    await until(() => !state().storageFailed);
+    assert.equal((await loadChatWorkspace(next))?.drafts.public.text, 'Keep unsaved draft');
+  } finally {
+    Object.defineProperty(IDBDatabase.prototype, 'transaction', {
+      configurable: true,
+      writable: true,
+      value: original,
+    });
+  }
 });

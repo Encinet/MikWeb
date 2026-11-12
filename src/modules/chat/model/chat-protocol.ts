@@ -16,6 +16,12 @@ export function isValidChatInput(value: string): boolean {
 }
 
 const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+export const historyPosition = z
+  .string()
+  .refine(
+    (value) =>
+      /^(?:0|[1-9][0-9]{0,18})$/.test(value) && BigInt(value) <= BigInt('9223372036854775807'),
+  );
 const name = z
   .string()
   .min(1)
@@ -99,6 +105,7 @@ const messageFields = {
   targetUuid: uuid.optional(),
   targetName: z.string().max(64).optional(),
   createdAt: z.number().int().nonnegative().max(8_640_000_000_000_000),
+  expiresAt: z.number().int().nonnegative().max(8_640_000_000_000_000).optional(),
   streamId: uuid,
   sequence: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
 };
@@ -193,6 +200,7 @@ export const chatServerEventSchema = z.discriminatedUnion('type', [
     name,
     staff: z.boolean(),
     expiresAt: z.number().int(),
+    history: z.boolean().optional(),
   }),
   z.object({ type: z.literal('permissions'), staff: z.boolean() }),
   z.object({ type: z.literal('reauthorize') }),
@@ -201,6 +209,17 @@ export const chatServerEventSchema = z.discriminatedUnion('type', [
     ...presenceSchema.shape,
   }),
   z.object({ type: z.literal('message'), message: chatMessageSchema }),
+  z.object({
+    type: z.literal('history'),
+    requestId: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
+    channel: z.enum(['public', 'staff', 'private']),
+    messages: z.array(chatMessageSchema).max(256),
+    hasMore: z.boolean(),
+    nextBefore: historyPosition.refine((value) => value !== '0'),
+    head: historyPosition,
+    databaseId: uuid,
+    visibilityScope: uuid,
+  }),
   z.object({
     type: z.literal('accepted'),
     requestId: z.string().max(64),

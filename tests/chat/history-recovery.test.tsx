@@ -146,9 +146,11 @@ test('unsupported history opens a confirmation; cancelling preserves data and bl
   await act(async () => button('Review cleanup options').click());
   assert.ok(document.querySelector('dialog'));
   await act(async () => button('Delete local data and continue').click());
-  await until(() => state().historyRecovery === null && state().historyLease !== null);
+  await until(
+    () => state().historyRecovery === null && state().historyLease !== null && retries === 1,
+  );
   assert.equal(retries, 1);
-  assert.equal((await openChatHistoryDatabase()).version, 3);
+  assert.equal((await openChatHistoryDatabase()).version, 4);
 });
 
 test('blocked deletion reports the other tab and cannot be dismissed until it completes', async () => {
@@ -172,7 +174,9 @@ test('blocked deletion reports the other tab and cannot be dismissed until it co
   } finally {
     other.close();
   }
-  await until(() => state().historyRecovery === null && state().historyLease !== null);
+  await until(
+    () => state().historyRecovery === null && state().historyLease !== null && retries === 1,
+  );
   assert.equal(retries, 1);
 });
 
@@ -195,7 +199,9 @@ test('failed deletion keeps chat blocked and offers another explicit attempt', a
     indexedDB.deleteDatabase = original;
   }
   await act(async () => button('Delete local data and continue').click());
-  await until(() => state().historyRecovery === null && state().historyLease !== null);
+  await until(
+    () => state().historyRecovery === null && state().historyLease !== null && retries === 1,
+  );
   assert.equal(retries, 1);
 });
 
@@ -207,7 +213,7 @@ test('ordinary storage failures still allow chat in memory without a deletion pr
   };
   try {
     await render();
-    await until(() => state().storageFailed);
+    await until(() => state().storageFailed && retries === 1);
     assert.equal(state().historyRecovery, null);
     assert.equal(retries, 1);
     assert.equal(document.querySelector('dialog'), null);

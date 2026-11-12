@@ -151,7 +151,7 @@ test('missing Cap configuration cannot expose an unprotected code request action
     assert.equal(env.container.querySelector('cap-widget'), null);
     assert.match(
       env.container.querySelector('.join-message')?.textContent ?? '',
-      /Verification is unavailable/,
+      /verification is unavailable/i,
     );
     assert.equal(env.container.querySelectorAll('.join-group-actions a').length, 2);
   } finally {

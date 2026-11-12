@@ -1,5 +1,11 @@
 import type { RecipientContext, SenderContext } from '@hpke/core';
 import { Aes256Gcm, CipherSuite, DhkemP256HkdfSha256, HkdfSha256 } from '@hpke/core';
+import {
+  COMPRESSED_APPLICATION_RECORD_TYPE,
+  decompressChatPacket,
+  MAX_CHAT_BYTES,
+  supportedChatCompression,
+} from '@/modules/chat/lib/connection/chat-compression';
 import { CHAT_WEBSOCKET_URL } from '@/shared/config/service-config';
 import { isRecord } from '@/shared/lib/is-record';
 
@@ -63,6 +69,7 @@ function readChatRecord(value: unknown): Record<string, unknown> {
 
 /** Owns wire encryption and key lifetimes; authorization and logical presence stay above it. */
 export class ChatTransport {
+  private readonly compression = supportedChatCompression();
   onmessage: ((event: MessageEvent<unknown>) => void) | null = null;
   onclose: (() => void) | null = null;
   onerror: ((failure: ChatTransportFailure) => void) | null = null;
@@ -84,6 +91,7 @@ export class ChatTransport {
   private reading = Promise.resolve();
   private writing = Promise.resolve();
   private cleartext = new Set<Uint8Array<ArrayBuffer>>();
+  private readonly lifetime = new AbortController();
   private reads = 0;
   private readBytes = 0;
   private writeBytes = 0;
@@ -100,7 +108,11 @@ export class ChatTransport {
           : event.data instanceof ArrayBuffer
             ? event.data.byteLength
             : Number.POSITIVE_INFINITY;
-      if (size > 128 * 1024 + 1 + 16 || this.reads >= 32 || this.readBytes + size > 1024 * 1024) {
+      if (
+        size > MAX_CHAT_BYTES + 1 + 16 ||
+        this.reads >= 32 ||
+        this.readBytes + size > 1024 * 1024
+      ) {
         this.fail();
         return;
       }
@@ -188,6 +200,7 @@ export class ChatTransport {
 
   private destroy(): void {
     this.stage = 'closed';
+    this.lifetime.abort();
     if (this.lifetimeTimer) clearTimeout(this.lifetimeTimer);
     this.lifetimeTimer = null;
     this.session = null;
@@ -267,13 +280,33 @@ export class ChatTransport {
         if (!this.usable(session)) return;
         session.received++;
         if (record.length < 2) throw new Error('invalid_chat_record');
-        const json = decoder.decode(record.subarray(1));
         if (record[0] === KEY_EXCHANGE_RECORD_TYPE) {
           if (record.length > 1025) throw new Error('invalid_key_exchange');
-          await this.keyFrame(readChatRecord(JSON.parse(json)), true);
+          await this.keyFrame(readChatRecord(JSON.parse(decoder.decode(record.subarray(1)))), true);
         } else if (record[0] === APPLICATION_RECORD_TYPE) {
           if (this.stage !== 'ready') throw new Error('application_during_key_exchange');
-          this.onmessage?.(new MessageEvent('message', { data: json }));
+          this.onmessage?.(
+            new MessageEvent('message', { data: decoder.decode(record.subarray(1)) }),
+          );
+        } else if (record[0] === COMPRESSED_APPLICATION_RECORD_TYPE) {
+          if (this.stage !== 'ready' || !this.compression)
+            throw new Error('unexpected_compressed_record');
+          const expanded = await decompressChatPacket(record.subarray(1), this.lifetime.signal);
+          this.cleartext.add(expanded);
+          try {
+            if (!this.usable(session)) return;
+            const json = decoder.decode(expanded);
+            if (
+              !['history', 'message', 'presence'].includes(
+                String(readChatRecord(JSON.parse(json)).type),
+              )
+            )
+              throw new Error('invalid_compressed_record');
+            this.onmessage?.(new MessageEvent('message', { data: json }));
+          } finally {
+            expanded.fill(0);
+            this.cleartext.delete(expanded);
+          }
         } else throw new Error('invalid_chat_record');
       } finally {
         record.fill(0);
@@ -373,6 +406,7 @@ export class ChatTransport {
           type: 'finished',
           generation: exchange.generation,
           verify: encode(proof.buffer),
+          compression: this.compression,
         }),
       );
       finished = new Uint8Array(json.length + 1);

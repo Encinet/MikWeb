@@ -3,8 +3,6 @@ import { test } from 'node:test';
 import { act } from 'react';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import { loadCommunityNotices } from '@/modules/community/lib/load-community-notices';
-import type { CommunityNotice } from '@/modules/community/model/community-notice-types';
 import { loadMapWorlds } from '@/modules/map/lib/load-map-worlds';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { OWNER } from '../chat/fixtures';
@@ -121,39 +119,5 @@ test('map menus retry failures and share successful requests without newer Abort
     assert.deepEqual(await Promise.all([loadMapWorlds(), loadMapWorlds()]), [worlds, worlds]);
     assert.deepEqual(await loadMapWorlds(), worlds);
     assert.equal(requests, 2);
-  });
-});
-
-test('community deep links validate identity and retain recent notices when a lookup fails', async () => {
-  await withoutStaticTimeout(async () => {
-    const recent: CommunityNotice = {
-      id: '11111111-1111-1111-1111-111111111111',
-      subject: 'Recent notice',
-      relatedNoticeId: null,
-      world: 'world',
-      x: 0,
-      y: 64,
-      z: 0,
-      authorName: 'Player',
-      kind: 'notice',
-      text: 'Notice',
-      status: 'open',
-      createdAt: 200,
-      deadline: 300,
-      ruling: null,
-    };
-    const linked = { ...recent, id: '22222222-2222-2222-2222-222222222222', createdAt: 100 };
-    let lookup: 'success' | 'failed' | 'mismatched' = 'success';
-    globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
-      assert.ok(init?.signal);
-      if (String(input).endsWith('/community/notices')) return Response.json({ notices: [recent] });
-      if (lookup === 'failed') return new Response(null, { status: 503 });
-      return Response.json({ notice: lookup === 'mismatched' ? recent : linked });
-    }, globalThis.fetch);
-    assert.deepEqual(await loadCommunityNotices(linked.id), [recent, linked]);
-    lookup = 'failed';
-    assert.deepEqual(await loadCommunityNotices(linked.id), [recent]);
-    lookup = 'mismatched';
-    assert.deepEqual(await loadCommunityNotices(linked.id), [recent]);
   });
 });

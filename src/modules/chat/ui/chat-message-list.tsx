@@ -48,6 +48,7 @@ interface Props extends ChatMessageActionHandlers {
   onRestore: (message: PendingChatMessage) => void;
   onJumpComplete: (sequence: number) => void;
   showActivity: boolean;
+  syncing?: boolean;
 }
 export const ChatMessageList = memo(function ChatMessageList({
   conversation,
@@ -67,6 +68,7 @@ export const ChatMessageList = memo(function ChatMessageList({
   showActivity,
   onMention,
   onPrivate,
+  syncing,
 }: Props) {
   const t = useTranslations('chat');
   const locale = useLocale();
@@ -232,7 +234,8 @@ export const ChatMessageList = memo(function ChatMessageList({
         role="log"
         tabIndex={-1}
         aria-label={title}
-        aria-live="polite"
+        aria-live={syncing ? 'off' : 'polite'}
+        aria-busy={syncing}
         aria-relevant="additions text"
         onScroll={scroll.onScroll}
         onPointerDownCapture={(event) => finishChatRegrouping(event.currentTarget)}

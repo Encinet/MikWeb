@@ -14,9 +14,7 @@ export function PrintPreparation() {
         document.querySelectorAll<HTMLDetailsElement>('.wiki-details:not([open])'),
       );
       hiddenContent = Array.from(
-        document.querySelectorAll<HTMLElement>(
-          '.wiki-tabs__panel[hidden], .community-board__entry-content[hidden]',
-        ),
+        document.querySelectorAll<HTMLElement>('.wiki-tabs__panel[hidden]'),
       );
       for (const details of closedDetails) details.open = true;
       for (const content of hiddenContent) content.hidden = false;

@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Building2, ClipboardList, Home, MapIcon, Shield } from 'lucide-react';
+import { BookOpen, Building2, Home, MapIcon, Shield } from 'lucide-react';
 import { domAnimation, LazyMotion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
@@ -63,12 +63,6 @@ export default function SiteHeader() {
       { id: 'home', icon: Home, label: t('nav.items.home'), path: '/' },
       { id: 'buildings', icon: Building2, label: t('nav.items.buildings'), path: '/buildings' },
       { id: 'wiki', icon: BookOpen, label: t('nav.items.wiki'), path: '/wiki' },
-      {
-        id: 'notices',
-        icon: ClipboardList,
-        label: t('nav.items.notices'),
-        path: '/community/notices',
-      },
       { id: 'map', icon: MapIcon, label: t('map.title'), path: '/map' },
       { id: 'bans', icon: Shield, label: t('bans.title'), path: '/bans' },
     ],

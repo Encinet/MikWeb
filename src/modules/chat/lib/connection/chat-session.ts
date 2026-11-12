@@ -15,9 +15,20 @@ import {
   chatServerEventSchema,
   isValidChatInput,
   mayReadMessage,
+  messageConversation,
 } from '@/modules/chat/model/chat-protocol';
 
-export type ChatSessionEvent = Exclude<ChatServerEvent, { type: 'hello' | 'reauthorize' }>;
+export type ChatHistoryPage = Extract<ChatServerEvent, { type: 'history' }>;
+export interface ChatHistoryQuery {
+  channel: 'public' | 'staff' | 'private';
+  targetUuid?: string;
+  before?: string;
+  after?: string;
+}
+export type ChatSessionEvent = Exclude<
+  ChatServerEvent,
+  { type: 'hello' | 'reauthorize' | 'history' }
+>;
 export type ChatSessionTransport = Pick<
   ChatTransport,
   | 'onmessage'
@@ -70,6 +81,14 @@ interface Connection {
   authorizing?: { controller: AbortController; cancelTimeout: () => void };
 }
 
+interface HistoryRequest {
+  query: ChatHistoryQuery;
+  sent: boolean;
+  resolve: (page: ChatHistoryPage) => void;
+  reject: (error: Error) => void;
+  cancel: () => void;
+}
+
 /** Owns connection authority, retries and delivery deadlines; React and storage consume its events. */
 export class ChatSession {
   private connection: Connection | null = null;
@@ -80,6 +99,11 @@ export class ChatSession {
   private attempts = 0;
   private cancelReconnect?: () => void;
   private deliveries = new Map<string, () => void>();
+  private historyAvailable = false;
+  private historyRequests = new Map<string, HistoryRequest>();
+  private expiredHistoryRequests = new Set<string>();
+  private lastHistoryAt = Number.NEGATIVE_INFINITY;
+  private cancelHistoryWait?: () => void;
 
   constructor(
     private readonly owner: string,
@@ -89,6 +113,81 @@ export class ChatSession {
 
   get hasConnection(): boolean {
     return this.connection !== null;
+  }
+
+  get hasHistory(): boolean {
+    return this.historyAvailable && Boolean(this.access);
+  }
+
+  readHistory(query: ChatHistoryQuery): Promise<ChatHistoryPage> {
+    if (!this.hasHistory) return Promise.reject(new Error('history_unavailable'));
+    if (query.channel === 'staff' && !this.access?.staff)
+      return Promise.reject(new Error('staff_required'));
+    if (this.historyRequests.size >= 8) return Promise.reject(new Error('chat_busy'));
+    return new Promise((resolve, reject) => {
+      const id = crypto.randomUUID();
+      const cancel = this.environment.schedule(() => {
+        if (this.expiredHistoryRequests.size >= 32)
+          this.expiredHistoryRequests.delete(
+            this.expiredHistoryRequests.values().next().value ?? '',
+          );
+        this.expiredHistoryRequests.add(id);
+        this.finishHistory(id, new Error('history_unavailable'));
+      }, 15_000);
+      this.historyRequests.set(id, { query, sent: false, resolve, reject, cancel });
+      this.pumpHistory();
+    });
+  }
+
+  private pumpHistory(): void {
+    if (
+      this.cancelHistoryWait ||
+      [...this.historyRequests.values()].some((request) => request.sent)
+    )
+      return;
+    const first = this.historyRequests.entries().next().value;
+    if (!first) return;
+    const [id, request] = first;
+    const connection = this.connection;
+    if (
+      !connection ||
+      !this.hasHistory ||
+      (request.query.channel === 'staff' && !this.access?.staff)
+    ) {
+      this.finishHistory(id, new Error('history_unavailable'));
+      return;
+    }
+    const delay = this.lastHistoryAt + 250 - this.environment.now();
+    if (delay > 0) {
+      this.cancelHistoryWait = this.environment.schedule(() => {
+        this.cancelHistoryWait = undefined;
+        this.pumpHistory();
+      }, delay);
+      return;
+    }
+    request.sent = true;
+    this.lastHistoryAt = this.environment.now();
+    try {
+      connection.transport.send(
+        JSON.stringify({
+          type: 'history',
+          requestId: id,
+          ...request.query,
+        }),
+      );
+    } catch {
+      this.finishHistory(id, new Error('history_unavailable'));
+    }
+  }
+
+  private finishHistory(id: string, result: ChatHistoryPage | Error): void {
+    const request = this.historyRequests.get(id);
+    if (!request) return;
+    this.historyRequests.delete(id);
+    request.cancel();
+    if (result instanceof Error) request.reject(result);
+    else request.resolve(result);
+    this.pumpHistory();
   }
 
   get access(): ChatAccess | null {
@@ -192,6 +291,16 @@ export class ChatSession {
     this.presence = { players: [], staffPlayers: [] };
     for (const cancel of this.deliveries.values()) cancel();
     this.deliveries.clear();
+    this.historyAvailable = false;
+    this.cancelHistoryWait?.();
+    this.cancelHistoryWait = undefined;
+    this.lastHistoryAt = Number.NEGATIVE_INFINITY;
+    for (const request of this.historyRequests.values()) {
+      request.cancel();
+      request.reject(new Error('connection_failed'));
+    }
+    this.historyRequests.clear();
+    this.expiredHistoryRequests.clear();
     if (!previous) return;
     previous.cancelExpiry?.();
     previous.authorizing?.cancelTimeout();
@@ -334,6 +443,7 @@ export class ChatSession {
       }
       connection.confirmed = true;
       connection.staff = event.staff;
+      this.historyAvailable = event.history === true;
       this.attempts = 0;
       this.expire(connection, 65_000);
       this.update({ status: 'online' });
@@ -360,6 +470,35 @@ export class ChatSession {
         event.message.requestId
       )
         this.finishDelivery(event.message.requestId);
+    } else if (event.type === 'history') {
+      if (this.expiredHistoryRequests.delete(event.requestId)) return;
+      const request = this.historyRequests.get(event.requestId);
+      if (
+        !request?.sent ||
+        request.query.channel !== event.channel ||
+        event.messages.some(
+          (message) =>
+            message.channel !== event.channel ||
+            !mayReadMessage(message, this.owner, connection.staff) ||
+            Boolean(
+              request.query.targetUuid &&
+                messageConversation(message, this.owner) !== `private:${request.query.targetUuid}`,
+            ),
+        ) ||
+        (event.hasMore &&
+          request.query.before &&
+          BigInt(event.nextBefore) >= BigInt(request.query.before))
+      ) {
+        this.fail(connection, 'invalid_response');
+        return;
+      }
+      this.finishHistory(event.requestId, event);
+      return;
+    } else if (event.type === 'error' && this.expiredHistoryRequests.delete(event.requestId))
+      return;
+    else if (event.type === 'error' && this.historyRequests.has(event.requestId)) {
+      this.finishHistory(event.requestId, new Error(event.error));
+      return;
     } else if (event.type === 'accepted' || event.type === 'error')
       this.finishDelivery(event.requestId);
     // The generation guard also protects storage cleanup after a terminal socket close.

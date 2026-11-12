@@ -73,14 +73,14 @@ afterEach(async () => {
 
 test('new databases use the current schema and cached connections reopen after a version change', async () => {
   const first = await openChatHistoryDatabase();
-  assert.equal(first.version, 3);
+  assert.equal(first.version, 4);
   assert.equal(await openChatHistoryDatabase(), first);
-  const changed = await openStored(4);
+  const changed = await openStored(5);
   changed.close();
   await assert.rejects(openChatHistoryDatabase(), UnsupportedChatHistoryError);
 });
 
-for (const version of [1, 4]) {
+for (const version of [1, 5]) {
   test(`unsupported database v${version} preserves all data until explicit deletion`, async () => {
     await seed(version, [{ kind: 'unknown', text: 'Keep me' }]);
     const before = await storedData();
@@ -88,7 +88,7 @@ for (const version of [1, 4]) {
     await assert.rejects(openChatHistoryDatabase(), UnsupportedChatHistoryError);
     assert.deepEqual(await storedData(), before);
     await deleteChatHistoryDatabase(() => assert.fail('Unexpected blocked deletion'));
-    assert.equal((await openChatHistoryDatabase()).version, 3);
+    assert.equal((await openChatHistoryDatabase()).version, 4);
     assert.deepEqual((await storedData()).messages, []);
   });
 }
@@ -105,12 +105,23 @@ test('v2 upgrades supported records without changing account or workspace data',
   const before = await storedData();
   await openChatHistoryDatabase();
   const after = await storedData();
-  assert.equal(after.version, 3);
+  assert.equal(after.version, 4);
   assert.deepEqual(after.state, before.state);
   assert.deepEqual(after.messages, [
-    { key: 0, message: original },
-    { key: 1, message: current },
+    { key: 0, message: original, channel: original.channel },
+    { key: 1, message: current, channel: current.channel },
   ]);
+});
+
+test('v3 adds the channel index while preserving messages and account data', async () => {
+  const original = message();
+  await seed(3, [original]);
+  const before = await storedData();
+  await openChatHistoryDatabase();
+  const after = await storedData();
+  assert.equal(after.version, 4);
+  assert.deepEqual(after.state, before.state);
+  assert.deepEqual(after.messages, [{ key: 0, message: original, channel: original.channel }]);
 });
 
 test('a failed v2 conversion rolls back earlier cursor updates and preserves the database version', async () => {
@@ -149,7 +160,7 @@ test('a blocked deletion remains pending and resumes when the other connection c
   }
   await deleting;
   assert.equal(complete, true);
-  assert.equal((await openChatHistoryDatabase()).version, 3);
+  assert.equal((await openChatHistoryDatabase()).version, 4);
 });
 
 test('an unsupported version held by another tab still requires consent and a late open cannot change it', async () => {

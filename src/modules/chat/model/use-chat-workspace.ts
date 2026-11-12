@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { HistoryLease } from '@/modules/chat/lib/chat-history';
 import {
+  chatWorkspaceEpoch,
   loadChatWorkspace,
   onWorkspaceChange,
   saveChatWorkspace,
@@ -48,7 +49,7 @@ export function useChatWorkspace(lease: HistoryLease | null, staff: boolean) {
   useEffect(() => {
     let current = true;
     let initialized = false;
-    const epoch = lease?.epoch ?? null;
+    const epoch = chatWorkspaceEpoch(lease);
     revision.current++;
     if (latest.current.epoch !== epoch) {
       queue.current = [];
@@ -81,7 +82,8 @@ export function useChatWorkspace(lease: HistoryLease | null, staff: boolean) {
           ? stored
           : { ...latest.current.value, preferences: stored.preferences };
         for (const write of queue.current)
-          if (write.lease.epoch === epoch) value = updateChatWorkspace(value, write.mutation);
+          if (chatWorkspaceEpoch(write.lease) === epoch)
+            value = updateChatWorkspace(value, write.mutation);
         value = readChatWorkspace(value, staff);
         const next = { epoch, value };
         latest.current = next;
@@ -114,7 +116,7 @@ export function useChatWorkspace(lease: HistoryLease | null, staff: boolean) {
         try {
           await saveChatWorkspace(write.lease, write.mutation);
         } catch {
-          if (write.lease.epoch !== activeLease.current?.epoch) {
+          if (chatWorkspaceEpoch(write.lease) !== chatWorkspaceEpoch(activeLease.current)) {
             if (queue.current[0] === write) queue.current.shift();
             continue;
           }
@@ -136,8 +138,8 @@ export function useChatWorkspace(lease: HistoryLease | null, staff: boolean) {
 
   const mutate = useCallback(
     (mutation: ChatWorkspaceMutation) => {
-      const epoch = lease?.epoch ?? null;
-      if (epoch !== (activeLease.current?.epoch ?? null)) return;
+      const epoch = chatWorkspaceEpoch(lease);
+      if (epoch !== chatWorkspaceEpoch(activeLease.current)) return;
       if (mutation.type === 'draft' && mutation.key === 'staff' && !activeStaff.current) return;
       const previous = latest.current.epoch === epoch ? latest.current.value : emptyChatWorkspace();
       const value = readChatWorkspace(updateChatWorkspace(previous, mutation), activeStaff.current);
@@ -147,7 +149,7 @@ export function useChatWorkspace(lease: HistoryLease | null, staff: boolean) {
       setSnapshot(next);
       if (!lease || (!lease.persist && mutation.type !== 'preferences')) return;
       const waiting = queue.current.filter(
-        (write) => write !== writing.current && write.lease.epoch === epoch,
+        (write) => write !== writing.current && chatWorkspaceEpoch(write.lease) === epoch,
       );
       const pending = appendWorkspaceMutation(
         waiting.map((write) => write.mutation),
@@ -164,18 +166,18 @@ export function useChatWorkspace(lease: HistoryLease | null, staff: boolean) {
 
   const value = useMemo(() => {
     const value =
-      snapshot.epoch === (lease?.epoch ?? null)
+      snapshot.epoch === chatWorkspaceEpoch(lease)
         ? snapshot.value
         : emptyChatWorkspace(snapshot.value.preferences);
     if (staff || !value.drafts.staff) return value;
     const drafts = { ...value.drafts };
     delete drafts.staff;
     return { ...value, drafts };
-  }, [snapshot, lease?.epoch, staff]);
+  }, [snapshot, lease, staff]);
   const getDraft = useCallback(
     (key: string) =>
       (key !== 'staff' || activeStaff.current) &&
-      latest.current.epoch === (activeLease.current?.epoch ?? null)
+      latest.current.epoch === chatWorkspaceEpoch(activeLease.current)
         ? (latest.current.value.drafts[key]?.text ?? '')
         : '',
     [],

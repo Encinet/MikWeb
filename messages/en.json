@@ -60,8 +60,7 @@
       "home": "Home",
       "buildings": "Buildings",
       "wiki": "Wiki",
-      "join": "Join the Community",
-      "notices": "Notices"
+      "join": "Join the Community"
     },
     "theme": {
       "title": "Theme Color",
@@ -349,55 +348,6 @@
     },
     "shownCount": "Showing {count} of {total}"
   },
-  "communityBoard": {
-    "title": "Community Notices",
-    "meta": {
-      "description": "Read construction notices, feedback about their impact, and outcomes."
-    },
-    "hero": {
-      "rules": "Read server rules"
-    },
-    "records": {
-      "title": "Recent Records",
-      "loading": "Loading records…",
-      "latestLimit": "Showing the latest 300 records. Older records remain available through direct links.",
-      "error": "Could not load the notice board.",
-      "empty": "No notices or feedback yet.",
-      "by": "{author}",
-      "noticeUntil": "Notice period ends: {time} (UTC+8)",
-      "relatedNotice": "Related notice",
-      "permalink": "Link",
-      "permalinkLabel": "Link to {subject}",
-      "expand": "View details",
-      "showMore": "Show more",
-      "noResults": "No matching notices",
-      "linkUnavailable": "Could not load the linked notice.",
-      "unknownTime": "Unknown time"
-    },
-    "kind": {
-      "notice": "Construction notice",
-      "objection": "Impact feedback"
-    },
-    "status": {
-      "ruled": "Ruling issued",
-      "elapsed": "Notice period ended",
-      "withdrawn": "Feedback withdrawn",
-      "noticeOpen": "Notice period open",
-      "objectionOpen": "Awaiting discussion"
-    },
-    "detailLabels": {
-      "contact": "Contact",
-      "scope": "Scope",
-      "impact": "Impact",
-      "proposal": "Proposal"
-    },
-    "ruling": {
-      "title": "Outcome"
-    },
-    "search": {
-      "placeholder": "Search notices, players, or locations"
-    }
-  },
   "auth": {
     "fields": {
       "passkeys": "Passkeys"
@@ -553,7 +503,7 @@
     "you": "you",
     "game": "In game",
     "webCount": "Web ×{count}",
-    "privateList": "Local Private Conversations",
+    "privateList": "Private Conversations",
     "onlinePlayers": "Online Players ({count})",
     "search": "Find online players",
     "startPrivate": "Message {name}",
@@ -565,9 +515,9 @@
     "composeLabel": "Message {channel}",
     "privateOffline": "This player is offline. Messages cannot be sent.",
     "saveLocally": "Save local history",
-    "clearHistory": "Clear local history",
-    "clearAction": "Clear",
-    "clearConfirm": "Clear local messages, drafts, and conversations? This cannot be undone.",
+    "clearHistory": "Clear All Local History",
+    "clearConfirm": "Clear local messages, drafts, and conversations? Records beyond the server’s 7-day retention cannot be recovered.",
+    "serverHistoryNote": "Keep messages until cleared, signed out, or switched to another account.",
     "storageFailed": "Messages or drafts could not be saved locally and may be lost when this page closes.",
     "historyRecovery": {
       "title": "Incompatible Local Chat Data",
@@ -644,9 +594,12 @@
     "jumpUnread": "First unread ({count})",
     "unreadCount": "{count, plural, one {# unread message} other {# unread messages}}",
     "loadEarlier": "Earlier messages",
+    "syncingHistory": "Syncing message history · {count} messages processed",
+    "historySyncFailed": "Message history could not be fully synced. You can continue chatting and retry.",
+    "retryHistory": "Retry sync",
     "searchMessages": "Search Messages",
     "searchPlaceholder": "Message or player name",
-    "searchHint": "Find messages saved in this browser",
+    "searchHint": "Search synced messages",
     "searchScope": "Search scope",
     "searchCurrent": "This conversation",
     "searchAll": "All conversations",
@@ -655,7 +608,7 @@
     "searchEmptyHint": "Try different keywords or filters",
     "loadMoreResults": "More results",
     "noPlayersFound": "No matching players online",
-    "confirmClear": "Clear history",
+    "confirmClear": "Clear All History",
     "description": "Chat with players in Minecraft and on the web.",
     "notifications": {
       "label": "Private messages and mentions",
@@ -666,13 +619,12 @@
       "error": "Could not enable notifications. Try again.",
       "mentionTitle": "{name} mentioned you in {channel}"
     },
-    "disableHistoryConfirm": "Stop saving and clear local messages, drafts, and conversations?",
+    "disableHistoryConfirm": "Turn off saving and clear local messages, drafts, and conversations? Records beyond the server’s 7-day retention cannot be recovered.",
     "messagePlaceholder": "Message…",
     "composePlaceholder": "Message {channel}…",
     "navigationUnread": "Channels and conversations, {count, plural, one {# unread message} other {# unread messages}}",
     "drafts": {
       "label": "Draft",
-      "persistenceHint": "Also saves drafts and your conversation list",
       "restoreTooLong": "Your current draft is too long. Finish or shorten it before restoring this message.",
       "restored": "Restored drafts for {count, plural, one {# conversation} other {# conversations}}",
       "saved": "Draft saved on this device"
@@ -740,6 +692,34 @@
       "close": "Close conversation",
       "online": "Online",
       "offline": "Offline"
+    },
+    "data": {
+      "title": "Manage Local History",
+      "allTypes": "All message types",
+      "messageType": "Message type",
+      "timeRange": "Message age",
+      "olderThan": "{days}+ days",
+      "allDates": "All time",
+      "summary": "{count, plural, one {# saved message} other {# saved messages}}",
+      "oldest": "Oldest: {date}",
+      "loading": "Counting local records…",
+      "statisticsFailed": "Statistics are unavailable.",
+      "matching": "{count, plural, one {# match} other {# matches}}",
+      "clearSelected": "Clear Local Messages",
+      "confirm": "Clear {count, plural, one {# message} other {# messages}} in {scope} dated {date} or earlier? Records beyond the server’s 7-day retention cannot be recovered.",
+      "confirmAction": "Clear Messages",
+      "confirmDisable": "Turn Off & Clear",
+      "clearing": "Clearing…",
+      "cleaned": "Local chat data cleared.",
+      "refresh": "Refresh",
+      "empty": "No messages are saved in this browser.",
+      "noMatches": "No matching messages.",
+      "reviewCleanup": "Clear…",
+      "resetAction": "Clear All History…",
+      "disableTitle": "Turn Off Local Saving",
+      "unavailable": "Local storage is unavailable. Chat stays in this page only.",
+      "cleanupFailed": "Cleanup failed. Try again.",
+      "allTypesOption": "All"
     }
   },
   "pcl2": {

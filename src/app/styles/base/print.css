@@ -306,33 +306,6 @@
     break-inside: avoid-page;
   }
 
-  /* Records keep their text, including content collapsed on screen. */
-  .community-board__toolbar,
-  .community-board__preview,
-  .community-board__rules-link,
-  .community-board__entry-footer,
-  .community-board__show-more {
-    display: none !important;
-  }
-
-  .community-board__entry {
-    display: block;
-    border-bottom: 1px solid #c9cec9 !important;
-    border-radius: 0;
-    padding: 0.7rem 0;
-  }
-
-  .community-board__entry-content {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-  }
-
-  .community-board__details {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.4rem 1rem;
-    margin-top: 0.6rem;
-  }
-
   .building-archive-controls,
   .building-archive-scroll-loader,
   .building-archive-scroll-end,

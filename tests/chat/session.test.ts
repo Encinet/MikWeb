@@ -8,7 +8,7 @@ import type {
 } from '@/modules/chat/lib/connection/chat-session';
 import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
-import { message, OTHER, OWNER, PEER, player } from './fixtures';
+import { message, OTHER, OWNER, PEER, player, STREAM } from './fixtures';
 
 class Clock {
   now = 0;
@@ -53,7 +53,11 @@ class Transport implements ChatSessionTransport {
   }
 
   receive(event: unknown) {
-    this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(event) }));
+    const payload =
+      event && typeof event === 'object' && 'type' in event && event.type === 'history'
+        ? { databaseId: STREAM, visibilityScope: OTHER, head: '100', ...event }
+        : event;
+    this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(payload) }));
   }
 }
 
@@ -102,7 +106,7 @@ function harness(
     transport.receive({ type: 'hello', connectionId: 'a'.repeat(32) });
     return transport;
   };
-  const online = (staff = false) => {
+  const online = (staff = false, history = false) => {
     const transport = hello();
     transport.receive({
       type: 'authorized',
@@ -110,6 +114,7 @@ function harness(
       name: 'Owner',
       staff,
       expiresAt: clock.now + 60_000,
+      history,
     });
     return transport;
   };
@@ -131,6 +136,129 @@ async function until(check: () => boolean) {
   for (let i = 0; i < 20 && !check(); i++) await Promise.resolve();
   assert.ok(check(), 'The asynchronous operation did not settle');
 }
+
+test('history requests are serialized and throttled while live traffic keeps its own path', async () => {
+  const h = harness();
+  h.session.retry();
+  const transport = h.online(true, true);
+  const first = h.session.readHistory({ channel: 'public' });
+  const second = h.session.readHistory({ channel: 'private', targetUuid: PEER });
+  assert.equal(transport.sent.length, 1);
+  const request = JSON.parse(transport.sent[0] ?? '{}');
+  transport.receive({ type: 'message', message: message({ id: 'live' }) });
+  transport.receive({
+    type: 'history',
+    requestId: request.requestId,
+    channel: 'public',
+    messages: [message({ id: 'old' })],
+    hasMore: true,
+    nextBefore: '12',
+  });
+  assert.equal((await first).messages[0]?.id, 'old');
+  assert.equal(h.events.filter(({ event }) => event.type === 'message').length, 1);
+  assert.equal(transport.sent.length, 1);
+  h.clock.advance(249);
+  assert.equal(transport.sent.length, 1);
+  h.clock.advance(1);
+  assert.equal(transport.sent.length, 2);
+  const next = JSON.parse(transport.sent[1] ?? '{}');
+  assert.equal(next.targetUuid, PEER);
+  transport.receive({
+    type: 'history',
+    requestId: next.requestId,
+    channel: 'private',
+    messages: [],
+    hasMore: false,
+    nextBefore: '12',
+  });
+  assert.equal((await second).hasMore, false);
+  h.session.stop();
+  assert.equal(h.clock.timers.size, 0);
+});
+
+test('bounded history pages accept 256 short messages and reject a larger page', async () => {
+  for (const count of [256, 257]) {
+    const h = harness();
+    h.session.retry();
+    const transport = h.online(false, true);
+    const reading = h.session.readHistory({ channel: 'public' });
+    const request = JSON.parse(transport.sent[0]);
+    transport.receive({
+      type: 'history',
+      requestId: request.requestId,
+      channel: 'public',
+      messages: Array.from({ length: count }, (_, index) =>
+        message({ id: `bounded-${index}`, sequence: index + 1 }),
+      ),
+      hasMore: false,
+      nextBefore: '1',
+    });
+    if (count === 256) assert.equal((await reading).messages.length, count);
+    else await assert.rejects(reading);
+    h.session.stop();
+  }
+});
+
+test('history never exposes another private conversation or staff content after demotion', async () => {
+  for (const downgrade of [false, true]) {
+    const h = harness();
+    h.session.retry();
+    const transport = h.online(true, true);
+    const reading = h.session.readHistory({
+      channel: downgrade ? 'staff' : 'private',
+      targetUuid: downgrade ? undefined : PEER,
+    });
+    const rejected = assert.rejects(reading, /connection_failed/);
+    const request = JSON.parse(transport.sent[0] ?? '{}');
+    if (downgrade) transport.receive({ type: 'permissions', staff: false });
+    transport.receive({
+      type: 'history',
+      requestId: request.requestId,
+      channel: downgrade ? 'staff' : 'private',
+      messages: [
+        message(
+          downgrade
+            ? { channel: 'staff' }
+            : { channel: 'private', sender: player(OTHER), targetUuid: OWNER },
+        ),
+      ],
+      hasMore: false,
+      nextBefore: '1',
+    });
+    await rejected;
+    assert.equal(h.state().error, 'invalid_response');
+    h.session.stop();
+  }
+});
+
+test('history failures and late timed-out pages preserve the live connection and stopping cancels queued reads', async () => {
+  const h = harness();
+  h.session.retry();
+  const transport = h.online(false, true);
+  const reading = h.session.readHistory({ channel: 'public' });
+  const rejected = assert.rejects(reading, /history_unavailable/);
+  const request = JSON.parse(transport.sent[0] ?? '{}');
+  h.clock.advance(15_000);
+  await rejected;
+  transport.receive({
+    type: 'history',
+    requestId: request.requestId,
+    channel: 'public',
+    messages: [],
+    hasMore: false,
+    nextBefore: '1',
+  });
+  assert.equal(h.state().status, 'online');
+  const pending = h.session.readHistory({ channel: 'private' });
+  const queued = h.session.readHistory({ channel: 'public' });
+  const canceled = Promise.all([
+    assert.rejects(pending, /connection_failed/),
+    assert.rejects(queued, /connection_failed/),
+  ]);
+  h.session.stop();
+  await canceled;
+  assert.equal(h.clock.timers.size, 0);
+});
 
 test('a late HTTP error body cannot stop a replacement chat connection', async () => {
   const originalFetch = globalThis.fetch;

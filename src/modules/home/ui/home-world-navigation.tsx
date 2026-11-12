@@ -15,7 +15,6 @@ export function HomeWorldNavigation() {
       label: t('home.playerHome.shortcuts.commands'),
     },
     { href: '/wiki?section=rules', icon: BookOpen, label: t('home.playerHome.shortcuts.rules') },
-    { href: '/community/notices', icon: ScrollText, label: t('communityBoard.title') },
     { href: '/pcl2', icon: MonitorDown, label: t('home.playerHome.shortcuts.launcher') },
     {
       href: '/wiki?section=getting-started',

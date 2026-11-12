@@ -179,6 +179,12 @@ export function ChatWorkspace({
     [mutate, key],
   );
   const online = chat.connection.status === 'online';
+  const historyStates = Object.values(chat.serverHistory);
+  const syncingHistory = historyStates.some(
+    (state) => state.loading && (state.backfilling || state.count > 0),
+  );
+  const historySyncFailed = historyStates.some((state) => state.failed);
+  const syncedCount = historyStates.reduce((count, state) => count + state.count, 0);
   const workspaceVisible = keepChatWorkspace(chat.connection, chat.hasConnected);
   useEffect(() => {
     if (!workspaceVisible || overlay !== null) return;
@@ -507,6 +513,26 @@ export function ChatWorkspace({
             {t('storageFailed')}
           </p>
         ) : null}
+        {syncingHistory ? (
+          <p className="chat-feedback" role="status">
+            {t('syncingHistory', { count: syncedCount })}
+          </p>
+        ) : historySyncFailed && online ? (
+          <div className="chat-feedback" role="status">
+            <span>{t('historySyncFailed')}</span>{' '}
+            <button
+              type="button"
+              className="ui-action-button"
+              onClick={() => {
+                void chat.loadServerHistory('public');
+                void chat.loadServerHistory('private');
+                if (chat.staff) void chat.loadServerHistory('staff');
+              }}
+            >
+              {t('retryHistory')}
+            </button>
+          </div>
+        ) : null}
 
         <ChatMessageList
           key={`messages:${viewKey}`}
@@ -527,6 +553,7 @@ export function ChatWorkspace({
           showActivity={preferences.showActivity}
           onMention={mention}
           onPrivate={startPrivate}
+          syncing={syncingHistory}
         />
         <ChatComposer
           key={`composer:${viewKey}`}

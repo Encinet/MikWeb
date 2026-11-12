@@ -60,8 +60,7 @@
       "home": "首页",
       "buildings": "建筑收录",
       "wiki": "Wiki",
-      "join": "加入社区",
-      "notices": "社区公示"
+      "join": "加入社区"
     },
     "theme": {
       "title": "主题色",
@@ -349,55 +348,6 @@
     },
     "shownCount": "已显示 {count} / {total} 条"
   },
-  "communityBoard": {
-    "title": "社区公示",
-    "meta": {
-      "description": "查看施工告知、影响反馈和处理结果。"
-    },
-    "hero": {
-      "rules": "阅读服务器规则"
-    },
-    "records": {
-      "title": "最近记录",
-      "loading": "正在加载记录…",
-      "latestLimit": "这里显示最近 300 条；更早的记录可通过直达链接查看。",
-      "error": "暂时无法加载公示记录。",
-      "empty": "暂无公示记录。",
-      "by": "{author}",
-      "noticeUntil": "告知期至 {time}（UTC+8）",
-      "relatedNotice": "关联告知",
-      "permalink": "链接",
-      "permalinkLabel": "「{subject}」的记录链接",
-      "expand": "查看详情",
-      "showMore": "显示更多",
-      "noResults": "没有匹配的公示记录",
-      "linkUnavailable": "无法加载链接中的公示。",
-      "unknownTime": "时间未知"
-    },
-    "kind": {
-      "notice": "施工告知",
-      "objection": "影响反馈"
-    },
-    "status": {
-      "ruled": "已裁决",
-      "elapsed": "告知期已满",
-      "withdrawn": "反馈已撤回",
-      "noticeOpen": "告知期内",
-      "objectionOpen": "待沟通"
-    },
-    "detailLabels": {
-      "contact": "联系对象",
-      "scope": "范围",
-      "impact": "影响",
-      "proposal": "方案"
-    },
-    "ruling": {
-      "title": "处理结果"
-    },
-    "search": {
-      "placeholder": "搜索公示、玩家或位置"
-    }
-  },
   "auth": {
     "fields": {
       "passkeys": "Passkey"
@@ -553,7 +503,7 @@
     "you": "你",
     "game": "游戏内",
     "webCount": "网页 ×{count}",
-    "privateList": "本机私聊会话",
+    "privateList": "私聊会话",
     "onlinePlayers": "在线玩家（{count}）",
     "search": "查找在线玩家",
     "startPrivate": "与 {name} 发起私聊",
@@ -565,9 +515,9 @@
     "composeLabel": "向{channel}发送消息",
     "privateOffline": "对方已离线，无法发送。",
     "saveLocally": "保存本机记录",
-    "clearHistory": "清空本机记录",
-    "clearAction": "清空",
-    "clearConfirm": "清空本机消息、草稿和会话列表？此操作无法撤销。",
+    "clearHistory": "清空全部本机记录",
+    "clearConfirm": "清空本机消息、草稿和会话？超过服务端 7 天保留期的记录无法恢复。",
+    "serverHistoryNote": "长期保存消息；退出登录或切换账号时清空。",
     "storageFailed": "无法保存本机记录或草稿，关闭页面后可能丢失。",
     "historyRecovery": {
       "title": "本机聊天记录不兼容",
@@ -644,9 +594,12 @@
     "jumpUnread": "首条未读（{count}）",
     "unreadCount": "{count, plural, other {# 条未读消息}}",
     "loadEarlier": "查看更早消息",
+    "syncingHistory": "正在同步历史消息 · 已处理 {count} 条",
+    "historySyncFailed": "历史消息尚未同步完整，可继续聊天或重试同步。",
+    "retryHistory": "重试同步",
     "searchMessages": "搜索消息",
     "searchPlaceholder": "消息或玩家名",
-    "searchHint": "查找此浏览器保存的消息",
+    "searchHint": "查找已同步的消息",
     "searchScope": "搜索范围",
     "searchCurrent": "当前会话",
     "searchAll": "全部会话",
@@ -655,7 +608,7 @@
     "searchEmptyHint": "试试调整关键词或筛选条件",
     "loadMoreResults": "更多结果",
     "noPlayersFound": "没有匹配的在线玩家",
-    "confirmClear": "确认清空",
+    "confirmClear": "清空全部记录",
     "description": "与游戏内和网页玩家实时聊天。",
     "notifications": {
       "label": "私聊与提及通知",
@@ -666,13 +619,12 @@
       "error": "通知未能启用，点击重试",
       "mentionTitle": "{name} 在{channel}频道提到了你"
     },
-    "disableHistoryConfirm": "关闭保存并清空本机消息、草稿和会话列表？",
+    "disableHistoryConfirm": "关闭保存并清空本机消息、草稿和会话？超过服务端 7 天保留期的记录无法恢复。",
     "messagePlaceholder": "输入消息…",
     "composePlaceholder": "发送到{channel}…",
     "navigationUnread": "频道与私聊，{count, plural, other {# 条未读消息}}",
     "drafts": {
       "label": "草稿",
-      "persistenceHint": "同时保存草稿与会话列表",
       "restoreTooLong": "输入框中的草稿过长，请先处理当前草稿，再恢复这条消息。",
       "restored": "已恢复 {count, plural, other {# 个会话}}的草稿",
       "saved": "草稿已保存在本机"
@@ -740,6 +692,34 @@
       "close": "关闭会话",
       "online": "在线",
       "offline": "离线"
+    },
+    "data": {
+      "title": "管理本机记录",
+      "allTypes": "全部消息类型",
+      "messageType": "消息类型",
+      "timeRange": "时间范围",
+      "olderThan": "{days} 天以前",
+      "allDates": "全部时间",
+      "summary": "{count, plural, other {已保存 # 条消息}}",
+      "oldest": "最早：{date}",
+      "loading": "正在统计本机记录…",
+      "statisticsFailed": "统计暂不可用。",
+      "matching": "{count, plural, other {# 条可清理}}",
+      "clearSelected": "清理本机消息",
+      "confirm": "清理{scope}中 {date} 及以前的{count, plural, other { # 条消息}}？超过服务端 7 天保留期的记录无法恢复。",
+      "confirmAction": "清理消息",
+      "confirmDisable": "关闭并清空",
+      "clearing": "正在清理…",
+      "cleaned": "本机聊天数据已清理。",
+      "refresh": "刷新统计",
+      "empty": "此浏览器尚未保存消息。",
+      "noMatches": "没有符合条件的消息。",
+      "reviewCleanup": "清理…",
+      "resetAction": "清空全部记录…",
+      "disableTitle": "关闭本机保存",
+      "unavailable": "本机存储暂不可用，聊天仅在当前页面保留。",
+      "cleanupFailed": "清理失败，请重试。",
+      "allTypesOption": "全部"
     }
   },
   "pcl2": {

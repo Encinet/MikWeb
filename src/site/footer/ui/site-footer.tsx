@@ -21,7 +21,6 @@ export default async function SiteFooter() {
     { href: '/', label: t('nav.items.home') },
     { href: '/buildings', label: t('nav.items.buildings') },
     { href: '/wiki', label: t('nav.items.wiki') },
-    { href: '/community/notices', label: t('nav.items.notices') },
     { href: '/map', label: t('map.title') },
     { href: '/bans', label: t('bans.title') },
     { href: '/pcl2', label: t('pcl2.title') },

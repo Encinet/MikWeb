@@ -45,12 +45,6 @@ export const SITE_PAGES = {
     title: 'bans.title',
     description: 'bans.meta.description',
   },
-  community: {
-    sitemap: true,
-    pathname: '/community/notices',
-    title: 'communityBoard.title',
-    description: 'communityBoard.meta.description',
-  },
   mcp: {
     sitemap: true,
     pathname: '/mcp',
