@@ -1,32 +1,35 @@
+import { migrateChatHistoryDatabase } from '@/modules/chat/lib/chat-history-migrations';
 import { CHAT_HISTORY_DATABASE_NAME } from '@/modules/chat/lib/chat-history-presence';
+import {
+  CHAT_HISTORY_DATABASE_VERSION,
+  hasChatHistorySchema,
+} from '@/modules/chat/lib/chat-history-schema';
 
-const INDEXES = {
-  ownerOrder: ['owner', 'order'],
-  conversationOrder: ['owner', 'conversation', 'order'],
-  unreadOrder: ['owner', 'conversation', 'unread', 'order'],
-  ownerTime: ['owner', 'createdAt', 'order'],
-  ownerBucketTime: ['owner', 'bucket', 'createdAt', 'order'],
-  ownerChannelTime: ['owner', 'channel', 'createdAt', 'order'],
-};
 let database: Promise<IDBDatabase> | undefined;
 let deletion: Promise<void> | undefined;
+
 export function openChatHistoryDatabase(): Promise<IDBDatabase> {
   if (deletion) return deletion.then(() => openChatHistoryDatabase());
   if (database) return database;
   const opening = new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open(CHAT_HISTORY_DATABASE_NAME, 1);
+    const request = indexedDB.open(CHAT_HISTORY_DATABASE_NAME, CHAT_HISTORY_DATABASE_VERSION);
     let abandoned = false;
-    request.onupgradeneeded = () => {
+    let failure: Error | undefined;
+    request.onupgradeneeded = (event) => {
       if (abandoned) {
         request.transaction?.abort();
         return;
       }
-      const db = request.result;
-      db.createObjectStore('state');
-      const messages = db.createObjectStore('messages', { keyPath: 'key' });
-      for (const [name, keys] of Object.entries(INDEXES)) messages.createIndex(name, keys);
+      const tx = request.transaction;
+      if (!tx) return;
+      try {
+        migrateChatHistoryDatabase(request.result, tx, event.oldVersion);
+      } catch (error) {
+        failure = error instanceof Error ? error : new Error('history_schema_unavailable');
+        tx.abort();
+      }
     };
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(failure ?? request.error);
     request.onblocked = () => {
       abandoned = true;
       reject(new Error('history_blocked'));
@@ -37,22 +40,7 @@ export function openChatHistoryDatabase(): Promise<IDBDatabase> {
         db.close();
         return;
       }
-      if (!db.objectStoreNames.contains('state') || !db.objectStoreNames.contains('messages')) {
-        db.close();
-        reject(new Error('history_schema_unavailable'));
-        return;
-      }
-      const tx = db.transaction(['state', 'messages'], 'readonly');
-      const messages = tx.objectStore('messages');
-      if (
-        tx.objectStore('state').keyPath !== null ||
-        messages.keyPath !== 'key' ||
-        !Object.entries(INDEXES).every(
-          ([name, keys]) =>
-            messages.indexNames.contains(name) &&
-            JSON.stringify(messages.index(name).keyPath) === JSON.stringify(keys),
-        )
-      ) {
+      if (!hasChatHistorySchema(db)) {
         db.close();
         reject(new Error('history_schema_unavailable'));
         return;
