@@ -1,4 +1,4 @@
-import { ArrowUpRight, BookOpen, MessageCircle, MessagesSquare } from 'lucide-react';
+import { ArrowUpRight, MessageCircle, MessagesSquare, ScrollText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { JoinPageData } from '@/modules/join/model/join-group';
 import { JoinGroupRow } from '@/modules/join/ui/join-group-row';
@@ -55,7 +55,7 @@ export function JoinPage({ groups, matrixUrl, captcha }: JoinPageData) {
           </section>
         </div>
         <Link className="join-rules-link" href="/wiki?section=rules">
-          <BookOpen aria-hidden="true" />
+          <ScrollText aria-hidden="true" />
           {t('rules')}
         </Link>
       </div>

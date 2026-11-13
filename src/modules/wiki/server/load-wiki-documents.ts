@@ -24,6 +24,7 @@ export const SUPPORTED_WIKI_SECTION_ICONS = [
   'GitPullRequest',
   'ClipboardList',
   'Layers',
+  'ScrollText',
 ] as const satisfies readonly WikiSectionIcon[];
 
 const DEFAULT_WIKI_SECTION_ICON: WikiSectionIcon = 'Home';

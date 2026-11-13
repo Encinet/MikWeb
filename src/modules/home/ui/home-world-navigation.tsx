@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Compass, MessageCircle, MonitorDown, ScrollText, UserPlus } from 'lucide-react';
+import { Compass, MessageCircle, MonitorDown, ScrollText, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { Link } from '@/shared/i18n/navigation';
@@ -14,7 +14,7 @@ export function HomeWorldNavigation() {
       icon: ScrollText,
       label: t('home.playerHome.shortcuts.commands'),
     },
-    { href: '/wiki?section=rules', icon: BookOpen, label: t('home.playerHome.shortcuts.rules') },
+    { href: '/wiki?section=rules', icon: ScrollText, label: t('home.playerHome.shortcuts.rules') },
     { href: '/pcl2', icon: MonitorDown, label: t('home.playerHome.shortcuts.launcher') },
     {
       href: '/wiki?section=getting-started',

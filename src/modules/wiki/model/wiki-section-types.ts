@@ -15,7 +15,8 @@ export type WikiSectionIcon =
   | 'Code'
   | 'GitPullRequest'
   | 'ClipboardList'
-  | 'Layers';
+  | 'Layers'
+  | 'ScrollText';
 
 export type WikiAccess = 'public' | 'staff';
 

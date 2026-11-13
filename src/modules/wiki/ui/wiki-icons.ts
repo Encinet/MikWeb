@@ -5,6 +5,7 @@ import {
   GitPullRequest,
   Home,
   Layers,
+  ScrollText,
   Shield,
   Users,
   Wrench,
@@ -25,4 +26,5 @@ export const iconMap = new Map<WikiSectionIcon, React.ComponentType<{ className?
   ['GitPullRequest', GitPullRequest],
   ['ClipboardList', ClipboardList],
   ['Layers', Layers],
+  ['ScrollText', ScrollText],
 ]);
