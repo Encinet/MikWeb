@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     const headers = [
       {
         key: 'Content-Security-Policy',
-        value: `frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; connect-src 'self' ${DATA_API_ORIGIN} ${new URL(CHAT_WEBSOCKET_URL).origin}; upgrade-insecure-requests`,
+        value: `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}; script-src-attr 'none'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; connect-src 'self' ${DATA_API_ORIGIN} ${new URL(CHAT_WEBSOCKET_URL).origin}; upgrade-insecure-requests`,
       },
       { key: 'X-Frame-Options', value: 'DENY' },
       { key: 'X-Content-Type-Options', value: 'nosniff' },

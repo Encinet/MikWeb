@@ -8,7 +8,7 @@ import type {
 } from '@/modules/chat/lib/connection/chat-session';
 import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
-import { message, OTHER, OWNER, PEER, player, STREAM } from './fixtures';
+import { message, OTHER, OWNER, order, PEER, player } from './fixtures';
 
 class Clock {
   now = 0;
@@ -55,7 +55,7 @@ class Transport implements ChatSessionTransport {
   receive(event: unknown) {
     const payload =
       event && typeof event === 'object' && 'type' in event && event.type === 'history'
-        ? { databaseId: STREAM, visibilityScope: OTHER, head: '100', ...event }
+        ? { checkpoint: 'a'.repeat(91), reset: false, ...event }
         : event;
     this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(payload) }));
   }
@@ -151,8 +151,7 @@ test('history requests are serialized and throttled while live traffic keeps its
     requestId: request.requestId,
     channel: 'public',
     messages: [message({ id: 'old' })],
-    hasMore: true,
-    nextBefore: '12',
+    nextPage: 'b'.repeat(91),
   });
   assert.equal((await first).messages[0]?.id, 'old');
   assert.equal(h.events.filter(({ event }) => event.type === 'message').length, 1);
@@ -168,10 +167,8 @@ test('history requests are serialized and throttled while live traffic keeps its
     requestId: next.requestId,
     channel: 'private',
     messages: [],
-    hasMore: false,
-    nextBefore: '12',
   });
-  assert.equal((await second).hasMore, false);
+  assert.equal((await second).nextPage, undefined);
   h.session.stop();
   assert.equal(h.clock.timers.size, 0);
 });
@@ -188,10 +185,8 @@ test('bounded history pages accept 256 short messages and reject a larger page',
       requestId: request.requestId,
       channel: 'public',
       messages: Array.from({ length: count }, (_, index) =>
-        message({ id: `bounded-${index}`, sequence: index + 1 }),
+        message({ id: `bounded-${index}`, order: order(index + 1) }),
       ),
-      hasMore: false,
-      nextBefore: '1',
     });
     if (count === 256) assert.equal((await reading).messages.length, count);
     else await assert.rejects(reading);
@@ -222,8 +217,6 @@ test('history never exposes another private conversation or staff content after 
             : { channel: 'private', sender: player(OTHER), targetUuid: OWNER },
         ),
       ],
-      hasMore: false,
-      nextBefore: '1',
     });
     await rejected;
     assert.equal(h.state().error, 'invalid_response');
@@ -245,8 +238,6 @@ test('history failures and late timed-out pages preserve the live connection and
     requestId: request.requestId,
     channel: 'public',
     messages: [],
-    hasMore: false,
-    nextBefore: '1',
   });
   assert.equal(h.state().status, 'online');
   const pending = h.session.readHistory({ channel: 'private' });

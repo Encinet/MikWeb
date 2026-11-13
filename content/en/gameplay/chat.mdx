@@ -77,9 +77,11 @@ Enable private-message and mention notifications in chat settings and grant brow
 
 <Details title="Where Local History Is Saved">
 
-With "Save local history" enabled, messages, drafts, and conversations stay in the current browser. History is not shared across devices. Messages are kept for up to 30 days; disable saving or clear history in chat settings
+By default, the current browser saves messages, drafts, conversations, and reading positions, without a fixed automatic expiry. History is not shared across devices. Chat settings let you clean up by type and date, clear everything, or disable and clear local saving
 
-Leaving the chat page keeps local history. Signing out or switching accounts clears it. History contains messages this browser received; messages missed while offline are not replayed
+Leaving the chat page keeps local history. Signing out or switching accounts clears it. On connection, chat retrieves the last 7 days of server history you may access, then keeps it synchronized. Local cleanup does not delete server history; deleted records older than the server retention period cannot be restored from the server
+
+Server history and local records contain readable plaintext. See the [Privacy Policy](?section=privacy) for transport encryption, access scope, and data handling
 
 </Details>
 
@@ -175,7 +177,7 @@ Group 2 (backup) is not currently bridged
 
 <Callout title="Forwarding, Moderation, and Privacy">
 
-Before a message is forwarded to QQ, its text, the sender's display name, mentions, and link destinations are sent to OVHcloud for moderation with Qwen3Guard
+When forwarding public chat to QQ, only messages starting with `#` are sent to OVHcloud for moderation with Qwen3Guard. Submitted data includes the message text, the sender's display name, mentions, and link destinations
 
 </Callout>
 

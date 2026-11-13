@@ -2,7 +2,11 @@ import { z } from 'zod';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 import type { ChatMessage, ChatPeer, ChatUserMessage } from '@/modules/chat/model/chat-protocol';
-import { CHAT_MESSAGE_MAX_LENGTH, messageDestination } from '@/modules/chat/model/chat-protocol';
+import {
+  CHAT_MESSAGE_MAX_LENGTH,
+  chatOrder,
+  messageDestination,
+} from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor } from '@/modules/chat/model/chat-reading';
 import { compareCursors, messageCursor } from '@/modules/chat/model/chat-reading';
 
@@ -16,8 +20,7 @@ const timestamp = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const cursorSchema = z.object({
   messageId: z.string().min(1).max(128),
   createdAt: timestamp,
-  streamId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
-  sequence: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  order: chatOrder,
 });
 const draftSchema = z.object({
   text: z.string().max(CHAT_MESSAGE_MAX_LENGTH * 2),

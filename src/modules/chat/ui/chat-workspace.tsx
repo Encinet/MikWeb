@@ -31,13 +31,13 @@ import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
 import { emptyChatSearch } from '@/modules/chat/model/chat-search';
 import type { ChatPreferences, ChatThread } from '@/modules/chat/model/chat-workspace';
 import { chatThreads } from '@/modules/chat/model/chat-workspace';
+import { useChatHistoryWindow } from '@/modules/chat/model/use-chat-history-window';
 import { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
 import { useChatWorkspace } from '@/modules/chat/model/use-chat-workspace';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
 import { ChatComposer } from '@/modules/chat/ui/chat-composer';
 import { ChatConnectionBanner } from '@/modules/chat/ui/chat-connection-banner';
 import { ChatGate } from '@/modules/chat/ui/chat-gate';
-import { ChatHistoryRecoveryGate } from '@/modules/chat/ui/chat-history-recovery-gate';
 import type { ChatMessageJump } from '@/modules/chat/ui/chat-message-list';
 import { ChatMessageList } from '@/modules/chat/ui/chat-message-list';
 import { ChatMessageSearch } from '@/modules/chat/ui/chat-message-search';
@@ -79,6 +79,7 @@ export function ChatWorkspace({
   const [notice, setNotice] = useState<'drafts.restoreTooLong' | null>(null);
   const [jump, setJump] = useState<ChatMessageJump | null>(null);
   const jumpSequence = useRef(0);
+  const restoredSend = useRef<PendingChatMessage | null>(null);
   const completeJump = useCallback((sequence: number) => {
     setJump((current) => (current?.sequence === sequence ? null : current));
   }, []);
@@ -228,18 +229,25 @@ export function ChatWorkspace({
     recipientOnline: Boolean(peer),
     staff: chat.staff,
   });
-  const visible = useMemo(
-    () => chat.messages.filter((message) => messageConversation(message, owner) === key),
-    [chat.messages, owner, key],
-  );
+  const historyWindow = useChatHistoryWindow({
+    owner,
+    conversation: key,
+    epoch: chat.historyEpoch,
+    recent: chat.messages,
+    allowed: selected.channel !== 'staff' || chat.staff,
+    latest: chat.latestMessages.find((message) => messageConversation(message, owner) === key),
+    target: jump?.conversation === key ? jump.messageId : undefined,
+    read: chat.loadLocalWindow,
+  });
+  const visible = historyWindow.messages;
   const pending = useMemo(
     () => chat.pending.filter((message) => destinationKey(message.destination) === key),
     [chat.pending, key],
   );
   const inputHistory = useMemo(() => chatInputHistory(visible, owner, key), [visible, owner, key]);
   const threads = useMemo(
-    () => chatThreads(chat.messages, players, owner, workspace),
-    [chat.messages, players, owner, workspace],
+    () => chatThreads(chat.latestMessages, players, owner, workspace),
+    [chat.latestMessages, players, owner, workspace],
   );
   const unreadCount = [...chat.unread.values()].reduce((total, unread) => total + unread.count, 0);
   const changePreferences = useCallback(
@@ -283,7 +291,14 @@ export function ChatWorkspace({
     return hasTranslationKey(t, key) ? t(key) : t('errors.default');
   };
   const send = () => {
-    if (available && chat.send(selected, draft)) {
+    const restored = restoredSend.current;
+    const retryId =
+      restored && restored.text === draft && destinationKey(restored.destination) === key
+        ? restored.requestId
+        : undefined;
+    if (available && chat.send(selected, draft, retryId)) {
+      restoredSend.current = null;
+      historyWindow.latest();
       setJump({ conversation: key, messageId: null, sequence: ++jumpSequence.current });
       changeDraft('');
       setNotice(null);
@@ -296,6 +311,7 @@ export function ChatWorkspace({
         setNotice('drafts.restoreTooLong');
         return;
       }
+      restoredSend.current = message.status === 'unknown' && !getDraft(key) ? message : null;
       changeDraft(restored);
       setNotice(null);
       chat.dismissPending(message.requestId);
@@ -309,13 +325,6 @@ export function ChatWorkspace({
     if (!window.matchMedia('(min-width: 1180px)').matches) setPanel(null);
   };
   const connectionStatus = chat.connection.status;
-  if (chat.historyRecovery)
-    return (
-      <ChatHistoryRecoveryGate
-        recovery={chat.historyRecovery}
-        onDelete={chat.deleteUnsupportedHistory}
-      />
-    );
   if (!workspaceVisible) {
     const { connection } = chat;
     const failed = connection.status === 'error';
@@ -544,7 +553,7 @@ export function ChatWorkspace({
           messages={visible}
           pending={pending}
           unread={chat.unread.get(key)}
-          jump={jump}
+          jump={historyWindow.loading || historyWindow.awaitingTarget ? null : jump}
           paused={overlay !== null || panel !== null}
           scroll={scroll}
           onRead={chat.markRead}
@@ -553,7 +562,21 @@ export function ChatWorkspace({
           showActivity={preferences.showActivity}
           onMention={mention}
           onPrivate={startPrivate}
-          syncing={syncingHistory}
+          syncing={syncingHistory || historyWindow.loading}
+          hasMoreLocal={historyWindow.hasMore}
+          onLoadEarlier={historyWindow.earlier}
+          hasNewerLocal={historyWindow.hasNewer}
+          onLoadLater={historyWindow.later}
+          olderWindow={historyWindow.older}
+          onLatestWindow={() => {
+            historyWindow.latest();
+            setJump({ conversation: key, messageId: null, sequence: ++jumpSequence.current });
+          }}
+          localFailed={historyWindow.failed}
+          onRetryLocal={historyWindow.retry}
+          onUnreadTarget={(id) =>
+            setJump({ conversation: key, messageId: id, sequence: ++jumpSequence.current })
+          }
         />
         <ChatComposer
           key={`composer:${viewKey}`}
@@ -574,6 +597,8 @@ export function ChatWorkspace({
         id={searchPanelId}
         inputRef={searchInput}
         open={searchOpen}
+        history={chat.historyLease}
+        staff={chat.staff}
         criteria={searchCriteria}
         onCriteriaChange={setSearchCriteria}
         messages={chat.messages}

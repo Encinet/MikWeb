@@ -20,7 +20,7 @@ import { emptyChatWorkspace } from '@/modules/chat/model/chat-workspace';
 import { ChatSettings } from '@/modules/chat/ui/chat-settings';
 import translations from '../../messages/en.json';
 import { createBrowserEnvironment } from '../support/browser-environment';
-import { message, OWNER, PEER } from './fixtures';
+import { message, OWNER, order, PEER } from './fixtures';
 
 let browser: ReturnType<typeof createBrowserEnvironment>;
 let initial: HistoryLease;
@@ -128,10 +128,10 @@ beforeEach(async () => {
       channel: 'private',
       targetUuid: OWNER,
       createdAt: old,
-      sequence: 2,
+      order: order(2),
     }),
-    message({ id: 'staff-old', channel: 'staff', createdAt: old, sequence: 3 }),
-    message({ id: 'public-new', sequence: 4 }),
+    message({ id: 'staff-old', channel: 'staff', createdAt: old, order: order(3) }),
+    message({ id: 'public-new', order: order(4) }),
   ])
     await saveHistory(initial, record);
   await saveChatWorkspace(initial, {

@@ -6,8 +6,7 @@ export const CHAT_READ_POSITION_LIMIT = 1000;
 export interface ChatReadCursor {
   messageId: string;
   createdAt: number;
-  streamId: string;
-  sequence: number;
+  order: string;
 }
 
 /** Null means this conversation has arrived but has never been read on this browser. */
@@ -22,16 +21,12 @@ export function messageCursor(message: ChatMessage): ChatReadCursor {
   return {
     messageId: message.id,
     createdAt: message.createdAt,
-    streamId: message.streamId,
-    sequence: message.sequence,
+    order: message.order,
   };
 }
 
 export function compareCursors(a: ChatReadCursor, b: ChatReadCursor): number {
-  return (
-    a.createdAt - b.createdAt ||
-    (a.streamId === b.streamId ? a.sequence - b.sequence : a.messageId.localeCompare(b.messageId))
-  );
+  return a.order < b.order ? -1 : a.order > b.order ? 1 : a.messageId.localeCompare(b.messageId);
 }
 
 export function advanceReadPosition(
@@ -68,16 +63,13 @@ export function readStoredPositions(value: unknown): ChatReadPositions {
       cursor.messageId.length <= 128 &&
       Number.isSafeInteger(cursor.createdAt) &&
       cursor.createdAt >= 0 &&
-      typeof cursor.streamId === 'string' &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(cursor.streamId) &&
-      Number.isSafeInteger(cursor.sequence) &&
-      cursor.sequence > 0
+      typeof cursor.order === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(cursor.order)
     )
       result.set(key, {
         messageId: cursor.messageId,
         createdAt: cursor.createdAt,
-        streamId: cursor.streamId,
-        sequence: cursor.sequence,
+        order: cursor.order,
       });
     if (result.size >= CHAT_READ_POSITION_LIMIT) break;
   }

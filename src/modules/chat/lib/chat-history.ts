@@ -8,6 +8,7 @@ import { readHistorySyncPositions } from '@/modules/chat/model/chat-history-sync
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import {
   chatMessageSchema,
+  countsAsUnread,
   isPassiveMessage,
   mayReadMessage,
   messageConversation,
@@ -57,7 +58,7 @@ export function historyAllowsMessage(lease: HistoryLease | null, message: ChatMe
 }
 
 function range(owner: string, through = Number.MAX_SAFE_INTEGER): IDBKeyRange {
-  return IDBKeyRange.bound([owner, 0, 0], [owner, through, Number.MAX_SAFE_INTEGER]);
+  return IDBKeyRange.bound([owner, 0, ''], [owner, through, '\uffff']);
 }
 
 function storedMessage(owner: string, message: ChatMessage, historical = false) {
@@ -65,9 +66,11 @@ function storedMessage(owner: string, message: ChatMessage, historical = false) 
     key: `${owner}:${message.id}`,
     owner,
     createdAt: message.createdAt,
-    sequence: message.sequence,
+    order: message.order,
     bucket: isPassiveMessage(message) ? 'activity' : 'conversation',
     channel: message.channel,
+    conversation: messageConversation(message, owner),
+    unread: !historical && countsAsUnread(message, owner) ? 1 : 0,
     message,
     historical,
   };
@@ -78,6 +81,7 @@ interface StoredState extends HistoryLease {
   readPositions: ChatReadPositions;
   workspace?: ChatWorkspaceState;
   syncPositions?: HistorySyncPositions;
+  latest?: ChatMessage[];
 }
 
 function readState(value: unknown): StoredState | null {
@@ -87,7 +91,16 @@ function readState(value: unknown): StoredState | null {
     typeof candidate.epoch === 'string' &&
     typeof candidate.persist === 'boolean' &&
     typeof candidate.staff === 'boolean'
-    ? { ...(candidate as StoredState), readPositions: readStoredPositions(candidate.readPositions) }
+    ? {
+        ...(candidate as StoredState),
+        readPositions: readStoredPositions(candidate.readPositions),
+        latest: Array.isArray(candidate.latest)
+          ? candidate.latest.flatMap((message) => {
+              const parsed = chatMessageSchema.safeParse(message);
+              return parsed.success ? [parsed.data] : [];
+            })
+          : [],
+      }
     : null;
 }
 
@@ -164,6 +177,7 @@ export async function resetHistory(owner: string, persist?: false): Promise<Hist
         ...previous,
         epoch: crypto.randomUUID(),
         syncPositions: {},
+        latest: [],
         workspaceEpoch: crypto.randomUUID(),
         clearedThrough:
           persist === false
@@ -208,6 +222,7 @@ export async function enableHistory(
       const next = {
         ...previous,
         persist: true,
+        latest: trackLatest(previous, records),
         readPositions: new Map(readPositions),
         workspace: readChatWorkspace(workspace ?? previous.workspace, previous.staff),
       };
@@ -234,8 +249,8 @@ function cleanupRange(owner: string, cleanup: HistoryCleanup): IDBKeyRange {
   return cleanup.channel === 'all'
     ? range(owner, cleanup.through)
     : IDBKeyRange.bound(
-        [owner, cleanup.channel, 0, 0],
-        [owner, cleanup.channel, cleanup.through, Number.MAX_SAFE_INTEGER],
+        [owner, cleanup.channel, 0, ''],
+        [owner, cleanup.channel, cleanup.through, '\uffff'],
       );
 }
 
@@ -276,7 +291,7 @@ export async function readHistorySummary(
       };
       const oldest = index.openKeyCursor(range(owner));
       oldest.onsuccess = () => {
-        if (oldest.result) summary.oldestAt = (oldest.result.key as [string, number, number])[1];
+        if (oldest.result) summary.oldestAt = (oldest.result.key as [string, number, string])[1];
       };
     };
   });
@@ -302,6 +317,10 @@ export async function clearHistoryThrough(
         epoch: crypto.randomUUID(),
         clearedThrough: { ...previous.clearedThrough },
         workspaceEpoch: chatWorkspaceEpoch(previous) ?? undefined,
+        latest: (previous.latest ?? []).filter(
+          (message) =>
+            !(channel === 'all' || message.channel === channel) || message.createdAt > through,
+        ),
       };
       for (const selected of ['public', 'private', 'staff'] as const) {
         if (channel === 'all' || channel === selected)
@@ -330,12 +349,23 @@ export interface ChatHistorySnapshot {
   readPositions: ChatReadPositions;
   historicalIds: Set<string>;
   syncPositions: HistorySyncPositions;
+  latest: ChatMessage[];
+  unread: Map<string, { count: number; firstId: string }>;
 }
+
+export const HISTORY_WINDOW_SIZE = 1000;
 
 export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnapshot> {
   const owner = lease.owner;
   if (!owner || !lease.persist)
-    return { messages: [], readPositions: new Map(), historicalIds: new Set(), syncPositions: {} };
+    return {
+      messages: [],
+      readPositions: new Map(),
+      historicalIds: new Set(),
+      syncPositions: {},
+      latest: [],
+      unread: new Map(),
+    };
   const db = await openDatabase();
   return transaction(db, 'readwrite', (state, messages, done) => {
     const result: ChatMessage[] = [];
@@ -344,6 +374,8 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
       readPositions: new Map(),
       historicalIds: new Set(),
       syncPositions: {},
+      latest: [],
+      unread: new Map(),
     };
     done(snapshot);
     const check = state.get('current');
@@ -352,10 +384,32 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
       if (!active || active.owner !== owner || active.epoch !== lease.epoch || !active.persist)
         return;
       snapshot.syncPositions = readHistorySyncPositions(active.syncPositions);
-      const request = messages.index('ownerTime').openCursor(range(owner), 'prev');
+      snapshot.latest = (active.latest ?? []).filter(
+        (message) =>
+          mayReadMessage(message, owner, active.staff) && historyAllowsMessage(active, message),
+      );
+      snapshot.readPositions = new Map(active.readPositions);
+      for (const message of snapshot.latest) {
+        const key = messageConversation(message, owner);
+        const cursor = active.readPositions.get(key);
+        const bounds = unreadRange(owner, key, cursor?.order);
+        const count = messages.index('unreadOrder').count(bounds);
+        const first = messages.index('unreadOrder').openCursor(bounds);
+        const value = { count: 0, firstId: '' };
+        count.onsuccess = () => {
+          value.count = count.result;
+          if (value.count) snapshot.unread.set(key, value);
+        };
+        first.onsuccess = () => {
+          if (first.result) value.firstId = first.result.value.message.id;
+        };
+      }
+      const request = messages
+        .index('ownerOrder')
+        .openCursor(IDBKeyRange.bound([owner, ''], [owner, '\uffff']), 'prev');
       request.onsuccess = () => {
         const cursor = request.result;
-        if (!cursor) {
+        if (!cursor || result.length >= HISTORY_WINDOW_SIZE) {
           result.sort((a, b) => compareCursors(messageCursor(a), messageCursor(b)));
           const baseline: ChatReadPositions = new Map();
           for (const message of result)
@@ -371,7 +425,7 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
           state.put(
             {
               ...active,
-              readPositions: snapshot.readPositions,
+              readPositions: new Map([...active.readPositions, ...snapshot.readPositions]),
               syncPositions: snapshot.syncPositions,
             },
             'current',
@@ -424,8 +478,10 @@ export async function saveHistory(lease: HistoryLease, message: ChatMessage): Pr
       const positions = !isPassiveMessage(message)
         ? advanceReadPosition(active.readPositions, key, null)
         : active.readPositions;
-      if (positions !== active.readPositions)
-        state.put({ ...active, readPositions: positions }, 'current');
+      state.put(
+        { ...active, latest: trackLatest(active, [message]), readPositions: positions },
+        'current',
+      );
     };
   });
 }
@@ -462,13 +518,7 @@ export async function saveHistorySync(
       }
       const positions = readHistorySyncPositions(active.syncPositions);
       const stored = positions[channel];
-      if (
-        stored?.databaseId !== expected?.databaseId ||
-        stored?.visibilityScope !== expected?.visibilityScope ||
-        stored?.after !== expected?.after ||
-        stored?.head !== expected?.head ||
-        stored?.before !== expected?.before
-      ) {
+      if (stored?.checkpoint !== expected?.checkpoint || stored?.page !== expected?.page) {
         done('conflict');
         return;
       }
@@ -480,7 +530,14 @@ export async function saveHistorySync(
           messages.put(storedMessage(owner, message, !wasLive && historicalIds.has(message.id)));
         };
       }
-      state.put({ ...active, syncPositions: { ...positions, [channel]: next } }, 'current');
+      state.put(
+        {
+          ...active,
+          latest: trackLatest(active, records),
+          syncPositions: { ...positions, [channel]: next },
+        },
+        'current',
+      );
       done('saved');
     };
   });
@@ -534,6 +591,7 @@ export async function setStaffHistoryPermission(owner: string, allowed: boolean)
           ...active,
           syncPositions: { ...readHistorySyncPositions(active.syncPositions), staff: undefined },
           staff: allowed,
+          latest: (active.latest ?? []).filter((message) => allowed || message.channel !== 'staff'),
           workspace: readChatWorkspace(active.workspace, allowed),
         },
         'current',
@@ -663,4 +721,161 @@ export function onHistoryChange(listener: (reading?: HistoryReadChange) => void)
     window.removeEventListener(CHANGE_EVENT, onChange);
     window.removeEventListener('storage', onStorage);
   };
+}
+
+function trackLatest(active: StoredState, records: ChatMessage[]) {
+  const latest = new Map(
+    (active.latest ?? [])
+      .filter(
+        (message) =>
+          historyAllowsMessage(active, message) &&
+          mayReadMessage(message, active.owner ?? '', active.staff),
+      )
+      .map((message) => [messageConversation(message, active.owner ?? ''), message]),
+  );
+  for (const message of records) {
+    const key = messageConversation(message, active.owner ?? '');
+    const previous = latest.get(key);
+    if (
+      historyAllowsMessage(active, message) &&
+      mayReadMessage(message, active.owner ?? '', active.staff) &&
+      (!previous || compareCursors(messageCursor(message), messageCursor(previous)) > 0)
+    )
+      latest.set(key, message);
+  }
+  return [...latest.values()];
+}
+function unreadRange(owner: string, conversation: string, order?: string) {
+  return IDBKeyRange.bound(
+    [owner, conversation, 1, order ?? ''],
+    [owner, conversation, 1, '\uffff'],
+    Boolean(order),
+    false,
+  );
+}
+export async function readUnreadSummary(
+  lease: HistoryLease,
+  conversation: string,
+): Promise<{ count: number; firstId: string } | null> {
+  const owner = lease.owner;
+  if (!owner || !lease.persist) return null;
+  const db = await openDatabase();
+  return transaction(db, 'readonly', (state, messages, done) => {
+    done(null);
+    const check = state.get('current');
+    check.onsuccess = () => {
+      const active = readState(check.result);
+      if (
+        !active ||
+        active.owner !== owner ||
+        active.epoch !== lease.epoch ||
+        !active.persist ||
+        (conversation === 'staff' && !active.staff)
+      )
+        return;
+      const range = unreadRange(owner, conversation, active.readPositions.get(conversation)?.order);
+      const result = { count: 0, firstId: '' };
+      const count = messages.index('unreadOrder').count(range);
+      const first = messages.index('unreadOrder').openCursor(range);
+      count.onsuccess = () => {
+        result.count = count.result;
+        if (result.count) done(result);
+      };
+      first.onsuccess = () => {
+        if (first.result) result.firstId = first.result.value.message.id;
+      };
+    };
+  });
+}
+export interface HistoryWindow {
+  messages: ChatMessage[];
+  historicalIds: Set<string>;
+  hasMore: boolean;
+}
+async function readWindow(
+  lease: HistoryLease,
+  conversation?: string,
+  before?: string,
+  targetId?: string,
+  after?: string,
+): Promise<HistoryWindow> {
+  const owner = lease.owner;
+  const result: HistoryWindow = { messages: [], historicalIds: new Set(), hasMore: false };
+  if (!owner || !lease.persist) return result;
+  const db = await openDatabase();
+  return transaction(db, 'readonly', (state, messages, done) => {
+    done(result);
+    const check = state.get('current');
+    check.onsuccess = () => {
+      const active = readState(check.result);
+      if (
+        !active ||
+        active.owner !== owner ||
+        active.epoch !== lease.epoch ||
+        !active.persist ||
+        (conversation === 'staff' && !active.staff)
+      )
+        return;
+      const accept = (record: { message: unknown; historical?: boolean }) => {
+        const parsed = chatMessageSchema.safeParse(record.message);
+        if (
+          !parsed.success ||
+          !mayReadMessage(parsed.data, owner, active.staff) ||
+          !historyAllowsMessage(active, parsed.data) ||
+          (conversation && messageConversation(parsed.data, owner) !== conversation)
+        )
+          return null;
+        result.messages.push(parsed.data);
+        if (record.historical) result.historicalIds.add(parsed.data.id);
+        return parsed.data;
+      };
+      const scan = (upper?: string) => {
+        const prefix = conversation ? [owner, conversation] : [owner];
+        const range = IDBKeyRange.bound(
+          [...prefix, after ?? ''],
+          [...prefix, upper ?? '\uffff'],
+          Boolean(after),
+          Boolean(upper),
+        );
+        const request = messages
+          .index(conversation ? 'conversationOrder' : 'ownerOrder')
+          .openCursor(range, after ? 'next' : 'prev');
+        request.onsuccess = () => {
+          const cursor = request.result;
+          if (!cursor) {
+            if (!after) result.messages.reverse();
+            return;
+          }
+          if (result.messages.length >= 256) {
+            result.hasMore = true;
+            if (!after) result.messages.reverse();
+            return;
+          }
+          accept(cursor.value);
+          cursor.continue();
+        };
+      };
+      if (!targetId) scan(before);
+      else {
+        const target = messages.get(`${owner}:${targetId}`);
+        target.onsuccess = () => {
+          if (!target.result) return;
+          const message = accept(target.result);
+          if (message) scan(message.order);
+        };
+      }
+    };
+  });
+}
+export function readHistoryWindow(
+  lease: HistoryLease,
+  conversation: string,
+  before?: string,
+  targetId?: string,
+  after?: string,
+) {
+  return readWindow(lease, conversation, before, targetId, after);
+}
+export function readHistoryBatch(lease: HistoryLease, before?: string) {
+  return readWindow(lease, undefined, before);
 }

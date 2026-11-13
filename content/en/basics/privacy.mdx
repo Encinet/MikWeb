@@ -1,0 +1,109 @@
+---
+title: Privacy Policy
+description: Data uses, communication and account security, retention, and privacy requests
+order: 25
+icon: Shield
+---
+
+Updated: **Nov 13, 2026**
+
+## Scope and Contact
+
+The Encinet team is responsible for processing personal information in connection with the Mik Casual Minecraft server, website, and QQ and Matrix community features controlled by the team. Personal information processing independently carried out by third-party platforms is covered by their own privacy policies.
+
+For privacy questions or data requests, privately contact a Custodian in our [community](/en/join). Include your player name or UUID if the request concerns player data.
+
+## Data and Uses
+
+We process only the personal information necessary to provide and maintain the service, protect accounts and the community, and deliver the features we have explained. We aim to minimize collection, access, and retention, and explain how information is used and what rights you have.
+
+| Area | Data and Purpose |
+| --- | --- |
+| Minecraft multiplayer and saves | IP, UUID, player name, skin, and connection information support multiplayer connections, identity checks, and player display. Position, inventory, ender chest, progress, and statistics save and restore your character's state. Blocks, builds, containers, entities, signs, and books are saved with the world |
+| Server features | QQ or Matrix identifiers, membership, and account links verify admission. Permissions, plots, settings, and play records support access control, build protection, preferences, and promotion. Governance and activity records, reports, and evidence support community voting, rule enforcement, and dispute handling |
+| Website features | IP, request, browser, and error records deliver and protect the website. Login challenges, Passkey public keys, and session information support website login. Submitter identities, descriptions, coordinates, images, and review records support the building catalog |
+
+Data comes from your connection, game and website activity, submissions, and game authentication and community platforms. Admission requires at least one valid QQ or Matrix account link.
+
+We do not sell personal information. We rely on contractual necessity to process information needed to provide the game, account, and community features you request. Where the law requires us to retain or disclose information, we rely on that legal obligation. Where applicable law permits reliance on legitimate interests, we process information needed for security, rule enforcement, and appeals to protect accounts, creations, and the service. Where consent is required, we explain the processing and obtain your consent beforehand.
+
+## Communication and Visibility
+
+- **Public chat** syncs between Minecraft, the web, and Matrix and is written to console logs. Messages from QQ Group 1 sync to these public channels; public messages sent to QQ must start with `#` and pass moderation. See the [bridging rules](?section=chat#platform-bridging).
+- **Private messages** go to the two participants; **staff chat** follows staff permissions. Neither is forwarded to QQ groups or Matrix rooms.
+- **Voice chat** is handled by Plasmo Voice and delivered to listeners.
+- The website and public API make player names, UUIDs, skins, online status, and current login times available without signing in. Build coordinates, images, credits, public sanctions, and governance outcomes are displayed under the [server rules](?section=rules).
+
+Web chat uses application-layer encryption between the browser and game server. Message content is encrypted before reaching Cloudflare's proxy. Cloudflare can see network information such as IP addresses and connection times but does not hold the application-layer keys needed to decrypt message content.
+
+The game server decrypts and processes messages and stores chat history in plaintext. Maintainers with host, database, or backup access can read these records.
+
+## Account Security
+
+**Identity verification.** Java Edition uses Minecraft's official account authentication. Bedrock Edition uses Xbox / Microsoft account authentication and requires a linked Java account. The server also has an additional password check for account security.
+
+**Password protection.** Additional passwords are stored as salted hashes; maintainers cannot retrieve the original password. Authorized staff can reset an additional password, and the newly generated password is shown to the operator. For account security, players should change the reset password themselves immediately after successfully signing in with it. Additional passwords do not replace game account authentication.
+
+**Website login.** Sign in using a temporary code confirmed in the game or a Passkey. Passkey private keys stay with your device or password manager. The website stores public keys and credential identifiers without receiving fingerprints, face data, or device PINs.
+
+Manage Passkeys and website sessions in [Account Security](/en/account/security). **Revoking a Passkey does not sign out existing website sessions.**
+
+## External Services
+
+| Service | Data Involved |
+| --- | --- |
+| [Vercel](https://vercel.com/legal/privacy-notice), [Cloudflare](https://www.cloudflare.com/privacypolicy/) | Requests, connection information, and hosted data for website hosting, account and data services, proxying, and security |
+| [Vercel Web Analytics](https://vercel.com/docs/analytics/privacy-policy) | Used for anonymous, aggregated traffic statistics. Automatically collects page URLs, referrers, times, device, browser, and approximate region. Uses no third-party analytics cookies |
+| QQ, Matrix | Identities for linking and membership checks, bridged messages, and mentions |
+| Cap | Human verification data and connection information when requesting QQ group joining details |
+| Player avatar services | Avatar requests send the queried player identifier and request information such as the visitor's IP to mineskin.eu, minotar.net, or mc-heads.net |
+| [OVHcloud](https://www.ovhcloud.com/en-gb/personal-data-protection/) | When forwarding public chat to QQ, Qwen3Guard moderates messages starting with `#`. Submitted data includes message text, the sender's display name, mentions, and link destinations |
+| [ImgBB](https://imgbb.com/privacy) | Building images are uploaded before submission review, with file metadata removed before upload. Hosted images are stored separately from submission records |
+
+Using the AI assistant sends your question, conversation context, and query results to the model service. This may include your inventory and, if the server enables location queries, game coordinates. Knowledge learning or personal memory, when enabled, saves information extracted from conversations. `/ai clear` clears only the current conversation; contact a Custodian to request deletion of saved knowledge and memories.
+
+These services may process data internationally. Ask our privacy contact about processing locations and transfer safeguards.
+
+## Browser Data and Retention
+
+Website login uses necessary cookies. Theme and notification preferences stay in the browser.
+
+| Data | Retention or Validity |
+| --- | --- |
+| Character saves, vanilla progress and statistics, shared world | Kept as needed to run the game and maintain the world |
+| Chat database history (public, staff, and private messages) | Normally cleaned up **7 days after recording** |
+| Website sessions | Expire after **30 days of inactivity** or **90 days from issue**; can be revoked earlier |
+| Login challenges and linking codes | Normally valid for **5 minutes** |
+| Official authentication cache | Valid for **72 hours** after successful official authentication, used only during an official authentication outage to verify reconnections from the same IP |
+| Submission review records | **14 days after review is completed**; public buildings and hosted images are stored separately |
+| Browser chat history | No automatic expiry by default. Chat settings let you clear history or disable saving and clear it; signing out or switching accounts also clears it |
+| Account links | Kept until unlinked |
+| AI-extracted knowledge and memories | No automatic expiry; contact a Custodian to request deletion |
+
+Console logs, system backups, and messages already synced to third-party platforms are retained separately. Clearing history from the chat database does not automatically delete those copies.
+
+## Minors' Privacy
+
+Where applicable law requires a guardian's consent to process personal information, the processing is conditional on explaining it to the guardian and obtaining valid consent beforehand.
+
+Evidence involving minors in reports and appeals is shared only with necessary case handlers. Private information is redacted from published outcomes.
+
+Minors can make their own privacy requests. A guardian may also act on their behalf where permitted by law. Privately contact a Custodian in our [community](/en/join). We will verify the requester's identity and any necessary guardianship, taking the minor's wishes and interests into account.
+
+## Privacy Requests and Updates
+
+Use the contact details above to request access, a copy, correction, deletion, restriction, legally available data portability, or withdrawal of consent. **You can also object to processing based on legitimate interests where provided by law.**
+
+We verify your identity when handling data requests.
+
+For personal information that qualifies for deletion, we will delete it from active systems or anonymize it. A personal information deletion request does not necessarily require deleting builds in the shared world, public projects, or other participants' work.
+
+Relevant information in historical backups may not be immediately erasable. We will explain how and when we expect to erase it and keep it beyond use until then. If we restore a system from a historical backup, we will reapply the relevant deletion or anonymization measures before putting the restored data back into use.
+
+Information that must be retained by law, or that is both necessary and legally permitted to retain for an ongoing dispute, may be subject to limits on deletion. We will explain the scope and reasons for retention.
+
+Requests are normally free. We usually respond within **one calendar month of receipt**, or sooner where required by applicable law. Any extension must be permitted by applicable law; we will explain the reason and expected response date before the original deadline. You can also complain to a data protection or privacy regulator with jurisdiction.
+
+Admission, promotion, and governance eligibility are determined automatically using account links, verification, and play records. QQ forwarding follows content moderation results. Contact a Custodian to request human review if you dispute a result.
+
+If a personal data security incident occurs, we will notify affected users as required by applicable law and explain its impact and corrective measures. Material policy changes will be announced in advance. We will seek consent separately where legally required.

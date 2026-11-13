@@ -5,11 +5,15 @@ import {
   clearHistoryThrough,
   loadChatWorkspace,
   loadHistory,
+  readHistoryBatch,
   readHistorySummary,
+  readHistoryWindow,
+  readUnreadSummary,
   resetHistory,
   saveChatWorkspace,
   saveHistory,
   saveHistorySync,
+  saveReadPosition,
   setStaffHistoryPermission,
   syncHistoryAccount,
 } from '@/modules/chat/lib/chat-history';
@@ -17,18 +21,18 @@ import {
   deleteChatHistoryDatabase,
   openChatHistoryDatabase,
 } from '@/modules/chat/lib/chat-history-database';
+import { searchChatHistory } from '@/modules/chat/lib/chat-history-search';
 import type { HistorySyncPosition } from '@/modules/chat/model/chat-history-sync';
 import { advanceHistorySync } from '@/modules/chat/model/chat-history-sync';
 import type { ChatServerEvent } from '@/modules/chat/model/chat-protocol';
 import { chatServerEventSchema } from '@/modules/chat/model/chat-protocol';
+import { messageCursor } from '@/modules/chat/model/chat-reading';
+import { emptyChatSearch } from '@/modules/chat/model/chat-search';
 import { createBrowserEnvironment } from '../support/browser-environment';
-import { message, OTHER, OWNER, STREAM } from './fixtures';
+import { message, OWNER, order } from './fixtures';
 
-const position = (after: string): HistorySyncPosition => ({
-  databaseId: STREAM,
-  visibilityScope: OTHER,
-  after,
-});
+const token = (value: string) => value.padStart(91, 'a');
+const position = (value: string): HistorySyncPosition => ({ checkpoint: token(value) });
 const page = (
   overrides: Partial<Extract<ChatServerEvent, { type: 'history' }>> = {},
 ): Extract<ChatServerEvent, { type: 'history' }> => ({
@@ -36,15 +40,12 @@ const page = (
   requestId: '0123456789abcdef',
   channel: 'public',
   messages: [],
-  hasMore: false,
-  nextBefore: '1',
-  head: '150',
-  databaseId: STREAM,
-  visibilityScope: OTHER,
+  checkpoint: token('150'),
+  reset: false,
   ...overrides,
 });
 const archived = (id: string, sequence: number) =>
-  message({ id, sequence, expiresAt: Date.now() + 86_400_000 });
+  message({ id, order: order(sequence), expiresAt: Date.now() + 86_400_000 });
 
 let browser: ReturnType<typeof createBrowserEnvironment>;
 beforeEach(() => {
@@ -55,19 +56,17 @@ afterEach(async () => {
   await deleteChatHistoryDatabase(() => assert.fail('Leaked history connection'));
 });
 
-test('sync freezes its first head, resumes a partial backfill, and detects database or visibility changes', () => {
-  const partial = advanceHistorySync(position('10'), page({ hasMore: true, nextBefore: '100' }));
-  assert.ok(partial);
-  assert.deepEqual(partial, { ...position('10'), head: '150', before: '100' });
-  const complete = advanceHistorySync(partial, page({ head: '160' }));
-  assert.deepEqual(complete, position('150'));
-  assert.equal(advanceHistorySync(partial, page({ databaseId: OWNER })), null);
-  assert.equal(advanceHistorySync(partial, page({ visibilityScope: OWNER })), null);
-  assert.equal(advanceHistorySync(partial, page({ head: '99' })), null);
-  assert.equal(chatServerEventSchema.safeParse(page({ head: 'invalid' })).success, false);
+test('opaque checkpoints advance only after the last page and reset drops an obsolete checkpoint', () => {
+  const partial = advanceHistorySync(position('10'), page({ nextPage: token('100') }));
+  assert.deepEqual(partial, { ...position('10'), page: token('100') });
+  assert.deepEqual(advanceHistorySync(partial, page()), position('150'));
+  assert.deepEqual(advanceHistorySync(partial, page({ reset: true, nextPage: token('90') })), {
+    page: token('90'),
+  });
+  assert.equal(chatServerEventSchema.safeParse(page({ checkpoint: 'invalid' })).success, false);
 });
 
-test('all pages and their resume positions survive reload without the former 1000-message cap', async () => {
+test('all pages persist while initial reads stay bounded and older records remain addressable', async () => {
   const lease = await syncHistoryAccount(OWNER);
   let previous: HistorySyncPosition | undefined;
   const ids = new Set<string>();
@@ -81,8 +80,22 @@ test('all pages and their resume positions survive reload without the former 100
     previous = next;
   }
   const snapshot = await loadHistory(lease);
-  assert.equal(snapshot.messages.length, 1205);
-  assert.equal(snapshot.historicalIds.size, 1205);
+  assert.equal(snapshot.messages.length, 1000);
+  assert.equal(snapshot.historicalIds.size, 1000);
+  let before: string | undefined;
+  const restored = new Set<string>();
+  for (;;) {
+    const batch = await readHistoryBatch(lease, before);
+    for (const record of batch.messages) restored.add(record.id);
+    if (!batch.hasMore) break;
+    before = batch.messages[0].order;
+  }
+  assert.equal(restored.size, 1205);
+  assert.ok(
+    (await readHistoryWindow(lease, 'public', undefined, 'archived-0')).messages.some(
+      (record) => record.id === 'archived-0',
+    ),
+  );
   assert.deepEqual(snapshot.syncPositions.public, position('1205'));
 });
 
@@ -139,7 +152,7 @@ test('local messages survive a year and remain readable after the server deadlin
   try {
     const lease = await syncHistoryAccount(OWNER);
     const live = message({ id: 'live' });
-    const history = message({ id: 'history', sequence: 2, expiresAt: now + 86_400_000 });
+    const history = message({ id: 'history', order: order(2), expiresAt: now + 86_400_000 });
     await saveHistory(lease, live);
     await saveHistorySync(
       lease,
@@ -167,21 +180,21 @@ test('cleanup combines message type and date, preserves workspace and progress, 
   const now = Date.now();
   const cutoff = now - 30 * 86_400_000;
   const records = [
-    message({ id: 'old-public', createdAt: cutoff, sequence: 1 }),
+    message({ id: 'old-public', createdAt: cutoff, order: order(1) }),
     message({
       id: 'old-private',
       channel: 'private',
       targetUuid: OWNER,
       createdAt: cutoff,
-      sequence: 2,
+      order: order(2),
     }),
-    message({ id: 'old-staff', channel: 'staff', createdAt: cutoff, sequence: 3 }),
+    message({ id: 'old-staff', channel: 'staff', createdAt: cutoff, order: order(3) }),
     message({
       id: 'recent-private',
       channel: 'private',
       targetUuid: OWNER,
       createdAt: cutoff + 1,
-      sequence: 4,
+      order: order(4),
     }),
   ];
   for (const record of records) await saveHistory(lease, record);
@@ -267,4 +280,83 @@ test('staff revocation removes cached staff messages and the cursor that would o
   const snapshot = await loadHistory(lease);
   assert.equal(snapshot.messages.length, 0);
   assert.equal(snapshot.syncPositions.staff, undefined);
+});
+
+test('read markers follow server order even when timestamps move backwards', async () => {
+  const lease = await syncHistoryAccount(OWNER);
+  const first = message({ id: 'first', createdAt: 2000, order: order(1) });
+  const later = message({ id: 'later', createdAt: 1000, order: order(2) });
+  await saveHistory(lease, first);
+  await saveReadPosition(lease, 'public', messageCursor(first));
+  await saveHistory(lease, later);
+  const snapshot = await loadHistory(lease);
+  assert.deepEqual(
+    snapshot.messages.map((record) => record.id),
+    ['first', 'later'],
+  );
+  assert.equal(snapshot.unread.get('public')?.count, 1);
+});
+test('unread summaries include live messages outside the loaded window and overlapping backfills preserve them', async () => {
+  const lease = await syncHistoryAccount(OWNER);
+  const records = Array.from({ length: 1105 }, (_, index) =>
+    message({ id: `live-${index}`, order: order(index + 1) }),
+  );
+  for (const record of records) await saveHistory(lease, record);
+  let snapshot = await loadHistory(lease);
+  assert.equal(snapshot.messages.length, 1000);
+  assert.equal(snapshot.unread.get('public')?.count, 1105);
+  await saveReadPosition(lease, 'public', messageCursor(records[549]));
+  assert.deepEqual(await readUnreadSummary(lease, 'public'), { count: 555, firstId: 'live-550' });
+  await saveHistorySync(
+    lease,
+    'public',
+    records.slice(1000),
+    undefined,
+    position('1105'),
+    new Set(records.map((record) => record.id)),
+  );
+  snapshot = await loadHistory(lease);
+  assert.equal(snapshot.unread.get('public')?.count, 555);
+});
+test('paged archive search finds records outside memory and checks cancellation, permissions and cleanup leases', async () => {
+  const lease = await syncHistoryAccount(OWNER);
+  await setStaffHistoryPermission(OWNER, true);
+  const records = Array.from({ length: 1205 }, (_, index) =>
+    message({
+      id: `search-${index}`,
+      order: order(index + 1),
+      content: [{ text: index === 0 ? 'unique needle' : 'ordinary' }],
+    }),
+  );
+  await saveHistorySync(
+    lease,
+    'public',
+    records,
+    undefined,
+    position('1205'),
+    new Set(records.map((record) => record.id)),
+  );
+  await saveHistory(
+    lease,
+    message({
+      id: 'secret',
+      channel: 'staff',
+      order: order(2000),
+      content: [{ text: 'unique needle' }],
+    }),
+  );
+  const query = {
+    lease,
+    criteria: { ...emptyChatSearch('all'), query: 'unique needle' },
+    conversation: 'public',
+    staff: false,
+    templates: {},
+  };
+  assert.deepEqual(
+    (await searchChatHistory(query)).messages.map((record) => record.id),
+    ['search-0'],
+  );
+  assert.deepEqual((await searchChatHistory(query, () => false)).messages, []);
+  await resetHistory(OWNER);
+  assert.deepEqual((await searchChatHistory(query)).messages, []);
 });

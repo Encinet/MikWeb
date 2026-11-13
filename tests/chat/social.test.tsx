@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { upgradeChatHistoryMessage } from '@/modules/chat/lib/chat-history-upgrade';
-import { UnsupportedChatHistoryError } from '@/modules/chat/model/chat-history-compatibility';
 import {
   chatMessageSchema,
   countsAsUnread,
@@ -9,7 +7,7 @@ import {
 } from '@/modules/chat/model/chat-protocol';
 import { emptyChatSearch, matchesChatSearch } from '@/modules/chat/model/chat-search';
 import { chatTimelineGroups } from '@/modules/chat/model/chat-timeline';
-import { message, OWNER, PEER, player } from './fixtures';
+import { message, OWNER, order, PEER, player } from './fixtures';
 
 function social(id = 'external:guest', name = 'Guest') {
   return message({
@@ -36,30 +34,11 @@ test('author grouping and search use stable identity independently of names and 
   const second = social('external:second', 'Same name');
   assert.equal(chatTimelineGroups([first, second], [], OWNER, 'Owner', 0).length, 2);
   assert.equal(
-    chatTimelineGroups([first, { ...first, id: 'next', sequence: 2 }], [], OWNER, 'Owner', 0)
+    chatTimelineGroups([first, { ...first, id: 'next', order: order(2) }], [], OWNER, 'Owner', 0)
       .length,
     1,
   );
   const criteria = { ...emptyChatSearch(), author: 'external:second', source: 'social' as const };
   assert.equal(matchesChatSearch(first, '', '', criteria, OWNER, 'public'), false);
   assert.equal(matchesChatSearch(second, '', '', criteria, OWNER, 'public'), true);
-});
-
-test('storage upgrade preserves player records and rejects invalid converted identities', () => {
-  const current = message();
-  const { sender, source, ...rest } = current;
-  const stored = {
-    ...rest,
-    kind: 'player',
-    senderUuid: sender.playerUuid,
-    senderName: sender.name,
-    source: source.kind,
-  };
-  assert.deepEqual(upgradeChatHistoryMessage(stored), current);
-  assert.throws(
-    () => upgradeChatHistoryMessage({ ...stored, senderUuid: 'invalid' }),
-    UnsupportedChatHistoryError,
-  );
-  const guest = social();
-  assert.deepEqual(upgradeChatHistoryMessage(guest), guest);
 });

@@ -4,16 +4,18 @@ import { Hash, MessageCircle, Server, Shield, SlidersHorizontal } from 'lucide-r
 import { useLocale, useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 import { useId, useMemo, useRef, useState } from 'react';
+import type { HistoryLease } from '@/modules/chat/lib/chat-history';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
-import { messageDestination } from '@/modules/chat/model/chat-protocol';
+import { mayReadMessage, messageDestination } from '@/modules/chat/model/chat-protocol';
 import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
 import {
   chatSearchFilterCount,
   emptyChatSearch,
   matchesChatSearch,
 } from '@/modules/chat/model/chat-search';
+import { useChatHistorySearch } from '@/modules/chat/model/use-chat-history-search';
 import { ChatAuthorAvatar } from '@/modules/chat/ui/chat-author-avatar';
 import { ChatPanel, ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
 import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
@@ -58,6 +60,8 @@ export function ChatMessageSearch({
   criteria,
   onCriteriaChange,
   messages,
+  history,
+  staff,
   owner,
   conversation,
   onChoose,
@@ -69,6 +73,8 @@ export function ChatMessageSearch({
   criteria: ChatSearchCriteria;
   onCriteriaChange: (criteria: ChatSearchCriteria) => void;
   messages: ChatMessage[];
+  history: HistoryLease | null;
+  staff: boolean;
   owner: string;
   conversation: ChatDestination;
   onChoose: (destination: ChatDestination, messageId: string) => void;
@@ -76,6 +82,7 @@ export function ChatMessageSearch({
 }) {
   const t = useTranslations('chat');
   const content = useChatMessageContent();
+  const commonT = useTranslations('common');
   const locale = useLocale();
   const summaryId = useId();
   const list = useRef<HTMLDivElement>(null);
@@ -94,10 +101,44 @@ export function ChatMessageSearch({
       : conversation.channel === 'staff'
         ? Shield
         : MessageCircle;
+  const templates = useMemo(
+    () =>
+      Object.fromEntries(
+        (['gameJoined', 'gameLeft', 'webJoined', 'webLeft'] as const).map((template) => [
+          template,
+          t(`server.${template}`, { name: '__MIK_CHAT_NAME__' }),
+        ]),
+      ),
+    [t],
+  );
+  const archiveQuery = useMemo(
+    () =>
+      open && searching && history?.persist
+        ? { lease: history, criteria, conversation: key, staff, templates }
+        : null,
+    [open, searching, history, criteria, key, staff, templates],
+  );
+  const archive = useChatHistorySearch(archiveQuery);
+  const candidates = useMemo(
+    () =>
+      [
+        ...new Map(
+          [
+            ...archive.page.messages,
+            ...(archiveQuery && archive.page.messages.length
+              ? messages.filter((message) => message.order > archive.page.messages[0].order)
+              : messages),
+          ]
+            .filter((message) => mayReadMessage(message, owner, staff))
+            .map((message) => [message.id, message]),
+        ).values(),
+      ].sort((a, b) => a.order.localeCompare(b.order) || a.id.localeCompare(b.id)),
+    [archiveQuery, archive.page.messages, messages, owner, staff],
+  );
   const indexed = useMemo(
     () =>
       open
-        ? messages
+        ? candidates
             .flatMap((message) => {
               const destination = messageDestination(message, owner);
               if (!destination) return [];
@@ -115,7 +156,7 @@ export function ChatMessageSearch({
             })
             .reverse()
         : [],
-    [messages, owner, content, open],
+    [candidates, owner, content, open],
   );
   const results = useMemo(() => {
     if (!searching) return [];
@@ -276,8 +317,22 @@ export function ChatMessageSearch({
       <div className="chat-panel-summary" id={summaryId} role="status">
         {searching && results.length ? t('searchCount', { count: results.length }) : null}
       </div>
-      <div ref={list} className="chat-panel-results chat-search-results">
-        {!visible.length ? (
+      <div
+        ref={list}
+        className="chat-panel-results chat-search-results"
+        aria-busy={archive.loading}
+      >
+        {archive.loading && !visible.length ? (
+          <div className="chat-panel-empty" role="status">
+            {commonT('states.loading')}
+          </div>
+        ) : null}
+        {archive.failed ? (
+          <button type="button" className="chat-history-more" onClick={archive.retry}>
+            {t('retryHistory')}
+          </button>
+        ) : null}
+        {!visible.length && !archive.loading && !archive.failed ? (
           <div className="chat-panel-empty" role={searching ? 'status' : undefined}>
             <p>{t(searching ? 'searchEmpty' : 'searchHint')}</p>
             {searching ? (
@@ -366,11 +421,15 @@ export function ChatMessageSearch({
             })}
           </ol>
         )}
-        {results.length > limit ? (
+        {results.length > limit || archive.page.hasMore ? (
           <button
             type="button"
             className="chat-history-more"
-            onClick={() => setLimit((value) => value + PAGE_SIZE)}
+            disabled={archive.loading}
+            onClick={() => {
+              setLimit((value) => value + PAGE_SIZE);
+              if (results.length <= limit + PAGE_SIZE) archive.more();
+            }}
           >
             {t('loadMoreResults')}
           </button>

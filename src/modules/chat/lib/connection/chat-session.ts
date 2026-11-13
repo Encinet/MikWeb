@@ -22,8 +22,8 @@ export type ChatHistoryPage = Extract<ChatServerEvent, { type: 'history' }>;
 export interface ChatHistoryQuery {
   channel: 'public' | 'staff' | 'private';
   targetUuid?: string;
-  before?: string;
-  after?: string;
+  since?: string;
+  page?: string;
 }
 export type ChatSessionEvent = Exclude<
   ChatServerEvent,
@@ -235,7 +235,7 @@ export class ChatSession {
     this.update({ status: 'idle' });
   }
 
-  send(destination: ChatDestination, text: string): ChatSendResult {
+  send(destination: ChatDestination, text: string, retryId?: string): ChatSendResult {
     const connection = this.connection;
     const value = text.trim();
     const access = this.access;
@@ -249,7 +249,7 @@ export class ChatSession {
     )
       return { ok: false, error: 'recipient_unavailable' };
     if (connection.transport.bufferedAmount > 16 * 1024) return { ok: false, error: 'chat_busy' };
-    const requestId = crypto.randomUUID();
+    const requestId = retryId ?? crypto.randomUUID();
     try {
       connection.transport.send(
         JSON.stringify({
@@ -485,9 +485,7 @@ export class ChatSession {
                 messageConversation(message, this.owner) !== `private:${request.query.targetUuid}`,
             ),
         ) ||
-        (event.hasMore &&
-          request.query.before &&
-          BigInt(event.nextBefore) >= BigInt(request.query.before))
+        (event.nextPage && event.nextPage === request.query.page)
       ) {
         this.fail(connection, 'invalid_response');
         return;

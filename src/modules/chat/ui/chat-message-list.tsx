@@ -49,6 +49,15 @@ interface Props extends ChatMessageActionHandlers {
   onJumpComplete: (sequence: number) => void;
   showActivity: boolean;
   syncing?: boolean;
+  hasMoreLocal?: boolean;
+  hasNewerLocal?: boolean;
+  onLoadLater?: () => void;
+  onLoadEarlier?: () => void;
+  olderWindow?: boolean;
+  onLatestWindow?: () => void;
+  localFailed?: boolean;
+  onRetryLocal?: () => void;
+  onUnreadTarget?: (id: string) => void;
 }
 export const ChatMessageList = memo(function ChatMessageList({
   conversation,
@@ -69,6 +78,15 @@ export const ChatMessageList = memo(function ChatMessageList({
   onMention,
   onPrivate,
   syncing,
+  hasMoreLocal,
+  hasNewerLocal,
+  onLoadLater,
+  onLoadEarlier,
+  olderWindow,
+  onLatestWindow,
+  localFailed,
+  onRetryLocal,
+  onUnreadTarget,
 }: Props) {
   const t = useTranslations('chat');
   const locale = useLocale();
@@ -150,6 +168,27 @@ export const ChatMessageList = memo(function ChatMessageList({
     [],
   );
   const initial = useRef(true);
+  const pageAnchor = useRef<{ id: string; offset: number; direction: 'before' | 'after' } | null>(
+    null,
+  );
+  const capturePageAnchor = (direction: 'before' | 'after') => {
+    const root = scroll.log.current;
+    if (!root) return;
+    finishChatRegrouping(root);
+    const bounds = root.getBoundingClientRect();
+    const nodes = [...root.querySelectorAll<HTMLElement>('[data-chat-message]')].filter((node) => {
+      const rect = node.getBoundingClientRect();
+      return rect.bottom > bounds.top && rect.top < bounds.bottom;
+    });
+    const node = direction === 'before' ? nodes[0] : nodes.at(-1);
+    if (node?.dataset.chatMessage)
+      pageAnchor.current = {
+        id: node.dataset.chatMessage,
+        offset: node.getBoundingClientRect().top - bounds.top,
+        direction,
+      };
+  };
+
   const prepend = useRef<{ top: number; height: number; start: number } | null>(null);
   const track = useChatReadTracker(scroll.log, (cursor) => onRead(conversation, cursor), paused);
   const format = useMemo(
@@ -170,7 +209,26 @@ export const ChatMessageList = memo(function ChatMessageList({
 
   useLayoutEffect(() => {
     const root = scroll.log.current;
-    if (root && prepend.current && prepend.current.start !== start) {
+    const anchor = pageAnchor.current;
+    if (root && anchor && !syncing) {
+      if (anchor.direction === 'before' && start > 0) {
+        setStartId(timeline[0]?.id ?? null);
+        return;
+      }
+      const node = [...root.querySelectorAll<HTMLElement>('[data-chat-message]')].find(
+        (node) => node.dataset.chatMessage === anchor.id,
+      );
+      if (node)
+        root.scrollTop +=
+          node.getBoundingClientRect().top - root.getBoundingClientRect().top - anchor.offset;
+      pageAnchor.current = null;
+      root.focus({ preventScroll: true });
+    }
+    if (
+      root &&
+      prepend.current &&
+      (prepend.current.start !== start || root.scrollHeight !== prepend.current.height)
+    ) {
       finishChatRegrouping(root);
       root.scrollTop = prepend.current.top + root.scrollHeight - prepend.current.height;
       prepend.current = null;
@@ -179,7 +237,7 @@ export const ChatMessageList = memo(function ChatMessageList({
       initial.current = false;
       if (!scroll.initialView() && boundary) scroll.toMessage(boundary);
     }
-  }, [conversation, jump, start, scroll, boundary]);
+  }, [conversation, jump, start, scroll, boundary, syncing, timeline]);
 
   // Run after modal cleanup so the destination is no longer inert and can receive focus.
   useEffect(() => {
@@ -211,6 +269,10 @@ export const ChatMessageList = memo(function ChatMessageList({
   const [localJump, setLocalJump] = useState<string | null>(null);
   const jumpToUnread = () => {
     if (!unread) return;
+    if (!timeline.some((message) => message.id === unread.firstId) && onUnreadTarget) {
+      onUnreadTarget(unread.firstId);
+      return;
+    }
     reveal(unread.firstId);
     // Revealing earlier records needs one render before their element exists.
     setLocalJump(unread.firstId);
@@ -243,11 +305,17 @@ export const ChatMessageList = memo(function ChatMessageList({
         onContextMenuCapture={(event) => finishChatRegrouping(event.currentTarget)}
       >
         <div className="chat-log__content">
-          {start > 0 ? (
+          {start > 0 || hasMoreLocal ? (
             <button
               type="button"
               className="chat-history-more"
+              disabled={syncing}
               onClick={() => {
+                if (start === 0) {
+                  capturePageAnchor('before');
+                  onLoadEarlier?.();
+                  return;
+                }
                 const root = scroll.log.current;
                 if (root) {
                   finishChatRegrouping(root);
@@ -259,7 +327,12 @@ export const ChatMessageList = memo(function ChatMessageList({
               {t('loadEarlier')}
             </button>
           ) : null}
-          {!timeline.length && !pending.length ? (
+          {localFailed ? (
+            <button type="button" className="chat-history-more" onClick={onRetryLocal}>
+              {t('retryHistory')}
+            </button>
+          ) : null}
+          {!timeline.length && !pending.length && !syncing ? (
             <div className="chat-empty">
               <span className="chat-empty__mark" aria-hidden="true">
                 <RoomIcon size={32} strokeWidth={1.25} />
@@ -333,14 +406,28 @@ export const ChatMessageList = memo(function ChatMessageList({
               });
             return items;
           })}
+          {hasNewerLocal ? (
+            <button
+              type="button"
+              className="chat-history-more"
+              disabled={syncing}
+              onClick={() => {
+                capturePageAnchor('after');
+                onLoadLater?.();
+              }}
+            >
+              {t('loadLater')}
+            </button>
+          ) : null}
         </div>
       </div>
-      {!scroll.atBottom ? (
+      {!scroll.atBottom || olderWindow ? (
         <ChatScrollActions
           unreadCount={unread?.count ?? 0}
           onUnread={jumpToUnread}
           onLatest={() => {
-            scroll.toLatest();
+            if (olderWindow) onLatestWindow?.();
+            else scroll.toLatest();
             scroll.log.current?.focus({ preventScroll: true });
           }}
         />

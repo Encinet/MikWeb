@@ -519,16 +519,6 @@
     "clearConfirm": "Clear local messages, drafts, and conversations? Records beyond the server’s 7-day retention cannot be recovered.",
     "serverHistoryNote": "Keep messages until cleared, signed out, or switched to another account.",
     "storageFailed": "Messages or drafts could not be saved locally and may be lost when this page closes.",
-    "historyRecovery": {
-      "title": "Incompatible Local Chat Data",
-      "required": "This version cannot read or upgrade your local chat data. Delete it to use chat.",
-      "description": "Delete the chat messages, drafts, conversations, and chat preferences saved in this browser and start again? This cannot be undone. Canceling keeps the data and leaves chat unavailable.",
-      "review": "Review cleanup options",
-      "delete": "Delete local data and continue",
-      "deleting": "Deleting local chat data…",
-      "blocked": "Close other tabs or windows for this website. Chat will continue automatically when deletion finishes.",
-      "failed": "Deletion failed. Your data has not been cleared. Please try again."
-    },
     "restoreDraft": "Restore draft",
     "server": {
       "label": "Server",
@@ -594,6 +584,7 @@
     "jumpUnread": "First unread ({count})",
     "unreadCount": "{count, plural, one {# unread message} other {# unread messages}}",
     "loadEarlier": "Earlier messages",
+    "loadLater": "Load newer messages",
     "syncingHistory": "Syncing message history · {count} messages processed",
     "historySyncFailed": "Message history could not be fully synced. You can continue chatting and retry.",
     "retryHistory": "Retry sync",
@@ -836,6 +827,7 @@
   "footer": {
     "navigation": "Site Navigation",
     "siteInfo": "Site Info",
+    "privacyPolicy": "Privacy Policy",
     "legal": {
       "minecraftTrademark": "Minecraft is a trademark of Mojang AB. {organizationName} is not affiliated with Mojang AB. By using our services, you agree to",
       "eula": "Mojang's EULA"

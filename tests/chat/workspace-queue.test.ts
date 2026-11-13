@@ -4,7 +4,7 @@ import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { ChatWorkspaceMutation } from '@/modules/chat/model/chat-workspace';
 import { emptyChatWorkspace, updateChatWorkspace } from '@/modules/chat/model/chat-workspace';
 import { appendWorkspaceMutation } from '@/modules/chat/model/chat-workspace-queue';
-import { message, PEER } from './fixtures';
+import { message, order, PEER } from './fixtures';
 
 test('a prolonged failure queues the latest draft and preserves independent preferences and thread operations', () => {
   const destination = { channel: 'private', targetUuid: PEER, name: 'Alex' } as const;
@@ -20,7 +20,7 @@ test('a prolonged failure queues the latest draft and preserves independent pref
       {
         type: 'close',
         destination,
-        through: messageCursor(message({ id: `id-${index}`, sequence: index + 1 })),
+        through: messageCursor(message({ id: `id-${index}`, order: order(index + 1) })),
         at: index,
       },
       { type: 'pin', destination, pinned: index % 2 === 0, at: index },

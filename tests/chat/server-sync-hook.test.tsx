@@ -17,7 +17,7 @@ import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
 import { createBrowserEnvironment } from '../support/browser-environment';
-import { message, OTHER, OWNER, PEER, player, STREAM } from './fixtures';
+import { message, OWNER, order, PEER, player } from './fixtures';
 
 class Socket implements ChatSessionTransport {
   onmessage: ChatSessionTransport['onmessage'] = null;
@@ -41,6 +41,12 @@ class Socket implements ChatSessionTransport {
 }
 
 class Server {
+  tokens = new Map<string, { after: number; before: number; head: number }>();
+  token(value: { after: number; before: number; head: number }) {
+    const token = crypto.randomUUID().replaceAll('-', '').padEnd(91, 'a');
+    this.tokens.set(token, value);
+    return token;
+  }
   rows: { cursor: number; message: ChatMessage }[] = [];
   requests: ChatHistoryQuery[] = [];
   sockets: Socket[] = [];
@@ -80,7 +86,9 @@ class Server {
   };
   constructor() {
     for (let index = 1; index <= 205; index++)
-      this.add(message({ id: `public-${index}`, createdAt: Date.now() - 1000, sequence: index }));
+      this.add(
+        message({ id: `public-${index}`, createdAt: Date.now() - 1000, order: order(index) }),
+      );
     this.add(
       message({
         id: 'offline-private',
@@ -94,17 +102,27 @@ class Server {
   add(record: ChatMessage) {
     this.rows.push({
       cursor: this.rows.length + 1,
-      message: { ...record, expiresAt: Date.now() + 86_400_000 },
+      message: {
+        ...record,
+        order: order(this.rows.length + 1),
+        expiresAt: Date.now() + 86_400_000,
+      },
     });
   }
   request(socket: Socket, query: ChatHistoryQuery & { requestId: string }) {
     this.requests.push(query);
+    const progress = (query.page && this.tokens.get(query.page)) || {
+      after: query.since ? (this.tokens.get(query.since)?.head ?? 0) : 0,
+      before: Number.MAX_SAFE_INTEGER,
+      head: this.rows.length,
+    };
     const eligible = this.rows
       .filter(
         (row) =>
           row.message.channel === query.channel &&
-          row.cursor > Number(query.after ?? 0) &&
-          row.cursor < Number(query.before ?? Number.MAX_SAFE_INTEGER),
+          row.cursor > progress.after &&
+          row.cursor < progress.before &&
+          row.cursor <= progress.head,
       )
       .reverse();
     const selected = eligible.slice(0, 100);
@@ -113,13 +131,22 @@ class Server {
       requestId: query.requestId,
       channel: query.channel,
       messages: selected.map((row) => row.message).reverse(),
-      hasMore: eligible.length > selected.length,
-      nextBefore: String(selected.at(-1)?.cursor ?? query.before ?? '9223372036854775807'),
-      head: String(this.rows.length),
-      databaseId: STREAM,
-      visibilityScope: OTHER,
+      reset: false,
+      checkpoint: this.token({
+        after: progress.head,
+        before: Number.MAX_SAFE_INTEGER,
+        head: progress.head,
+      }),
+      ...(eligible.length > selected.length
+        ? {
+            nextPage: this.token({
+              ...progress,
+              before: selected.at(-1)?.cursor ?? progress.before,
+            }),
+          }
+        : {}),
     };
-    if (this.hold || (this.holdBackfill && query.before)) this.pending.push({ socket, page });
+    if (this.hold || (this.holdBackfill && query.page)) this.pending.push({ socket, page });
     else queueMicrotask(() => socket.receive(page));
   }
   release() {
@@ -128,7 +155,7 @@ class Server {
     for (const pending of this.pending.splice(0)) pending.socket.receive(pending.page);
   }
   live() {
-    const record = message({ id: 'live-new', sequence: this.rows.length + 1 });
+    const record = message({ id: 'live-new', order: order(this.rows.length + 1) });
     this.add(record);
     this.sockets.at(-1)?.receive({ type: 'message', message: record });
   }
@@ -215,7 +242,7 @@ test('automatically syncs all pages and offline private threads, deduplicates li
   assert.equal(new Set(state().messages.map((record) => record.id)).size, 207);
   assert.equal(notifications, 1);
   assert.equal(state().unread.get('public')?.count, 1);
-  assert.ok(server.requests.some((request) => request.channel === 'public' && request.before));
+  assert.ok(server.requests.some((request) => request.channel === 'public' && request.page));
   assert.ok(
     server.requests.some((request) => request.channel === 'private' && !request.targetUuid),
   );
@@ -236,7 +263,7 @@ test('automatically syncs all pages and offline private threads, deduplicates li
   await until(complete);
   assert.equal(state().messages.length, 207);
   assert.ok(
-    server.requests.slice(start).every((request) => Number(request.after) > 0 && !request.before),
+    server.requests.slice(start).every((request) => Boolean(request.since) && !request.page),
   );
 });
 
@@ -252,8 +279,8 @@ test('resumes an interrupted backfill from the committed page and discards a pag
     cached = await loadHistory(lease);
   });
   assert.ok(cached);
-  assert.ok(cached.syncPositions.public?.before);
-  const before = cached.syncPositions.public.before;
+  assert.ok(cached.syncPositions.public?.page);
+  const before = cached.syncPositions.public.page;
   const start = server.requests.length;
   await browser.close();
   browser = createBrowserEnvironment();
@@ -262,7 +289,7 @@ test('resumes an interrupted backfill from the committed page and discards a pag
   await mount();
   await until(complete);
   assert.equal(
-    server.requests.slice(start).find((request) => request.channel === 'public')?.before,
+    server.requests.slice(start).find((request) => request.channel === 'public')?.page,
     before,
   );
   assert.equal(state().messages.length, 206);
@@ -348,7 +375,7 @@ test('a missed cache-reset notification renews the lease instead of repeatedly r
   await until(() => state().historyLease?.epoch === epoch && complete());
   assert.equal(state().messages.length, 206);
   assert.ok(
-    server.requests.slice(start).some((query) => query.channel === 'public' && query.after === '0'),
+    server.requests.slice(start).some((query) => query.channel === 'public' && !query.since),
   );
   assert.ok(
     server.requests.length - start < 12,
@@ -381,4 +408,24 @@ test('private cleanup during a backfill survives late pages and reload while pub
   await act(async () => server.live());
   await until(() => state().messages.length === 1);
   assert.equal(state().messages[0].id, 'live-new');
+});
+
+test('unavailable browser storage keeps live chat and history synchronization usable in memory', async () => {
+  const open = indexedDB.open;
+  indexedDB.open = () => {
+    throw new Error('Storage unavailable');
+  };
+  try {
+    server.hold = false;
+    await mount();
+    await until(
+      () => state().storageFailed && state().connection.status === 'online' && complete(),
+    );
+    assert.equal(state().messages.length, 206);
+    assert.equal(state().historyLease, null);
+    await act(async () => server.live());
+    assert.equal(state().messages.at(-1)?.id, 'live-new');
+  } finally {
+    indexedDB.open = open;
+  }
 });

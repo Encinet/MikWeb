@@ -519,16 +519,6 @@
     "clearConfirm": "清空本机消息、草稿和会话？超过服务端 7 天保留期的记录无法恢复。",
     "serverHistoryNote": "长期保存消息；退出登录或切换账号时清空。",
     "storageFailed": "无法保存本机记录或草稿，关闭页面后可能丢失。",
-    "historyRecovery": {
-      "title": "本机聊天记录不兼容",
-      "required": "当前版本无法读取或升级本机聊天数据。删除这些数据后才能使用聊天。",
-      "description": "是否删除此浏览器保存的聊天消息、草稿、会话列表及聊天偏好，并重新开始？此操作无法撤销。取消将保留数据，聊天暂时无法使用。",
-      "review": "查看清理选项",
-      "delete": "删除本机数据并继续",
-      "deleting": "正在删除本机聊天数据…",
-      "blocked": "请关闭此网站的其他标签页或窗口，删除完成后会自动继续。",
-      "failed": "删除失败，数据尚未清除。请重试。"
-    },
     "restoreDraft": "恢复到输入框",
     "server": {
       "label": "服务器",
@@ -594,6 +584,7 @@
     "jumpUnread": "首条未读（{count}）",
     "unreadCount": "{count, plural, other {# 条未读消息}}",
     "loadEarlier": "查看更早消息",
+    "loadLater": "加载较新消息",
     "syncingHistory": "正在同步历史消息 · 已处理 {count} 条",
     "historySyncFailed": "历史消息尚未同步完整，可继续聊天或重试同步。",
     "retryHistory": "重试同步",
@@ -836,6 +827,7 @@
   "footer": {
     "navigation": "站内导航",
     "siteInfo": "本站信息",
+    "privacyPolicy": "隐私政策",
     "legal": {
       "minecraftTrademark": "Minecraft 是 Mojang AB 的商标。{organizationName} 与 Mojang AB 无关联。使用本站服务即表示你同意",
       "eula": "Mojang 的 EULA"

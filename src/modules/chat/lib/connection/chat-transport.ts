@@ -9,7 +9,7 @@ import {
 import { CHAT_WEBSOCKET_URL } from '@/shared/config/service-config';
 import { isRecord } from '@/shared/lib/is-record';
 
-const PROTOCOL = 'mik-chat-hpke-2026-11-08\0https://mcmik.top\0';
+const PROTOCOL = 'mik-chat-hpke-2026-11-13\0https://mcmik.top\0';
 const KEY_LIFETIME_MS = 30 * 60 * 1000;
 const EXCHANGE_TIMEOUT_MS = 5000;
 const APPLICATION_RECORD_TYPE = 0;
