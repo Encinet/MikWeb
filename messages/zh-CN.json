@@ -745,6 +745,28 @@
       "allRecords": "全部记录",
       "selectAll": "全选"
     },
+    "export": {
+      "open": "导出记录…",
+      "title": "导出本机消息",
+      "help": "仅导出本机已保存的消息，不包含草稿与聊天偏好。",
+      "options": "导出选项",
+      "range": "导出范围",
+      "filtered": "当前筛选",
+      "format": "文件格式",
+      "json": "JSON（完整数据）",
+      "txt": "纯文本（便于阅读）",
+      "through": "{date} 及以前",
+      "count": "{count, plural, other {约 # 条消息}}",
+      "account": "所属账号：{owner}",
+      "preparing": "正在整理，已读取{count, plural, other { # 条消息}}…",
+      "working": "正在导出…",
+      "action": "导出",
+      "ready": "已生成{count, plural, other { # 条消息}}的文件。",
+      "download": "再次下载",
+      "empty": "没有可导出的消息，请刷新统计后重试。",
+      "changed": "本机记录或权限已变化，请关闭后重新导出。",
+      "failed": "导出失败，请重试。"
+    },
     "settingsSections": {
       "label": "设置分类",
       "display": "外观与显示",

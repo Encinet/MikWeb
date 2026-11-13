@@ -93,6 +93,7 @@
   font-size: 1.125rem;
 }
 .chat-history-settings :is(p, small),
+.chat-history-export p,
 .chat-settings-heading p {
   margin: 0;
   color: var(--theme-text-muted-strong);
@@ -256,7 +257,8 @@
   gap: 0.4rem;
   font-size: 0.875rem;
 }
-.chat-history-settings :is(select, input[type="search"]) {
+.chat-history-settings :is(select, input[type="search"]),
+.chat-history-export select {
   width: 100%;
   min-width: 0;
   min-height: 2.75rem;
@@ -402,6 +404,46 @@
 .chat-cleanup-dialog {
   background: var(--theme-surface-modal);
 }
+.chat-export-dialog.app-dialog-window {
+  --app-dialog-width: 32rem;
+  background: var(--theme-surface-modal);
+}
+.chat-history-export {
+  container: chat-export / inline-size;
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.chat-export-scope {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem;
+  border-radius: 0.6rem;
+  background: var(--chat-soft);
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+  color: var(--theme-text-primary);
+}
+.chat-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+.chat-history-export [role="status"]:empty {
+  display: none;
+}
+.chat-history-export [role="alert"] {
+  color: var(--theme-accent-red);
+}
+@container chat-export (max-width: 24rem) {
+  .chat-data-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chat-export-actions > .ui-action-button {
+    flex: 1;
+  }
+}
 .chat-cleanup-dialog [role="alert"] {
   color: var(--theme-accent-red);
 }
@@ -463,15 +505,16 @@
 
 /* Keep text enlargement from using the viewport for dialog chrome and gutters. */
 @media (max-width: 639px) {
-  :is(.chat-settings-dialog, .chat-cleanup-dialog) .app-dialog-chrome {
+  :is(.chat-settings-dialog, .chat-cleanup-dialog, .chat-export-dialog) .app-dialog-chrome {
     gap: 12px;
     padding: 16px 16px 8px;
   }
-  :is(.chat-settings-dialog, .chat-cleanup-dialog) :is(.app-dialog-icon, .app-dialog-close) {
+  :is(.chat-settings-dialog, .chat-cleanup-dialog, .chat-export-dialog)
+    :is(.app-dialog-icon, .app-dialog-close) {
     width: 44px;
     height: 44px;
   }
-  :is(.chat-settings-dialog, .chat-cleanup-dialog) .app-dialog-body {
+  :is(.chat-settings-dialog, .chat-cleanup-dialog, .chat-export-dialog) .app-dialog-body {
     padding: 12px 20px 20px;
   }
 }

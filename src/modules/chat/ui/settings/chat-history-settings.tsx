@@ -14,6 +14,7 @@ import {
   selectHistoryUsage,
 } from '@/modules/chat/lib/history/chat-history-storage';
 import type { useWebChat } from '@/modules/chat/model/use-web-chat';
+import { ChatHistoryExport } from '@/modules/chat/ui/settings/chat-history-export';
 import { ChatHistoryPlayers } from '@/modules/chat/ui/settings/chat-history-players';
 import { ChatHistoryUsage, useHistoryFormat } from '@/modules/chat/ui/settings/chat-history-usage';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
@@ -371,6 +372,23 @@ export function ChatHistorySettings({
           </div>
         ) : null}
         <div className="chat-data-reset">
+          {/* Reset the export session when its account, permission, or settings context changes. */}
+          <ChatHistoryExport
+            key={`${historyLease?.owner}:${historyLease?.epoch}:${chat.staff}:${active}`}
+            lease={historyLease}
+            staff={chat.staff}
+            active={active}
+            disabled={busy || confirmation !== null || statisticsState !== 'ready'}
+            total={report?.count ?? 0}
+            filtered={{
+              selection: cleanup,
+              count: matching?.count ?? 0,
+              names:
+                report?.players
+                  .filter((player) => players.includes(player.uuid))
+                  .map((player) => player.name) ?? [],
+            }}
+          />
           <button
             type="button"
             className="ui-action-button ui-action-button--danger"
