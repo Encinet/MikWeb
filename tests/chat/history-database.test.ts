@@ -4,7 +4,7 @@ import { afterEach, test } from 'node:test';
 import {
   deleteChatHistoryDatabase,
   openChatHistoryDatabase,
-} from '@/modules/chat/lib/chat-history-database';
+} from '@/modules/chat/lib/history/chat-history-database';
 import { openStored, seed, storedData } from './history-database-fixtures';
 
 afterEach(async () => {

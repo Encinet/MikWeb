@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { isStaffRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import { hasStoredChatHistory } from '@/modules/chat/lib/chat-history-presence';
+import { hasStoredChatHistory } from '@/modules/chat/lib/history/chat-history-presence';
 
 /** Clear account-scoped history and notification previews, including outside the chat page. */
 export function ChatAccountGuard() {
@@ -19,7 +19,9 @@ export function ChatAccountGuard() {
       })
       .catch(() => undefined);
     void hasStoredChatHistory()
-      .then((exists) => (current && exists ? import('@/modules/chat/lib/chat-history') : null))
+      .then((exists) =>
+        current && exists ? import('@/modules/chat/lib/history/chat-history') : null,
+      )
       .then(async (history) => {
         if (!current || !history) return;
         await history.syncHistoryAccount(owner, () => current);

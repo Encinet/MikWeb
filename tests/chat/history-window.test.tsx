@@ -2,17 +2,17 @@ import 'fake-indexeddb/auto';
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import { act } from 'react';
-import type { HistoryLease } from '@/modules/chat/lib/chat-history';
+import type { HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import {
   loadHistory,
   readHistoryWindow,
   saveHistorySync,
   setStaffHistoryPermission,
   syncHistoryAccount,
-} from '@/modules/chat/lib/chat-history';
-import { deleteChatHistoryDatabase } from '@/modules/chat/lib/chat-history-database';
+} from '@/modules/chat/lib/history/chat-history';
+import { deleteChatHistoryDatabase } from '@/modules/chat/lib/history/chat-history-database';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
-import { useChatHistoryWindow } from '@/modules/chat/model/use-chat-history-window';
+import { useChatHistoryWindow } from '@/modules/chat/model/history/use-chat-history-window';
 import { createBrowserEnvironment } from '../support/browser-environment';
 import { message, OWNER, order } from './fixtures';
 

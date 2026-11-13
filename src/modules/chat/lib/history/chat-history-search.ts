@@ -1,6 +1,6 @@
-import type { ChatMessage } from '../model/chat-protocol';
-import type { ChatSearchCriteria } from '../model/chat-search';
-import { matchesChatSearch } from '../model/chat-search';
+import type { ChatMessage } from '../../model/chat-protocol';
+import type { ChatSearchCriteria } from '../../model/chat-search';
+import { matchesChatSearch } from '../../model/chat-search';
 import type { HistoryLease } from './chat-history';
 import { readHistoryBatch } from './chat-history';
 export interface HistorySearchQuery {

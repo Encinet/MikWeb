@@ -2,8 +2,8 @@
 
 import { MoreHorizontal } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { ChatMenuSurface } from '@/modules/chat/ui/chat-menu-surface';
-import { useChatMenu } from '@/modules/chat/ui/use-chat-menu';
+import { ChatMenuSurface } from '@/modules/chat/ui/menus/chat-menu-surface';
+import { useChatMenu } from '@/modules/chat/ui/menus/use-chat-menu';
 
 export function ChatActionMenu({
   label,

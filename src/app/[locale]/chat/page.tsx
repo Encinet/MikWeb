@@ -1,5 +1,6 @@
 import '../../styles/modules/chat.css';
 import '../../styles/modules/chat-tools.css';
+import '../../styles/modules/chat-settings.css';
 import '../../styles/modules/chat-motion.css';
 
 import type { Metadata } from 'next';

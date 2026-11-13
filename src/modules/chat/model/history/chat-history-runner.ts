@@ -1,6 +1,6 @@
+import type { ChatMessage, ChatServerEvent } from '../chat-protocol';
 import type { HistorySyncPosition } from './chat-history-sync';
 import { advanceHistorySync } from './chat-history-sync';
-import type { ChatMessage, ChatServerEvent } from './chat-protocol';
 
 type Page = Extract<ChatServerEvent, { type: 'history' }>;
 export interface HistoryRunnerPorts {

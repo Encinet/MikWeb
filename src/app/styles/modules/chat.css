@@ -816,15 +816,6 @@ body:has(.chat-workspace)
 .chat-dialog.app-dialog-window {
   --app-dialog-width: 26rem;
 }
-.chat-settings-dialog.app-dialog-window {
-  --app-dialog-width: 34rem;
-}
-.chat-settings {
-  display: grid;
-  min-width: 0;
-  gap: 1.25rem;
-  container: chat-settings / inline-size;
-}
 .chat-panel {
   --chat-panel-surface: color-mix(in srgb, var(--theme-surface-modal) 70%, var(--chat-surface));
   grid-column: 2;
@@ -1169,25 +1160,6 @@ button.chat-peer:hover {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-}
-.chat-settings-confirm > div {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-.chat-settings-confirm {
-  min-width: 0;
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 0;
-  border-radius: 0.75rem;
-  background: var(--chat-soft);
-  color: var(--theme-text-muted-strong);
-  font-size: 0.85rem;
-  line-height: 1.6;
 }
 .chat-navigation-dialog .app-dialog-body {
   display: flex;

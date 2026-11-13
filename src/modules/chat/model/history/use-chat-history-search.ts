@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { HistorySearchPage, HistorySearchQuery } from '../lib/chat-history-search';
-import { searchChatHistory } from '../lib/chat-history-search';
+import type { HistorySearchPage, HistorySearchQuery } from '../../lib/history/chat-history-search';
+import { searchChatHistory } from '../../lib/history/chat-history-search';
 
 const EMPTY: HistorySearchPage = { messages: [], hasMore: false };
 export function useChatHistorySearch(query: HistorySearchQuery | null) {
@@ -26,7 +26,7 @@ export function useChatHistorySearch(query: HistorySearchQuery | null) {
     let task: Worker | null = null;
     try {
       if (typeof Worker !== 'undefined')
-        task = new Worker(new URL('../worker/chat-search.worker.ts', import.meta.url));
+        task = new Worker(new URL('../../worker/chat-search.worker.ts', import.meta.url));
     } catch {
       /* Restricted browsers use the same bounded scan on the main thread. */
     }

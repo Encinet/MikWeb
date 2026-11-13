@@ -1,4 +1,4 @@
-import { emptyChatWorkspace } from '@/modules/chat/model/chat-workspace';
+import { emptyChatWorkspace } from '@/modules/chat/model/workspace/chat-workspace';
 import { message, OWNER } from './fixtures';
 
 export function openStored(version?: number, initialize?: (db: IDBDatabase) => void) {

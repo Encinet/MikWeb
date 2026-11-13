@@ -1,9 +1,9 @@
-import { migrateChatHistoryDatabase } from '@/modules/chat/lib/chat-history-migrations';
-import { CHAT_HISTORY_DATABASE_NAME } from '@/modules/chat/lib/chat-history-presence';
+import { CHAT_HISTORY_DATABASE_NAME } from '@/modules/chat/lib/history/chat-history-presence';
 import {
   CHAT_HISTORY_DATABASE_VERSION,
   hasChatHistorySchema,
-} from '@/modules/chat/lib/chat-history-schema';
+} from '@/modules/chat/lib/history/chat-history-schema';
+import { migrateChatHistoryDatabase } from '@/modules/chat/lib/history/migrations';
 
 let database: Promise<IDBDatabase> | undefined;
 let deletion: Promise<void> | undefined;

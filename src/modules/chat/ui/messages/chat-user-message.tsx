@@ -7,14 +7,14 @@ import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import type { ChatUserMessage } from '@/modules/chat/model/chat-protocol';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { ChatPendingEntry } from '@/modules/chat/model/chat-timeline';
-import { ChatAuthorAvatar } from '@/modules/chat/ui/chat-author-avatar';
-import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
-import { ChatDeliveryFeedback } from '@/modules/chat/ui/chat-delivery-feedback';
-import type { ChatMessageActionHandlers } from '@/modules/chat/ui/chat-message-actions';
-import { ChatMessageActions } from '@/modules/chat/ui/chat-message-actions';
-import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
-import { ChatMessageTextDialog } from '@/modules/chat/ui/chat-message-text-dialog';
-import type { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
+import { ChatDeliveryFeedback } from '@/modules/chat/ui/feedback/chat-delivery-feedback';
+import { ChatContextMenu } from '@/modules/chat/ui/menus/chat-context-menu';
+import { ChatAuthorAvatar } from '@/modules/chat/ui/messages/chat-author-avatar';
+import type { ChatMessageActionHandlers } from '@/modules/chat/ui/messages/chat-message-actions';
+import { ChatMessageActions } from '@/modules/chat/ui/messages/chat-message-actions';
+import { ChatMessageContent } from '@/modules/chat/ui/messages/chat-message-content';
+import { ChatMessageTextDialog } from '@/modules/chat/ui/messages/chat-message-text-dialog';
+import type { useChatReadTracker } from '@/modules/chat/ui/messages/use-chat-read-tracker';
 
 /** A message keeps its DOM identity when grouping changes around it. */
 export const ChatUserMessageRow = memo(function ChatUserMessageRow({

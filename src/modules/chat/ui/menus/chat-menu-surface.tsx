@@ -2,8 +2,8 @@
 
 import type { HTMLAttributes, ReactNode, RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import type { ChatMenuController } from '@/modules/chat/ui/use-chat-menu';
-import { CHAT_MENU_CONTROLS } from '@/modules/chat/ui/use-chat-menu';
+import type { ChatMenuController } from '@/modules/chat/ui/menus/use-chat-menu';
+import { CHAT_MENU_CONTROLS } from '@/modules/chat/ui/menus/use-chat-menu';
 
 export function ChatMenuSurface({
   menu,

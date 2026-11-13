@@ -2,8 +2,8 @@
 
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode, RefCallback } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChatMenuSurface } from '@/modules/chat/ui/chat-menu-surface';
-import { useChatMenu } from '@/modules/chat/ui/use-chat-menu';
+import { ChatMenuSurface } from '@/modules/chat/ui/menus/chat-menu-surface';
+import { useChatMenu } from '@/modules/chat/ui/menus/use-chat-menu';
 
 const LONG_PRESS_DELAY_MS = 550;
 const MOVEMENT_TOLERANCE_PX = 10;

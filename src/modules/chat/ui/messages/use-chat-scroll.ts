@@ -2,7 +2,7 @@
 
 import type { UIEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { finishChatRegrouping } from '@/modules/chat/ui/chat-regroup-motion';
+import { finishChatRegrouping } from '@/modules/chat/ui/messages/chat-regroup-motion';
 
 interface ScrollPosition {
   top: number;

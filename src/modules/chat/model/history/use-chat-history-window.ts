@@ -1,8 +1,8 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { HistoryWindow } from '../lib/chat-history';
-import type { ChatMessage } from './chat-protocol';
-import { messageConversation } from './chat-protocol';
+import type { HistoryWindow } from '../../lib/history/chat-history';
+import type { ChatMessage } from '../chat-protocol';
+import { messageConversation } from '../chat-protocol';
 
 interface Options {
   owner: string;

@@ -4,7 +4,7 @@ import { Hash, MessageCircle, Server, Shield, SlidersHorizontal } from 'lucide-r
 import { useLocale, useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 import { useId, useMemo, useRef, useState } from 'react';
-import type { HistoryLease } from '@/modules/chat/lib/chat-history';
+import type { HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
@@ -15,10 +15,10 @@ import {
   emptyChatSearch,
   matchesChatSearch,
 } from '@/modules/chat/model/chat-search';
-import { useChatHistorySearch } from '@/modules/chat/model/use-chat-history-search';
-import { ChatAuthorAvatar } from '@/modules/chat/ui/chat-author-avatar';
+import { useChatHistorySearch } from '@/modules/chat/model/history/use-chat-history-search';
 import { ChatPanel, ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
-import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
+import { ChatAuthorAvatar } from '@/modules/chat/ui/messages/chat-author-avatar';
+import { useChatMessageContent } from '@/modules/chat/ui/messages/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 const PAGE_SIZE = 30;

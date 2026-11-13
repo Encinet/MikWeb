@@ -15,15 +15,15 @@ import {
   chatTimelineKey,
   chatDayKey as dayKey,
 } from '@/modules/chat/model/chat-timeline';
-import { ChatActivityGroup } from '@/modules/chat/ui/chat-activity-group';
-import type { ChatMessageActionHandlers } from '@/modules/chat/ui/chat-message-actions';
-import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
-import { finishChatRegrouping } from '@/modules/chat/ui/chat-regroup-motion';
-import { ChatScrollActions } from '@/modules/chat/ui/chat-scroll-actions';
-import { ChatUserMessageRow } from '@/modules/chat/ui/chat-user-message';
-import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
-import { useChatReadTracker } from '@/modules/chat/ui/use-chat-read-tracker';
-import type { useChatScroll } from '@/modules/chat/ui/use-chat-scroll';
+import { ChatActivityGroup } from '@/modules/chat/ui/messages/chat-activity-group';
+import type { ChatMessageActionHandlers } from '@/modules/chat/ui/messages/chat-message-actions';
+import { ChatMessageContent } from '@/modules/chat/ui/messages/chat-message-content';
+import { finishChatRegrouping } from '@/modules/chat/ui/messages/chat-regroup-motion';
+import { ChatScrollActions } from '@/modules/chat/ui/messages/chat-scroll-actions';
+import { ChatUserMessageRow } from '@/modules/chat/ui/messages/chat-user-message';
+import { useChatMessageContent } from '@/modules/chat/ui/messages/use-chat-message-content';
+import { useChatReadTracker } from '@/modules/chat/ui/messages/use-chat-read-tracker';
+import type { useChatScroll } from '@/modules/chat/ui/messages/use-chat-scroll';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 const PAGE_SIZE = 100;

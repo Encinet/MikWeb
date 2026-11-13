@@ -8,8 +8,11 @@ import {
   saveChatWorkspace,
   setStaffHistoryPermission,
   syncHistoryAccount,
-} from '@/modules/chat/lib/chat-history';
-import { emptyChatWorkspace, updateChatWorkspace } from '@/modules/chat/model/chat-workspace';
+} from '@/modules/chat/lib/history/chat-history';
+import {
+  emptyChatWorkspace,
+  updateChatWorkspace,
+} from '@/modules/chat/model/workspace/chat-workspace';
 import { OTHER, OWNER, PEER } from './fixtures';
 
 const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');

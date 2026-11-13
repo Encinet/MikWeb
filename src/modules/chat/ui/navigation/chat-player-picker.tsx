@@ -6,7 +6,7 @@ import { useId, useRef } from 'react';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
 import { ChatPanel, ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
-import { ChatPlayerList } from '@/modules/chat/ui/chat-player-list';
+import { ChatPlayerList } from '@/modules/chat/ui/navigation/chat-player-list';
 
 export function ChatPlayerPicker({
   id,

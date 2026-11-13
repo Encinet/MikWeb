@@ -16,18 +16,18 @@ import {
   saveReadPosition,
   setStaffHistoryPermission,
   syncHistoryAccount,
-} from '@/modules/chat/lib/chat-history';
+} from '@/modules/chat/lib/history/chat-history';
 import {
   deleteChatHistoryDatabase,
   openChatHistoryDatabase,
-} from '@/modules/chat/lib/chat-history-database';
-import { searchChatHistory } from '@/modules/chat/lib/chat-history-search';
-import type { HistorySyncPosition } from '@/modules/chat/model/chat-history-sync';
-import { advanceHistorySync } from '@/modules/chat/model/chat-history-sync';
+} from '@/modules/chat/lib/history/chat-history-database';
+import { searchChatHistory } from '@/modules/chat/lib/history/chat-history-search';
 import type { ChatServerEvent } from '@/modules/chat/model/chat-protocol';
 import { chatServerEventSchema } from '@/modules/chat/model/chat-protocol';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import { emptyChatSearch } from '@/modules/chat/model/chat-search';
+import type { HistorySyncPosition } from '@/modules/chat/model/history/chat-history-sync';
+import { advanceHistorySync } from '@/modules/chat/model/history/chat-history-sync';
 import { createBrowserEnvironment } from '../support/browser-environment';
 import { message, OWNER, order } from './fixtures';
 

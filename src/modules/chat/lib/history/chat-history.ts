@@ -1,10 +1,5 @@
-import { openChatHistoryDatabase as openDatabase } from '@/modules/chat/lib/chat-history-database';
-import type {
-  HistoryChannel,
-  HistorySyncPosition,
-  HistorySyncPositions,
-} from '@/modules/chat/model/chat-history-sync';
-import { readHistorySyncPositions } from '@/modules/chat/model/chat-history-sync';
+import { openChatHistoryDatabase as openDatabase } from '@/modules/chat/lib/history/chat-history-database';
+import { historyMessagePlayer } from '@/modules/chat/lib/history/chat-history-player';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import {
   chatMessageSchema,
@@ -21,20 +16,27 @@ import {
   readStoredPositions,
 } from '@/modules/chat/model/chat-reading';
 import type {
+  HistoryChannel,
+  HistorySyncPosition,
+  HistorySyncPositions,
+} from '@/modules/chat/model/history/chat-history-sync';
+import { readHistorySyncPositions } from '@/modules/chat/model/history/chat-history-sync';
+import type {
   ChatWorkspaceMutation,
   ChatWorkspaceState,
-} from '@/modules/chat/model/chat-workspace';
+} from '@/modules/chat/model/workspace/chat-workspace';
 import {
   emptyChatWorkspace,
   readChatWorkspace,
   updateChatWorkspace,
-} from '@/modules/chat/model/chat-workspace';
+} from '@/modules/chat/model/workspace/chat-workspace';
 
 export interface HistoryLease {
   owner: string | null;
   epoch: string;
   persist: boolean;
   clearedThrough?: Partial<Record<HistoryChannel, number>>;
+  clearedPlayersThrough?: Record<string, Partial<Record<HistoryChannel, number>>>;
   workspaceEpoch?: string;
 }
 
@@ -54,7 +56,13 @@ const CHANGE_EVENT = 'mik-chat-history-change';
 
 /** Local deletion is independent of the server's retention deadline. */
 export function historyAllowsMessage(lease: HistoryLease | null, message: ChatMessage): boolean {
-  return message.createdAt > (lease?.clearedThrough?.[message.channel] ?? -1);
+  if (message.createdAt <= (lease?.clearedThrough?.[message.channel] ?? -1)) return false;
+  if (!lease?.owner || !lease.clearedPlayersThrough) return true;
+  const player = historyMessagePlayer(message, lease.owner);
+  return (
+    !player ||
+    message.createdAt > (lease.clearedPlayersThrough[player.uuid]?.[message.channel] ?? -1)
+  );
 }
 
 function range(owner: string, through = Number.MAX_SAFE_INTEGER): IDBKeyRange {
@@ -243,6 +251,20 @@ export async function enableHistory(
 export interface HistoryCleanup {
   channel: HistoryChannel | 'all';
   through: number;
+  /** An omitted list selects everyone; an empty list is invalid. */
+  players?: readonly string[];
+}
+
+export function historyMatchesCleanup(
+  message: ChatMessage,
+  owner: string,
+  cleanup: HistoryCleanup,
+) {
+  if (message.createdAt > cleanup.through) return false;
+  if (cleanup.channel !== 'all' && message.channel !== cleanup.channel) return false;
+  if (!cleanup.players) return true;
+  const player = historyMessagePlayer(message, owner);
+  return Boolean(player && cleanup.players.includes(player.uuid));
 }
 
 function cleanupRange(owner: string, cleanup: HistoryCleanup): IDBKeyRange {
@@ -285,10 +307,20 @@ export async function readHistorySummary(
       total.onsuccess = () => {
         summary.total = total.result;
       };
-      const matching = cleanupIndex(messages, cleanup).count(cleanupRange(owner, cleanup));
-      matching.onsuccess = () => {
-        summary.matching = matching.result;
-      };
+      if (cleanup.players) {
+        const matching = cleanupIndex(messages, cleanup).openCursor(cleanupRange(owner, cleanup));
+        matching.onsuccess = () => {
+          const cursor = matching.result;
+          if (!cursor) return;
+          if (historyMatchesCleanup(cursor.value.message, owner, cleanup)) summary.matching++;
+          cursor.continue();
+        };
+      } else {
+        const matching = cleanupIndex(messages, cleanup).count(cleanupRange(owner, cleanup));
+        matching.onsuccess = () => {
+          summary.matching = matching.result;
+        };
+      }
       const oldest = index.openKeyCursor(range(owner));
       oldest.onsuccess = () => {
         if (oldest.result) summary.oldestAt = (oldest.result.key as [string, number, string])[1];
@@ -305,6 +337,15 @@ export async function clearHistoryThrough(
   const { through, channel } = cleanup;
   if (!Number.isSafeInteger(through) || through < 0 || through > Date.now())
     throw new Error('invalid_history_cutoff');
+  if (
+    !['all', 'public', 'private', 'staff'].includes(channel) ||
+    (cleanup.players &&
+      (!cleanup.players.length ||
+        cleanup.players.some(
+          (uuid) => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(uuid),
+        )))
+  )
+    throw new Error('invalid_history_scope');
   const db = await openDatabase();
   const next = await transaction<HistoryLease | null>(db, 'readwrite', (state, messages, done) => {
     done(null);
@@ -316,25 +357,68 @@ export async function clearHistoryThrough(
         ...previous,
         epoch: crypto.randomUUID(),
         clearedThrough: { ...previous.clearedThrough },
+        clearedPlayersThrough: { ...previous.clearedPlayersThrough },
         workspaceEpoch: chatWorkspaceEpoch(previous) ?? undefined,
         latest: (previous.latest ?? []).filter(
-          (message) =>
-            !(channel === 'all' || message.channel === channel) || message.createdAt > through,
+          (message) => !historyMatchesCleanup(message, owner, cleanup),
         ),
       };
       for (const selected of ['public', 'private', 'staff'] as const) {
-        if (channel === 'all' || channel === selected)
+        if (channel !== 'all' && channel !== selected) continue;
+        if (cleanup.players) {
+          for (const player of cleanup.players)
+            next.clearedPlayersThrough[player] = {
+              ...next.clearedPlayersThrough[player],
+              [selected]: Math.max(next.clearedPlayersThrough[player]?.[selected] ?? -1, through),
+            };
+        } else
           next.clearedThrough[selected] = Math.max(
             previous.clearedThrough?.[selected] ?? -1,
             through,
           );
       }
       state.put(next, 'current');
-      const request = cleanupIndex(messages, cleanup).openKeyCursor(cleanupRange(owner, cleanup));
+      const request = cleanupIndex(messages, cleanup).openCursor(cleanupRange(owner, cleanup));
       request.onsuccess = () => {
         const cursor = request.result;
-        if (!cursor) return;
-        messages.delete(cursor.primaryKey);
+        if (!cursor) {
+          if (!cleanup.players) return;
+          // A player's message may have supplied a channel's preview. Recover the latest survivor.
+          const affected = (previous.latest ?? []).filter((message) =>
+            historyMatchesCleanup(message, owner, cleanup),
+          );
+          let pending = affected.length;
+          const complete = () => {
+            if (--pending === 0) state.put(next, 'current');
+          };
+          for (const message of affected) {
+            const conversation = messageConversation(message, owner);
+            const latest = messages
+              .index('conversationOrder')
+              .openCursor(
+                IDBKeyRange.bound([owner, conversation, ''], [owner, conversation, '\uffff']),
+                'prev',
+              );
+            latest.onsuccess = () => {
+              const candidate = latest.result;
+              if (!candidate) {
+                complete();
+                return;
+              }
+              const parsed = chatMessageSchema.safeParse(candidate.value.message);
+              if (
+                parsed.success &&
+                historyAllowsMessage(next, parsed.data) &&
+                mayReadMessage(parsed.data, owner, next.staff)
+              ) {
+                next.latest.push(parsed.data);
+                complete();
+              } else candidate.continue();
+            };
+          }
+          return;
+        }
+        if (historyMatchesCleanup(cursor.value.message, owner, cleanup)) cursor.delete();
         cursor.continue();
       };
       done(next);

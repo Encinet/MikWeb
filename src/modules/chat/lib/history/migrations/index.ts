@@ -1,11 +1,11 @@
 import {
-  hasLegacyChatHistorySchema,
-  upgradeLegacyChatHistory,
-} from '@/modules/chat/lib/chat-history-migrations/legacy';
-import {
   createChatHistorySchema,
   hasChatHistorySchema,
-} from '@/modules/chat/lib/chat-history-schema';
+} from '@/modules/chat/lib/history/chat-history-schema';
+import {
+  hasLegacyChatHistorySchema,
+  upgradeLegacyChatHistory,
+} from '@/modules/chat/lib/history/migrations/legacy';
 
 /** The sole upgrade entry point. Normal reads and writes only use the active schema. */
 export function migrateChatHistoryDatabase(

@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
-import type { ChatWorkspaceMutation } from '@/modules/chat/model/chat-workspace';
-import { emptyChatWorkspace, updateChatWorkspace } from '@/modules/chat/model/chat-workspace';
-import { appendWorkspaceMutation } from '@/modules/chat/model/chat-workspace-queue';
+import type { ChatWorkspaceMutation } from '@/modules/chat/model/workspace/chat-workspace';
+import {
+  emptyChatWorkspace,
+  updateChatWorkspace,
+} from '@/modules/chat/model/workspace/chat-workspace';
+import { appendWorkspaceMutation } from '@/modules/chat/model/workspace/chat-workspace-queue';
 import { message, order, PEER } from './fixtures';
 
 test('a prolonged failure queues the latest draft and preserves independent preferences and thread operations', () => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { hasStoredChatHistory } from '@/modules/chat/lib/chat-history-presence';
+import { hasStoredChatHistory } from '@/modules/chat/lib/history/chat-history-presence';
 
 test('fresh visitors skip history code while existing stores and enumeration failures retain account cleanup', async () => {
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB');

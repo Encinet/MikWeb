@@ -1,23 +1,23 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { HistoryLease } from '@/modules/chat/lib/chat-history';
+import type { HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import {
   chatWorkspaceEpoch,
   loadChatWorkspace,
   onWorkspaceChange,
   saveChatWorkspace,
-} from '@/modules/chat/lib/chat-history';
+} from '@/modules/chat/lib/history/chat-history';
 import type {
   ChatWorkspaceMutation,
   ChatWorkspaceState,
-} from '@/modules/chat/model/chat-workspace';
+} from '@/modules/chat/model/workspace/chat-workspace';
 import {
   emptyChatWorkspace,
   readChatWorkspace,
   updateChatWorkspace,
-} from '@/modules/chat/model/chat-workspace';
-import { appendWorkspaceMutation } from '@/modules/chat/model/chat-workspace-queue';
+} from '@/modules/chat/model/workspace/chat-workspace';
+import { appendWorkspaceMutation } from '@/modules/chat/model/workspace/chat-workspace-queue';
 
 interface WorkspaceWrite {
   lease: HistoryLease;

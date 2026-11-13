@@ -4,7 +4,7 @@ import { ExternalLink, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useRef, useState } from 'react';
 import type { ChatCoordinates } from '@/modules/chat/lib/chat-coordinates';
-import { ChatActionMenu } from '@/modules/chat/ui/chat-action-menu';
+import { ChatActionMenu } from '@/modules/chat/ui/menus/chat-action-menu';
 import { loadMapWorlds } from '@/modules/map/lib/load-map-worlds';
 import type { MapWorld } from '@/modules/map/model/map-world';
 import { coordinateMapWorld, mapPositionUrl } from '@/modules/map/model/map-world';

@@ -8,8 +8,8 @@ import type { ChatInputHistoryEntry } from '@/modules/chat/model/chat-input-hist
 import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/modules/chat/model/chat-protocol';
 import type { useChatNotifications } from '@/modules/chat/model/use-chat-notifications';
-import { ChatMentionInput } from '@/modules/chat/ui/chat-mention-input';
-import { ChatNotificationSuggestion } from '@/modules/chat/ui/chat-notification-suggestion';
+import { ChatMentionInput } from '@/modules/chat/ui/composer/chat-mention-input';
+import { ChatNotificationSuggestion } from '@/modules/chat/ui/feedback/chat-notification-suggestion';
 
 export function ChatComposer({
   title,

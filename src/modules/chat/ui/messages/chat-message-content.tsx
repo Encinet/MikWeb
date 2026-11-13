@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { Fragment } from 'react';
 import { findChatCoordinates } from '@/modules/chat/lib/chat-coordinates';
 import type { ChatContent, ChatStyle } from '@/modules/chat/model/chat-protocol';
-import { ChatCoordinate } from '@/modules/chat/ui/chat-coordinate';
+import { ChatCoordinate } from '@/modules/chat/ui/messages/chat-coordinate';
 
 /** Fixed CSS properties, RGB integers and decoration flags; never accept CSS from a message. */
 function textStyle(style: ChatStyle): CSSProperties {

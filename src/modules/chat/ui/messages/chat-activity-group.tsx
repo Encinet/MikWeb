@@ -4,8 +4,8 @@ import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment } from 'react';
 import type { ChatServerMessage } from '@/modules/chat/model/chat-protocol';
-import { ChatMessageContent } from '@/modules/chat/ui/chat-message-content';
-import { useChatMessageContent } from '@/modules/chat/ui/use-chat-message-content';
+import { ChatMessageContent } from '@/modules/chat/ui/messages/chat-message-content';
+import { useChatMessageContent } from '@/modules/chat/ui/messages/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 interface ActivityPlayer {

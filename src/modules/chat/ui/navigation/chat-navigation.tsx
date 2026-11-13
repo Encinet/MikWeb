@@ -6,8 +6,8 @@ import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 
 import type { ChatUnread } from '@/modules/chat/model/chat-reading';
-import type { ChatThread, ChatWorkspaceState } from '@/modules/chat/model/chat-workspace';
-import { ChatContextMenu } from '@/modules/chat/ui/chat-context-menu';
+import type { ChatThread, ChatWorkspaceState } from '@/modules/chat/model/workspace/chat-workspace';
+import { ChatContextMenu } from '@/modules/chat/ui/menus/chat-context-menu';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 export function ChatNavigation({

@@ -5,7 +5,7 @@ import { Window } from 'happy-dom';
 import { act } from 'react';
 import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
-import type { HistoryLease } from '@/modules/chat/lib/chat-history';
+import type { HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import {
   clearHistoryThrough,
   loadChatWorkspace,
@@ -13,8 +13,8 @@ import {
   saveChatWorkspace,
   setStaffHistoryPermission,
   syncHistoryAccount,
-} from '@/modules/chat/lib/chat-history';
-import { useChatWorkspace } from '@/modules/chat/model/use-chat-workspace';
+} from '@/modules/chat/lib/history/chat-history';
+import { useChatWorkspace } from '@/modules/chat/model/workspace/use-chat-workspace';
 import { OWNER, PEER } from './fixtures';
 
 let environment: Window;

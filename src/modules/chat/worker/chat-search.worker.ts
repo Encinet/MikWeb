@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
-import type { HistorySearchQuery } from '../lib/chat-history-search';
-import { searchChatHistory } from '../lib/chat-history-search';
+import type { HistorySearchQuery } from '../lib/history/chat-history-search';
+import { searchChatHistory } from '../lib/history/chat-history-search';
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 let generation = 0;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import { NextIntlClientProvider } from 'next-intl';
 import { act, useState } from 'react';
-import type { HistoryCleanup, HistoryLease } from '@/modules/chat/lib/chat-history';
+import type { HistoryCleanup, HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import {
   clearHistoryThrough,
   enableHistory,
@@ -14,10 +14,10 @@ import {
   saveHistory,
   setStaffHistoryPermission,
   syncHistoryAccount,
-} from '@/modules/chat/lib/chat-history';
-import { deleteChatHistoryDatabase } from '@/modules/chat/lib/chat-history-database';
-import { emptyChatWorkspace } from '@/modules/chat/model/chat-workspace';
-import { ChatSettings } from '@/modules/chat/ui/chat-settings';
+} from '@/modules/chat/lib/history/chat-history';
+import { deleteChatHistoryDatabase } from '@/modules/chat/lib/history/chat-history-database';
+import { emptyChatWorkspace } from '@/modules/chat/model/workspace/chat-workspace';
+import { ChatSettings } from '@/modules/chat/ui/settings/chat-settings';
 import translations from '../../messages/en.json';
 import { createBrowserEnvironment } from '../support/browser-environment';
 import { message, OWNER, order, PEER } from './fixtures';
@@ -103,7 +103,7 @@ function button(text: string) {
 }
 async function openDataManager() {
   await act(async () => {
-    document.querySelector('summary')?.click();
+    button('Local History').click();
   });
   await until(() => document.body.textContent?.includes('4 saved messages') === true);
 }
@@ -178,7 +178,7 @@ test('settings preview type and date filters, focus cancellation, and clear only
   await act(async () => button('Clear Messages').click());
   await until(() => document.body.textContent?.includes('Local chat data cleared.') === true);
   await until(() => document.body.textContent?.includes('3 saved messages') === true);
-  assert.equal(document.activeElement, document.querySelector('summary'));
+  assert.equal(document.activeElement, document.querySelector('.chat-history-settings h3'));
   assert.equal(cleanups[0].channel, 'private');
   assert.ok(Date.now() - cleanups[0].through >= 90 * 86_400_000);
   assert.deepEqual(
@@ -214,7 +214,7 @@ test('clearing all history removes messages, drafts, and conversations while kee
   assert.equal(workspace?.preferences.density, 'compact');
   assert.equal(active.persist, true);
   assert.deepEqual(persistenceChanges, []);
-  assert.equal(document.activeElement, document.querySelector('summary'));
+  assert.equal(document.activeElement, document.querySelector('.chat-history-settings h3'));
 });
 
 test('turning off saving requires its own confirmation, preserves data on cancel, and can be enabled again', async () => {
@@ -277,17 +277,17 @@ test('failed cleanup preserves records and confirmation for retry, while all-tim
   );
 });
 
-test('data management starts collapsed and statistics failures offer an inline retry', async () => {
+test('history statistics load only in their category and failures offer an inline retry', async () => {
   assert.equal(document.querySelectorAll('select').length, 0);
-  assert.equal(document.querySelector('details')?.open, false);
-  const original = IDBIndex.prototype.count;
+  assert.equal(button('Appearance').getAttribute('aria-selected'), 'true');
+  const original = IDBIndex.prototype.openCursor;
   let fail = true;
-  IDBIndex.prototype.count = function (query) {
+  IDBIndex.prototype.openCursor = function (query) {
     if (fail) throw new Error('Statistics unavailable');
     return original.call(this, query);
   };
   try {
-    await act(async () => document.querySelector('summary')?.click());
+    await act(async () => button('Local History').click());
     await until(() => document.body.textContent?.includes('Statistics are unavailable.') === true);
     assert.equal(document.body.textContent?.includes('Counting local records'), false);
     assert.equal(cleanups.length, 0);
@@ -296,7 +296,7 @@ test('data management starts collapsed and statistics failures offer an inline r
     await until(() => document.body.textContent?.includes('4 saved messages') === true);
     assert.equal(document.querySelectorAll('select').length, 2);
   } finally {
-    IDBIndex.prototype.count = original;
+    IDBIndex.prototype.openCursor = original;
   }
 });
 
@@ -325,7 +325,7 @@ test('a permission change cannot broaden a confirmed cleanup and Escape cancels 
     ]),
   );
   assert.equal(document.querySelector('dialog'), null);
-  assert.equal(document.querySelector('details')?.open, true);
+  assert.equal(button('Local History').getAttribute('aria-selected'), 'true');
   assert.equal(cleanups.length, 1);
 });
 
@@ -361,7 +361,7 @@ test('cleanup cannot be submitted twice or dismissed while its write is pending'
 test('unavailable storage explains disabled controls without a perpetual loading state', async () => {
   available = false;
   await act(async () => browser.root.render(<Harness />));
-  await act(async () => document.querySelector('summary')?.click());
+  await act(async () => button('Local History').click());
   await until(
     () =>
       document
@@ -386,6 +386,93 @@ test('empty selections explain the disabled action and clearing all messages lea
     () => document.body.textContent?.includes('No messages are saved in this browser.') === true,
   );
   assert.equal(document.querySelectorAll('select').length, 0);
-  assert.equal(document.activeElement, document.querySelector('summary'));
+  assert.equal(document.activeElement, document.querySelector('.chat-history-settings h3'));
   assert.equal((await loadChatWorkspace(active))?.drafts.public.text, 'Keep draft');
+});
+
+test('category navigation supports keyboard selection and preserves history filters across categories', async () => {
+  await act(async () => {
+    button('Appearance').focus();
+    Reflect.apply(button('Appearance').dispatchEvent, button('Appearance'), [
+      new browser.window.KeyboardEvent('keydown', { key: 'End', bubbles: true }),
+    ]);
+  });
+  await until(() => document.body.textContent?.includes('4 saved messages') === true);
+  assert.equal(document.activeElement, button('Local History'));
+  assert.equal(button('Local History').getAttribute('aria-selected'), 'true');
+  await select(0, 'private');
+  await act(async () => button('Notifications').click());
+  assert.equal(
+    document.querySelector('[role="tabpanel"]:not([hidden])')?.getAttribute('aria-labelledby'),
+    button('Notifications').id,
+  );
+  await act(async () => button('Local History').click());
+  await until(() => document.body.textContent?.includes('1 match') === true);
+  assert.equal(document.querySelector<HTMLSelectElement>('select')?.value, 'private');
+});
+
+test('player selection is explicit, previews size without another database scan, and confirms a frozen player scope', async () => {
+  await openDataManager();
+  const original = IDBIndex.prototype.openCursor;
+  let scans = 0;
+  IDBIndex.prototype.openCursor = function (...args) {
+    scans++;
+    return Reflect.apply(original, this, args);
+  };
+  try {
+    await act(async () =>
+      document.querySelector<HTMLInputElement>('input[type="radio"][value="players"]')?.click(),
+    );
+    assert.equal(button('Clear…').disabled, true);
+    assert.ok(
+      document.body.textContent?.includes('Select players whose records you want to clear.'),
+    );
+    const avatar = document.querySelector<HTMLImageElement>('.chat-player-record__avatar img');
+    assert.ok(avatar);
+    assert.ok(avatar.src.includes(PEER.replaceAll('-', '')));
+    assert.equal(avatar.getAttribute('width'), '32');
+    await act(async () =>
+      document.querySelector<HTMLInputElement>('.chat-player-record input')?.click(),
+    );
+    await select(1, '0');
+    assert.ok(document.body.textContent?.includes('4 matches'));
+    assert.match(
+      document.querySelector('.chat-data-preview')?.textContent ?? '',
+      /Estimated .* of all message data/,
+    );
+    assert.equal(scans, 0);
+    await act(async () => button('Clear…').click());
+    assert.match(document.querySelector('.chat-cleanup-scope')?.textContent ?? '', /Alex/);
+    await act(async () => button('Cancel').click());
+    await act(async () => button('Deselect all').click());
+    assert.equal(button('Clear…').disabled, true);
+    assert.equal(
+      document.querySelector<HTMLInputElement>('input[type="radio"][value="players"]')?.checked,
+      true,
+    );
+    await act(async () => button('Select all').click());
+    await act(async () => button('Clear…').click());
+    await act(async () => button('Clear Messages').click());
+    await until(
+      () =>
+        document.querySelector('dialog') === null &&
+        document.body.textContent?.includes('No messages are saved in this browser.') === true,
+    );
+    assert.deepEqual(cleanups[0].players, [PEER]);
+    assert.deepEqual((await loadHistory(active)).messages, []);
+    assert.equal((await loadChatWorkspace(active))?.drafts.public.text, 'Keep draft');
+  } finally {
+    IDBIndex.prototype.openCursor = original;
+  }
+});
+
+test('a pending optional site estimate does not block message statistics or cleanup', async () => {
+  Object.defineProperty(navigator, 'storage', {
+    configurable: true,
+    value: { estimate: () => new Promise(() => {}) },
+  });
+  await openDataManager();
+  assert.equal(button('Clear…').disabled, false);
+  assert.ok(document.querySelector('.chat-storage-breakdown'));
+  assert.equal(document.querySelector('.chat-storage-quota'), null);
 });

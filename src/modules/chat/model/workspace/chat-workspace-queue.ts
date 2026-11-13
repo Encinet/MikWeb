@@ -1,5 +1,8 @@
 import { destinationKey } from '@/modules/chat/model/chat-destination';
-import type { ChatPreferences, ChatWorkspaceMutation } from '@/modules/chat/model/chat-workspace';
+import type {
+  ChatPreferences,
+  ChatWorkspaceMutation,
+} from '@/modules/chat/model/workspace/chat-workspace';
 
 function mutationKey(mutation: ChatWorkspaceMutation): string {
   if (mutation.type === 'preferences') return 'preferences';

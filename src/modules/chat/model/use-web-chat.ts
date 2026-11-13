@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { isStaffRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import type { HistoryCleanup, HistoryLease } from '@/modules/chat/lib/chat-history';
+import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
+import type { HistoryCleanup, HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import {
   announceHistoryChange,
   clearHistoryThrough,
@@ -20,15 +21,12 @@ import {
   saveReadPosition,
   setStaffHistoryPermission,
   syncHistoryAccount,
-} from '@/modules/chat/lib/chat-history';
-import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
+} from '@/modules/chat/lib/history/chat-history';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
 import { isTerminalChatClose } from '@/modules/chat/model/chat-connection';
 import type { PendingChatMessage } from '@/modules/chat/model/chat-delivery';
 import { acceptChatDelivery, unconfirmedChatDeliveries } from '@/modules/chat/model/chat-delivery';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
-import { ChatHistoryRunner } from '@/modules/chat/model/chat-history-runner';
-import type { HistoryChannel, HistorySyncPositions } from '@/modules/chat/model/chat-history-sync';
 import type {
   ChatAccess,
   ChatMessage,
@@ -52,7 +50,12 @@ import {
   messageCursor,
   unreadMessages,
 } from '@/modules/chat/model/chat-reading';
-import type { ChatWorkspaceState } from '@/modules/chat/model/chat-workspace';
+import { ChatHistoryRunner } from '@/modules/chat/model/history/chat-history-runner';
+import type {
+  HistoryChannel,
+  HistorySyncPositions,
+} from '@/modules/chat/model/history/chat-history-sync';
+import type { ChatWorkspaceState } from '@/modules/chat/model/workspace/chat-workspace';
 
 const EMPTY_PRESENCE: ChatPresence = { players: [], staffPlayers: [] };
 

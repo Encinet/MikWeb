@@ -3,17 +3,17 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import { act } from 'react';
 import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
-import { loadHistory } from '@/modules/chat/lib/chat-history';
-import {
-  deleteChatHistoryDatabase,
-  openChatHistoryDatabase,
-} from '@/modules/chat/lib/chat-history-database';
 import type {
   ChatHistoryPage,
   ChatHistoryQuery,
   ChatSessionTransport,
 } from '@/modules/chat/lib/connection/chat-session';
 import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
+import { loadHistory } from '@/modules/chat/lib/history/chat-history';
+import {
+  deleteChatHistoryDatabase,
+  openChatHistoryDatabase,
+} from '@/modules/chat/lib/history/chat-history-database';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { useWebChat } from '@/modules/chat/model/use-web-chat';
 import { createBrowserEnvironment } from '../support/browser-environment';
