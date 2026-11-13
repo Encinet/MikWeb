@@ -1,11 +1,34 @@
 ---
 title: In-Game Operations
-description: Incident investigation and recovery, inventory checks, admission links, voice moderation, player records, and account security
+description: Player monitoring, incident investigation and recovery, inventory checks, admission links, voice moderation, player records, and account security
 order: 80
 icon: Shield
 ---
 
 Sneak and press Swap Item With Offhand (default `Shift + F`) to open the main menu.
+
+## Player Monitoring
+
+Monitoring switches you to Spectator mode, follows the target with a third-person camera, and shows their name in the action bar.
+
+| Usage | Action |
+| --- | --- |
+| `/monitor` | Start random rotation, or exit if already monitoring |
+| `/monitor <player>` | Watch one player continuously; switching targets keeps your original return location |
+| `/monitor stop` | Exit monitoring |
+
+Random rotation changes targets every 30 seconds and visits each eligible player once per round. It avoids consecutive repeats when another target is available. Watching a named player disables automatic rotation and allows you to inspect AFK players.
+
+Your in-world entity is hidden from ordinary players, including ordinary spectators. They cannot locate you through `/tp`, `/teleport`, or the native spectator menu. Your normal online entry remains in Tab; only staff see the localized `[Monitor]` / `[监控]` marker after your name. Monitoring players are also excluded from nearby invisibility notifications.
+
+<Details title="Rotation, AFK, and Exit Rules">
+
+- Random rotation excludes yourself, other monitoring staff, spectators, dead or offline players, and players you cannot see. An AFK player is skipped only after at least 3 minutes without valid input; repeatedly using `/afk` does not grant an immediate exemption.
+- Random rotation selects another player when its target becomes unavailable, or waits if no eligible players remain. A fixed target becoming unavailable makes monitoring wait for the same account to return; it does not switch to someone else.
+- Monitoring suspends automatic AFK and excludes you from activity rewards. Camera movement does not refresh activity clocks. Starting monitoring while AFK removes AFK protection; manually using `/afk` during monitoring ends the session and retains the AFK state.
+- A successful exit restores your original location, game mode, and flight state. AFK checks resume using your existing activity history. Monitoring movement does not enter `/back` history. If the return fails, monitoring remains active; retry with `/monitor stop`.
+
+</Details>
 
 ## Investigation and Recovery
 
