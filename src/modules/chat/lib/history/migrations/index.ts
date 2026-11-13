@@ -1,7 +1,8 @@
+import { createChatHistorySchema } from '@/modules/chat/lib/history/chat-history-schema';
 import {
-  createChatHistorySchema,
-  hasChatHistorySchema,
-} from '@/modules/chat/lib/history/chat-history-schema';
+  compactChatHistory,
+  hasOrderedChatHistorySchema,
+} from '@/modules/chat/lib/history/migrations/compact';
 import {
   hasLegacyChatHistorySchema,
   upgradeLegacyChatHistory,
@@ -17,11 +18,15 @@ export function migrateChatHistoryDatabase(
     createChatHistorySchema(db, tx);
     return;
   }
-  // v1 already uses the order protocol; only its database version needs correcting.
-  if (oldVersion === 1 && hasChatHistorySchema(db, tx)) return;
+  if ([1, 5].includes(oldVersion) && hasOrderedChatHistorySchema(db, tx)) {
+    compactChatHistory(tx, () => createChatHistorySchema(db, tx));
+    return;
+  }
   if ([2, 3, 4].includes(oldVersion) && hasLegacyChatHistorySchema(db, tx, oldVersion)) {
     // Keep the sequence index alive until its cursor finishes converting every record.
-    upgradeLegacyChatHistory(tx, () => createChatHistorySchema(db, tx));
+    upgradeLegacyChatHistory(tx, () =>
+      compactChatHistory(tx, () => createChatHistorySchema(db, tx)),
+    );
     return;
   }
   throw new Error('history_schema_unavailable');

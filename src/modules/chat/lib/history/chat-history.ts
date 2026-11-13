@@ -1,9 +1,13 @@
+import {
+  decodeMessageData,
+  encodeMessageData,
+  readStoredMessage,
+  storedMessage,
+} from '@/modules/chat/lib/history/chat-history-codec';
 import { openChatHistoryDatabase as openDatabase } from '@/modules/chat/lib/history/chat-history-database';
 import { historyMessagePlayer } from '@/modules/chat/lib/history/chat-history-player';
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import {
-  chatMessageSchema,
-  countsAsUnread,
   isPassiveMessage,
   mayReadMessage,
   messageConversation,
@@ -69,21 +73,6 @@ function range(owner: string, through = Number.MAX_SAFE_INTEGER): IDBKeyRange {
   return IDBKeyRange.bound([owner, 0, ''], [owner, through, '\uffff']);
 }
 
-function storedMessage(owner: string, message: ChatMessage, historical = false) {
-  return {
-    key: `${owner}:${message.id}`,
-    owner,
-    createdAt: message.createdAt,
-    order: message.order,
-    bucket: isPassiveMessage(message) ? 'activity' : 'conversation',
-    channel: message.channel,
-    conversation: messageConversation(message, owner),
-    unread: !historical && countsAsUnread(message, owner) ? 1 : 0,
-    message,
-    historical,
-  };
-}
-
 interface StoredState extends HistoryLease {
   staff: boolean;
   readPositions: ChatReadPositions;
@@ -104,12 +93,16 @@ function readState(value: unknown): StoredState | null {
         readPositions: readStoredPositions(candidate.readPositions),
         latest: Array.isArray(candidate.latest)
           ? candidate.latest.flatMap((message) => {
-              const parsed = chatMessageSchema.safeParse(message);
-              return parsed.success ? [parsed.data] : [];
+              const parsed = decodeMessageData(message);
+              return parsed ? [parsed] : [];
             })
           : [],
       }
     : null;
+}
+
+function writeState(store: IDBObjectStore, state: StoredState) {
+  store.put({ ...state, latest: (state.latest ?? []).map(encodeMessageData) }, 'current');
 }
 
 function transaction<T>(
@@ -153,7 +146,7 @@ export async function syncHistoryAccount(
           staff: false,
           readPositions: new Map(),
         };
-        state.put(lease, 'current');
+        writeState(state, lease);
       }
       done(lease);
     };
@@ -202,7 +195,7 @@ export async function resetHistory(owner: string, persist?: false): Promise<Hist
           readChatWorkspace(previous.workspace, previous.staff).preferences,
         ),
       };
-      state.put(next, 'current');
+      writeState(state, next);
       messages.clear();
       done(next);
     };
@@ -235,7 +228,7 @@ export async function enableHistory(
         workspace: readChatWorkspace(workspace ?? previous.workspace, previous.staff),
       };
       if (!next.staff) next.readPositions.delete('staff');
-      state.put(next, 'current');
+      writeState(state, next);
       for (const message of records) {
         if (!historyAllowsMessage(next, message) || !mayReadMessage(message, owner, next.staff))
           continue;
@@ -312,7 +305,8 @@ export async function readHistorySummary(
         matching.onsuccess = () => {
           const cursor = matching.result;
           if (!cursor) return;
-          if (historyMatchesCleanup(cursor.value.message, owner, cleanup)) summary.matching++;
+          const message = readStoredMessage(cursor.value);
+          if (message && historyMatchesCleanup(message, owner, cleanup)) summary.matching++;
           cursor.continue();
         };
       } else {
@@ -377,7 +371,7 @@ export async function clearHistoryThrough(
             through,
           );
       }
-      state.put(next, 'current');
+      writeState(state, next);
       const request = cleanupIndex(messages, cleanup).openCursor(cleanupRange(owner, cleanup));
       request.onsuccess = () => {
         const cursor = request.result;
@@ -389,7 +383,7 @@ export async function clearHistoryThrough(
           );
           let pending = affected.length;
           const complete = () => {
-            if (--pending === 0) state.put(next, 'current');
+            if (--pending === 0) writeState(state, next);
           };
           for (const message of affected) {
             const conversation = messageConversation(message, owner);
@@ -405,20 +399,21 @@ export async function clearHistoryThrough(
                 complete();
                 return;
               }
-              const parsed = chatMessageSchema.safeParse(candidate.value.message);
+              const parsed = readStoredMessage(candidate.value);
               if (
-                parsed.success &&
-                historyAllowsMessage(next, parsed.data) &&
-                mayReadMessage(parsed.data, owner, next.staff)
+                parsed &&
+                historyAllowsMessage(next, parsed) &&
+                mayReadMessage(parsed, owner, next.staff)
               ) {
-                next.latest.push(parsed.data);
+                next.latest.push(parsed);
                 complete();
               } else candidate.continue();
             };
           }
           return;
         }
-        if (historyMatchesCleanup(cursor.value.message, owner, cleanup)) cursor.delete();
+        const message = readStoredMessage(cursor.value);
+        if (message && historyMatchesCleanup(message, owner, cleanup)) cursor.delete();
         cursor.continue();
       };
       done(next);
@@ -485,7 +480,7 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
           if (value.count) snapshot.unread.set(key, value);
         };
         first.onsuccess = () => {
-          if (first.result) value.firstId = first.result.value.message.id;
+          if (first.result) value.firstId = readStoredMessage(first.result.value)?.id ?? '';
         };
       }
       const request = messages
@@ -506,33 +501,29 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
               active.readPositions.has(key) ? (active.readPositions.get(key) ?? null) : latest,
             );
           }
-          state.put(
-            {
-              ...active,
-              readPositions: new Map([...active.readPositions, ...snapshot.readPositions]),
-              syncPositions: snapshot.syncPositions,
-            },
-            'current',
-          );
+          writeState(state, {
+            ...active,
+            readPositions: new Map([...active.readPositions, ...snapshot.readPositions]),
+            syncPositions: snapshot.syncPositions,
+          });
           return;
         }
         const record = cursor.value as {
           owner?: unknown;
-          message?: unknown;
           historical?: boolean;
         };
-        const parsed = chatMessageSchema.safeParse(record.message);
+        const parsed = readStoredMessage(record);
         if (
           record.owner !== owner ||
-          !parsed.success ||
-          !historyAllowsMessage(active, parsed.data) ||
-          !mayReadMessage(parsed.data, owner, active.staff)
+          !parsed ||
+          !historyAllowsMessage(active, parsed) ||
+          !mayReadMessage(parsed, owner, active.staff)
         ) {
-          if (!parsed.success) snapshot.syncPositions = {};
+          if (!parsed) snapshot.syncPositions = {};
           cursor.delete();
         } else {
-          result.push(parsed.data);
-          if (record.historical) snapshot.historicalIds.add(parsed.data.id);
+          result.push(parsed);
+          if (record.historical) snapshot.historicalIds.add(parsed.id);
         }
         cursor.continue();
       };
@@ -562,10 +553,11 @@ export async function saveHistory(lease: HistoryLease, message: ChatMessage): Pr
       const positions = !isPassiveMessage(message)
         ? advanceReadPosition(active.readPositions, key, null)
         : active.readPositions;
-      state.put(
-        { ...active, latest: trackLatest(active, [message]), readPositions: positions },
-        'current',
-      );
+      writeState(state, {
+        ...active,
+        latest: trackLatest(active, [message]),
+        readPositions: positions,
+      });
     };
   });
 }
@@ -614,14 +606,11 @@ export async function saveHistorySync(
           messages.put(storedMessage(owner, message, !wasLive && historicalIds.has(message.id)));
         };
       }
-      state.put(
-        {
-          ...active,
-          latest: trackLatest(active, records),
-          syncPositions: { ...positions, [channel]: next },
-        },
-        'current',
-      );
+      writeState(state, {
+        ...active,
+        latest: trackLatest(active, records),
+        syncPositions: { ...positions, [channel]: next },
+      });
       done('saved');
     };
   });
@@ -650,7 +639,7 @@ export async function saveReadPosition(
         return;
       const positions = advanceReadPosition(active.readPositions, conversation, cursor);
       if (positions !== active.readPositions) {
-        state.put({ ...active, readPositions: positions }, 'current');
+        writeState(state, { ...active, readPositions: positions });
         done(true);
       }
     };
@@ -670,24 +659,26 @@ export async function setStaffHistoryPermission(owner: string, allowed: boolean)
       if (!active || active.owner !== owner) return;
       if (active.staff === allowed) return;
       if (!allowed) active.readPositions.delete('staff');
-      state.put(
-        {
-          ...active,
-          syncPositions: { ...readHistorySyncPositions(active.syncPositions), staff: undefined },
-          staff: allowed,
-          latest: (active.latest ?? []).filter((message) => allowed || message.channel !== 'staff'),
-          workspace: readChatWorkspace(active.workspace, allowed),
-        },
-        'current',
-      );
+      writeState(state, {
+        ...active,
+        syncPositions: { ...readHistorySyncPositions(active.syncPositions), staff: undefined },
+        staff: allowed,
+        latest: (active.latest ?? []).filter((message) => allowed || message.channel !== 'staff'),
+        workspace: readChatWorkspace(active.workspace, allowed),
+      });
       if (allowed) return;
-      const request = messages.index('ownerTime').openCursor(range(owner));
+      const request = messages
+        .index('ownerChannelTime')
+        .openCursor(
+          IDBKeyRange.bound(
+            [owner, 'staff', 0, ''],
+            [owner, 'staff', Number.MAX_SAFE_INTEGER, '\uffff'],
+          ),
+        );
       request.onsuccess = () => {
         const cursor = request.result;
         if (!cursor) return;
-        if ((cursor.value as { message?: { channel?: string } }).message?.channel === 'staff') {
-          cursor.delete();
-        }
+        cursor.delete();
         cursor.continue();
       };
     };
@@ -733,7 +724,7 @@ export async function saveChatWorkspace(
       );
       workspace = readChatWorkspace(workspace, active.staff);
       if (!active.persist) workspace = emptyChatWorkspace(workspace.preferences);
-      state.put({ ...active, workspace }, 'current');
+      writeState(state, { ...active, workspace });
     };
   });
   announceWorkspaceChange();
@@ -866,7 +857,7 @@ export async function readUnreadSummary(
         if (result.count) done(result);
       };
       first.onsuccess = () => {
-        if (first.result) result.firstId = first.result.value.message.id;
+        if (first.result) result.firstId = readStoredMessage(first.result.value)?.id ?? '';
       };
     };
   });
@@ -900,18 +891,18 @@ async function readWindow(
         (conversation === 'staff' && !active.staff)
       )
         return;
-      const accept = (record: { message: unknown; historical?: boolean }) => {
-        const parsed = chatMessageSchema.safeParse(record.message);
+      const accept = (record: { historical?: boolean }) => {
+        const parsed = readStoredMessage(record);
         if (
-          !parsed.success ||
-          !mayReadMessage(parsed.data, owner, active.staff) ||
-          !historyAllowsMessage(active, parsed.data) ||
-          (conversation && messageConversation(parsed.data, owner) !== conversation)
+          !parsed ||
+          !mayReadMessage(parsed, owner, active.staff) ||
+          !historyAllowsMessage(active, parsed) ||
+          (conversation && messageConversation(parsed, owner) !== conversation)
         )
           return null;
-        result.messages.push(parsed.data);
-        if (record.historical) result.historicalIds.add(parsed.data.id);
-        return parsed.data;
+        result.messages.push(parsed);
+        if (record.historical) result.historicalIds.add(parsed.id);
+        return parsed;
       };
       const scan = (upper?: string) => {
         const prefix = conversation ? [owner, conversation] : [owner];

@@ -714,7 +714,7 @@
       "estimatedSize": "Estimated message data",
       "channelUsage": "Share of message data by channel",
       "messageCount": "{count, plural, one {# message} other {# messages}}",
-      "sizeNote": "Estimated from message content, excluding indexes, drafts, and caches.",
+      "sizeNote": "Estimated from the local storage format, excluding indexes, drafts, and caches.",
       "siteStorage": "Total site storage",
       "siteUsage": "{used} / {quota} ({percent})",
       "siteStorageNote": "Includes other site caches. Usage and quota are browser estimates.",

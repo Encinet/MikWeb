@@ -8,10 +8,12 @@ import {
   saveHistory,
   syncHistoryAccount,
 } from '@/modules/chat/lib/history/chat-history';
+import { readStoredMessage } from '@/modules/chat/lib/history/chat-history-codec';
 import {
   deleteChatHistoryDatabase,
   openChatHistoryDatabase,
 } from '@/modules/chat/lib/history/chat-history-database';
+import { CHAT_HISTORY_DATABASE_VERSION as VERSION } from '@/modules/chat/lib/history/chat-history-schema';
 import { message, OWNER, PEER } from './fixtures';
 import {
   initialState,
@@ -75,7 +77,7 @@ for (const version of [2, 3, 4]) {
       });
     }
     await seed(version, [record, legacyRecord(second)], state);
-    assert.equal((await openChatHistoryDatabase()).version, 5);
+    assert.equal((await openChatHistoryDatabase()).version, VERSION);
     const lease = await syncHistoryAccount(OWNER);
     assert.equal(lease.epoch, 'keep-epoch');
     assert.equal(lease.workspaceEpoch, 'keep-workspace-epoch');
@@ -108,12 +110,15 @@ for (const version of [2, 3, 4]) {
   });
 }
 
-test('v1 from the current protocol upgrades without rewriting any records or state', async () => {
+test('v1 compacts message storage while preserving messages, primary keys, and state', async () => {
   const record = message();
   await seed(1, [{ ...record, key: 'keep', owner: OWNER, message: record }]);
   const before = await storedData();
-  assert.equal((await openChatHistoryDatabase()).version, 5);
-  assert.deepEqual(await storedData(), { ...before, version: 5 });
+  assert.equal((await openChatHistoryDatabase()).version, VERSION);
+  const after = await storedData();
+  assert.deepEqual(after.state, before.state);
+  assert.deepEqual(after.messages.map(readStoredMessage), [record]);
+  assert.equal((after.messages[0] as { key: string }).key, 'keep');
 });
 
 test('equal legacy timestamps and sequences retain distinct orders and exact read boundaries', async () => {
@@ -160,5 +165,5 @@ test('a blocked v4 upgrade rejects promptly and its late upgrade leaves the orig
     other.close();
   }
   assert.deepEqual(await storedData(), before);
-  assert.equal((await openChatHistoryDatabase()).version, 5);
+  assert.equal((await openChatHistoryDatabase()).version, VERSION);
 });

@@ -1,8 +1,9 @@
 import type { HistoryCleanup, HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import { historyAllowsMessage } from '@/modules/chat/lib/history/chat-history';
+import { readStoredMessage } from '@/modules/chat/lib/history/chat-history-codec';
 import { openChatHistoryDatabase } from '@/modules/chat/lib/history/chat-history-database';
 import { historyMessagePlayer } from '@/modules/chat/lib/history/chat-history-player';
-import { chatMessageSchema, mayReadMessage } from '@/modules/chat/model/chat-protocol';
+import { mayReadMessage } from '@/modules/chat/model/chat-protocol';
 import type { HistoryChannel } from '@/modules/chat/model/history/chat-history-sync';
 
 export const HISTORY_AGES = [0, 30, 90, 365] as const;
@@ -78,15 +79,14 @@ export async function readHistoryStorageReport(
       request.onsuccess = () => {
         const cursor = request.result;
         if (!cursor || signal?.aborted) return;
-        const parsed = chatMessageSchema.safeParse(cursor.value.message);
-        if (!parsed.success) {
+        const message = readStoredMessage(cursor.value);
+        if (!message) {
           cursor.continue();
           return;
         }
-        const message = parsed.data;
         if (mayReadMessage(message, owner, active.staff) && historyAllowsMessage(active, message)) {
-          // Serialized message size is comparable across channels, not an on-disk database size.
-          const bytes = encoder.encode(JSON.stringify(message)).byteLength;
+          // Estimate the stored message payload, excluding database keys, indexes and overhead.
+          const bytes = encoder.encode(JSON.stringify(cursor.value.data)).byteLength;
           const player = historyMessagePlayer(message, owner);
           const age =
             message.createdAt > now

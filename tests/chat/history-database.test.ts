@@ -5,6 +5,7 @@ import {
   deleteChatHistoryDatabase,
   openChatHistoryDatabase,
 } from '@/modules/chat/lib/history/chat-history-database';
+import { CHAT_HISTORY_DATABASE_VERSION as VERSION } from '@/modules/chat/lib/history/chat-history-schema';
 import { openStored, seed, storedData } from './history-database-fixtures';
 
 afterEach(async () => {
@@ -13,14 +14,14 @@ afterEach(async () => {
 
 test('new databases use the current schema and cached connections reopen after a version change', async () => {
   const first = await openChatHistoryDatabase();
-  assert.equal(first.version, 5);
+  assert.equal(first.version, VERSION);
   assert.equal(await openChatHistoryDatabase(), first);
-  const changed = await openStored(6);
+  const changed = await openStored(VERSION + 1);
   changed.close();
   await assert.rejects(openChatHistoryDatabase(), Error);
 });
 
-for (const version of [6, 7]) {
+for (const version of [VERSION + 1, VERSION + 2]) {
   test(`unsupported database v${version} preserves all data until explicit deletion`, async () => {
     await seed(version, [{ key: 'keep', message: { kind: 'unknown', text: 'Keep me' } }]);
     const before = await storedData();
@@ -28,7 +29,7 @@ for (const version of [6, 7]) {
     await assert.rejects(openChatHistoryDatabase(), Error);
     assert.deepEqual(await storedData(), before);
     await deleteChatHistoryDatabase(() => assert.fail('Unexpected blocked deletion'));
-    assert.equal((await openChatHistoryDatabase()).version, 5);
+    assert.equal((await openChatHistoryDatabase()).version, VERSION);
     assert.deepEqual((await storedData()).messages, []);
   });
 }
@@ -53,11 +54,11 @@ test('a blocked deletion remains pending and resumes when the other connection c
   }
   await deleting;
   assert.equal(complete, true);
-  assert.equal((await openChatHistoryDatabase()).version, 5);
+  assert.equal((await openChatHistoryDatabase()).version, VERSION);
 });
 
 test('an unsupported version held by another tab still returns an error and a late open cannot change it', async () => {
-  await seed(6, [{ key: 'keep', text: 'Keep this record' }]);
+  await seed(VERSION + 1, [{ key: 'keep', text: 'Keep this record' }]);
   const before = await storedData();
   const other = await openStored();
   try {

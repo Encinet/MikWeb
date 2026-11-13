@@ -1,13 +1,12 @@
-/** The active schema only; historical formats belong to chat-history-migrations. */
-export const CHAT_HISTORY_DATABASE_VERSION = 5;
+/** The active schema only; historical formats belong to migrations/. */
+export const CHAT_HISTORY_DATABASE_VERSION = 6;
 
 const INDEXES = {
-  ownerOrder: ['owner', 'order'],
-  conversationOrder: ['owner', 'conversation', 'order'],
-  unreadOrder: ['owner', 'conversation', 'unread', 'order'],
-  ownerTime: ['owner', 'createdAt', 'order'],
-  ownerBucketTime: ['owner', 'bucket', 'createdAt', 'order'],
-  ownerChannelTime: ['owner', 'channel', 'createdAt', 'order'],
+  ownerOrder: ['owner', 'data.o'],
+  conversationOrder: ['owner', 'conversation', 'data.o'],
+  unreadOrder: ['owner', 'conversation', 'unread', 'data.o'],
+  ownerTime: ['owner', 'data.t', 'data.o'],
+  ownerChannelTime: ['owner', 'data.c', 'data.t', 'data.o'],
 };
 
 export function hasChatHistorySchema(db: IDBDatabase, transaction?: IDBTransaction): boolean {
@@ -32,8 +31,6 @@ export function createChatHistorySchema(db: IDBDatabase, tx: IDBTransaction) {
   const messages = db.objectStoreNames.contains('messages')
     ? tx.objectStore('messages')
     : db.createObjectStore('messages', { keyPath: 'key' });
-  for (const [name, keys] of Object.entries(INDEXES)) {
-    if (messages.indexNames.contains(name)) messages.deleteIndex(name);
-    messages.createIndex(name, keys);
-  }
+  for (const name of [...messages.indexNames]) messages.deleteIndex(name);
+  for (const [name, keys] of Object.entries(INDEXES)) messages.createIndex(name, keys);
 }

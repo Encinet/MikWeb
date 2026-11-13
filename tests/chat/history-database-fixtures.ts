@@ -1,3 +1,9 @@
+import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
+import {
+  countsAsUnread,
+  isPassiveMessage,
+  messageConversation,
+} from '@/modules/chat/model/chat-protocol';
 import { emptyChatWorkspace } from '@/modules/chat/model/workspace/chat-workspace';
 import { message, OWNER } from './fixtures';
 
@@ -38,6 +44,21 @@ export function initialState() {
   };
 }
 
+export function orderedRecord(record: ChatMessage, historical = false) {
+  return {
+    key: `${OWNER}:${record.id}`,
+    owner: OWNER,
+    createdAt: record.createdAt,
+    order: record.order,
+    bucket: isPassiveMessage(record) ? 'activity' : 'conversation',
+    channel: record.channel,
+    conversation: messageConversation(record, OWNER),
+    unread: !historical && countsAsUnread(record, OWNER) ? 1 : 0,
+    message: record,
+    historical,
+  };
+}
+
 export async function seed(
   version: number,
   messages: unknown[] = [],
@@ -46,7 +67,7 @@ export async function seed(
   const db = await openStored(version, (db) => {
     db.createObjectStore('state');
     const store = db.createObjectStore('messages', { keyPath: 'key' });
-    if (version === 1) {
+    if (version === 1 || version === 5) {
       store.createIndex('ownerOrder', ['owner', 'order']);
       store.createIndex('conversationOrder', ['owner', 'conversation', 'order']);
       store.createIndex('unreadOrder', ['owner', 'conversation', 'unread', 'order']);

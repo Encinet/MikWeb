@@ -714,7 +714,7 @@
       "estimatedSize": "消息数据估算",
       "channelUsage": "各频道占消息数据的比例",
       "messageCount": "{count, plural, other {# 条}}",
-      "sizeNote": "按消息内容估算，不含索引、草稿与缓存。",
+      "sizeNote": "按本机存储格式估算，不含索引、草稿与缓存。",
       "siteStorage": "网站总占用",
       "siteUsage": "{used} / {quota}（{percent}）",
       "siteStorageNote": "包含网站其他缓存，用量与配额均由浏览器估算。",

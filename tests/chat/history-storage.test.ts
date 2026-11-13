@@ -13,6 +13,7 @@ import {
   setStaffHistoryPermission,
   syncHistoryAccount,
 } from '@/modules/chat/lib/history/chat-history';
+import { encodeMessageData } from '@/modules/chat/lib/history/chat-history-codec';
 import { deleteChatHistoryDatabase } from '@/modules/chat/lib/history/chat-history-database';
 import {
   readHistoryStorageReport,
@@ -31,7 +32,7 @@ afterEach(async () => {
   await deleteChatHistoryDatabase(() => assert.fail('Leaked database'));
 });
 
-test('storage snapshots partition UTF-8 message bytes by channel, player, and exact age boundaries', async () => {
+test('storage snapshots partition compact UTF-8 message bytes by channel, player, and exact age boundaries', async () => {
   const lease = await syncHistoryAccount(OWNER);
   await setStaffHistoryPermission(OWNER, true);
   const now = Date.now();
@@ -83,7 +84,7 @@ test('storage snapshots partition UTF-8 message bytes by channel, player, and ex
   const report = await readHistoryStorageReport(lease, now);
   assert.ok(report);
   const bytes = (record: ChatMessage) =>
-    new TextEncoder().encode(JSON.stringify(record)).byteLength;
+    new TextEncoder().encode(JSON.stringify(encodeMessageData(record))).byteLength;
   assert.equal(report.count, records.length);
   assert.equal(
     report.bytes,
