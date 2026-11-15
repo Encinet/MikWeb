@@ -12,6 +12,7 @@ import {
 } from '@/modules/auth/ui/authentication-flow';
 import { Link, useRouter } from '@/shared/i18n/navigation';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
+import { PageAppearance } from '@/shared/ui/page/page-appearance';
 
 export function LoginPage() {
   const t = useTranslations('auth.login');
@@ -30,6 +31,7 @@ export function LoginPage() {
         : null;
   return (
     <div className="auth-login-page">
+      <PageAppearance appearance="dark" />
       <div className="auth-login-backdrop" aria-hidden="true" />
       <div className="auth-login-stage">
         {progress ? (

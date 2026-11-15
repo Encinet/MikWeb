@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PageAppearance } from '@/shared/ui/page/page-appearance';
 
 interface NotFoundViewProps {
   description: string;
@@ -15,6 +16,7 @@ export default function NotFoundView({
 }: NotFoundViewProps) {
   return (
     <section className="not-found-art-page">
+      <PageAppearance appearance="hero" />
       <div className="not-found-art-page__backdrop" aria-hidden="true" />
       <div className="art-guide-container not-found-art-page__layout">
         <strong className="not-found-art-page__watermark" aria-hidden="true">

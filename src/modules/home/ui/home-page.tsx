@@ -7,6 +7,7 @@ import HomeLiveOverview from '@/modules/home/ui/home-live-overview';
 import { HomeWorldNavigation } from '@/modules/home/ui/home-world-navigation';
 import { SITE_NAME } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/navigation';
+import { PageAppearance } from '@/shared/ui/page/page-appearance';
 
 export default async function HomePage() {
   const homeT = await getTranslations('home');
@@ -15,6 +16,7 @@ export default async function HomePage() {
 
   return (
     <div className="home-project-page">
+      <PageAppearance appearance="hero" />
       <section className="home-project-hero image-hero">
         <div className="image-hero__backdrop" aria-hidden="true" />
         <div className="home-project-container home-project-hero__content">

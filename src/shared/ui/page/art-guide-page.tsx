@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { PageAppearance } from '@/shared/ui/page/page-appearance';
 
 export interface ArtGuideStep {
   description: string;
@@ -24,6 +25,7 @@ export function ArtGuidePage({
 }: ArtGuidePageProps) {
   return (
     <div className={['art-guide-page', pageClassName].filter(Boolean).join(' ')}>
+      <PageAppearance appearance="hero" />
       <section className="art-guide-hero image-hero">
         <div className="image-hero__backdrop" aria-hidden="true" />
         <div className="art-guide-container art-guide-hero__content">

@@ -104,7 +104,7 @@
   --project-navbar-glass-shadow: rgba(26, 45, 34, 0.1);
 }
 
-[data-theme="light"]:has(.auth-login-page) .project-navbar-shell {
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-navbar-shell {
   --project-navbar-glass-top: color-mix(in srgb, var(--theme-bg-dark) 74%, transparent);
   --project-navbar-glass-mid: color-mix(in srgb, var(--theme-bg-dark) 46%, transparent);
   --project-navbar-glass-bottom: color-mix(in srgb, var(--theme-bg-dark) 8%, transparent);
@@ -112,8 +112,7 @@
   --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
 }
 
-:root:has(.home-project-page, .art-guide-page, .not-found-art-page, .auth-login-page)
-  .project-navbar-shell:not(.is-scrolled) {
+:root:has([data-page-appearance][data-page-active]) .project-navbar-shell:not(.is-scrolled) {
   --project-navbar-glass-opacity: var(--project-navbar-scroll-progress);
   --project-navbar-glass-blur: calc(18px * var(--project-navbar-scroll-progress));
 }
@@ -674,45 +673,57 @@
 }
 
 /* Login remains a dark, image-backed scene in either theme. */
-[data-theme="light"]:has(.auth-login-page) .project-navbar-brand,
-[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link,
-[data-theme="light"]:has(.auth-login-page)
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-navbar-brand,
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
+  .project-navbar-links
+  .ui-nav-link,
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
   .project-navbar-links
   .ui-nav-chip:not(.ui-nav-chip--highlight) {
   color: rgba(255, 255, 255, 0.92);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
 }
 
-[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link:hover,
-[data-theme="light"]:has(.auth-login-page) .project-navbar-links .ui-nav-link--active,
-[data-theme="light"]:has(.auth-login-page)
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
+  .project-navbar-links
+  .ui-nav-link:hover,
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
+  .project-navbar-links
+  .ui-nav-link--active,
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
   .project-navbar-links
   .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
   color: #fff;
 }
 
-[data-theme="light"]:has(.auth-login-page) .project-navbar-control-cluster,
-[data-theme="light"]:has(.auth-login-page) .project-account-link {
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
+  .project-navbar-control-cluster,
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-account-link {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(0, 0, 0, 0.26);
   color: #fff;
 }
 
-[data-theme="light"]:has(.auth-login-page) .project-account-login-icon {
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
+  .project-account-login-icon {
   background: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"]:has(.auth-login-page) .project-navbar-controls .project-locale-toggle {
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
+  .project-navbar-controls
+  .project-locale-toggle {
   border-left-color: rgba(255, 255, 255, 0.14);
 }
 
-[data-theme="light"]:has(.auth-login-page) .project-navbar-controls > button:first-child {
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
+  .project-navbar-controls
+  > button:first-child {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(0, 0, 0, 0.32);
   color: #fff;
 }
 
-[data-theme="light"]:has(.auth-login-page) .project-account-avatar {
+[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-account-avatar {
   border-color: rgba(243, 239, 231, 0.24);
   background: color-mix(in srgb, var(--theme-bg-dark) 82%, transparent);
   box-shadow:
@@ -721,14 +732,14 @@
 }
 
 /* Homepage transparent state: white text on dark hero */
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-brand,
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-links
   .ui-nav-link,
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-links
   .ui-nav-chip:not(.ui-nav-chip--highlight) {
@@ -736,22 +747,22 @@
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
 }
 
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-links
   .ui-nav-link:hover,
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-links
   .ui-nav-link--active,
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-links
   .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
   color: #fff;
 }
 
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-control-cluster {
   border-color: rgba(255, 255, 255, 0.18);
@@ -759,7 +770,7 @@
   color: #fff;
 }
 
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-account-link {
   border-color: rgba(255, 255, 255, 0.18);
@@ -767,20 +778,20 @@
   color: #fff;
 }
 
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-account-login-icon {
   background: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-controls
   .project-locale-toggle {
   border-left-color: rgba(255, 255, 255, 0.14);
 }
 
-[data-theme="light"]:has(.home-project-page, .art-guide-page, .not-found-art-page)
+[data-theme="light"]:has([data-page-appearance="hero"][data-page-active])
   .project-navbar-shell:not(.is-scrolled)
   .project-navbar-controls
   > button:first-child {
