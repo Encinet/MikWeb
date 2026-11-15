@@ -653,12 +653,13 @@
   .home-project-hero::after,
   .home-project-hero__links,
   .art-guide-hero::after,
+  .auth-login-page::before,
+  .auth-login-page::after,
   .image-hero__backdrop,
   .art-guide-panel::before,
   .not-found-art-page::after,
   .not-found-art-page__backdrop,
-  .not-found-art-page__watermark,
-  .auth-login-backdrop {
+  .not-found-art-page__watermark {
     display: none !important;
   }
 
@@ -734,6 +735,7 @@
     display: block;
     overflow: visible;
     -webkit-line-clamp: unset;
+    line-clamp: unset;
   }
 
   .home-live-announcements:has(.home-announcements-loading),
@@ -855,11 +857,11 @@
     text-align: left;
   }
 
-  .auth-login-methods {
+  .auth-login-stage .auth-flow-methods {
     margin: 0.9rem 0 0;
   }
 
-  .auth-login-method {
+  .auth-login-stage .auth-flow-method {
     border-radius: 0;
     break-inside: avoid-page;
   }

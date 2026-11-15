@@ -104,14 +104,6 @@
   --project-navbar-glass-shadow: rgba(26, 45, 34, 0.1);
 }
 
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-navbar-shell {
-  --project-navbar-glass-top: color-mix(in srgb, var(--theme-bg-dark) 74%, transparent);
-  --project-navbar-glass-mid: color-mix(in srgb, var(--theme-bg-dark) 46%, transparent);
-  --project-navbar-glass-bottom: color-mix(in srgb, var(--theme-bg-dark) 8%, transparent);
-  --project-navbar-glass-line: rgba(255, 255, 255, 0.08);
-  --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
-}
-
 :root:has([data-page-appearance][data-page-active]) .project-navbar-shell:not(.is-scrolled) {
   --project-navbar-glass-opacity: var(--project-navbar-scroll-progress);
   --project-navbar-glass-blur: calc(18px * var(--project-navbar-scroll-progress));
@@ -670,65 +662,6 @@
   .project-navbar-controls > button:first-child {
     display: none;
   }
-}
-
-/* Login remains a dark, image-backed scene in either theme. */
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-navbar-brand,
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-links
-  .ui-nav-link,
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-links
-  .ui-nav-chip:not(.ui-nav-chip--highlight) {
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.34);
-}
-
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-links
-  .ui-nav-link:hover,
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-links
-  .ui-nav-link--active,
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-links
-  .ui-nav-chip:not(.ui-nav-chip--highlight):hover {
-  color: #fff;
-}
-
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-control-cluster,
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-account-link {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.26);
-  color: #fff;
-}
-
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-account-login-icon {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-controls
-  .project-locale-toggle {
-  border-left-color: rgba(255, 255, 255, 0.14);
-}
-
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active])
-  .project-navbar-controls
-  > button:first-child {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.32);
-  color: #fff;
-}
-
-[data-theme="light"]:has([data-page-appearance="dark"][data-page-active]) .project-account-avatar {
-  border-color: rgba(243, 239, 231, 0.24);
-  background: color-mix(in srgb, var(--theme-bg-dark) 82%, transparent);
-  box-shadow:
-    0 5px 14px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 /* Homepage transparent state: white text on dark hero */

@@ -30,9 +30,9 @@ export function LoginPage() {
         ? authenticationT('passkeyStarting')
         : null;
   return (
-    <div className="auth-login-page">
-      <PageAppearance appearance="dark" />
-      <div className="auth-login-backdrop" aria-hidden="true" />
+    <div className="auth-login-page image-hero">
+      <PageAppearance appearance="hero" />
+      <div className="image-hero__backdrop" aria-hidden="true" />
       <div className="auth-login-stage">
         {progress ? (
           <AuthenticationProgress

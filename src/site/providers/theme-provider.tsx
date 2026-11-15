@@ -1,10 +1,8 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { createContext, Suspense, useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
-import { isJoinPagePath } from '@/modules/join/lib/join-path';
 import { ACCENT_COLOR_STORAGE_KEY, DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import {
   getAccentProperties,
@@ -22,7 +20,6 @@ function applyAccentColor(color: string, isDailyColor: boolean) {
 const AccentColorContext = createContext<{
   accentColor: string;
   isDailyColor: boolean;
-  allowCustomAccent: boolean;
   setAccentColor: (color: string) => void;
   resetAccentColor: () => string;
 } | null>(null);
@@ -34,7 +31,6 @@ export function useAccentColor() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [dailyOnly, setDailyOnly] = useState(false);
   const [accentColor, setColor] = useState(DEFAULT_ACCENT_COLOR);
   const [isDailyColor, setIsDailyColor] = useState(true);
 
@@ -45,26 +41,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       applyAccentColor(color, daily);
     };
     let custom: string | null = null;
-    if (!dailyOnly) {
-      try {
-        custom = normalizeAccentColor(localStorage.getItem(ACCENT_COLOR_STORAGE_KEY) ?? '');
-      } catch {
-        /* Storage is optional. */
-      }
+    try {
+      custom = normalizeAccentColor(localStorage.getItem(ACCENT_COLOR_STORAGE_KEY) ?? '');
+    } catch {
+      /* Storage is optional. */
     }
     applyColor(custom ?? getDailyAccentColor(), custom === null);
     const syncColor = (event: StorageEvent) => {
-      if (!dailyOnly && (event.key === ACCENT_COLOR_STORAGE_KEY || event.key === null)) {
+      if (event.key === ACCENT_COLOR_STORAGE_KEY || event.key === null) {
         const custom = normalizeAccentColor(event.newValue ?? '');
         applyColor(custom ?? getDailyAccentColor(), !custom);
       }
     };
     window.addEventListener('storage', syncColor);
     return () => window.removeEventListener('storage', syncColor);
-  }, [dailyOnly]);
+  }, []);
 
   const setAccentColor = (value: string) => {
-    if (dailyOnly) return;
     const color = normalizeAccentColor(value);
     if (!color) return;
     setColor(color);
@@ -105,22 +98,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         value={{
           accentColor,
           isDailyColor,
-          allowCustomAccent: !dailyOnly,
           setAccentColor,
           resetAccentColor,
         }}
       >
-        <Suspense>
-          <ThemeRoutePolicy onChange={setDailyOnly} />
-        </Suspense>
         {children}
       </AccentColorContext>
     </NextThemesProvider>
   );
-}
-
-function ThemeRoutePolicy({ onChange }: { onChange: (dailyOnly: boolean) => void }) {
-  const dailyOnly = isJoinPagePath(usePathname());
-  useLayoutEffect(() => onChange(dailyOnly), [dailyOnly, onChange]);
-  return null;
 }

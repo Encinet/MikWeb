@@ -17,8 +17,8 @@ test('cached pages stop contributing header appearance when Activity hides them 
             </div>
           </Activity>
           <Activity mode={page === 'login' ? 'visible' : 'hidden'}>
-            <div className="auth-login-page">
-              <PageAppearance appearance="dark" />
+            <div className="auth-login-page image-hero">
+              <PageAppearance appearance="hero" />
             </div>
           </Activity>
           {page === 'wiki' && <div className="wiki-page" />}
@@ -37,7 +37,7 @@ test('cached pages stop contributing header appearance when Activity hides them 
     assert.equal(document.querySelector('.home-project-page'), home);
     assert.deepEqual(activeAppearances(), []);
     await render('login');
-    assert.deepEqual(activeAppearances(), ['dark']);
+    assert.deepEqual(activeAppearances(), ['hero']);
     await render('wiki');
     assert.deepEqual(activeAppearances(), []);
     await render('home');

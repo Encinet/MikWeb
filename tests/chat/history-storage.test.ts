@@ -13,8 +13,11 @@ import {
   setStaffHistoryPermission,
   syncHistoryAccount,
 } from '@/modules/chat/lib/history/chat-history';
-import { encodeMessageData } from '@/modules/chat/lib/history/chat-history-codec';
-import { deleteChatHistoryDatabase } from '@/modules/chat/lib/history/chat-history-database';
+import { encodeMessageData, storedMessage } from '@/modules/chat/lib/history/chat-history-codec';
+import {
+  deleteChatHistoryDatabase,
+  openChatHistoryDatabase,
+} from '@/modules/chat/lib/history/chat-history-database';
 import {
   readHistoryStorageReport,
   selectHistoryUsage,
@@ -22,6 +25,7 @@ import {
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { createBrowserEnvironment } from '../support/browser-environment';
 import { message, OTHER, OWNER, order, PEER, player } from './fixtures';
+import { storedData } from './history-database-fixtures';
 
 let browser: ReturnType<typeof createBrowserEnvironment>;
 beforeEach(() => {
@@ -30,6 +34,53 @@ beforeEach(() => {
 afterEach(async () => {
   await browser.close();
   await deleteChatHistoryDatabase(() => assert.fail('Leaked database'));
+});
+
+test('loading history deletes unreadable records while preserving valid messages', async () => {
+  const lease = await syncHistoryAccount(OWNER);
+  await saveHistory(lease, message({ id: 'readable' }));
+  const record = storedMessage(OWNER, message({ id: 'unreadable', order: order(2) }));
+  const unreadable = { ...record, data: { ...record.data, v: [99, 'Malformed data'] } };
+  const db = await openChatHistoryDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('messages', 'readwrite');
+    tx.objectStore('messages').put(unreadable);
+    tx.oncomplete = () => resolve();
+    tx.onabort = () => reject(tx.error);
+  });
+  for (let reload = 0; reload < 2; reload++) {
+    assert.deepEqual(
+      (await loadHistory(lease)).messages.map((record) => record.id),
+      ['readable'],
+    );
+    assert.equal(
+      (await storedData()).messages.find((value) => (value as { key: string }).key === record.key),
+      undefined,
+    );
+  }
+});
+
+test('an unreadable account state fails without resetting messages or drafts', async () => {
+  const lease = await syncHistoryAccount(OWNER);
+  await saveHistory(lease, message());
+  await saveChatWorkspace(lease, {
+    type: 'draft',
+    key: 'public',
+    text: 'Keep draft',
+    at: Date.now(),
+  });
+  const db = await openChatHistoryDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('state', 'readwrite');
+    const state = tx.objectStore('state');
+    const request = state.get('current');
+    request.onsuccess = () => state.put({ ...request.result, persist: 'unreadable' }, 'current');
+    tx.oncomplete = () => resolve();
+    tx.onabort = () => reject(tx.error);
+  });
+  const before = await storedData();
+  await assert.rejects(syncHistoryAccount(OWNER));
+  assert.deepEqual(await storedData(), before);
 });
 
 test('storage snapshots partition compact UTF-8 message bytes by channel, player, and exact age boundaries', async () => {

@@ -14,10 +14,10 @@
   align-items: center;
   gap: 0.8rem;
   padding: 0.75rem 0.85rem;
-  border: 1px solid var(--auth-flow-border, var(--theme-border-glass));
+  border: 1px solid var(--theme-border-glass);
   border-radius: 999px;
-  background: var(--auth-flow-surface, var(--theme-surface-modal));
-  color: var(--auth-flow-heading, var(--theme-text-heading));
+  background: var(--theme-surface-modal);
+  color: var(--theme-text-heading);
   cursor: pointer;
   text-align: left;
   text-decoration: none;
@@ -30,12 +30,12 @@
 
 .auth-flow-method:hover:not(:disabled) {
   border-color: var(--theme-border-nav-hover);
-  background: var(--auth-flow-hover, var(--theme-surface-icon));
+  background: var(--theme-surface-icon);
   transform: translateY(-1px);
 }
 
 .auth-flow-method:focus-visible {
-  outline: 2px solid var(--auth-flow-accent, var(--theme-accent-strong));
+  outline: 2px solid var(--theme-accent-strong);
   outline-offset: 3px;
 }
 
@@ -45,11 +45,7 @@
 }
 
 .auth-flow-method:first-of-type {
-  border-color: color-mix(
-    in srgb,
-    var(--auth-flow-accent, var(--theme-accent-strong)) 32%,
-    transparent
-  );
+  border-color: color-mix(in srgb, var(--theme-accent-strong) 32%, transparent);
 }
 
 .auth-flow-method__icon {
@@ -59,13 +55,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: var(--auth-flow-icon, var(--theme-surface-icon));
-  color: var(--auth-flow-heading, var(--theme-text-heading));
+  background: var(--theme-surface-icon);
+  color: var(--theme-text-heading);
 }
 
 .auth-flow-method:first-of-type .auth-flow-method__icon {
   background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
-  color: var(--auth-flow-accent, var(--theme-accent-strong));
+  color: var(--theme-accent-strong);
 }
 
 .auth-flow-method__copy {
@@ -75,19 +71,19 @@
 }
 
 .auth-flow-method__copy strong {
-  color: var(--auth-flow-heading, var(--theme-text-heading));
+  color: var(--theme-text-heading);
   font-size: 0.98rem;
   font-weight: 740;
 }
 
 .auth-flow-method__copy span {
-  color: var(--auth-flow-muted, var(--theme-text-muted-strong));
+  color: var(--theme-text-muted-strong);
   font-size: 0.82rem;
   line-height: 1.35;
 }
 
 .auth-flow-method__arrow {
-  color: var(--auth-flow-muted, var(--theme-text-muted-strong));
+  color: var(--theme-text-muted-strong);
 }
 
 .auth-flow-dialog {
@@ -261,7 +257,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  color: var(--auth-flow-heading, var(--theme-text-heading));
+  color: var(--theme-text-heading);
 }
 .auth-flow-progress__mark {
   display: inline-flex;
@@ -269,7 +265,7 @@
   height: 4.5rem;
   align-items: center;
   justify-content: center;
-  color: var(--auth-flow-accent, var(--theme-accent-strong));
+  color: var(--theme-accent-strong);
 }
 .auth-flow-progress h1,
 .auth-flow-progress h2 {
@@ -310,14 +306,14 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--auth-flow-muted, var(--theme-text-muted-strong));
+  color: var(--theme-text-muted-strong);
   font-size: 0.875rem;
   cursor: pointer;
 }
 .auth-flow-other-method:hover {
-  color: var(--auth-flow-heading, var(--theme-text-heading));
+  color: var(--theme-text-heading);
 }
 .auth-flow-other-method:focus-visible {
-  outline: 2px solid var(--auth-flow-accent, var(--theme-accent-strong));
+  outline: 2px solid var(--theme-accent-strong);
   outline-offset: 3px;
 }

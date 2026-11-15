@@ -45,7 +45,6 @@ import type {
 } from '@/modules/chat/model/chat-reading';
 import {
   advanceReadPosition,
-  CHAT_READ_POSITION_LIMIT,
   compareCursors,
   messageCursor,
   unreadMessages,
@@ -172,15 +171,6 @@ export function useWebChat() {
       if (liveMessage.current === listener) liveMessage.current = undefined;
     };
   }, []);
-
-  useEffect(() => {
-    if (!owner || reading.current.size <= CHAT_READ_POSITION_LIMIT) return;
-    const retained = new Set(messages.map((message) => messageConversation(message, owner)));
-    updateReading((positions) => {
-      const next = new Map([...positions].filter(([key]) => retained.has(key)));
-      return next.size === positions.size ? positions : next;
-    });
-  }, [messages, owner, updateReading]);
 
   const releaseConnection = useCallback(() => {
     serverGeneration.current++;
@@ -663,7 +653,7 @@ export function useWebChat() {
         return false;
       }
       setPending((existing) => [
-        ...existing.filter((message) => message.requestId !== result.requestId).slice(-19),
+        ...existing.filter((message) => message.requestId !== result.requestId),
         {
           requestId: result.requestId,
           destination,

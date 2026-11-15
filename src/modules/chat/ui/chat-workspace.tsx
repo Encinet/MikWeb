@@ -25,7 +25,7 @@ import { destinationKey } from '@/modules/chat/model/chat-destination';
 import { chatWorkspaceFeedback } from '@/modules/chat/model/chat-feedback';
 import { chatInputHistory } from '@/modules/chat/model/chat-input-history';
 import { channelPlayers } from '@/modules/chat/model/chat-presence';
-import { CHAT_MESSAGE_MAX_LENGTH, messageConversation } from '@/modules/chat/model/chat-protocol';
+import { messageConversation } from '@/modules/chat/model/chat-protocol';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import type { ChatSearchCriteria } from '@/modules/chat/model/chat-search';
 import { emptyChatSearch } from '@/modules/chat/model/chat-search';
@@ -76,7 +76,6 @@ export function ChatWorkspace({
   const preferences = workspace.preferences;
   const [selected, setSelected] = useState<ChatDestination>({ channel: 'public' });
   const [playerQuery, setPlayerQuery] = useState('');
-  const [notice, setNotice] = useState<'drafts.restoreTooLong' | null>(null);
   const [jump, setJump] = useState<ChatMessageJump | null>(null);
   const jumpSequence = useRef(0);
   const restoredSend = useRef<PendingChatMessage | null>(null);
@@ -301,19 +300,13 @@ export function ChatWorkspace({
       historyWindow.latest();
       setJump({ conversation: key, messageId: null, sequence: ++jumpSequence.current });
       changeDraft('');
-      setNotice(null);
     }
   };
   const restoreDraft = useCallback(
     (message: PendingChatMessage) => {
       const restored = [getDraft(key), message.text].filter(Boolean).join(' ');
-      if (restored.length > CHAT_MESSAGE_MAX_LENGTH * 2) {
-        setNotice('drafts.restoreTooLong');
-        return;
-      }
       restoredSend.current = message.status === 'unknown' && !getDraft(key) ? message : null;
       changeDraft(restored);
-      setNotice(null);
       chat.dismissPending(message.requestId);
       input.current?.focus();
     },
@@ -506,12 +499,6 @@ export function ChatWorkspace({
         {!online ? (
           <ChatConnectionBanner connection={chat.connection} onRetry={chat.retry} />
         ) : null}
-        {notice ? (
-          <p className="chat-feedback" role="status">
-            {t(notice)}
-          </p>
-        ) : null}
-
         {feedback.error ? (
           <p className="chat-feedback" role="alert">
             {errorText(feedback.error)}

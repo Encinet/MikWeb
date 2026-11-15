@@ -6,7 +6,6 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { completeMention, mentionQuery } from '@/modules/chat/lib/chat-mentions';
 import type { ChatInputHistoryEntry } from '@/modules/chat/model/chat-input-history';
 import type { ChatPeer } from '@/modules/chat/model/chat-protocol';
-import { CHAT_MESSAGE_MAX_LENGTH } from '@/modules/chat/model/chat-protocol';
 import { useChatInputHistory } from '@/modules/chat/model/use-chat-input-history';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
@@ -169,10 +168,6 @@ export function ChatMentionInput({
             setDismissed(true);
           } else if (event.key === 'Tab') setDismissed(true);
         }}
-        maxLength={
-          // Native maxlength measures UTF-16 units; message length uses Unicode code points.
-          CHAT_MESSAGE_MAX_LENGTH * 2
-        }
         autoComplete="off"
         placeholder={placeholder}
       />

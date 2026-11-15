@@ -51,6 +51,7 @@ class Server {
   requests: ChatHistoryQuery[] = [];
   sockets: Socket[] = [];
   pending: { socket: Socket; page: ChatHistoryPage }[] = [];
+  sends: { socket: Socket; requestId: string; text: string }[] = [];
   hold = true;
   holdBackfill = false;
   staff = false;
@@ -109,7 +110,14 @@ class Server {
       },
     });
   }
-  request(socket: Socket, query: ChatHistoryQuery & { requestId: string }) {
+  request(
+    socket: Socket,
+    query: ChatHistoryQuery & { requestId: string; type?: string; text?: string },
+  ) {
+    if (query.type === 'send') {
+      this.sends.push({ socket, requestId: query.requestId, text: query.text ?? '' });
+      return;
+    }
     this.requests.push(query);
     const progress = (query.page && this.tokens.get(query.page)) || {
       after: query.since ? (this.tokens.get(query.since)?.head ?? 0) : 0,
@@ -265,6 +273,27 @@ test('automatically syncs all pages and offline private threads, deduplicates li
   assert.ok(
     server.requests.slice(start).every((request) => Boolean(request.since) && !request.page),
   );
+});
+
+test('new sends preserve older failed messages and their recoverable text', async () => {
+  server.hold = false;
+  await mount();
+  await until(complete);
+  for (let index = 0; index < 25; index++) {
+    await act(async () => {
+      assert.equal(state().send({ channel: 'public' }, `Unsent ${index}`), true);
+    });
+    const sent = server.sends.at(-1);
+    assert.ok(sent);
+    if (index < 24)
+      await act(async () => {
+        sent.socket.receive({ type: 'error', requestId: sent.requestId, error: 'rejected' });
+      });
+  }
+  assert.equal(state().pending.length, 25);
+  assert.equal(state().pending[0].text, 'Unsent 0');
+  assert.equal(state().pending[0].status, 'failed');
+  assert.equal(state().pending.at(-1)?.status, 'sending');
 });
 
 test('resumes an interrupted backfill from the committed page and discards a page arriving after logout', async () => {

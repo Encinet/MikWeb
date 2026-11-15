@@ -15,7 +15,7 @@ import {
   syncHistoryAccount,
 } from '@/modules/chat/lib/history/chat-history';
 import { useChatWorkspace } from '@/modules/chat/model/workspace/use-chat-workspace';
-import { OWNER, PEER } from './fixtures';
+import { OTHER, OWNER, PEER } from './fixtures';
 
 let environment: Window;
 let root: Root;
@@ -100,6 +100,51 @@ test('rapid edits are saved in order and restored by a fresh hook instance', asy
   await act(async () => root.render(<Harness key="fresh" lease={lease} />));
   await until(() => state().workspace.drafts.public?.text === 'Hello');
   assert.equal(state().restoredCount, 1);
+});
+
+test('long-idle drafts and closed conversations survive storage reloads and later preference writes', async (context) => {
+  const lease = await syncHistoryAccount(OWNER);
+  const savedAt = Date.now();
+  const privateKey = `private:${PEER}`;
+  await saveChatWorkspace(lease, {
+    type: 'draft',
+    key: 'public',
+    text: 'Keep public draft',
+    at: savedAt,
+  });
+  await saveChatWorkspace(lease, {
+    type: 'draft',
+    key: privateKey,
+    text: 'Keep private draft',
+    at: savedAt,
+  });
+  await saveChatWorkspace(lease, {
+    type: 'open',
+    destination: { channel: 'private', targetUuid: PEER, name: 'Alex' },
+    at: savedAt,
+  });
+  await saveChatWorkspace(lease, {
+    type: 'close',
+    destination: { channel: 'private', targetUuid: OTHER, name: 'Blair' },
+    through: null,
+    at: savedAt,
+  });
+  context.mock.method(Date, 'now', () => savedAt + 366 * 86_400_000);
+  await saveChatWorkspace(lease, { type: 'preferences', value: { density: 'compact' } });
+  await act(async () => root.render(<Harness lease={lease} />));
+  await until(() => state().restoredCount === 2);
+  assert.equal(state().getDraft('public'), 'Keep public draft');
+  assert.equal(state().getDraft(privateKey), 'Keep private draft');
+  assert.ok(state().workspace.threads[privateKey]);
+  assert.deepEqual(state().workspace.threads[`private:${OTHER}`], {
+    name: 'Blair',
+    updatedAt: savedAt,
+    pinned: false,
+    closed: true,
+    closedThrough: null,
+  });
+  assert.equal(state().workspace.preferences.density, 'compact');
+  assert.equal((await loadChatWorkspace(lease))?.drafts[privateKey].updatedAt, savedAt);
 });
 
 test('a failed storage write keeps the new draft visible and retrying preserves the latest edit', async () => {

@@ -1,8 +1,6 @@
 import type { ChatMessage } from '@/modules/chat/model/chat-protocol';
 import { countsAsUnread, messageConversation } from '@/modules/chat/model/chat-protocol';
 
-export const CHAT_READ_POSITION_LIMIT = 1000;
-
 export interface ChatReadCursor {
   messageId: string;
   createdAt: number;
@@ -71,7 +69,6 @@ export function readStoredPositions(value: unknown): ChatReadPositions {
         createdAt: cursor.createdAt,
         order: cursor.order,
       });
-    if (result.size >= CHAT_READ_POSITION_LIMIT) break;
   }
   return result;
 }

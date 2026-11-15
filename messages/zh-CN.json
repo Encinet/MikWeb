@@ -616,7 +616,6 @@
     "navigationUnread": "频道与私聊，{count, plural, other {# 条未读消息}}",
     "drafts": {
       "label": "草稿",
-      "restoreTooLong": "输入框中的草稿过长，请先处理当前草稿，再恢复这条消息。",
       "restored": "已恢复 {count, plural, other {# 个会话}}的草稿",
       "saved": "草稿已保存在本机"
     },

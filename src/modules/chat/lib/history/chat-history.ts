@@ -137,6 +137,10 @@ export async function syncHistoryAccount(
         return;
       }
       let lease = readState(request.result);
+      if (request.result !== undefined && !lease) {
+        state.transaction.abort();
+        return;
+      }
       if (!lease || lease.owner !== owner) {
         messages.clear();
         lease = {

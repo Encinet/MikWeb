@@ -2,16 +2,10 @@ import { z } from 'zod';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
 import type { ChatMessage, ChatPeer, ChatUserMessage } from '@/modules/chat/model/chat-protocol';
-import {
-  CHAT_MESSAGE_MAX_LENGTH,
-  chatOrder,
-  messageDestination,
-} from '@/modules/chat/model/chat-protocol';
+import { chatOrder, messageDestination } from '@/modules/chat/model/chat-protocol';
 import type { ChatReadCursor } from '@/modules/chat/model/chat-reading';
 import { compareCursors, messageCursor } from '@/modules/chat/model/chat-reading';
 
-const WORKSPACE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-const MAX_CONVERSATIONS = 512;
 const privateKey = /^private:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const conversationKey = z
   .string()
@@ -23,7 +17,7 @@ const cursorSchema = z.object({
   order: chatOrder,
 });
 const draftSchema = z.object({
-  text: z.string().max(CHAT_MESSAGE_MAX_LENGTH * 2),
+  text: z.string(),
   updatedAt: timestamp,
 });
 const threadSchema = z.object({
@@ -75,35 +69,12 @@ export function emptyChatWorkspace(preferences?: ChatPreferences): ChatWorkspace
   };
 }
 
-/** Validate stored data, bound its lifetime/size, and enforce the same staff gate as history. */
-export function readChatWorkspace(
-  value: unknown,
-  staff: boolean,
-  now = Date.now(),
-): ChatWorkspaceState {
+/** Validate stored drafts, conversation metadata, and staff permissions. */
+export function readChatWorkspace(value: unknown, staff: boolean): ChatWorkspaceState {
   const parsed = workspaceSchema.safeParse(value);
   if (!parsed.success) return emptyChatWorkspace();
   const workspace = parsed.data;
-  workspace.drafts = Object.fromEntries(
-    Object.entries(workspace.drafts)
-      .filter(
-        ([key, draft]) =>
-          (staff || key !== 'staff') && draft.updatedAt > now - WORKSPACE_MAX_AGE_MS,
-      )
-      .sort((a, b) => b[1].updatedAt - a[1].updatedAt)
-      .slice(0, MAX_CONVERSATIONS),
-  );
-  workspace.threads = Object.fromEntries(
-    Object.entries(workspace.threads)
-      .filter(
-        ([key, thread]) =>
-          thread.pinned ||
-          Boolean(workspace.drafts[key]) ||
-          thread.updatedAt > now - WORKSPACE_MAX_AGE_MS,
-      )
-      .sort((a, b) => b[1].updatedAt - a[1].updatedAt)
-      .slice(0, MAX_CONVERSATIONS),
-  );
+  if (!staff) delete workspace.drafts.staff;
   return workspace;
 }
 
@@ -118,7 +89,7 @@ export function updateChatWorkspace(
     const drafts = { ...state.drafts };
     if (mutation.text)
       drafts[mutation.key] = {
-        text: mutation.text.slice(0, CHAT_MESSAGE_MAX_LENGTH * 2),
+        text: mutation.text,
         updatedAt: mutation.at,
       };
     else delete drafts[mutation.key];

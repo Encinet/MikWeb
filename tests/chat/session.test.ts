@@ -335,6 +335,27 @@ test('sending requires an authorized identity, current permissions, an online re
   }
 });
 
+test('sending accepts 256 Unicode characters and rejects longer text before transmission', () => {
+  const h = harness();
+  try {
+    h.session.retry();
+    const transport = h.online();
+    for (const character of ['a', '草', '😀']) {
+      const sent = transport.sent.length;
+      assert.deepEqual(h.session.send({ channel: 'public' }, character.repeat(257)), {
+        ok: false,
+        error: 'invalid_message',
+      });
+      assert.equal(transport.sent.length, sent);
+      const text = character.repeat(256);
+      assert.equal(h.session.send({ channel: 'public' }, text).ok, true);
+      assert.equal(JSON.parse(transport.sent.at(-1) ?? '').text, text);
+    }
+  } finally {
+    h.session.stop();
+  }
+});
+
 test('disconnect recovery keeps one retry, invalidates old events and never resends messages', () => {
   const h = harness();
   try {

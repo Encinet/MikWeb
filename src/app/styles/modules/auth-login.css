@@ -1,40 +1,26 @@
 .auth-login-page {
-  --auth-flow-heading: #fff;
-  --auth-flow-muted: rgba(255, 255, 255, 0.72);
-  --auth-flow-border: rgba(255, 255, 255, 0.16);
-  --auth-flow-surface: rgba(0, 0, 0, 0.34);
-  --auth-flow-hover: rgba(0, 0, 0, 0.48);
-  --auth-flow-icon: rgba(255, 255, 255, 0.1);
-  --auth-flow-accent: var(--theme-accent-on-dark);
-  position: relative;
   min-height: var(--viewport-height-dynamic);
   overflow: hidden;
-  background: var(--theme-bg-dark);
-  color-scheme: dark;
+  color: var(--theme-text-heading);
 }
 
-.auth-login-backdrop {
+.auth-login-page::before {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(8, 12, 11, 0.48) 0%,
-      rgba(8, 12, 11, 0.74) 58%,
-      var(--theme-bg-dark) 100%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(8, 12, 11, 0.88) 0%,
-      rgba(8, 12, 11, 0.52) 52%,
-      rgba(8, 12, 11, 0.72) 100%
-    ),
-    url("/images/home/hero-library.webp") center / cover no-repeat;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.12) 0%,
+    rgba(0, 0, 0, 0.24) 55%,
+    transparent 100%
+  );
+  content: "";
 }
 
 .auth-login-stage {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   width: min(100%, 42rem);
   min-height: var(--viewport-height-dynamic);
@@ -50,6 +36,10 @@
 .auth-login-copy {
   color: #fff;
   text-align: center;
+  text-shadow:
+    0 1px 2px rgba(4, 12, 20, 0.95),
+    0 2px 8px rgba(4, 12, 20, 0.8),
+    0 4px 24px rgba(4, 12, 20, 0.55);
 }
 
 .auth-login-mark {
@@ -58,34 +48,32 @@
   height: 3rem;
   align-items: center;
   justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--theme-accent-on-dark) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-accent-strong) 28%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
-  color: var(--theme-accent-on-dark);
-  box-shadow: none;
+  background: var(--theme-surface-modal);
+  color: var(--theme-accent-strong);
+  text-shadow: none;
 }
 
 .auth-login-copy h1 {
   margin: 1rem 0 0;
-  color: #fff;
+  color: inherit;
   font-size: clamp(2.4rem, 8vw, 4.7rem);
   font-weight: 780;
   line-height: 0.98;
   letter-spacing: 0;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.42);
 }
 
 .auth-login-copy p {
   max-width: 36rem;
   margin: 1rem auto 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 0.98rem;
   line-height: 1.8;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.34);
 }
 
 .auth-login-account-link:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--theme-accent-on-dark) 72%, transparent);
+  outline: 2px solid var(--theme-accent-strong);
   outline-offset: 3px;
 }
 
@@ -96,10 +84,10 @@
   gap: 0.45rem;
   margin: 1rem auto 0;
   padding: 0.55rem 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--theme-border-glass);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.28);
-  color: rgba(255, 255, 255, 0.86);
+  background: var(--theme-surface-modal);
+  color: var(--theme-text-primary);
   font-size: 0.86rem;
   font-weight: 680;
   text-decoration: none;
@@ -110,14 +98,12 @@
 }
 
 .auth-login-account-link:hover {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(0, 0, 0, 0.42);
+  border-color: var(--theme-border-nav-hover);
+  background: var(--theme-surface-icon);
   transform: translateY(-1px);
 }
 
 .auth-login-feedback {
-  --feedback-color: rgba(243, 239, 231, 0.78);
-  --feedback-error-color: #e9b8b2;
   max-width: 28rem;
   align-self: center;
   text-align: center;
@@ -127,7 +113,7 @@
   margin-top: 1.25rem;
   padding: 0.85rem 1.1rem;
   border-radius: 1rem;
-  background: rgba(0, 0, 0, 0.34);
+  background: var(--theme-surface-modal);
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -135,6 +121,16 @@
 .auth-login-stage .auth-flow-methods {
   margin-top: clamp(2rem, 6vh, 3rem);
 }
+
+.auth-login-stage > .auth-flow-progress {
+  width: min(100%, 30rem);
+  margin-inline: auto;
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--theme-border-glass);
+  border-radius: 1.5rem;
+  background: var(--theme-surface-modal);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .auth-login-account-link {
     transition: none;

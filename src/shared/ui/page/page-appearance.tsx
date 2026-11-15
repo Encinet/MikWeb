@@ -8,7 +8,7 @@ function activatePage(marker: HTMLSpanElement | null) {
 }
 
 /** Keep global page appearance tied to the visible route, including before hydration. */
-export function PageAppearance({ appearance }: { appearance: 'hero' | 'dark' }) {
+export function PageAppearance({ appearance }: { appearance: 'hero' }) {
   return (
     <span
       ref={activatePage}

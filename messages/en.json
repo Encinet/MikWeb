@@ -616,7 +616,6 @@
     "navigationUnread": "Channels and conversations, {count, plural, one {# unread message} other {# unread messages}}",
     "drafts": {
       "label": "Draft",
-      "restoreTooLong": "Your current draft is too long. Finish or shorten it before restoring this message.",
       "restored": "Restored drafts for {count, plural, one {# conversation} other {# conversations}}",
       "saved": "Draft saved on this device"
     },
