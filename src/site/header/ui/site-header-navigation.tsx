@@ -145,9 +145,9 @@ export function MobileSiteHeaderMenu({
         <m.div
           id={id}
           ref={surfaceRef}
-          initial={reducedMotion ? false : { opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
+          initial={reducedMotion ? false : { opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
           transition={{ duration: reducedMotion ? 0 : 0.28, ease: 'easeInOut' }}
           className="mobile-menu-frame xl:hidden"
         >

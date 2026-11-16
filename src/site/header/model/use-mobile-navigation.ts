@@ -4,6 +4,7 @@ import type { RefObject } from 'react';
 import { useEffectEvent, useLayoutEffect } from 'react';
 import { captureFocusReturn } from '@/shared/lib/focus-return';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
+import { readSafeViewportBounds } from '@/shared/lib/viewport-bounds';
 
 export function useMobileNavigation(
   surfaceRef: RefObject<HTMLElement | null>,
@@ -24,8 +25,30 @@ export function useMobileNavigation(
     const focusReturn = captureFocusReturn(openerRef.current);
     let restoreFocus = true;
     const desktop = window.matchMedia('(min-width: 1280px)');
+    const position = () => {
+      const anchor = openerRef.current?.getBoundingClientRect();
+      if (!anchor) return;
+      const viewport = readSafeViewportBounds();
+      const gutter = 16;
+      const top = anchor.bottom + 8;
+      surface.style.setProperty(
+        '--mobile-menu-max-width',
+        `${Math.max(0, viewport.width - gutter * 2)}px`,
+      );
+      surface.style.setProperty(
+        '--mobile-menu-max-height',
+        `${Math.max(0, viewport.top + viewport.height - top - gutter)}px`,
+      );
+      const left = Math.max(
+        viewport.left + gutter,
+        Math.min(anchor.left, viewport.left + viewport.width - surface.offsetWidth - gutter),
+      );
+      surface.style.setProperty('--mobile-menu-top', `${top}px`);
+      surface.style.setProperty('--mobile-menu-left', `${left}px`);
+    };
     const resize = () => {
       if (desktop.matches) close();
+      else position();
     };
     const isInside = (target: EventTarget | null) =>
       target instanceof Node && (surface.contains(target) || openerRef.current?.contains(target));
@@ -44,8 +67,23 @@ export function useMobileNavigation(
     document.addEventListener('pointerdown', leave);
     document.addEventListener('focusin', leave);
     desktop.addEventListener('change', resize);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(position);
+    observer?.observe(surface);
+    if (openerRef.current) {
+      observer?.observe(openerRef.current);
+      if (openerRef.current.parentElement) observer?.observe(openerRef.current.parentElement);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('scroll', position, true);
+    window.visualViewport?.addEventListener('resize', position);
+    window.visualViewport?.addEventListener('scroll', position);
     resize();
     return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', position, true);
+      window.visualViewport?.removeEventListener('resize', position);
+      window.visualViewport?.removeEventListener('scroll', position);
       document.removeEventListener('keydown', keydown);
       document.removeEventListener('pointerdown', leave);
       document.removeEventListener('focusin', leave);
