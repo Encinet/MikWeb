@@ -1,3 +1,5 @@
+import { isStaffRole } from '@/modules/auth/model/auth-access';
+import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import type { BuildingType } from '@/modules/building/model/building-types';
 import type { PlayerIdentity } from '@/modules/player/model/player-types';
 
@@ -58,13 +60,13 @@ export function createInitialBuildingSubmissionForm(buildDate = ''): BuildingSub
 
 export function ensureSelfBuilder(
   current: BuilderDraft[],
-  account: { currentName: string; playerUuid: string },
+  account: Pick<AuthAccount, 'currentName' | 'playerUuid' | 'role'>,
 ): BuilderDraft[] {
   const self = {
     uuid: account.playerUuid,
     name: account.currentName,
     weight: 1,
-    locked: true,
+    locked: !isStaffRole(account.role),
   };
   const withoutSelf = current.filter((builder) => builder.uuid !== account.playerUuid);
   return [self, ...withoutSelf];

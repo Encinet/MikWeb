@@ -255,7 +255,7 @@ export function useBuildingSubmissionForm() {
   };
 
   const clearOptionalBuilders = () => {
-    setBuilders((current) => current.filter((builder) => builder.locked));
+    setBuilders((current) => current.filter((builder) => builder.uuid === account?.playerUuid));
   };
 
   const addTag = () => {

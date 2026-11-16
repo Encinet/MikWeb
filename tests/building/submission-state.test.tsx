@@ -45,6 +45,66 @@ function Consumer({
   return null;
 }
 
+for (const role of ['member', 'moderator', 'custodian'] as const) {
+  test(`${role} submission only allows staff to remove themselves`, async () => {
+    const environment = createBrowserEnvironment();
+    const previousFetch = globalThis.fetch;
+    globalThis.fetch = (async () => Response.json({ submissions: [] })) as typeof fetch;
+    const currentAccount = { ...account, role };
+    let state: ReturnType<typeof useBuildingSubmissionForm> | undefined;
+    const current = () => {
+      assert.ok(state);
+      return state;
+    };
+    clearFetchValidatedJsonBrowserCache();
+    try {
+      await act(async () =>
+        environment.root.render(
+          <NextIntlClientProvider locale="en" messages={messages} timeZone="Asia/Singapore">
+            <AuthStateContext
+              value={{
+                account: currentAccount,
+                authenticated: true,
+                verified: true,
+                isLoading: false,
+                refresh: async () => currentAccount,
+                acceptAuthentication: () => undefined,
+                logout: async () => undefined,
+              }}
+            >
+              <Consumer onState={(value) => (state = value)} />
+            </AuthStateContext>
+          </NextIntlClientProvider>,
+        ),
+      );
+      assert.equal(current().builders[0].uuid, account.playerUuid);
+      assert.equal(current().builders[0].locked, role === 'member');
+      await act(async () => {
+        current().setBuilders((builders) => [
+          ...builders,
+          { uuid: '00000000-0000-4000-8000-000000000002', name: 'Other', weight: 1 },
+        ]);
+      });
+      await act(async () => current().clearOptionalBuilders());
+      assert.deepEqual(
+        current().builders.map((builder) => builder.uuid),
+        [account.playerUuid],
+      );
+      await act(async () => {
+        current().setBuilders((builders) => builders.filter((builder) => builder.locked));
+      });
+      assert.equal(current().builders.length, role === 'member' ? 1 : 0);
+      await act(async () => current().resetForm(currentAccount));
+      assert.equal(current().builders[0].uuid, account.playerUuid);
+      assert.equal(current().builders[0].locked, role === 'member');
+    } finally {
+      globalThis.fetch = previousFetch;
+      clearFetchValidatedJsonBrowserCache();
+      await environment.close();
+    }
+  });
+}
+
 test('submission history keeps the newest refresh when older same-account requests finish later', async () => {
   const environment = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
