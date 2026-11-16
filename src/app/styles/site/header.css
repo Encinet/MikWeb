@@ -220,7 +220,8 @@
   z-index: 60;
   top: calc(var(--viewport-top-inset) + 3.5rem);
   right: max(1rem, var(--viewport-right-inset));
-  left: max(1rem, var(--viewport-left-inset));
+  left: auto;
+  width: min(17rem, calc(100% - 2rem - var(--viewport-left-inset) - var(--viewport-right-inset)));
   overflow: hidden;
   pointer-events: auto;
 }
