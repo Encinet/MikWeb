@@ -16,9 +16,6 @@ const corsHeaders = {
 };
 
 export default function proxy(request: NextRequest) {
-  // The standalone global 404 resolves its own language without entering a locale layout.
-  if (request.nextUrl.pathname === '/_not-found') return NextResponse.next();
-
   const pcl2Rewrite = getPcl2XmlRewrite(request);
   if (pcl2Rewrite) {
     return NextResponse.rewrite(pcl2Rewrite);
@@ -35,30 +32,7 @@ export default function proxy(request: NextRequest) {
     return response;
   }
 
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    return NextResponse.next();
-  }
-
-  // Localized image routes validate their locale themselves. Avoid locale cookies and alternate
-  // HTML links on public image responses, which otherwise prevent CDN caching.
-  if (isPublicSocialImage(request.nextUrl.pathname)) {
-    return NextResponse.next();
-  }
-
   return intlMiddleware(request);
-}
-
-function isPublicSocialImage(pathname: string): boolean {
-  if (pathname === '/opengraph-image') return true;
-  const [, locale, ...segments] = pathname.split('/');
-  if (!isRoutingLocale(locale)) return false;
-  return (
-    (segments.length === 1 && segments[0] === 'opengraph-image') ||
-    (segments.length === 2 && (segments[0] === 'opengraph' || segments[0] === 'thumbnails')) ||
-    (segments.length === 3 &&
-      segments[0] === 'buildings' &&
-      (segments[2] === 'opengraph-image' || segments[2] === 'thumbnail'))
-  );
 }
 
 function getPcl2XmlRewrite(request: NextRequest): URL | null {
@@ -98,5 +72,8 @@ function isBrowserDocumentRequest(request: NextRequest): boolean {
 }
 
 export const config = {
-  matcher: ['/((?!_next|_vercel|.*\\..*).*)', '/api/mcp'],
+  matcher: [
+    '/((?!_next|_vercel|api(?:/|$)|_not-found/?$|opengraph-image/?$|(?:en|zh-CN)/(?:opengraph-image|(?:opengraph|thumbnails)/[^/]+|buildings/[^/]+/(?:opengraph-image|thumbnail))/?$|.*\\..*).*)',
+    '/api/mcp',
+  ],
 };

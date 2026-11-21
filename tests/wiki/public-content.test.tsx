@@ -93,7 +93,7 @@ test('loads only requested public resources, ignores stale responses, reuses cha
     assert.equal(output(), 'commands-content');
     assert.equal(pending.length, 4);
     await render('commands', false, true);
-    assert.ok(pending[4].url.includes('/search-index?locale=en'));
+    assert.equal(pending[4].url, '/api/wiki/search-index/en');
     await reply(4, {}, 503);
     assert.ok(environment.container.textContent?.includes('search-error'));
     await act(async () => {
@@ -107,7 +107,7 @@ test('loads only requested public resources, ignores stale responses, reuses cha
     await render('commands', false, true, 'zh-CN');
     assert.equal(output(), 'waiting');
     assert.ok(environment.container.textContent?.includes('no-search'));
-    assert.ok(pending[6].url.includes('locale=zh-CN'));
+    assert.equal(pending[6].url, '/api/wiki/section/zh-CN/commands');
     await reply(6, { ...chapter('commands'), compiled: '中文章节' });
     await reply(7, []);
     assert.equal(output(), '中文章节');

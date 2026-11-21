@@ -55,6 +55,9 @@ export async function proxyAuthRequest({ kind, path, request }: ProxyOptions): P
 
   const cookieStore = await cookies();
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? '';
+  if (kind === 'auth' && routePath === '/me' && !sessionId) {
+    return Response.json({ authenticated: false }, { headers: { 'Cache-Control': 'no-store' } });
+  }
   const browserNonce = cookieStore.get(LOGIN_COOKIE_NAME)?.value ?? '';
   return forwardAuthRequest(request, {
     path: kind === 'account' ? `/me${routePath}` : `/auth${routePath}`,

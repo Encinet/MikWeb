@@ -33,7 +33,7 @@ export class WikiResourceCache {
     if (cached) return Promise.resolve(cached);
     return this.load(
       `section:${key}`,
-      `/api/wiki/section?locale=${encodeURIComponent(locale)}&section=${encodeURIComponent(id)}`,
+      `/api/wiki/section/${encodeURIComponent(locale)}/${encodeURIComponent(id)}`,
       background,
       (value: WikiSectionPayload) => {
         if (
@@ -53,7 +53,7 @@ export class WikiResourceCache {
     if (cached) return Promise.resolve(cached);
     return this.load(
       `search:${locale}`,
-      `/api/wiki/search-index?locale=${encodeURIComponent(locale)}`,
+      `/api/wiki/search-index/${encodeURIComponent(locale)}`,
       background,
       (value: SearchableWikiBlock[]) => {
         if (!Array.isArray(value)) throw new Error('Invalid Wiki search index');

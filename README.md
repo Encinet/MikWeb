@@ -4,7 +4,7 @@
 
 ## 本地运行
 
-需要 Bun 和 Node.js 22+。
+需要 Bun 1.4.x 和 Node.js 22+。Next.js 的开发、构建和启动使用 Bun；类型检查仍使用 Node.js。
 
 ```bash
 bun install
@@ -31,9 +31,9 @@ bun dev
 | `bun run build` | 生产构建 |
 | `bun start` | 运行生产服务 |
 | `bun check` | 代码、类型、翻译和 Wiki 校验 |
-| `bun test` | 核心回归测试 |
+| `bun run test` | 核心回归测试 |
 
-网站部署在 Vercel。浏览器支持范围见 [.browserslistrc](./.browserslistrc)。
+网站部署在 Vercel，Next.js 构建和非 Edge 函数使用 Bun。Vercel 的 Bun 运行时仍处于 Beta，切换后先在 Preview 验证再部署生产。浏览器支持范围见 [.browserslistrc](./.browserslistrc)。
 
 ## MCP
 

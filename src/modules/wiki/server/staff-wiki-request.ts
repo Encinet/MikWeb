@@ -13,7 +13,6 @@ export async function staffWikiRequest(request: Request): Promise<Response> {
     return Response.json({ error: 'invalid_locale' }, { status: 400, headers });
   }
 
-  // The BFF verifies the HttpOnly session with Mik Data on every request.
   const response = await proxyAuthRequest({ kind: 'auth', path: ['me'], request });
   for (const cookie of response.headers.getSetCookie()) headers.append('Set-Cookie', cookie);
   if (!response.ok) {

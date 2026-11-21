@@ -62,7 +62,7 @@ icon: Home
 
 ```bash
 bun check
-bun test
+bun run test
 ```
 
 仅修改 Wiki 可运行 `bun check:wiki`，仅修改翻译可运行 `bun check:i18n`。路由、依赖或构建配置变更后补充 `bun run build`；界面变更检查实际页面和键盘操作。纯文档修改核对命令与链接即可。

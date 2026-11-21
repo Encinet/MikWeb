@@ -8,12 +8,13 @@ const { mock } = (await import(bunTestModule)) as {
   mock: { module: (specifier: string, factory: () => unknown) => void };
 };
 
-let sessionId = '';
+let sessionId: string | undefined;
 mock.module('server-only', () => ({}));
 mock.module('next/cache', () => ({ cacheLife: () => undefined }));
 mock.module('next/headers', () => ({
   cookies: async () => ({
-    get: (name: string) => (name === '__Host-mik_sid' ? { value: sessionId } : undefined),
+    get: (name: string) =>
+      name === '__Host-mik_sid' && sessionId !== undefined ? { value: sessionId } : undefined,
   }),
 }));
 
@@ -55,12 +56,14 @@ test('staff endpoint verifies the real session and rejects public roles, forged 
   }, originalFetch);
   try {
     for (const role of [null, 'default', 'member', 'admin'] as const) {
-      sessionId = role ? 'actual-cookie-session' : '';
+      const before = requests;
+      sessionId = role ? 'actual-cookie-session' : undefined;
       upstreamPayload = role
         ? { authenticated: true, account: { ...account, role } }
         : { authenticated: false };
       const response = await staffWikiRequest(request());
       assert.equal(response.status, role === null ? 401 : role === 'admin' ? 502 : 403);
+      assert.equal(requests - before, role === null ? 0 : 1);
       assert.equal((await response.text()).includes('compiled'), false);
       assert.ok(response.headers.get('Cache-Control')?.includes('no-store'));
     }
