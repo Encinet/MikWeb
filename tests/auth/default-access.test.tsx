@@ -60,7 +60,7 @@ test('session refresh accepts default accounts and keeps the authenticated navig
   let requests = 0;
   globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
     assert.equal(input, '/api/auth/me');
-    assert.equal(init?.method, 'POST');
+    assert.equal(init?.method ?? 'GET', 'GET');
     requests++;
     return Response.json({ authenticated: true, account });
   }, previousFetch);

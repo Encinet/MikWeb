@@ -73,7 +73,7 @@ test('session verification and logout work without AbortSignal.timeout', async (
     const requests: string[] = [];
     globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
       requests.push(String(input));
-      assert.equal(init?.method, 'POST');
+      assert.equal(init?.method ?? 'GET', input === '/api/auth/me' ? 'GET' : 'POST');
       assert.ok(init?.signal);
       return input === '/api/auth/me'
         ? Response.json({

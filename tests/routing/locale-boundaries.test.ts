@@ -4,6 +4,8 @@ import {
   getRewrittenUrl,
   unstable_getResponseFromNextConfig,
 } from 'next/experimental/testing/server';
+import { SESSION_COOKIE_NAME } from '@/modules/auth/model/auth-cookies';
+import { LOCALE_COOKIE_NAME } from '@/shared/i18n/routing';
 import nextConfig from '../../next.config';
 
 test('unmatched non-locale paths fall through to the global 404 before locale routing', async () => {
@@ -37,7 +39,6 @@ test('locale pages and infrastructure routes keep their existing routing', async
     '/zh-CN/wiki',
     '/en/manifest.webmanifest',
     '/api',
-    '/api/auth/me',
     '/api/mcp',
     '/_next/static/chunks/example.js',
     '/_vercel/insights/script.js',
@@ -48,4 +49,23 @@ test('locale pages and infrastructure routes keep their existing routing', async
     });
     assert.equal(getRewrittenUrl(response), null, path);
   }
+});
+
+test('session checks without a session cookie use the static guest response without caching', async () => {
+  const url = 'https://example.test/api/auth/me';
+  const guest = await unstable_getResponseFromNextConfig({
+    url,
+    nextConfig,
+    cookies: { [LOCALE_COOKIE_NAME]: 'en', '__Host-mik_login': 'login-in-progress' },
+  });
+  assert.equal(getRewrittenUrl(guest), 'https://example.test/api/auth/guest.json');
+  assert.equal(guest.headers.get('cache-control'), 'private, no-store');
+
+  const withSession = await unstable_getResponseFromNextConfig({
+    url,
+    nextConfig,
+    cookies: { [SESSION_COOKIE_NAME]: 'unverified-session' },
+  });
+  assert.equal(getRewrittenUrl(withSession), null);
+  assert.equal(withSession.headers.get('cache-control'), 'private, no-store');
 });

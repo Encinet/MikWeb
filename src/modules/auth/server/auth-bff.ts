@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { cookies } from 'next/headers';
+import { SESSION_COOKIE_NAME } from '@/modules/auth/model/auth-cookies';
 import { DATA_API_ORIGIN } from '@/shared/config/service-config';
 import { isRecord } from '@/shared/lib/is-record';
 import {
@@ -9,12 +10,10 @@ import {
 } from '@/shared/server/limited-request-body';
 
 const DATA_AUTH_ORIGIN = process.env.MIKDATA_AUTH_ORIGIN ?? DATA_API_ORIGIN;
-const SESSION_COOKIE_NAME = '__Host-mik_sid';
 const LOGIN_COOKIE_NAME = '__Host-mik_login';
 const MAX_AUTH_BODY_BYTES = 64 * 1024;
 const AUTH_POST_PATHS = new Set([
   '/challenges',
-  '/me',
   '/logout',
   '/passkeys/options/register',
   '/passkeys/register',
@@ -55,9 +54,6 @@ export async function proxyAuthRequest({ kind, path, request }: ProxyOptions): P
 
   const cookieStore = await cookies();
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? '';
-  if (kind === 'auth' && routePath === '/me' && !sessionId) {
-    return Response.json({ authenticated: false }, { headers: { 'Cache-Control': 'no-store' } });
-  }
   const browserNonce = cookieStore.get(LOGIN_COOKIE_NAME)?.value ?? '';
   return forwardAuthRequest(request, {
     path: kind === 'account' ? `/me${routePath}` : `/auth${routePath}`,
@@ -66,6 +62,15 @@ export async function proxyAuthRequest({ kind, path, request }: ProxyOptions): P
     sessionId,
     body: buildUpstreamBody({ kind, request, routePath, requestBody }),
   });
+}
+
+export async function verifyAuthSession(request: Request): Promise<Response> {
+  if (!isSameOriginRequest(request)) return authError('forbidden', 403);
+  const sessionId = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
+  if (!sessionId) {
+    return Response.json({ authenticated: false }, { headers: { 'Cache-Control': 'no-store' } });
+  }
+  return forwardAuthRequest(request, { path: '/auth/me', method: 'POST', sessionId });
 }
 
 /** Server-only upload operations are excluded from the browser route allowlist. */

@@ -50,7 +50,8 @@ test('staff endpoint verifies the real session and rejects public roles, forged 
     const headers = new Headers(init?.headers);
     assert.equal(headers.get('X-Mik-Session'), sessionId);
     assert.equal(headers.get('X-Mikweb-Auth'), 'wiki-test-secret');
-    assert.equal(init?.body, '{}');
+    assert.equal(init?.method, 'POST');
+    assert.equal(init.body, undefined);
     assert.equal(init?.cache, 'no-store');
     return Response.json(upstreamPayload, { status: upstreamStatus });
   }, originalFetch);

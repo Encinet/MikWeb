@@ -35,7 +35,6 @@ export function BuildingCard({ building, locale, t, prioritizeCover = false }: B
       <article className="building-archive-card">
         <Link
           href={getBuildingPath(building.id)}
-          prefetch={true}
           scroll={false}
           transitionTypes={['building-open']}
           className="building-archive-card__link"

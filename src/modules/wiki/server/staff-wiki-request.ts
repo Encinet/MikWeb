@@ -2,7 +2,7 @@ import 'server-only';
 
 import { isStaffRole } from '@/modules/auth/model/auth-access';
 import { isAuthMeResponse } from '@/modules/auth/model/auth-validation';
-import { proxyAuthRequest } from '@/modules/auth/server/auth-bff';
+import { verifyAuthSession } from '@/modules/auth/server/auth-bff';
 import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 
@@ -13,7 +13,7 @@ export async function staffWikiRequest(request: Request): Promise<Response> {
     return Response.json({ error: 'invalid_locale' }, { status: 400, headers });
   }
 
-  const response = await proxyAuthRequest({ kind: 'auth', path: ['me'], request });
+  const response = await verifyAuthSession(request);
   for (const cookie of response.headers.getSetCookie()) headers.append('Set-Cookie', cookie);
   if (!response.ok) {
     return Response.json({ error: 'verification_failed' }, { status: response.status, headers });

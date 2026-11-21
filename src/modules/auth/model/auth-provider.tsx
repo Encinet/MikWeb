@@ -33,7 +33,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const payload = await withRequestTimeout(10_000, async (signal) => {
         const response = await fetch('/api/auth/me', {
-          method: 'POST',
           cache: 'no-store',
           signal,
         });

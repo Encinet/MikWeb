@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { SESSION_COOKIE_NAME } from './src/modules/auth/model/auth-cookies';
 import { CHAT_WEBSOCKET_URL, DATA_API_ORIGIN } from './src/shared/config/service-config';
 import { routing } from './src/shared/i18n/routing';
 
@@ -11,12 +12,21 @@ const nextConfig: NextConfig = {
   async rewrites() {
     // Filesystem routes run first. Send remaining non-locale paths through the unlocalized
     // root's global 404 instead of treating missing resource names as locale parameters.
-    return [
-      {
-        source: `/:path((?!(?:${routing.locales.join('|')}|api|_next|_vercel)(?:/|$)).+)`,
-        destination: '/',
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: '/api/auth/me',
+          missing: [{ type: 'cookie', key: SESSION_COOKIE_NAME }],
+          destination: '/api/auth/guest.json',
+        },
+      ],
+      afterFiles: [
+        {
+          source: `/:path((?!(?:${routing.locales.join('|')}|api|_next|_vercel)(?:/|$)).+)`,
+          destination: '/',
+        },
+      ],
+    };
   },
   async headers() {
     const headers = [
@@ -30,6 +40,10 @@ const nextConfig: NextConfig = {
       { key: 'Cache-Control', value: 'no-store' },
     ];
     return [
+      {
+        source: '/api/auth/me',
+        headers: [{ key: 'Cache-Control', value: 'private, no-store' }],
+      },
       {
         source: '/_next/static/chunks/chat-notifications-worker.:path*',
         headers: [{ key: 'Service-Worker-Allowed', value: '/' }],
