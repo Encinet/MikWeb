@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=22"
-  },
   "scripts": {
     "dev": "bun run prepare:messages && bun run scripts/prepare-cap-assets.ts && bun run --bun next dev",
     "build": "bun run prepare:messages && bun run scripts/prepare-cap-assets.ts && bun run --bun next build",
