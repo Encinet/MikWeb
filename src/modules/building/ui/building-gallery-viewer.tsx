@@ -14,7 +14,6 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode, Ref } from 'react';
 import { useId, ViewTransition } from 'react';
 import { MAX_IMAGE_SCALE } from '@/modules/building/lib/building-image-transform';
-import { getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import type { BuildingGalleryState } from '@/modules/building/model/use-building-gallery';
 import { useBuildingImageZoom } from '@/modules/building/model/use-building-image-zoom';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';
@@ -39,8 +38,15 @@ export function BuildingGalleryViewer({
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');
   const helpId = useId();
-  const { activeImage, loading, isImageError, handleImageLoad, handleImageError, retryImage } =
-    gallery;
+  const {
+    activeImage,
+    activePreview,
+    loading,
+    isImageError,
+    handleImageLoad,
+    handleImageError,
+    retryImage,
+  } = gallery;
   const failed = Boolean(activeImage && isImageError(activeImage));
   const available = Boolean(activeImage && !failed && !loading);
   const zoom = useBuildingImageZoom({
@@ -73,6 +79,23 @@ export function BuildingGalleryViewer({
             >
               {activeImage && !failed ? (
                 <>
+                  {activePreview ? (
+                    <Image
+                      src={activePreview}
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      unoptimized
+                      loading="eager"
+                      draggable={false}
+                      className="building-gallery-preview object-contain"
+                      onError={() => handleImageError(activePreview)}
+                    />
+                  ) : loading ? (
+                    <div className="building-archive-stage-loader">
+                      <LoadingState message={commonT('states.loading')} />
+                    </div>
+                  ) : null}
                   <Image
                     ref={zoom.imageRef}
                     src={activeImage}
@@ -82,19 +105,10 @@ export function BuildingGalleryViewer({
                     unoptimized
                     loading="eager"
                     fetchPriority="high"
+                    decoding="auto"
                     draggable={false}
                     onLoad={() => handleImageLoad(activeImage)}
                     onError={() => handleImageError(activeImage)}
-                  />
-                  <Image
-                    src={getBuildingPreviewUrl(activeImage, 160)}
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    unoptimized
-                    loading="eager"
-                    draggable={false}
-                    className="building-gallery-placeholder object-contain"
                   />
                 </>
               ) : (
@@ -112,11 +126,6 @@ export function BuildingGalleryViewer({
               )}
             </div>
           </section>
-          {loading && activeImage && !failed ? (
-            <div className="building-archive-stage-loader">
-              <LoadingState message={commonT('states.loading')} />
-            </div>
-          ) : null}
           {imageCount > 1 ? (
             <>
               <button

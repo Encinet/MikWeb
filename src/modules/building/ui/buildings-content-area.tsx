@@ -112,7 +112,7 @@ export function BuildingsContentArea({
           <li className="building-archive-print-item" key={building.id}>
             {building.images.length > 0 ? (
               <picture className="building-archive-print-image">
-                <source media="print" srcSet={getBuildingPreviewUrl(building.images[0], 640)} />
+                <source media="print" srcSet={getBuildingPreviewUrl(building.images[0], 'cover')} />
                 <img
                   alt=""
                   src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"

@@ -47,7 +47,7 @@ export function BuildingCard({ building, locale, t, prioritizeCover = false }: B
           <div className="building-archive-card__media">
             {coverImage ? (
               <Image
-                src={getBuildingPreviewUrl(coverImage, 640)}
+                src={getBuildingPreviewUrl(coverImage, 'cover')}
                 fill
                 unoptimized
                 alt={buildingName}

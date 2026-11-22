@@ -264,6 +264,7 @@
       "uploading": "正在上传图片",
       "uploadFailed": "图片上传失败",
       "imageTooSmall": "图片清晰度不足，至少需要 960x540",
+      "imageTooLarge": "压缩后图片仍超过 4 MiB，请裁剪后重试。",
       "submitting": "正在提交",
       "submitted": "申请已提交",
       "draftSubmitted": "这份草稿已提交。请查看投稿记录，或清空表单后新建投稿。",

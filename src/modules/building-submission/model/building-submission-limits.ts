@@ -7,5 +7,5 @@ export const BUILDING_SUBMISSION_IMAGE_LIMITS = {
   minHeight: 540,
   maxDimension: 1920,
   maxBytes: 4 * 1024 * 1024,
-  webpQuality: 86,
+  webpQuality: 92,
 } as const;

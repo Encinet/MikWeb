@@ -367,16 +367,6 @@ html[data-building-gallery-mode="page"] :is(.project-navbar-shell, .site-footer)
   transform-origin: center;
 }
 
-.building-gallery-placeholder {
-  filter: blur(5px);
-  opacity: 0;
-  transition: opacity 180ms ease-out;
-}
-
-.building-archive-stage[aria-busy="true"] .building-gallery-placeholder {
-  opacity: 1;
-}
-
 .building-archive-stage-image img {
   pointer-events: none;
 }
@@ -1199,7 +1189,6 @@ html[data-building-gallery-mode="page"] :is(.project-navbar-shell, .site-footer)
       .building-archive-info-bar__expand svg,
       .building-archive-info-expanded,
       .building-archive-stage-image,
-      .building-gallery-placeholder,
       .building-detail-body,
       .building-archive-info-bar__actions,
       .building-detail-toggle-label > span,

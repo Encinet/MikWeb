@@ -17,7 +17,7 @@ bun dev
 | 功能 | 配置 |
 |------|------|
 | 登录与账号 | `MIKWEB_AUTH_CLIENT_SECRET`，与 Mik Data 保持一致；`MIKDATA_AUTH_ORIGIN` 默认指向 `https://data.mcmik.top` |
-| 建筑投稿图片上传 | 复用登录配置。MikWeb 校验和转码 WebP，使用 MikData 返回的单对象签名上传。 |
+| 建筑投稿图片上传 | 复用登录配置。浏览器缩放并编码 WebP，在同一草稿内复用相同图片。MikWeb 完整解码校验后使用 MikData 返回的单对象签名上传，按文件哈希缓存已验证 WebP 的尺寸。 |
 | 网页聊天 | `NEXT_PUBLIC_WEB_CHAT_PUBLIC_KEY`，取自 Mik 插件启动日志中的 `Web chat public key` |
 | 加入社区 | `MATRIX_JOIN_URL` 与 QQ 群入口；QQ 入群码还需配置 Cap 和两组独立的 TOTP 密钥。加入后绑定游戏账号即可入服 |
 

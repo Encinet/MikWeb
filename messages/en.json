@@ -264,6 +264,7 @@
       "uploading": "Uploading images…",
       "uploadFailed": "Image upload failed.",
       "imageTooSmall": "Images must be at least 960 × 540 pixels.",
+      "imageTooLarge": "The compressed image exceeds 4 MiB. Crop it and try again.",
       "submitting": "Submitting…",
       "submitted": "Build submitted",
       "draftSubmitted": "This draft was already submitted. Check your submission history, or reset the form to start a new one.",

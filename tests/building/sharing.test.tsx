@@ -30,6 +30,7 @@ const building: Building = {
 
 function GalleryHarness({
   onState,
+  modal,
   images = [
     'https://example.test/1.webp',
     'https://example.test/2.webp',
@@ -37,14 +38,10 @@ function GalleryHarness({
   ],
 }: {
   onState: (value: ReturnType<typeof useBuildingGallery>) => void;
+  modal?: boolean;
   images?: string[];
 }) {
-  onState(
-    useBuildingGallery({
-      ...building,
-      images,
-    }),
-  );
+  onState(useBuildingGallery({ ...building, images }, modal));
   return null;
 }
 
@@ -251,8 +248,14 @@ test('rapid gallery navigation ignores completion from an earlier image and rema
       ),
     );
     assert.equal(current().loading, true);
+    assert.equal(current().activePreview, undefined);
+    assert.equal(current().getThumbnailSrc('https://example.test/1.webp'), undefined);
     await act(async () => current().handleImageLoad('https://example.test/1.webp'));
     assert.equal(current().loading, false);
+    assert.equal(
+      current().getThumbnailSrc('https://example.test/1.webp'),
+      'https://example.test/1.webp',
+    );
     await act(async () => current().next());
     const earlierImage = current().activeImage;
     await act(async () => current().next());
@@ -290,10 +293,58 @@ test('rapid gallery navigation ignores completion from an earlier image and rema
   }
 });
 
+test('gallery shares loaded covers and thumbnails and retries only the failed original', async () => {
+  const environment = createBrowserEnvironment();
+  const [first, second] = ['https://example.test/first.webp', 'https://example.test/second.webp'];
+  const cover = getBuildingPreviewUrl(first, 'cover');
+  const small = getBuildingPreviewUrl(second, 'thumbnail');
+  Object.defineProperty(document, 'images', {
+    value: [
+      { complete: true, currentSrc: cover, naturalWidth: 640 },
+      { complete: false, currentSrc: second, naturalWidth: 0 },
+    ],
+  });
+  let gallery!: ReturnType<typeof useBuildingGallery>;
+  try {
+    await act(async () =>
+      environment.root.render(
+        <GalleryHarness
+          modal
+          images={[first, second]}
+          onState={(state) => {
+            gallery = state;
+          }}
+        />,
+      ),
+    );
+    assert.equal(gallery.loading, true);
+    assert.equal(gallery.activePreview, cover);
+    assert.equal(gallery.getThumbnailSrc(first), cover);
+    assert.equal(gallery.getThumbnailSrc(second), small);
+    await act(async () => {
+      gallery.handleImageLoad(small);
+      gallery.next();
+    });
+    assert.equal(gallery.loading, true);
+    assert.equal(gallery.activePreview, small);
+    await act(async () => gallery.handleImageError(second));
+    assert.equal(gallery.getThumbnailSrc(second), small);
+    await act(async () => gallery.retryImage());
+    assert.equal(gallery.activePreview, small);
+    await act(async () => gallery.handleImageLoad(second));
+    assert.equal(gallery.activePreview, undefined);
+    await act(async () => gallery.handleImageError(small));
+    assert.equal(gallery.getThumbnailSrc(second), second);
+    assert.equal(gallery.isImageError(second), false);
+  } finally {
+    await environment.close();
+  }
+});
+
 test('building preview URLs retain the public object path for both widths', () => {
   const original = `https://images.example.test/media/buildings/${building.id}/${'b'.repeat(64)}.webp`;
-  assert.equal(getBuildingPreviewUrl(original, 160), `${original}?w=160`);
-  assert.equal(getBuildingPreviewUrl(original, 640), `${original}?w=640`);
+  assert.equal(getBuildingPreviewUrl(original, 'thumbnail'), `${original}?w=160`);
+  assert.equal(getBuildingPreviewUrl(original, 'cover'), `${original}?w=640`);
 });
 
 test('sharing uses immutable identity across locales, renames and coordinate edits', () => {

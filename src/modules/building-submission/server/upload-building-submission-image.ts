@@ -1,9 +1,9 @@
 import 'server-only';
 
 import { createHash } from 'node:crypto';
-import type { OutputInfo } from 'sharp';
 import sharp from 'sharp';
 import { callImageUploadService } from '@/modules/auth/server/auth-bff';
+import { isPixelOnlyWebp } from '@/modules/building-submission/lib/is-pixel-only-webp';
 import { BUILDING_SUBMISSION_IMAGE_LIMITS } from '@/modules/building-submission/model/building-submission-limits';
 import {
   RequestBodyLimitError,
@@ -12,6 +12,9 @@ import {
 
 const MAX_UPLOAD_BYTES = BUILDING_SUBMISSION_IMAGE_LIMITS.maxBytes;
 const MAX_MULTIPART_BYTES = MAX_UPLOAD_BYTES + 16 * 1024;
+// Only server-verified byte digests and dimensions are shared across requests.
+const validatedWebps = new Map<string, { width: number; height: number }>();
+const MAX_VALIDATED_WEBPS = 256;
 let activeUploads = 0;
 
 export async function uploadBuildingSubmissionImage(request: Request): Promise<Response> {
@@ -53,40 +56,10 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     if (image.size <= 0 || image.size > MAX_UPLOAD_BYTES)
       return uploadError('image_too_large', 413);
     const input = Buffer.from(await image.arrayBuffer());
-    if (input.toString('ascii', 0, 4) !== 'RIFF' || input.toString('ascii', 8, 12) !== 'WEBP') {
-      return uploadError('invalid_image', 422);
-    }
-    let decoded: { data: Buffer; info: OutputInfo };
-    try {
-      const decoder = sharp(input, {
-        failOn: 'warning',
-        limitInputPixels: BUILDING_SUBMISSION_IMAGE_LIMITS.maxDimension ** 2,
-      });
-      const metadata = await decoder.metadata();
-      if (
-        metadata.format !== 'webp' ||
-        (metadata.pages ?? 1) !== 1 ||
-        !metadata.width ||
-        !metadata.height ||
-        metadata.width < BUILDING_SUBMISSION_IMAGE_LIMITS.minWidth ||
-        metadata.height < BUILDING_SUBMISSION_IMAGE_LIMITS.minHeight ||
-        metadata.width > BUILDING_SUBMISSION_IMAGE_LIMITS.maxDimension ||
-        metadata.height > BUILDING_SUBMISSION_IMAGE_LIMITS.maxDimension
-      ) {
-        return uploadError('invalid_image_dimensions', 422);
-      }
-      // Decode the entire image and strip metadata before it reaches the hosting service.
-      decoded = await decoder
-        .webp({ quality: BUILDING_SUBMISSION_IMAGE_LIMITS.webpQuality, effort: 3 })
-        .toBuffer({ resolveWithObject: true });
-    } catch {
-      return uploadError('invalid_image', 422);
-    }
-    if (decoded.data.length > MAX_UPLOAD_BYTES) return uploadError('image_too_large', 413);
-    const prepared = await callImageUploadService(request, 'prepare', {
-      uploadId,
-      hash: createHash('sha256').update(decoded.data).digest('hex'),
-    });
+    const result = await validateWebp(input);
+    if (result instanceof Response) return result;
+    const { data, hash, width, height } = result;
+    const prepared = await callImageUploadService(request, 'prepare', { uploadId, hash });
     if (!prepared.ok) return prepared;
     const { url, put } = (await prepared.json()) as {
       url: string;
@@ -95,7 +68,7 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const stored = await fetch(put.url, {
       method: 'PUT',
       headers: put.headers,
-      body: new Uint8Array(decoded.data),
+      body: new Uint8Array(data),
       redirect: 'error',
       signal: AbortSignal.timeout(20_000),
     });
@@ -103,9 +76,9 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     if (!stored.ok) return uploadError('image_upload_unavailable', 502);
     const receipt = {
       url,
-      width: decoded.info.width,
-      height: decoded.info.height,
-      size: decoded.data.length,
+      width,
+      height,
+      size: data.length,
       mime: 'image/webp',
     };
     return await callImageUploadService(request, 'complete', { uploadId, image: receipt });
@@ -116,6 +89,47 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     );
   } finally {
     activeUploads--;
+  }
+}
+
+async function validateWebp(input: Buffer) {
+  if (input.toString('ascii', 0, 4) !== 'RIFF' || input.toString('ascii', 8, 12) !== 'WEBP')
+    return uploadError('invalid_image', 422);
+  const hash = createHash('sha256').update(input).digest('hex');
+  const cached = validatedWebps.get(hash);
+  if (cached) return { ...cached, data: input, hash };
+
+  const limits = BUILDING_SUBMISSION_IMAGE_LIMITS;
+  try {
+    const decoder = sharp(input, { failOn: 'warning', limitInputPixels: limits.maxDimension ** 2 });
+    const metadata = await decoder.metadata();
+    const { width, height } = metadata.autoOrient;
+    if (
+      metadata.format !== 'webp' ||
+      (metadata.pages ?? 1) !== 1 ||
+      width < limits.minWidth ||
+      height < limits.minHeight ||
+      width > limits.maxDimension ||
+      height > limits.maxDimension
+    )
+      return uploadError('invalid_image_dimensions', 422);
+    if (isPixelOnlyWebp(input)) {
+      await decoder.raw().toBuffer();
+      if (validatedWebps.size >= MAX_VALIDATED_WEBPS) {
+        const oldest = validatedWebps.keys().next().value;
+        if (oldest !== undefined) validatedWebps.delete(oldest);
+      }
+      validatedWebps.set(hash, { width, height });
+      return { data: input, hash, width, height };
+    }
+    const data = await decoder
+      .autoOrient()
+      .webp({ quality: limits.webpQuality, smartSubsample: true })
+      .toBuffer();
+    if (data.length > MAX_UPLOAD_BYTES) return uploadError('image_too_large', 413);
+    return { data, width, height, hash: createHash('sha256').update(data).digest('hex') };
+  } catch {
+    return uploadError('invalid_image', 422);
   }
 }
 

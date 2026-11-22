@@ -17,8 +17,10 @@ export function getBuildingSocialImagePath(id: string, locale: string) {
   return `/${locale}${getBuildingPath(id)}/opengraph-image`;
 }
 
-export function getBuildingPreviewUrl(original: string, width: 160 | 640) {
-  return `${original}?w=${width}`;
+const previewWidths = { cover: 640, thumbnail: 160 } as const;
+
+export function getBuildingPreviewUrl(original: string, variant: keyof typeof previewWidths) {
+  return `${original}?w=${previewWidths[variant]}`;
 }
 
 export function getBuildingShareData(building: Building, locale: string): ShareData {

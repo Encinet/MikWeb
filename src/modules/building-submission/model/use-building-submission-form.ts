@@ -7,7 +7,7 @@ import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import type { BuildingInput } from '@/modules/building/model/building-types';
 import {
-  createBuildingSubmissionImageDraft,
+  createBuildingSubmissionImageDrafts,
   uploadBuildingSubmissionImageDrafts,
 } from '@/modules/building-submission/lib/building-submission-images';
 import { buildBuildingSubmissionPayload } from '@/modules/building-submission/lib/building-submission-payload';
@@ -23,7 +23,6 @@ import {
   normalizeBuilderWeight,
 } from '@/modules/building-submission/model/building-submission-form';
 import {
-  BUILDING_SUBMISSION_IMAGE_LIMITS,
   MAX_BUILDING_SUBMISSION_IMAGES,
   MAX_PENDING_BUILDING_SUBMISSIONS,
 } from '@/modules/building-submission/model/building-submission-limits';
@@ -70,7 +69,13 @@ export function useBuildingSubmissionForm() {
   const [draftImages, setDraftImages] = useState<BuildingSubmissionImageDraft[]>([]);
   const [builders, setBuilders] = useState<BuilderDraft[]>([]);
   const draftImagesRef = useRef<BuildingSubmissionImageDraft[]>([]);
+  const pendingImages = useRef<AbortController | null>(null);
   const [form, setForm] = useState(() => createInitialBuildingSubmissionForm());
+
+  const releaseDraftImages = useCallback(() => {
+    for (const image of draftImagesRef.current) URL.revokeObjectURL(image.previewUrl);
+    draftImagesRef.current = [];
+  }, []);
 
   const draftKey = useRef('');
   const accountGeneration = useRef(0);
@@ -84,7 +89,6 @@ export function useBuildingSubmissionForm() {
     setIsLoadingSubmissions(false);
     setIsResolvingPlayer(false);
     setPlayerInput('');
-    pendingSubmission.current?.abort();
     setSubmissions([]);
     setIsSubmitting(false);
     setIsUploading(false);
@@ -95,15 +99,16 @@ export function useBuildingSubmissionForm() {
     setBuilders((current) =>
       current.filter((builder) => builder.uuid === account?.playerUuid && builder.locked),
     );
-    setDraftImages((current) => {
-      for (const image of current) URL.revokeObjectURL(image.previewUrl);
-      return [];
-    });
+    setDraftImages(draftImagesRef.current);
     return () => {
       accountGeneration.current++;
       pendingSubmission.current?.abort();
+      pendingSubmission.current = null;
+      pendingImages.current?.abort();
+      pendingImages.current = null;
+      releaseDraftImages();
     };
-  }, [account?.playerUuid]);
+  }, [account?.playerUuid, releaseDraftImages]);
 
   const loadSubmissions = useCallback(
     async (options: { force?: boolean } = {}) => {
@@ -165,18 +170,6 @@ export function useBuildingSubmissionForm() {
     }
     void loadSubmissions();
   }, [authenticated, loadSubmissions]);
-
-  useEffect(() => {
-    draftImagesRef.current = draftImages;
-  }, [draftImages]);
-
-  useEffect(() => {
-    return () => {
-      for (const image of draftImagesRef.current) {
-        URL.revokeObjectURL(image.previewUrl);
-      }
-    };
-  }, []);
 
   const pendingCount = useMemo(
     () => submissions.filter((submission) => submission.status === 'pending').length,
@@ -274,67 +267,64 @@ export function useBuildingSubmissionForm() {
 
   const handleImageFiles = async (files: FileList | null) => {
     const selected = Array.from(files ?? []);
-    if (!selected.length) return;
+    if (!selected.length || pendingImages.current || pendingSubmission.current) return;
     if (!account) {
       showFeedback('images', { message: t('states.required'), kind: 'error' });
       return;
     }
-    if (draftImages.length + selected.length > MAX_BUILDING_SUBMISSION_IMAGES) {
+    if (draftImagesRef.current.length + selected.length > MAX_BUILDING_SUBMISSION_IMAGES) {
       showFeedback('images', { message: t('states.imageLimit'), kind: 'error' });
       return;
     }
 
     showFeedback('images', null);
     setIsUploading(true);
-    const drafts: BuildingSubmissionImageDraft[] = [];
-    const generation = accountGeneration.current;
+    const controller = new AbortController();
+    pendingImages.current = controller;
     try {
-      for (const file of selected) {
-        const draft = await createBuildingSubmissionImageDraft(file);
-        if (
-          draft.width < BUILDING_SUBMISSION_IMAGE_LIMITS.minWidth ||
-          draft.height < BUILDING_SUBMISSION_IMAGE_LIMITS.minHeight
-        ) {
-          URL.revokeObjectURL(draft.previewUrl);
-          throw new Error('image_too_small');
-        }
-        drafts.push(draft);
-      }
-      if (generation !== accountGeneration.current) {
+      const drafts = await createBuildingSubmissionImageDrafts(
+        selected,
+        controller.signal,
+        draftImagesRef.current,
+      );
+      if (controller.signal.aborted) {
         for (const draft of drafts) URL.revokeObjectURL(draft.previewUrl);
         return;
       }
-      setDraftImages((current) => [...current, ...drafts]);
+      draftImagesRef.current = [...draftImagesRef.current, ...drafts];
+      setDraftImages(draftImagesRef.current);
     } catch (error) {
-      for (const draft of drafts) URL.revokeObjectURL(draft.previewUrl);
-      if (generation !== accountGeneration.current) return;
-      showFeedback('images', {
-        message:
-          error instanceof Error && error.message === 'image_too_small'
-            ? t('states.imageTooSmall')
-            : t('states.imageSelectFailed'),
-        kind: 'error',
-      });
+      if (controller.signal.aborted) return;
+      let message = t('states.imageSelectFailed');
+      if (error instanceof Error) {
+        if (error.message === 'image_too_small') message = t('states.imageTooSmall');
+        if (error.message === 'image_too_large') message = t('states.imageTooLarge');
+      }
+      showFeedback('images', { message, kind: 'error' });
     } finally {
-      if (generation === accountGeneration.current) setIsUploading(false);
+      if (pendingImages.current === controller) {
+        pendingImages.current = null;
+        setIsUploading(false);
+      }
     }
   };
 
   const submit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || pendingImages.current || pendingSubmission.current) return;
     if (!account) {
       showFeedback('form', { message: t('states.required'), kind: 'error' });
       return;
     }
 
+    const images = draftImagesRef.current;
     let payload: BuildingInput;
     try {
       payload = buildBuildingSubmissionPayload(
         form,
         builders,
         tags,
-        draftImages.map((image) => image.previewUrl),
+        images.map((image) => image.previewUrl),
       );
     } catch (error) {
       const key = error instanceof Error ? `states.${error.message}` : null;
@@ -345,7 +335,6 @@ export function useBuildingSubmissionForm() {
       return;
     }
 
-    if (pendingSubmission.current && !pendingSubmission.current.signal.aborted) return;
     const controller = new AbortController();
     pendingSubmission.current = controller;
     setIsSubmitting(true);
@@ -355,7 +344,7 @@ export function useBuildingSubmissionForm() {
       draftKey.current ||= crypto.randomUUID();
       const currentDraft = draftKey.current;
       const uploadedImages = await uploadBuildingSubmissionImageDrafts(
-        draftImages,
+        images,
         account,
         currentDraft,
         controller.signal,
@@ -423,32 +412,27 @@ export function useBuildingSubmissionForm() {
   };
 
   const resetForm = (currentAccount: AuthAccount | null) => {
+    if (pendingImages.current) {
+      pendingImages.current.abort();
+      pendingImages.current = null;
+      setIsUploading(false);
+    }
     draftKey.current = '';
     setFeedback((current) => ({ history: current.history }));
     setForm(createInitialBuildingSubmissionForm(new Date().toISOString().slice(0, 10)));
     setTags([]);
     setTagDraft({ zh: '', en: '' });
-    clearDraftImages();
+    releaseDraftImages();
+    setDraftImages(draftImagesRef.current);
     setBuilders(currentAccount ? ensureSelfBuilder([], currentAccount) : []);
   };
 
-  const clearDraftImages = () => {
-    setDraftImages((current) => {
-      for (const image of current) {
-        URL.revokeObjectURL(image.previewUrl);
-      }
-      return [];
-    });
-  };
-
   const removeDraftImage = (id: string) => {
-    setDraftImages((current) => {
-      const target = current.find((image) => image.id === id);
-      if (target) {
-        URL.revokeObjectURL(target.previewUrl);
-      }
-      return current.filter((image) => image.id !== id);
-    });
+    const target = draftImagesRef.current.find((image) => image.id === id);
+    if (!target) return;
+    URL.revokeObjectURL(target.previewUrl);
+    draftImagesRef.current = draftImagesRef.current.filter((image) => image.id !== id);
+    setDraftImages(draftImagesRef.current);
   };
 
   return {

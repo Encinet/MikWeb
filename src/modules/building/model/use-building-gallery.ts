@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-
+import { getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import type { Building } from '@/modules/building/model/building-types';
 
 export interface BuildingGalleryState {
   imageIndex: number;
   loading: boolean;
   activeImage: string | undefined;
+  activePreview: string | undefined;
+  getThumbnailSrc: (url: string) => string | undefined;
   isImageError: (url: string) => boolean;
   handleImageError: (url: string) => void;
   handleImageLoad: (url: string) => void;
@@ -17,10 +19,20 @@ export interface BuildingGalleryState {
   prev: () => void;
 }
 
-export function useBuildingGallery(building: Building): BuildingGalleryState {
+type ImageStatus = 'loaded' | 'error';
+
+export function useBuildingGallery(building: Building, modal = false): BuildingGalleryState {
   const [selection, setSelection] = useState<{ url: string; index: number } | null>(null);
-  const [loaded, setLoaded] = useState<Set<string>>(new Set());
-  const [errors, setErrors] = useState<Set<string>>(new Set());
+  const [imageStatus, setImageStatus] = useState(() => {
+    const status = new Map<string, ImageStatus>();
+    // The underlying page can already be displaying a cover when a gallery opens over it.
+    if (modal && typeof document !== 'undefined') {
+      for (const image of document.images) {
+        if (image.complete && image.naturalWidth > 0) status.set(image.currentSrc, 'loaded');
+      }
+    }
+    return status;
+  });
 
   const images = building.images;
   // A refreshed catalog may reorder or remove photos while the detail page stays mounted.
@@ -32,33 +44,37 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
         : Math.max(0, images.indexOf(selected.url));
   const imageIndex = resolveIndex(selection);
   const activeImage = images[imageIndex];
-  const loading = Boolean(activeImage && !loaded.has(activeImage) && !errors.has(activeImage));
+  const loading = Boolean(activeImage && !imageStatus.has(activeImage));
 
-  const isImageError = (url: string) => errors.has(url);
+  const isImageError = (url: string) => imageStatus.get(url) === 'error';
 
-  const handleImageError = (url: string) => {
-    setErrors((prev) => new Set(prev).add(url));
+  const loadedPreview = (url: string) => {
+    const cover = getBuildingPreviewUrl(url, 'cover');
+    if (imageStatus.get(cover) === 'loaded') return cover;
+    const small = getBuildingPreviewUrl(url, 'thumbnail');
+    if (imageStatus.get(small) === 'loaded') return small;
   };
 
-  const handleImageLoad = (url: string) => {
-    setLoaded((previous) => new Set(previous).add(url));
-    setErrors((previous) => {
-      if (!previous.has(url)) return previous;
-      const next = new Set(previous);
-      next.delete(url);
-      return next;
-    });
+  const getThumbnailSrc = (url: string) => {
+    const preview = loadedPreview(url);
+    if (preview) return preview;
+    if (imageStatus.get(url) === 'loaded') return url;
+    // Let the stage finish its request before displaying the same original in the strip.
+    if (url === activeImage) return;
+    const small = getBuildingPreviewUrl(url, 'thumbnail');
+    if (!isImageError(small)) return small;
+  };
+
+  const markImage = (url: string, status: ImageStatus) => {
+    setImageStatus((previous) =>
+      previous.get(url) === status ? previous : new Map(previous).set(url, status),
+    );
   };
 
   const retryImage = () => {
     if (!activeImage) return;
-    setErrors((previous) => {
-      const next = new Set(previous);
-      next.delete(activeImage);
-      return next;
-    });
-    setLoaded((previous) => {
-      const next = new Set(previous);
+    setImageStatus((previous) => {
+      const next = new Map(previous);
       next.delete(activeImage);
       return next;
     });
@@ -84,9 +100,11 @@ export function useBuildingGallery(building: Building): BuildingGalleryState {
     imageIndex,
     loading,
     activeImage,
+    activePreview: activeImage && loading ? loadedPreview(activeImage) : undefined,
+    getThumbnailSrc,
     isImageError,
-    handleImageError,
-    handleImageLoad,
+    handleImageError: (url) => markImage(url, 'error'),
+    handleImageLoad: (url) => markImage(url, 'loaded'),
     retryImage,
     handleSelectImage,
     next,

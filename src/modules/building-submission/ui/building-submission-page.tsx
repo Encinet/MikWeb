@@ -323,6 +323,7 @@ function BuildingSubmissionForm() {
                     </figcaption>
                     <button
                       aria-label={t('actions.remove')}
+                      disabled={isSubmitting}
                       type="button"
                       onClick={() => removeDraftImage(image.id)}
                     >
@@ -407,7 +408,12 @@ function BuildingSubmissionForm() {
 
             <InlineFeedback value={feedback.form} />
             <div className="building-submission-actions">
-              <button className="ui-action-button" type="button" onClick={() => resetForm(account)}>
+              <button
+                className="ui-action-button"
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => resetForm(account)}
+              >
                 {t('actions.reset')}
               </button>
               <button

@@ -13,7 +13,6 @@ import {
   useState,
   ViewTransition,
 } from 'react';
-import { getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
@@ -36,15 +35,14 @@ export function BuildingGallery({
   const t = useTranslations('buildings');
   const router = useRouter();
   const titleId = useId();
-  const gallery = useBuildingGallery(building);
+  const gallery = useBuildingGallery(building, modal);
   const reduceMotion = useReducedMotion();
   const [focused, setFocused] = useState(false);
-  const [thumbnailErrors, setThumbnailErrors] = useState<Set<string>>(new Set());
   const imageOccurrences = new Map<string, number>();
   const thumbnails = building.images.map((url) => {
     const occurrence = imageOccurrences.get(url) ?? 0;
     imageOccurrences.set(url, occurrence + 1);
-    return { url, key: JSON.stringify([url, occurrence]) };
+    return { src: gallery.getThumbnailSrc(url), key: JSON.stringify([url, occurrence]) };
   });
   const { stageRef, thumbnailsRef } = useBuildingGalleryControls({
     imageIndex: gallery.imageIndex,
@@ -156,7 +154,7 @@ export function BuildingGallery({
                   className="building-archive-thumbnails"
                   aria-label={t('viewer.thumbnails')}
                 >
-                  {thumbnails.map(({ url, key }, index) => (
+                  {thumbnails.map(({ src, key }, index) => (
                     <button
                       key={key}
                       type="button"
@@ -168,21 +166,21 @@ export function BuildingGallery({
                       aria-pressed={index === gallery.imageIndex}
                       className={index === gallery.imageIndex ? 'is-active' : ''}
                     >
-                      {thumbnailErrors.has(url) ? (
-                        <span>{index + 1}</span>
-                      ) : (
+                      {src ? (
                         <Image
-                          src={getBuildingPreviewUrl(url, 160)}
+                          key={src}
+                          src={src}
                           fill
                           unoptimized
                           alt=""
                           className="object-cover"
                           loading="lazy"
                           fetchPriority="low"
-                          onError={() =>
-                            setThumbnailErrors((previous) => new Set(previous).add(url))
-                          }
+                          onLoad={() => gallery.handleImageLoad(src)}
+                          onError={() => gallery.handleImageError(src)}
                         />
+                      ) : (
+                        <span>{index + 1}</span>
                       )}
                     </button>
                   ))}

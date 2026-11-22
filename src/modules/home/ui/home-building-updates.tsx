@@ -63,7 +63,7 @@ export function HomeBuildingUpdates({
                 <span className="home-building-preview__image">
                   {cover ? (
                     <Image
-                      src={getBuildingPreviewUrl(cover, 640)}
+                      src={getBuildingPreviewUrl(cover, 'cover')}
                       fill
                       unoptimized
                       alt=""

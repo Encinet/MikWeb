@@ -15,6 +15,7 @@ export interface BuildingSubmissionTagDraft {
 
 export interface BuildingSubmissionImageDraft {
   id: string;
+  source: File;
   file: File;
   previewUrl: string;
   width: number;
