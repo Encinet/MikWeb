@@ -30,14 +30,16 @@ export async function frameSocialImagePhoto(
   source: Uint8Array,
   size: { width: number; height: number } = SOCIAL_IMAGE_SIZE,
 ) {
-  const cover = await sharp(source)
+  const image = sharp(source, { limitInputPixels: 40_000_000 }).autoOrient();
+  const cover = await image
+    .clone()
     .resize(size.width, size.height, { fit: 'cover' })
     .png()
     .toBuffer();
   // Preserve the entire original image. The same image, blurred, fills any empty space.
   const [background, fitted] = await Promise.all([
     sharp(cover).blur(24).png().toBuffer(),
-    sharp(source)
+    image
       .ensureAlpha()
       .resize(size.width, size.height, {
         fit: 'inside',

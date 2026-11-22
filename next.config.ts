@@ -67,9 +67,6 @@ const nextConfig: NextConfig = {
       { source: '/:locale/account/:path*', headers },
     ];
   },
-  images: {
-    minimumCacheTTL: 86400, // Match registered building images' daily revalidation.
-  },
   experimental: {
     globalNotFound: true,
     optimizePackageImports: ['motion/react'],

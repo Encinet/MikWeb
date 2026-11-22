@@ -188,6 +188,9 @@
       "copied": "链接已复制",
       "copyCoordinates": "复制坐标",
       "saveCard": "保存卡片",
+      "prepareCard": "准备分享卡片",
+      "preparingCard": "正在准备卡片…",
+      "cardReady": "卡片已就绪，可以分享。",
       "shareCard": "分享卡片",
       "cardUnavailable": "卡片暂时无法分享，可以保存后发送。"
     },

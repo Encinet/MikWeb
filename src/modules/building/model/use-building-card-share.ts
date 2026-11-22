@@ -1,95 +1,81 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   getBuildingShareData,
   getBuildingSocialImagePath,
 } from '@/modules/building/lib/building-links';
 import type { Building } from '@/modules/building/model/building-types';
+import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { canNativeShare, isShareCancellation } from '@/shared/lib/native-share';
 import { readLimitedResponse } from '@/shared/lib/read-limited-response';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 const MAX_SHARE_CARD_BYTES = 10 * 1024 * 1024;
 
+async function fetchShareCard(url: string, filename: string, signal: AbortSignal) {
+  const response = await fetch(url, { signal });
+  const type = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase();
+  if (!response.ok || type !== 'image/png') {
+    await response.body?.cancel().catch(() => {});
+    throw new Error('Card unavailable');
+  }
+  const bytes = await readLimitedResponse(response, MAX_SHARE_CARD_BYTES);
+  if (bytes.byteLength === 0) throw new Error('Card unavailable');
+  return new File([bytes], filename, { type: 'image/png' });
+}
+
 export function useBuildingCardShare(building: Building, locale: string) {
   const url = getBuildingSocialImagePath(building.id, locale);
   const filename = `${building.id}-${locale}.png`;
-  const data = getBuildingShareData(building, locale);
-  const [prepared, setPrepared] = useState<{ url: string; filename: string; file: File } | null>(
-    null,
+  const mounted = useHasMounted();
+  const supported = useMemo(
+    () => mounted && canNativeShare({ files: [new File([], filename, { type: 'image/png' })] }),
+    [mounted, filename],
   );
-  const [preparingUrl, setPreparingUrl] = useState<string | null>(null);
-  const [sharing, setSharing] = useState(false);
-  const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  const pending = useRef(false);
-  const preparation = useRef<AbortController | null>(null);
-
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState<'preparing' | 'sharing' | null>(null);
+  const [failed, setFailed] = useState(false);
+  const scope = useRef<{ url: string; controller: AbortController; pending: boolean } | null>(null);
   useEffect(() => {
-    // The card belongs to the building and locale; changing photos does not prepare it again.
-    setPrepared(null);
-    setFailedUrl(null);
-    setPreparingUrl(null);
-    if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return;
     const controller = new AbortController();
-    preparation.current = controller;
-    setPreparingUrl(url);
-    const prepare = async () => {
-      try {
-        const file = await withRequestTimeout(
-          15_000,
-          async (signal) => {
-            const response = await fetch(url, { signal });
-            const type =
-              response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() ?? '';
-            if (!response.ok || type !== 'image/png') {
-              await response.body?.cancel().catch(() => {});
-              throw new Error('Card unavailable');
-            }
-            const bytes = await readLimitedResponse(response, MAX_SHARE_CARD_BYTES);
-            if (bytes.byteLength === 0) throw new Error('Card unavailable');
-            return new File([bytes], filename, { type: 'image/png' });
-          },
-          controller.signal,
-        );
-        if (!controller.signal.aborted) setPrepared({ url, filename, file });
-      } catch {
-        if (!controller.signal.aborted) setFailedUrl(url);
-      } finally {
-        if (!controller.signal.aborted) setPreparingUrl(null);
-      }
-    };
-    void prepare();
+    scope.current = { url, controller, pending: false };
+    setFile(null);
+    setBusy(null);
+    setFailed(false);
     return () => controller.abort();
-  }, [url, filename]);
+  }, [url]);
 
-  const file =
-    prepared && prepared.url === url && prepared.filename === filename ? prepared.file : null;
-  const payload = file ? { title: data.title, files: [file] } : null;
-  const ready = payload !== null && canNativeShare(payload);
-  const share = async () => {
-    if (!ready || !payload || pending.current) return;
-    const selection = preparation.current;
-    pending.current = true;
-    setSharing(true);
-    setFailedUrl(null);
+  const ready = file?.name === filename;
+  const prepareOrShare = async () => {
+    const selection = scope.current;
+    if (!supported || selection?.url !== url || selection.pending) return;
+    const { signal } = selection.controller;
+    if (signal.aborted) return;
+    selection.pending = true;
+    setFailed(false);
+    setBusy(ready ? 'sharing' : 'preparing');
     try {
-      // Preparing before the click preserves the user gesture required by native sharing.
-      await navigator.share(payload);
+      const { title } = getBuildingShareData(building, locale);
+      if (ready && file) {
+        // File sharing needs a fresh click after the download completes.
+        await navigator.share({ title, files: [file] });
+      } else {
+        const png = await withRequestTimeout(
+          15_000,
+          (requestSignal) => fetchShareCard(url, filename, requestSignal),
+          signal,
+        );
+        if (!canNativeShare({ title, files: [png] })) throw new Error('Card unavailable');
+        if (!signal.aborted) setFile(png);
+      }
     } catch (error) {
-      if (!selection?.signal.aborted && !isShareCancellation(error)) setFailedUrl(url);
+      if (!signal.aborted && !(ready && isShareCancellation(error))) setFailed(true);
     } finally {
-      pending.current = false;
-      setSharing(false);
+      selection.pending = false;
+      if (!signal.aborted) setBusy(null);
     }
   };
-  return {
-    url,
-    filename,
-    ready,
-    preparing: preparingUrl === url,
-    share,
-    sharing,
-    failed: failedUrl === url,
-  };
+
+  return { url, filename, supported, ready, busy, prepareOrShare, failed };
 }

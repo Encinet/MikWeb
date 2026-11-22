@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode, Ref } from 'react';
 import { useId, ViewTransition } from 'react';
 import { MAX_IMAGE_SCALE } from '@/modules/building/lib/building-image-transform';
+import { getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import type { BuildingGalleryState } from '@/modules/building/model/use-building-gallery';
 import { useBuildingImageZoom } from '@/modules/building/model/use-building-image-zoom';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';
@@ -71,20 +72,31 @@ export function BuildingGalleryViewer({
               style={{ transform: `translate3d(${x}px, ${y}px, 0px) scale(${scale})` }}
             >
               {activeImage && !failed ? (
-                <Image
-                  ref={zoom.imageRef}
-                  src={activeImage}
-                  alt={name}
-                  fill
-                  sizes="100vw"
-                  className="object-contain"
-                  unoptimized
-                  loading="eager"
-                  fetchPriority="high"
-                  draggable={false}
-                  onLoad={() => handleImageLoad(activeImage)}
-                  onError={() => handleImageError(activeImage)}
-                />
+                <>
+                  <Image
+                    ref={zoom.imageRef}
+                    src={activeImage}
+                    alt={name}
+                    fill
+                    className="object-contain"
+                    unoptimized
+                    loading="eager"
+                    fetchPriority="high"
+                    draggable={false}
+                    onLoad={() => handleImageLoad(activeImage)}
+                    onError={() => handleImageError(activeImage)}
+                  />
+                  <Image
+                    src={getBuildingPreviewUrl(activeImage, 160)}
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    unoptimized
+                    loading="eager"
+                    draggable={false}
+                    className="building-gallery-placeholder object-contain"
+                  />
+                </>
               ) : (
                 <div className="building-archive-stage-empty">
                   <p role="status">

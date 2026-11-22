@@ -2,6 +2,7 @@
 
 import { ArrowLeft, X } from 'lucide-react';
 import { useReducedMotion } from 'motion/react';
+import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   addTransitionType,
@@ -12,6 +13,7 @@ import {
   useState,
   ViewTransition,
 } from 'react';
+import { getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
@@ -19,7 +21,6 @@ import { useBuildingGalleryControls } from '@/modules/building/model/use-buildin
 import { BuildingGalleryDetails } from '@/modules/building/ui/building-gallery-details';
 import { BuildingGalleryFrame } from '@/modules/building/ui/building-gallery-frame';
 import { BuildingGalleryViewer } from '@/modules/building/ui/building-gallery-viewer';
-import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { BuildingShareActions } from '@/modules/building/ui/building-share-actions';
 import { Link, useRouter } from '@/shared/i18n/navigation';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
@@ -170,11 +171,11 @@ export function BuildingGallery({
                       {thumbnailErrors.has(url) ? (
                         <span>{index + 1}</span>
                       ) : (
-                        <BuildingPreviewImage
-                          building={building}
-                          imageIndex={index}
+                        <Image
+                          src={getBuildingPreviewUrl(url, 160)}
+                          fill
+                          unoptimized
                           alt=""
-                          sizes="72px"
                           className="object-cover"
                           loading="lazy"
                           fetchPriority="low"

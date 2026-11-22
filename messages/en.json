@@ -188,6 +188,9 @@
       "copied": "Link copied",
       "copyCoordinates": "Copy coordinates",
       "saveCard": "Save card",
+      "prepareCard": "Prepare share card",
+      "preparingCard": "Preparing card…",
+      "cardReady": "Card ready to share.",
       "shareCard": "Share card",
       "cardUnavailable": "Card sharing is unavailable. Save the card to send it."
     },

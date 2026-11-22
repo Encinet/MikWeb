@@ -50,7 +50,8 @@ test('home building errors retry only the public catalog and successful snapshot
   const imagePrototype = env.window.HTMLImageElement.prototype;
   const previousHeight = Object.getOwnPropertyDescriptor(imagePrototype, 'height');
   const sheet = document.createElement('style');
-  sheet.textContent = '.home-world-map { position: relative; height: 200px; }';
+  sheet.textContent =
+    '.home-world-map, .home-building-preview__image { position: relative; height: 200px; }';
   document.head.append(sheet);
   Object.defineProperty(imagePrototype, 'height', {
     configurable: true,
@@ -80,7 +81,11 @@ test('home building errors retry only the public catalog and successful snapshot
       );
     });
   try {
-    await render(false, [building]);
+    const cover = `https://images.example.test/buildings/${building.id}/${'b'.repeat(64)}.webp`;
+    await render(false, [{ ...building, images: [cover] }]);
+    const image = env.container.querySelector('.home-building-preview img');
+    assert.equal(image?.getAttribute('src'), `${cover}?w=640`);
+    assert.equal(image?.getAttribute('srcset'), null);
     await render(true);
     assert.equal(pending.length, 0);
     const retry = env.container.querySelector<HTMLButtonElement>('.home-building-retry');

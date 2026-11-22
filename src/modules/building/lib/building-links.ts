@@ -17,8 +17,8 @@ export function getBuildingSocialImagePath(id: string, locale: string) {
   return `/${locale}${getBuildingPath(id)}/opengraph-image`;
 }
 
-export function getBuildingImagePath(id: string, imageIndex: number) {
-  return `${BUILDING_CATALOG_PATH}/${id}/images/${imageIndex}`;
+export function getBuildingPreviewUrl(original: string, width: 160 | 640) {
+  return `${original}?w=${width}`;
 }
 
 export function getBuildingShareData(building: Building, locale: string): ShareData {

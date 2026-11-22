@@ -5,11 +5,10 @@ import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { getRecentBuildingUpdates } from '@/modules/building/lib/building-catalog';
-import { getBuildingPath } from '@/modules/building/lib/building-links';
+import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildings } from '@/modules/building/model/use-buildings';
-import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { Link } from '@/shared/i18n/navigation';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
@@ -63,11 +62,11 @@ export function HomeBuildingUpdates({
               >
                 <span className="home-building-preview__image">
                   {cover ? (
-                    <BuildingPreviewImage
-                      building={building}
-                      imageIndex={building.images.indexOf(cover)}
+                    <Image
+                      src={getBuildingPreviewUrl(cover, 640)}
+                      fill
+                      unoptimized
                       alt=""
-                      sizes="(max-width: 639px) 100vw, (max-width: 900px) 50vw, 33vw"
                       className="object-cover"
                       onError={() => setImageErrors((previous) => [...previous, cover])}
                     />

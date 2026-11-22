@@ -9,22 +9,24 @@ import { ProgressRing } from '@/shared/ui/feedback/loading-state';
 export function BuildingCardActions({ building }: { building: Building }) {
   const locale = useLocale();
   const t = useTranslations('buildings.share');
-  const { url, filename, ready, preparing, share, sharing, failed } = useBuildingCardShare(
+  const { url, filename, supported, ready, busy, prepareOrShare, failed } = useBuildingCardShare(
     building,
     locale,
   );
   return (
     <div className="building-card-actions">
-      {preparing || ready ? (
+      {supported ? (
         <button
           type="button"
           className="building-gallery-download"
-          onClick={share}
-          disabled={preparing || sharing}
-          aria-busy={preparing || sharing || undefined}
+          onClick={prepareOrShare}
+          disabled={busy !== null}
+          aria-busy={busy !== null || undefined}
         >
-          {preparing || sharing ? <ProgressRing size="sm" /> : <Share2 aria-hidden="true" />}
-          <span>{t('shareCard')}</span>
+          {busy ? <ProgressRing size="sm" /> : <Share2 aria-hidden="true" />}
+          <span>
+            {busy === 'preparing' ? t('preparingCard') : ready ? t('shareCard') : t('prepareCard')}
+          </span>
         </button>
       ) : null}
       <a className="building-gallery-download" href={url} download={filename}>
@@ -32,7 +34,7 @@ export function BuildingCardActions({ building }: { building: Building }) {
         <span>{t('saveCard')}</span>
       </a>
       <span role="status" aria-live="polite" className={failed ? undefined : 'sr-only'}>
-        {failed ? t('cardUnavailable') : ''}
+        {failed ? t('cardUnavailable') : ready ? t('cardReady') : ''}
       </span>
     </div>
   );

@@ -365,16 +365,16 @@ html[data-building-gallery-mode="page"] :is(.project-navbar-shell, .site-footer)
   align-items: center;
   justify-content: center;
   transform-origin: center;
-  animation: building-image-appear 200ms ease-out;
 }
 
-@keyframes building-image-appear {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.building-gallery-placeholder {
+  filter: blur(5px);
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
+.building-archive-stage[aria-busy="true"] .building-gallery-placeholder {
+  opacity: 1;
 }
 
 .building-archive-stage-image img {
@@ -1180,7 +1180,6 @@ html[data-building-gallery-mode="page"] :is(.project-navbar-shell, .site-footer)
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .building-archive-stage-image,
   .building-coordinate-copy.is-copied .copy-button__icon,
   .building-gallery-control[data-copied] > svg {
     animation: none;
@@ -1200,6 +1199,7 @@ html[data-building-gallery-mode="page"] :is(.project-navbar-shell, .site-footer)
       .building-archive-info-bar__expand svg,
       .building-archive-info-expanded,
       .building-archive-stage-image,
+      .building-gallery-placeholder,
       .building-detail-body,
       .building-archive-info-bar__actions,
       .building-detail-toggle-label > span,

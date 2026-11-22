@@ -5,8 +5,8 @@ import { getTranslations } from 'next-intl/server';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
-import { readBuildingImage } from '@/modules/building/server/building-image';
 import type { AppLocale } from '@/shared/i18n/routing';
+import { readBuildingImage } from '@/site/seo/social-image/read-building-image';
 import { readSocialImageLogo } from '@/site/seo/social-image/social-image-assets';
 import { createBuildingSocialImageBackdrop } from '@/site/seo/social-image/social-image-backdrop';
 import {

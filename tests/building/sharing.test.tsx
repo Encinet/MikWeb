@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { act } from 'react';
-import { getBuildingShareData, getBuildingUrl } from '@/modules/building/lib/building-links';
+import {
+  getBuildingPreviewUrl,
+  getBuildingShareData,
+  getBuildingUrl,
+} from '@/modules/building/lib/building-links';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingCardShare } from '@/modules/building/model/use-building-card-share';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
@@ -108,7 +112,7 @@ function imageResponse(bytes: string) {
   });
 }
 
-test('card sharing follows locale changes and reuses the same PNG as downloading', async () => {
+test('card sharing downloads only on demand, cancels stale requests and shares the prepared PNG', async () => {
   const environment = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
   const requests: {
@@ -154,18 +158,30 @@ test('card sharing follows locale changes and reuses the same PNG as downloading
     });
   try {
     await render('en');
-    assert.equal(state?.preparing, true);
+    assert.equal(requests.length, 0);
+    assert.equal(state?.supported, true);
+    const prepare = () =>
+      act(async () => {
+        void state?.prepareOrShare();
+      });
+    await prepare();
+    await prepare();
+    assert.equal(state?.busy, 'preparing');
+    assert.equal(requests.length, 1);
     await render('zh-CN');
     assert.equal(requests[0].signal.aborted, true);
     await respond(0, 'old');
     assert.equal(state?.ready, false);
+    assert.equal(requests.length, 1);
+    await prepare();
     await respond(1, 'current');
     assert.equal(state?.ready, true);
-    assert.equal(state?.preparing, false);
+    assert.equal(state?.busy, null);
+    assert.equal(shareCount, 0);
     assert.equal(state?.url, `/zh-CN/buildings/${building.id}/opengraph-image`);
     assert.equal(requests[1].url, state?.url);
     await act(async () => {
-      await state?.share();
+      await state?.prepareOrShare();
     });
     assert.equal(await shared?.files?.[0].text(), 'current');
     assert.equal(shared?.files?.[0].name, state?.filename);
@@ -173,18 +189,18 @@ test('card sharing follows locale changes and reuses the same PNG as downloading
     assert.equal(shared?.url, undefined);
     shareError = new DOMException('Canceled', 'AbortError');
     await act(async () => {
-      await state?.share();
+      await state?.prepareOrShare();
     });
     assert.equal(state?.failed, false);
     shareError = new DOMException('Unavailable', 'NotAllowedError');
     await act(async () => {
-      await state?.share();
+      await state?.prepareOrShare();
     });
     assert.equal(state?.failed, true);
     shareError = undefined;
     const previousCount = shareCount;
     await act(async () => {
-      await Promise.all([state?.share(), state?.share()]);
+      await Promise.all([state?.prepareOrShare(), state?.prepareOrShare()]);
     });
     assert.equal(shareCount, previousCount + 1);
     assert.equal(state?.failed, false);
@@ -193,13 +209,24 @@ test('card sharing follows locale changes and reuses the same PNG as downloading
     assert.equal(state?.ready, true);
     assert.equal(requests.length, 2);
     await render('en');
+    assert.equal(requests.length, 2);
+    await prepare();
     await act(async () => {
       requests[2].resolve(new Response('error', { headers: { 'Content-Type': 'text/html' } }));
     });
     assert.equal(state?.ready, false);
-    assert.equal(state?.preparing, false);
+    assert.equal(state?.busy, null);
     assert.equal(state?.failed, true);
     assert.equal(state?.url, `/en/buildings/${building.id}/opengraph-image`);
+    await prepare();
+    await respond(3, 'retry');
+    assert.equal(state?.ready, true);
+    assert.equal(state?.failed, false);
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false });
+    await render('zh-CN');
+    assert.equal(state?.supported, false);
+    await prepare();
+    assert.equal(requests.length, 4);
   } finally {
     globalThis.fetch = previousFetch;
     await environment.close();
@@ -261,6 +288,12 @@ test('rapid gallery navigation ignores completion from an earlier image and rema
   } finally {
     await environment.close();
   }
+});
+
+test('building preview URLs retain the public object path for both widths', () => {
+  const original = `https://images.example.test/media/buildings/${building.id}/${'b'.repeat(64)}.webp`;
+  assert.equal(getBuildingPreviewUrl(original, 160), `${original}?w=160`);
+  assert.equal(getBuildingPreviewUrl(original, 640), `${original}?w=640`);
 });
 
 test('sharing uses immutable identity across locales, renames and coordinate edits', () => {

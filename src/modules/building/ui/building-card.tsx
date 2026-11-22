@@ -1,13 +1,13 @@
 'use client';
 
 import { Building2, Images, MapPin } from 'lucide-react';
+import Image from 'next/image';
 import { useState, ViewTransition } from 'react';
-import { getBuildingPath } from '@/modules/building/lib/building-links';
+import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
 import { BuilderSummary } from '@/modules/building/ui/building-metadata';
-import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { Link } from '@/shared/i18n/navigation';
 
 interface BuildingCardProps {
@@ -46,11 +46,11 @@ export function BuildingCard({ building, locale, t, prioritizeCover = false }: B
         >
           <div className="building-archive-card__media">
             {coverImage ? (
-              <BuildingPreviewImage
-                building={building}
-                imageIndex={buildingImages.indexOf(coverImage)}
+              <Image
+                src={getBuildingPreviewUrl(coverImage, 640)}
+                fill
+                unoptimized
                 alt={buildingName}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1392px) 25vw, 320px"
                 className="object-cover"
                 loading={prioritizeCover ? 'eager' : 'lazy'}
                 fetchPriority={prioritizeCover ? 'high' : 'auto'}

@@ -5,11 +5,11 @@ import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import sharp from 'sharp';
 import type { Building } from '@/modules/building/model/building-types';
-import { readBuildingImage } from '@/modules/building/server/building-image';
 import { SITE_NAME } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { getSitePageContent } from '@/site/seo/site-page-metadata';
 import type { SitePage } from '@/site/seo/site-pages';
+import { readBuildingImage } from '@/site/seo/social-image/read-building-image';
 import { readSocialImageLogo } from '@/site/seo/social-image/social-image-assets';
 import { frameSocialImagePhoto } from '@/site/seo/social-image/social-image-backdrop';
 import {

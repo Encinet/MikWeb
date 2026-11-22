@@ -3,11 +3,10 @@
 import type { useTranslations } from 'next-intl';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
-import { getBuildingPath } from '@/modules/building/lib/building-links';
+import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
 import { BuildingCard } from '@/modules/building/ui/building-card';
-import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import {
   BuildingsLoadingState,
   BuildingsStatusMessage,
@@ -112,17 +111,13 @@ export function BuildingsContentArea({
         {filteredBuildings.map((building) => (
           <li className="building-archive-print-item" key={building.id}>
             {building.images.length > 0 ? (
-              <div className="building-archive-print-image">
-                {/* Native print has no image-preparation step, so these covers load in advance. */}
-                <BuildingPreviewImage
-                  building={building}
-                  imageIndex={0}
+              <picture className="building-archive-print-image">
+                <source media="print" srcSet={getBuildingPreviewUrl(building.images[0], 640)} />
+                <img
                   alt=""
-                  sizes="320px"
-                  loading="eager"
-                  fetchPriority="low"
+                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 />
-              </div>
+              </picture>
             ) : null}
             <div className="building-archive-print-row">
               <span className="building-archive-print-heading">
