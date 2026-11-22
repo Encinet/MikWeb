@@ -72,12 +72,14 @@ export function useBuildingSubmissionForm() {
   const draftImagesRef = useRef<BuildingSubmissionImageDraft[]>([]);
   const [form, setForm] = useState(() => createInitialBuildingSubmissionForm());
 
+  const draftKey = useRef('');
   const accountGeneration = useRef(0);
   const historyRequest = useRef(0);
   const activeAccount = useRef(account?.playerUuid);
   const pendingSubmission = useRef<AbortController | null>(null);
   useEffect(() => {
     accountGeneration.current++;
+    draftKey.current = '';
     activeAccount.current = account?.playerUuid;
     setIsLoadingSubmissions(false);
     setIsResolvingPlayer(false);
@@ -350,10 +352,12 @@ export function useBuildingSubmissionForm() {
     setIsUploading(true);
     showFeedback('form', { message: t('states.uploading'), kind: 'loading' });
     try {
+      draftKey.current ||= crypto.randomUUID();
+      const currentDraft = draftKey.current;
       const uploadedImages = await uploadBuildingSubmissionImageDrafts(
         draftImages,
         account,
-        form.nameEn,
+        currentDraft,
         controller.signal,
       );
       controller.signal.throwIfAborted();
@@ -366,6 +370,7 @@ export function useBuildingSubmissionForm() {
         signal: controller.signal,
         body: {
           payload,
+          draftKey: currentDraft,
           images: uploadedImages.map(({ url, width, height, size, mime }) => ({
             url,
             width,
@@ -399,6 +404,11 @@ export function useBuildingSubmissionForm() {
       showFeedback('form', { message: t('states.submitted'), kind: 'success' });
     } catch (error) {
       if (controller.signal.aborted) return;
+      if (error instanceof Error && error.message === 'draft_submitted') {
+        showFeedback('form', { message: t('states.draftSubmitted'), kind: 'error' });
+        await loadSubmissions({ force: true });
+        return;
+      }
       showFeedback('form', {
         message: t(submitErrorMessageKey(error)),
         kind: 'error',
@@ -413,6 +423,7 @@ export function useBuildingSubmissionForm() {
   };
 
   const resetForm = (currentAccount: AuthAccount | null) => {
+    draftKey.current = '';
     setFeedback((current) => ({ history: current.history }));
     setForm(createInitialBuildingSubmissionForm(new Date().toISOString().slice(0, 10)));
     setTags([]);

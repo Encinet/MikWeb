@@ -54,7 +54,8 @@ Manage Passkeys and website sessions in [Account Security](/en/account/security)
 | Cap | Human verification data and connection information when requesting QQ group joining details |
 | Player avatar services | Avatar requests send the queried player identifier and request information such as the visitor's IP to mineskin.eu, minotar.net, or mc-heads.net |
 | [OVHcloud](https://www.ovhcloud.com/en-gb/personal-data-protection/) | Qwen3Guard moderates public messages sent to QQ, processing message text, the sender's display name, mentions, and link destinations |
-| [ImgBB](https://imgbb.com/privacy) | Stores images submitted for the building catalog, with file metadata removed before upload; images are stored separately from submission records |
+| Building image storage service | Stores submitted WebP images. MikWeb removes file metadata before upload. Anyone with the image link can view it, including before approval. |
+| [ImgBB](https://imgbb.com/privacy) | Hosts historical building images during migration. |
 
 **AI assistant.** Using it sends your questions, conversation context, and query results to the model service. This may include inventory information and, when location queries are enabled, game coordinates. With knowledge learning or personal memory enabled, the system saves information extracted from conversations. `/ai clear` clears only the current conversation; contact a Custodian to delete saved knowledge and memories.
 
@@ -71,7 +72,8 @@ Website login uses necessary cookies. Theme and notification preferences stay in
 | Website sessions | Expire after **30 days of inactivity** or **90 days from issue**; can be revoked earlier |
 | Login and account linking codes | Normally valid for **5 minutes** |
 | Official authentication cache | Valid for **72 hours** after successful official authentication, used only during an official authentication outage to verify reconnections from the same IP |
-| Submission review records | **14 days after review is completed**; published builds and hosted images are stored separately |
+| Submission review records | **14 days after review is completed** |
+| Building images in object storage | Draft uploads expire after 24 hours. Pending submissions, review history and published buildings retain their images. After the last reference is removed and the catalog update is published, images are kept for 14 more days before automatic cleanup. |
 | Browser chat history | No automatic expiry by default. Chat settings let you clear history or disable saving and clear it; signing out or switching accounts also clears it |
 | Account links | Kept until unlinked |
 | AI knowledge and memories | No automatic expiry; deletion can be requested |

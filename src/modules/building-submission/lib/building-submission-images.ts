@@ -8,7 +8,7 @@ import { isRecord } from '@/shared/lib/is-record';
 
 const uploadedDrafts = new WeakMap<
   File,
-  { owner: string; expiresAt: number; image: BuildingSubmissionImage }
+  { draftKey: string; owner: string; expiresAt: number; image: BuildingSubmissionImage }
 >();
 
 export async function createBuildingSubmissionImageDraft(
@@ -19,7 +19,7 @@ export async function createBuildingSubmissionImageDraft(
   const height = bitmap.height;
   bitmap.close();
   return {
-    id: `${Date.now().toString(36)}-${crypto.randomUUID()}`,
+    id: crypto.randomUUID(),
     file,
     previewUrl: URL.createObjectURL(file),
     width,
@@ -31,24 +31,23 @@ export async function createBuildingSubmissionImageDraft(
 export async function uploadBuildingSubmissionImageDrafts(
   images: BuildingSubmissionImageDraft[],
   account: AuthAccount,
-  buildingEnglishName: string,
+  draftKey: string,
   signal?: AbortSignal,
 ): Promise<BuildingSubmissionImage[]> {
   const uploaded: BuildingSubmissionImage[] = [];
-  for (let index = 0; index < images.length; index += 1) {
+  for (const draft of images) {
     signal?.throwIfAborted();
-    const cached = uploadedDrafts.get(images[index].file);
-    if (cached && cached.owner === account.playerUuid && cached.expiresAt > Date.now()) {
+    const cached = uploadedDrafts.get(draft.file);
+    if (
+      cached &&
+      cached.draftKey === draftKey &&
+      cached.owner === account.playerUuid &&
+      cached.expiresAt > Date.now()
+    ) {
       uploaded.push(cached.image);
       continue;
     }
-    const outputName = buildImageFileName(
-      account.currentName,
-      buildingEnglishName,
-      index + 1,
-      images.length,
-    );
-    const converted = await convertToWebp(images[index].file, outputName);
+    const converted = await convertToWebp(draft.file);
     if (
       converted.width < BUILDING_SUBMISSION_IMAGE_LIMITS.minWidth ||
       converted.height < BUILDING_SUBMISSION_IMAGE_LIMITS.minHeight
@@ -56,21 +55,19 @@ export async function uploadBuildingSubmissionImageDrafts(
       throw new Error('image_too_small');
     }
     signal?.throwIfAborted();
-    const image = await uploadWebp(converted.file, signal);
-    uploadedDrafts.set(images[index].file, {
+    const { image, expiresAt } = await uploadWebp(converted.file, draftKey, draft.id, signal);
+    uploadedDrafts.set(draft.file, {
+      draftKey,
       owner: account.playerUuid,
       image,
-      expiresAt: Date.now() + 23 * 3600_000,
+      expiresAt,
     });
     uploaded.push(image);
   }
   return uploaded;
 }
 
-async function convertToWebp(
-  file: File,
-  outputName: string,
-): Promise<{ file: File; width: number; height: number }> {
+async function convertToWebp(file: File): Promise<{ file: File; width: number; height: number }> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(
     1,
@@ -93,7 +90,7 @@ async function convertToWebp(
   );
   if (!blob) throw new Error('upload_failed');
   return {
-    file: new File([blob], outputName, {
+    file: new File([blob], 'building.webp', {
       type: 'image/webp',
     }),
     width,
@@ -101,40 +98,28 @@ async function convertToWebp(
   };
 }
 
-function buildImageFileName(
-  playerName: string,
-  buildingEnglishName: string,
-  imageNumber: number,
-  totalImageCount: number,
-): string {
-  const player = sanitizeFileNamePart(playerName, 'player');
-  const building = sanitizeFileNamePart(buildingEnglishName, 'building');
-  const suffix = totalImageCount === 1 ? '' : `_${imageNumber}`;
-  return `${player}_${building}${suffix}.webp`;
-}
-
-function sanitizeFileNamePart(value: string, fallback: string): string {
-  const clean = value
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-zA-Z0-9_-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^[-_]+|[-_]+$/g, '')
-    .slice(0, 64);
-  return clean || fallback;
-}
-
-async function uploadWebp(file: File, signal?: AbortSignal): Promise<BuildingSubmissionImage> {
+async function uploadWebp(
+  file: File,
+  draftKey: string,
+  requestKey: string,
+  signal?: AbortSignal,
+): Promise<{ image: BuildingSubmissionImage; expiresAt: number }> {
   const formData = new FormData();
   formData.set('image', file);
   const response = await fetch('/api/account/images/upload', {
     method: 'POST',
+    headers: { 'X-Building-Draft': draftKey, 'X-Upload-Request': requestKey },
     body: formData,
     signal,
   });
   const payload: unknown = await response.json().catch(() => null);
-  if (!response.ok || !isRecord(payload) || !isBuildingSubmissionImage(payload.image)) {
+  if (
+    !response.ok ||
+    !isRecord(payload) ||
+    !isBuildingSubmissionImage(payload.image) ||
+    typeof payload.expiresAt !== 'number'
+  ) {
     throw new Error(isApiErrorPayload(payload) ? payload.error : 'upload_failed');
   }
-  return payload.image;
+  return { image: payload.image, expiresAt: payload.expiresAt };
 }

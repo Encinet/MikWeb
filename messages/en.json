@@ -263,6 +263,7 @@
       "imageTooSmall": "Images must be at least 960 × 540 pixels.",
       "submitting": "Submitting…",
       "submitted": "Build submitted",
+      "draftSubmitted": "This draft was already submitted. Check your submission history, or reset the form to start a new one.",
       "submitFailed": "Submission failed.",
       "pendingLimit": "You already have 10 pending submissions.",
       "required": "Chinese and English fields are required.",

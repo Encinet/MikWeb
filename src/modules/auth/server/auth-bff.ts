@@ -76,7 +76,7 @@ export async function verifyAuthSession(request: Request): Promise<Response> {
 /** Server-only upload operations are excluded from the browser route allowlist. */
 export async function callImageUploadService(
   request: Request,
-  action: 'reserve' | 'complete',
+  action: 'reserve' | 'prepare' | 'complete',
   payload: Record<string, unknown> = {},
 ): Promise<Response> {
   if (!isSameOriginRequest(request)) return authError('forbidden', 403);
@@ -123,7 +123,7 @@ async function forwardAuthRequest(
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: 'no-store',
       redirect: 'error',
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(path === '/me/images/complete' ? 20_000 : 8000),
     });
     const responseBody = await upstream.text();
     const headers = new Headers({
@@ -161,7 +161,11 @@ function buildUpstreamBody({
       };
     if (routePath === '/players/resolve') return { name: requestBody.name };
     if (routePath === '/building-submissions') {
-      return { payload: requestBody.payload, images: requestBody.images };
+      return {
+        payload: requestBody.payload,
+        images: requestBody.images,
+        draftKey: requestBody.draftKey,
+      };
     }
     if (routePath === '/sessions/revoke') {
       return {

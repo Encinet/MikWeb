@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { createHash } from 'node:crypto';
 import type { OutputInfo } from 'sharp';
 import sharp from 'sharp';
 import { callImageUploadService } from '@/modules/auth/server/auth-bff';
@@ -14,15 +15,29 @@ const MAX_MULTIPART_BYTES = MAX_UPLOAD_BYTES + 16 * 1024;
 let activeUploads = 0;
 
 export async function uploadBuildingSubmissionImage(request: Request): Promise<Response> {
-  const apiKey = process.env.IMGBB_API_KEY?.trim();
-  if (!apiKey) return uploadError('image_upload_not_configured', 503);
   if (activeUploads >= 4) return uploadError('image_upload_busy', 503, '10');
   activeUploads++;
   try {
     // One account lookup also reserves the durable quota and prevents parallel uploads for this account.
-    const authorized = await callImageUploadService(request, 'reserve');
+    const draftKey = request.headers.get('X-Building-Draft');
+    const requestKey = request.headers.get('X-Upload-Request');
+    if (!draftKey || !requestKey) return uploadError('invalid_draft', 422);
+    const authorized = await callImageUploadService(request, 'reserve', { draftKey, requestKey });
     if (!authorized.ok) return authorized;
-    const { uploadId } = (await authorized.json()) as { uploadId?: string };
+    const {
+      uploadId,
+      image: previous,
+      expiresAt,
+    } = (await authorized.json()) as {
+      uploadId?: string;
+      image?: { url: string };
+      expiresAt?: number;
+    };
+    if (previous)
+      return Response.json(
+        { image: previous, expiresAt },
+        { headers: { 'Cache-Control': 'no-store' } },
+      );
     if (typeof uploadId !== 'string') return uploadError('image_upload_unavailable', 502);
     if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('multipart/form-data;')) {
       return uploadError('multipart_required', 415);
@@ -68,33 +83,24 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
       return uploadError('invalid_image', 422);
     }
     if (decoded.data.length > MAX_UPLOAD_BYTES) return uploadError('image_too_large', 413);
-    const upstreamForm = new FormData();
-    upstreamForm.set('key', apiKey);
-    upstreamForm.set(
-      'image',
-      new Blob([new Uint8Array(decoded.data)], { type: 'image/webp' }),
-      sanitizeImageName(image.name),
-    );
-    const upstream = await fetch('https://api.imgbb.com/1/upload', {
-      method: 'POST',
-      body: upstreamForm,
-      cache: 'no-store',
+    const prepared = await callImageUploadService(request, 'prepare', {
+      uploadId,
+      hash: createHash('sha256').update(decoded.data).digest('hex'),
+    });
+    if (!prepared.ok) return prepared;
+    const { url, put } = (await prepared.json()) as {
+      url: string;
+      put: { url: string; headers: Record<string, string> };
+    };
+    const stored = await fetch(put.url, {
+      method: 'PUT',
+      headers: put.headers,
+      body: new Uint8Array(decoded.data),
+      redirect: 'error',
       signal: AbortSignal.timeout(20_000),
     });
-    const payload = (await upstream.json()) as ImgBbResponse;
-    const url = payload.data?.image?.url ?? payload.data?.url;
-    if (
-      !upstream.ok ||
-      !payload.success ||
-      typeof url !== 'string' ||
-      !/^https:\/\/i\.ibb\.co\/[^/]+\/[^/?#]+\.webp$/i.test(url) ||
-      Number(payload.data?.width) !== decoded.info.width ||
-      Number(payload.data?.height) !== decoded.info.height ||
-      Number(payload.data?.size) !== decoded.data.length ||
-      payload.data?.image?.mime !== 'image/webp'
-    ) {
-      return uploadError('invalid_image_upload_response', 502);
-    }
+    await stored.body?.cancel();
+    if (!stored.ok) return uploadError('image_upload_unavailable', 502);
     const receipt = {
       url,
       width: decoded.info.width,
@@ -113,16 +119,6 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
   }
 }
 
-interface ImgBbResponse {
-  success?: boolean;
-  data?: {
-    url?: string;
-    width?: string | number;
-    height?: string | number;
-    size?: string | number;
-    image?: { url?: string; mime?: string };
-  };
-}
 function uploadError(error: string, status: number, retryAfter?: string): Response {
   return Response.json(
     { error },
@@ -134,11 +130,4 @@ function uploadError(error: string, status: number, retryAfter?: string): Respon
       },
     },
   );
-}
-function sanitizeImageName(name: string): string {
-  const clean = name
-    .replace(/\.[^.]+$/, '')
-    .replace(/[^a-zA-Z0-9_-]/g, '-')
-    .slice(0, 48);
-  return `${clean || 'building'}.webp`;
 }
