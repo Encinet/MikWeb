@@ -74,7 +74,7 @@ test('prefetch is serial, shares clicked chapters, yields to search and keeps sp
     assert.equal(requests[1].url, '/api/wiki/section/en/rules');
     await render('commands', true);
     assert.equal(requests[1].signal?.aborted, true);
-    assert.equal(requests[2].url, '/api/wiki/search-index/en');
+    assert.equal(requests[2].url, '/api/wiki/search-index/en/compact');
     assert.equal(requests[2].priority, 'auto');
     await reply(2);
     await render('commands');

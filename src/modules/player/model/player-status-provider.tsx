@@ -40,7 +40,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
       }
     };
     const resetPlayersState = () => {
-      setPlayers([]);
+      setPlayers((previous) => (previous.length === 0 ? previous : []));
       setPlayerCount(0);
       setPeakPlayerCount(null);
     };
@@ -64,7 +64,19 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
         setIsOnline(online);
         setHasNetworkError(false);
         if (online) {
-          setPlayers(status.players);
+          setPlayers((previous) =>
+            previous.length === status.players.length &&
+            previous.every((player, index) => {
+              const next = status.players[index];
+              return (
+                player.uuid === next.uuid &&
+                player.name === next.name &&
+                player.joinedAt === next.joinedAt
+              );
+            })
+              ? previous
+              : status.players,
+          );
           setPlayerCount(status.online);
           setPeakPlayerCount(status.peakOnline ?? null);
         } else resetPlayersState();

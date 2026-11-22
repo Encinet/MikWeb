@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AccountSecurityPage } from '@/modules/auth/ui/account-security-page';
+import { ClientMessages } from '@/shared/i18n/client-messages';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
 import { SiteShareMetadata } from '@/site/seo/site-share-metadata';
@@ -15,11 +16,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
+  const locale = requireRouteLocale(rawLocale);
   return (
     <>
-      <SiteShareMetadata locale={requireRouteLocale(locale)} page="security" />
-      <AccountSecurityPage />
+      <SiteShareMetadata locale={locale} page="security" />
+      <ClientMessages locale={locale} namespaces={['auth']}>
+        <AccountSecurityPage />
+      </ClientMessages>
     </>
   );
 }

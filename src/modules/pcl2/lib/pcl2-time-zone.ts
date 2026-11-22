@@ -16,6 +16,8 @@ export function normalizePcl2TimeZone(value: string | null | undefined): string 
     return DEFAULT_PCL2_TIME_ZONE;
   }
 
+  // The formatter cache contains only canonical, validated zone names.
+  if (timeFormatters.has(candidate)) return candidate;
   try {
     return new Intl.DateTimeFormat('en-US', { timeZone: candidate }).resolvedOptions().timeZone;
   } catch {

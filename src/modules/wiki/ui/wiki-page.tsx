@@ -6,10 +6,7 @@ import WikiContentGateway from '@/modules/wiki/ui/wiki-content-gateway';
 import { WikiLoading } from '@/modules/wiki/ui/wiki-loading';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 
-export default function WikiPage(props: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; section?: string }>;
-}) {
+export default function WikiPage(props: { params: Promise<{ locale: string }> }) {
   return (
     <Suspense fallback={<WikiLoading />}>
       <WikiPageContent {...props} />
@@ -17,33 +14,24 @@ export default function WikiPage(props: {
   );
 }
 
-async function WikiPageContent({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; section?: string }>;
-}) {
+async function WikiPageContent({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const [{ q, section }, t, commonT, bundle] = await Promise.all([
-    searchParams,
+  const [t, commonT, bundle] = await Promise.all([
     getTranslations({ locale, namespace: 'wiki' }),
     getTranslations({ locale, namespace: 'common' }),
-    getWikiContent(locale),
+    getWikiContent(locale, 'public'),
   ]);
 
-  const availableSectionIds = bundle.sections.map((wikiSection) => wikiSection.id);
-  const initialSection =
-    section && availableSectionIds.includes(section) ? section : (bundle.sections[0]?.id ?? '');
-  const initialQuery = q?.trim() ?? '';
+  // The default article is in the static HTML. The browser selects other articles from the URL.
+  const initialSection = bundle.sections[0]?.id;
 
   return (
     <WikiContentGateway
       sections={bundle.sections}
       sectionGroups={bundle.sectionGroups}
-      compiled={{ [initialSection]: bundle.compiled[initialSection] }}
-      outlines={{ [initialSection]: bundle.outlines[initialSection] }}
+      compiled={initialSection ? { [initialSection]: bundle.compiled[initialSection] } : {}}
+      outlines={initialSection ? { [initialSection]: bundle.outlines[initialSection] } : {}}
       searchIndex={[]}
       pageTitle={t('title')}
       navigation={t('navigation.title')}
@@ -53,8 +41,6 @@ async function WikiPageContent({
       searchEmptyTitle={t('search.empty.title')}
       searchEmptyDescription={t('search.empty.description')}
       clearSearchLabel={commonT('actions.clearSearch')}
-      initialSection={initialSection}
-      initialQuery={initialQuery}
     />
   );
 }

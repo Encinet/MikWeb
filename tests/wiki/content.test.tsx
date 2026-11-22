@@ -5,11 +5,37 @@ import { NextIntlClientProvider } from 'next-intl';
 import * as runtime from 'react/jsx-runtime';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
+import type { SearchableWikiBlock } from '@/modules/wiki/model/wiki-search-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
 import { wikiMdxComponents } from '@/modules/wiki/ui/wiki-mdx-components';
 import en from '../../messages/en.json';
 import zh from '../../messages/zh-CN.json';
+
+test('Wiki search ranks before deduplicating and formats excerpts for the selected results', () => {
+  const block = (slug: string, heading: string, text: string): SearchableWikiBlock => ({
+    sectionId: 'rules',
+    path: 'Rules',
+    url: `/en/wiki?section=rules#${slug}`,
+    content: text,
+    directText: text,
+    subtreeText: text,
+    searchableText: text,
+    heading,
+    slug,
+    level: 2,
+  });
+  const highest = block('one', 'Building rules', 'Read   the rules.');
+  const other = block('two', 'Building rules', 'Another rules chapter.');
+  const entries = [block('one', 'Details', 'See rules.'), highest, other];
+  const results = searchWikiBlocks(entries, ['rules']);
+  assert.deepEqual(
+    results.map(({ slug }) => slug),
+    ['one', 'two'],
+  );
+  assert.equal(results[0].snippet, 'Read the rules.');
+  assert.deepEqual(searchWikiBlocks(entries, ['rules'], 1), results.slice(0, 1));
+});
 
 test('public page and MCP input exclude staff documents, metadata, and search results', async () => {
   for (const locale of ['zh-CN', 'en'] as const) {

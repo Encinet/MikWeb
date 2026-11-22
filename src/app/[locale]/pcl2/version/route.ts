@@ -16,7 +16,9 @@ export async function GET(request: Request, context: RouteContext) {
   }
 
   if (isBrowserDocumentRequest(request)) {
-    return NextResponse.redirect(new URL(getPcl2HomepagePath(rawLocale), request.url));
+    return NextResponse.redirect(new URL(getPcl2HomepagePath(rawLocale), request.url), {
+      headers: { vary: 'Accept' },
+    });
   }
 
   const data = await loadPcl2HomepageData(request, rawLocale);
@@ -27,6 +29,7 @@ export async function GET(request: Request, context: RouteContext) {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
       'Content-Type': 'text/plain; charset=utf-8',
+      vary: 'Accept',
     },
   });
 }
@@ -50,10 +53,7 @@ function toStableJson(value: unknown): unknown {
   }
 
   const record = value as Record<string, unknown>;
-  return Object.fromEntries(
-    Object.keys(record)
-      .filter((key) => record[key] !== undefined)
-      .sort()
-      .map((key) => [key, toStableJson(record[key])]),
-  );
+  const sorted: Record<string, unknown> = Object.create(null);
+  for (const key of Object.keys(record).sort()) sorted[key] = toStableJson(record[key]);
+  return sorted;
 }

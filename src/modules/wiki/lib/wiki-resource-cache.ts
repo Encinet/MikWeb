@@ -1,10 +1,10 @@
 import type { WikiSectionPayload } from '@/modules/wiki/model/wiki-content-types';
-import type { SearchableWikiBlock } from '@/modules/wiki/model/wiki-search-types';
+import type { WikiSearchEntry } from '@/modules/wiki/model/wiki-search-types';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 interface WikiResources {
   sections: Record<string, WikiSectionPayload>;
-  searchIndexes: Record<string, SearchableWikiBlock[]>;
+  searchIndexes: Record<string, WikiSearchEntry[]>;
 }
 
 interface PendingResource {
@@ -48,14 +48,14 @@ export class WikiResourceCache {
     );
   }
 
-  loadSearchIndex(locale: string, background = false): Promise<SearchableWikiBlock[]> {
+  loadSearchIndex(locale: string, background = false): Promise<WikiSearchEntry[]> {
     const cached = this.snapshot.searchIndexes[locale];
     if (cached) return Promise.resolve(cached);
     return this.load(
       `search:${locale}`,
-      `/api/wiki/search-index/${encodeURIComponent(locale)}`,
+      `/api/wiki/search-index/${encodeURIComponent(locale)}/compact`,
       background,
-      (value: SearchableWikiBlock[]) => {
+      (value: WikiSearchEntry[]) => {
         if (!Array.isArray(value)) throw new Error('Invalid Wiki search index');
         this.publish({
           ...this.snapshot,

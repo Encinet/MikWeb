@@ -9,8 +9,8 @@ import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import { isBuildingArray } from '@/modules/building/model/building-validation';
 import { isPlayerStatusResponse } from '@/modules/player/lib/player-status-api';
 import { WIKI_LOCALES } from '@/modules/wiki/lib/wiki-grouping';
-import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
-import { getWikiContent } from '@/modules/wiki/server/wiki-content';
+import { normalizeWikiSearchPhrases, rankWikiBlocks } from '@/modules/wiki/lib/wiki-search';
+import { getPublicWikiSearchIndex } from '@/modules/wiki/server/public-wiki-search-index';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { SITE_URL } from '@/shared/config/site-config';
 import type { LocalizedText } from '@/shared/i18n/localized-text';
@@ -287,8 +287,12 @@ const sdkHandler = createMcpHandler(
       async ({ searchPhrases, locale, limit }) => {
         const loc = locale ?? 'zh-CN';
         const maxResults = limit ?? 5;
-        const { searchIndex } = await getWikiContent(loc, 'public');
-        const results = searchWikiBlocks(searchIndex, searchPhrases, maxResults);
+        const searchIndex = await getPublicWikiSearchIndex(loc);
+        const results = rankWikiBlocks(
+          searchIndex,
+          normalizeWikiSearchPhrases(searchPhrases),
+          maxResults,
+        );
 
         if (results.length === 0) {
           return {
@@ -303,8 +307,8 @@ const sdkHandler = createMcpHandler(
 
         const text = results
           .map(
-            (result) =>
-              `[${result.path}]\n${new URL(result.url, SITE_URL).href}\n\n${result.content}`,
+            ({ block }) =>
+              `[${block.path}]\n${new URL(block.url, SITE_URL).href}\n\n${block.content}`,
           )
           .join('\n\n---\n\n');
 

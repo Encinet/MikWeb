@@ -1,7 +1,9 @@
 import 'server-only';
 
 import type { WikiSectionPayload } from '@/modules/wiki/model/wiki-content-types';
+import type { SearchableWikiBlock, WikiSearchEntry } from '@/modules/wiki/model/wiki-search-types';
 import { isWikiSectionId } from '@/modules/wiki/server/public-wiki-paths';
+import { getPublicWikiSearchIndex } from '@/modules/wiki/server/public-wiki-search-index';
 import { getWikiContent } from '@/modules/wiki/server/wiki-content';
 import { isRoutingLocale } from '@/shared/i18n/routing';
 
@@ -27,10 +29,26 @@ export async function wikiSectionResponse(locale: string, id: string) {
   );
 }
 
-export async function wikiSearchIndexResponse(locale: string) {
+function toBrowserSearchEntry(block: SearchableWikiBlock): WikiSearchEntry {
+  const { sectionId, path, url, heading, slug, level, directText, subtreeText } = block;
+  return {
+    sectionId,
+    path,
+    url,
+    heading,
+    slug,
+    level,
+    directText,
+    ...(subtreeText && subtreeText !== directText ? { subtreeText } : {}),
+  };
+}
+
+export async function wikiSearchIndexResponse(locale: string, format: 'full' | 'compact' = 'full') {
   if (!isRoutingLocale(locale)) {
     return Response.json({ error: 'invalid_locale' }, { status: 400 });
   }
-  const bundle = await getWikiContent(locale, 'public');
-  return Response.json(bundle.searchIndex, { headers: publicHeaders });
+  const index = await getPublicWikiSearchIndex(locale);
+  return Response.json(format === 'compact' ? index.map(toBrowserSearchEntry) : index, {
+    headers: publicHeaders,
+  });
 }

@@ -6,53 +6,17 @@ import { isRoutingLocale, routing } from '@/shared/i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers':
-    'Content-Type, Authorization, MCP-Protocol-Version, Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID',
-  'Access-Control-Expose-Headers': 'MCP-Protocol-Version, Mcp-Session-Id',
-  'Access-Control-Max-Age': '86400',
-};
-
 export default function proxy(request: NextRequest) {
-  const pcl2Rewrite = getPcl2XmlRewrite(request);
-  if (pcl2Rewrite) {
-    return NextResponse.rewrite(pcl2Rewrite);
-  }
-
-  if (request.nextUrl.pathname === '/api/mcp') {
-    if (request.method === 'OPTIONS') {
-      return new NextResponse(null, { status: 204, headers: corsHeaders });
-    }
-    const response = NextResponse.next();
-    for (const [key, value] of Object.entries(corsHeaders)) {
-      response.headers.set(key, value);
-    }
-    return response;
+  const pathname = request.nextUrl.pathname;
+  const [, locale] = pathname.split('/');
+  if (isRoutingLocale(locale) && pathname === `/${locale}/pcl2`) {
+    if (!isRawXmlRequest(request) && isBrowserRequest(request)) return NextResponse.next();
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/${locale}/pcl2/source`;
+    return NextResponse.rewrite(rewriteUrl);
   }
 
   return intlMiddleware(request);
-}
-
-function getPcl2XmlRewrite(request: NextRequest): URL | null {
-  const [, locale, page] = request.nextUrl.pathname.split('/');
-
-  if (!isRoutingLocale(locale) || page !== 'pcl2') {
-    return null;
-  }
-
-  if (request.nextUrl.pathname !== `/${locale}/pcl2`) {
-    return null;
-  }
-
-  if (!isRawXmlRequest(request) && isBrowserDocumentRequest(request)) {
-    return null;
-  }
-
-  const rewriteUrl = request.nextUrl.clone();
-  rewriteUrl.pathname = `/${locale}/pcl2/source`;
-  return rewriteUrl;
 }
 
 function isRawXmlRequest(request: NextRequest): boolean {
@@ -61,19 +25,29 @@ function isRawXmlRequest(request: NextRequest): boolean {
   );
 }
 
-function isBrowserDocumentRequest(request: NextRequest): boolean {
-  const accept = request.headers.get('accept') ?? '';
+function isBrowserRequest(request: NextRequest): boolean {
+  const accept = request.headers.get('accept')?.trim().toLowerCase() ?? '';
   const userAgent = request.headers.get('user-agent') ?? '';
+  // App Router fetches may reach Proxy with a wildcard Accept. An explicit XML fetch
+  // can have the same Sec-Fetch-Dest and must still reach the launcher response.
+  const [mediaType] = accept.split(/[;,]/, 1);
+  const xmlFetch = mediaType.trim() === 'application/xml' || mediaType.trim() === 'text/xml';
   // Link preview crawlers may send */*. They need HTML metadata, while launchers need XML.
   return (
     accept.includes('text/html') ||
+    (request.headers.has('sec-fetch-dest') && !xmlFetch) ||
     /bot|crawler|spider|facebookexternalhit|WhatsApp|SkypeUriPreview|vkShare/i.test(userAgent)
   );
 }
 
 export const config = {
   matcher: [
-    '/((?!_next|_vercel|api(?:/|$)|_not-found/?$|opengraph-image/?$|(?:en|zh-CN)/(?:opengraph-image|(?:opengraph|thumbnails)/[^/]+|buildings/[^/]+/(?:opengraph-image|thumbnail))/?$|.*\\..*).*)',
-    '/api/mcp',
+    // Canonical locale URLs already carry the language in the root route param.
+    '/((?!_next|_vercel|api(?:/|$)|_not-found/?$|opengraph-image/?$|(?:en|zh-CN)(?:/|$)|.*\\..*).*)',
+    {
+      source: '/:locale(en|zh-CN)/pcl2',
+      // A Next.js navigation/prefetch must not be rewritten to the launcher's XML.
+      missing: [{ type: 'header', key: 'rsc', value: '1' }],
+    },
   ],
 };

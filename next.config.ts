@@ -41,6 +41,20 @@ const nextConfig: NextConfig = {
     ];
     return [
       {
+        source: '/api/mcp',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value:
+              'Content-Type, Authorization, MCP-Protocol-Version, Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID',
+          },
+          { key: 'Access-Control-Expose-Headers', value: 'MCP-Protocol-Version, Mcp-Session-Id' },
+          { key: 'Access-Control-Max-Age', value: '86400' },
+        ],
+      },
+      {
         source: '/api/auth/me',
         headers: [{ key: 'Cache-Control', value: 'private, no-store' }],
       },

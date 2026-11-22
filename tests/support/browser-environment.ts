@@ -16,6 +16,7 @@ export function createBrowserEnvironment() {
     ['Event', window.Event],
     ['EventTarget', window.EventTarget],
     ['CustomEvent', window.CustomEvent],
+    ['MutationObserver', window.MutationObserver],
     ['ResizeObserver', window.ResizeObserver],
     ['IntersectionObserver', window.IntersectionObserver],
     ['IS_REACT_ACT_ENVIRONMENT', true],

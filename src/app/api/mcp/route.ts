@@ -1,3 +1,7 @@
-import { mcpHandler } from '@/modules/mcp/server/mcp-handler';
+// Next.js can answer OPTIONS without loading the SDK and Wiki tooling.
+async function handle(request: Request) {
+  const { mcpHandler } = await import('@/modules/mcp/server/mcp-handler');
+  return mcpHandler(request);
+}
 
-export { mcpHandler as GET, mcpHandler as POST };
+export { handle as GET, handle as POST };

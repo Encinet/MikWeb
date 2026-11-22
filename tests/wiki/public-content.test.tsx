@@ -93,7 +93,7 @@ test('loads only requested public resources, ignores stale responses, reuses cha
     assert.equal(output(), 'commands-content');
     assert.equal(pending.length, 4);
     await render('commands', false, true);
-    assert.equal(pending[4].url, '/api/wiki/search-index/en');
+    assert.equal(pending[4].url, '/api/wiki/search-index/en/compact');
     await reply(4, {}, 503);
     assert.ok(environment.container.textContent?.includes('search-error'));
     await act(async () => {

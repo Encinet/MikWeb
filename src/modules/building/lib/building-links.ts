@@ -3,6 +3,8 @@ import type { Building } from '@/modules/building/model/building-types';
 import { SITE_NAME, SITE_URL } from '@/shared/config/site-config';
 import { getLocalizedText } from '@/shared/i18n/localized-text';
 
+export const BUILDING_CATALOG_PATH = '/api/buildings';
+
 export function getBuildingPath(id: string) {
   return `/buildings/${id}`;
 }
@@ -16,7 +18,7 @@ export function getBuildingSocialImagePath(id: string, locale: string) {
 }
 
 export function getBuildingImagePath(id: string, imageIndex: number) {
-  return `/api/buildings/${id}/images/${imageIndex}`;
+  return `${BUILDING_CATALOG_PATH}/${id}/images/${imageIndex}`;
 }
 
 export function getBuildingShareData(building: Building, locale: string): ShareData {

@@ -1,10 +1,12 @@
-import { BuildingCatalogBoundary } from '@/modules/building/ui/building-catalog-boundary';
+import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
 import BuildingsPage from '@/modules/building/ui/buildings-page';
+
+export const ensureStatic = 'navigation';
 
 export default function Page() {
   return (
-    <BuildingCatalogBoundary>
+    <BuildingsProvider>
       <BuildingsPage />
-    </BuildingCatalogBoundary>
+    </BuildingsProvider>
   );
 }

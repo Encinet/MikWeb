@@ -4,6 +4,7 @@ import { Activity, act } from 'react';
 import type { BuildingCatalogSnapshot } from '@/modules/building/model/building-types';
 import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
 import { useBuildings } from '@/modules/building/model/use-buildings';
+import { dataApiUrl } from '@/shared/api/data-api-url';
 import { clearFetchValidatedJsonBrowserCache } from '@/shared/api/fetch-validated-json';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
@@ -11,6 +12,51 @@ function Consumer({ onState }: { onState: (state: ReturnType<typeof useBuildings
   onState(useBuildings());
   return null;
 }
+
+test('the archive loads shared catalog JSON on entry and reuses a successful direct retry', async () => {
+  const env = createBrowserEnvironment();
+  const previousFetch = globalThis.fetch;
+  const requests: string[] = [];
+  let latest: ReturnType<typeof useBuildings> | undefined;
+  const current = () => {
+    assert.ok(latest);
+    return latest;
+  };
+  const mount = () =>
+    act(async () => {
+      env.root.render(
+        <BuildingsProvider>
+          <Consumer
+            onState={(value) => {
+              latest = value;
+            }}
+          />
+        </BuildingsProvider>,
+      );
+    });
+  clearFetchValidatedJsonBrowserCache();
+  globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
+    requests.push(String(input));
+    return Response.json([], { status: requests.length === 1 ? 503 : 200 });
+  }, previousFetch);
+  try {
+    await mount();
+    assert.deepEqual(requests, ['/api/buildings']);
+    assert.equal(current().isLoading, false);
+    assert.ok(current().error);
+    await act(async () => current().fetchBuildings({ force: true }));
+    assert.deepEqual(requests, ['/api/buildings', dataApiUrl('/buildings')]);
+    assert.equal(current().error, null);
+    await act(async () => env.root.render(null));
+    await mount();
+    assert.equal(requests.length, 2);
+    assert.notEqual(current().lastUpdatedAt, null);
+  } finally {
+    await env.close();
+    globalThis.fetch = previousFetch;
+    clearFetchValidatedJsonBrowserCache();
+  }
+});
 
 test('leaving during a refresh clears its loading state and permits a new refresh on return', async () => {
   const environment = createBrowserEnvironment();

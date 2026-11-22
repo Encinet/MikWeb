@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { BUILDING_CATALOG_PATH } from '@/modules/building/lib/building-links';
 import { isBuildingArray } from '@/modules/building/model/building-validation';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
@@ -9,22 +10,24 @@ import type { BuildingCatalogSnapshot } from './building-types';
 import { BuildingsStateContext } from './buildings-state-context';
 
 const BUILDINGS_CACHE_TTL_MS = 300_000;
+const EMPTY_SNAPSHOT: BuildingCatalogSnapshot = { buildings: [], error: null, updatedAt: null };
+const PUBLIC_CATALOG_URL = dataApiUrl('/buildings');
 
 export function BuildingsProvider({
   children,
   initialSnapshot,
 }: {
   children: ReactNode;
-  initialSnapshot: BuildingCatalogSnapshot;
+  initialSnapshot?: BuildingCatalogSnapshot;
 }) {
-  const [snapshot, setSnapshot] = useState(initialSnapshot);
-  const [isLoading, setIsLoading] = useState(false);
+  const [snapshot, setSnapshot] = useState(initialSnapshot ?? EMPTY_SNAPSHOT);
+  const [isLoading, setIsLoading] = useState(!initialSnapshot);
   const generation = useRef(0);
   const inFlight = useRef<Promise<void> | null>(null);
   const previousInitialSnapshot = useRef(initialSnapshot);
 
   useEffect(() => {
-    if (previousInitialSnapshot.current === initialSnapshot) return;
+    if (!initialSnapshot || previousInitialSnapshot.current === initialSnapshot) return;
     previousInitialSnapshot.current = initialSnapshot;
     // RSC refreshes preserve this provider. Accept new server data without rolling
     // back a newer browser refresh or replacing usable data with a server failure.
@@ -61,11 +64,11 @@ export function BuildingsProvider({
       setIsLoading(true);
       const request = (async () => {
         const result = await fetchValidatedJson({
-          url: dataApiUrl('/buildings'),
+          url: force ? PUBLIC_CATALOG_URL : BUILDING_CATALOG_PATH,
           validate: isBuildingArray,
           timeoutMs: 15_000,
           cache: force ? 'reload' : 'default',
-          browserCache: { force, ttlMs: BUILDINGS_CACHE_TTL_MS },
+          browserCache: { key: PUBLIC_CATALOG_URL, force, ttlMs: BUILDINGS_CACHE_TTL_MS },
           fallbackErrorMessage: 'building_catalog_unavailable',
         });
         if (generation.current !== requestGeneration) return;
@@ -82,6 +85,10 @@ export function BuildingsProvider({
     },
     [snapshot.updatedAt],
   );
+
+  useEffect(() => {
+    if (!initialSnapshot) void fetchBuildings();
+  }, [fetchBuildings, initialSnapshot]);
 
   return (
     <BuildingsStateContext

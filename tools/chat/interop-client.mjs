@@ -84,18 +84,21 @@ try {
   const sent = session.send({ channel: 'public' }, '跨端发送 🌍');
   assert.equal(sent.ok, true);
   const deadline = Date.now() + 5000;
-  while (
-    !events.some((event) => event.type === 'accepted' && event.requestId === sent.requestId) &&
-    Date.now() < deadline
-  )
+  // The durable receipt and live echo are independent events.
+  let echo;
+  let accepted;
+  while (Date.now() < deadline) {
+    echo ??= events.find(
+      (event) => event.type === 'message' && event.message.requestId === sent.requestId,
+    );
+    accepted ??= events.find(
+      (event) => event.type === 'accepted' && event.requestId === sent.requestId,
+    );
+    if (echo && accepted) break;
     await new Promise((resolve) => setTimeout(resolve, 5));
-  const echo = events.find(
-    (event) => event.type === 'message' && event.message.requestId === sent.requestId,
-  );
-  const accepted = events.find(
-    (event) => event.type === 'accepted' && event.requestId === sent.requestId,
-  );
-  assert.ok(echo && accepted, 'Encrypted echo and acknowledgement must survive key rotation');
+  }
+  assert.ok(accepted, 'Missing encrypted acknowledgement');
+  assert.ok(echo, 'Missing encrypted live echo');
   assert.equal(echo.message.id, accepted.messageId);
   assert.equal(echo.message.content.map((part) => part.text).join(''), '跨端发送 🌍');
   assert.ok(session.hasHistory);

@@ -69,3 +69,15 @@ test('session checks without a session cookie use the static guest response with
   assert.equal(getRewrittenUrl(withSession), null);
   assert.equal(withSession.headers.get('cache-control'), 'private, no-store');
 });
+
+test('MCP routing sets the protocol CORS headers without running Proxy', async () => {
+  const { headers } = await unstable_getResponseFromNextConfig({
+    url: 'https://example.test/api/mcp',
+    nextConfig,
+  });
+  assert.equal(headers.get('access-control-allow-origin'), '*');
+  assert.equal(headers.get('access-control-allow-methods'), 'GET, POST, OPTIONS');
+  assert.ok(headers.get('access-control-allow-headers')?.includes('Mcp-Method'));
+  assert.ok(headers.get('access-control-expose-headers')?.includes('Mcp-Session-Id'));
+  assert.equal(headers.get('access-control-max-age'), '86400');
+});

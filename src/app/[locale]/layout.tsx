@@ -1,14 +1,13 @@
 import '../globals.css';
 
 import type { Metadata, Viewport } from 'next';
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
 import { Suspense } from 'react';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import { ChatAccountGuard } from '@/modules/chat/model/chat-account-guard';
 import { PlayerStatusProvider } from '@/modules/player/model/player-status-provider';
 import { SITE_NAME, SITE_SHORT_NAME } from '@/shared/config/site-config';
 import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
+import { ClientMessages } from '@/shared/i18n/client-messages';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { routing } from '@/shared/i18n/routing';
 import SiteBackground from '@/site/background/ui/site-background';
@@ -87,13 +86,11 @@ export default async function LocaleLayout({
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
 
-  const messages = await getMessages({ locale });
-
   return (
-    <SiteDocument locale={locale}>
+    <SiteDocument locale={locale} rememberLocale>
       <ThemeProvider>
         <ViewportMetrics />
-        <NextIntlClientProvider messages={messages}>
+        <ClientMessages locale={locale}>
           <PlayerStatusProvider>
             <AuthProvider>
               <ChatAccountGuard />
@@ -113,7 +110,7 @@ export default async function LocaleLayout({
               <SiteFooter />
             </AuthProvider>
           </PlayerStatusProvider>
-        </NextIntlClientProvider>
+        </ClientMessages>
       </ThemeProvider>
     </SiteDocument>
   );

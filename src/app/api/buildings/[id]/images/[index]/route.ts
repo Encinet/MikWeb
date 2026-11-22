@@ -14,7 +14,7 @@ export async function GET(
   if (!url) notFound();
   // Re-encode the registered image to a bounded JPEG; do not serve arbitrary upstream content.
   const image = await readBuildingImage(url);
-  return new Response(new Uint8Array(image), {
+  return new Response(image, {
     headers: {
       'Content-Type': 'image/jpeg',
       'Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',

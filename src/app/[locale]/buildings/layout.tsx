@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { ClientMessages } from '@/shared/i18n/client-messages';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
 import { SiteShareMetadata } from '@/site/seo/site-share-metadata';
@@ -21,11 +22,14 @@ export default async function BuildingsLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
+  const locale = requireRouteLocale(rawLocale);
   return (
     <>
-      <SiteShareMetadata locale={requireRouteLocale(locale)} page="buildings" />
-      {children}
+      <SiteShareMetadata locale={locale} page="buildings" />
+      <ClientMessages locale={locale} namespaces={['buildings']}>
+        {children}
+      </ClientMessages>
     </>
   );
 }

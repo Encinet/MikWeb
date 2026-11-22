@@ -90,7 +90,8 @@ export function pushWikiHistory(
   if (new URL(nextHref, currentHref).href === currentHref) return;
   const state = history.state && typeof history.state === 'object' ? history.state : {};
   history.replaceState({ ...state, mikWikiScrollY: scrollY }, '', currentHref);
-  history.pushState({ ...state, mikWikiScrollY: null }, '', nextHref);
+  // Let the router's History API integration carry its own state into the new entry.
+  history.pushState({ mikWikiScrollY: null }, '', nextHref);
 }
 
 export function getWikiHistoryScroll(state: unknown): number | undefined {

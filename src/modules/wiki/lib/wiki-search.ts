@@ -4,6 +4,7 @@ import type {
   PreparedWikiQuery,
   SearchableWikiBlock,
   WikiMarkdownBlock,
+  WikiSearchEntry,
   WikiSearchResult,
 } from '@/modules/wiki/model/wiki-search-types';
 import type { WikiLocale, WikiSectionId } from '@/modules/wiki/model/wiki-section-types';
@@ -17,9 +18,8 @@ export function prepareWikiQuery(query: string): PreparedWikiQuery {
   };
 }
 
-export function fuzzyMatchWikiText(query: PreparedWikiQuery, text: string): number {
+function fuzzyMatchWikiText(query: PreparedWikiQuery, normalizedText: string): number {
   const queryText = query.lower;
-  const normalizedText = text.toLowerCase();
 
   if (!queryText || !normalizedText) return 0;
   if (normalizedText.includes(queryText)) return 3;
@@ -227,7 +227,8 @@ export function buildWikiSearchIndex(
 
     for (const block of parsedBlocks) {
       const directText = stripWikiMarkdown(block.directRaw);
-      const subtreeText = stripWikiMarkdown(block.subtreeRaw);
+      const subtreeText =
+        block.subtreeRaw === block.directRaw ? directText : stripWikiMarkdown(block.subtreeRaw);
       const searchableText = subtreeText || directText;
 
       if (!searchableText && !block.heading) continue;
@@ -295,61 +296,70 @@ function createWikiSearchSnippet(text: string, preparedQueries: PreparedWikiQuer
   return `${start > 0 ? '...' : ''}${snippet}${end < normalizedText.length ? '...' : ''}`;
 }
 
-export function searchWikiBlocks(
-  indexedBlocks: SearchableWikiBlock[],
-  searchPhrases: string[],
-  limit?: number,
-): WikiSearchResult[] {
-  const preparedQueries = normalizeWikiSearchPhrases(searchPhrases);
+function bestWikiMatch(queries: PreparedWikiQuery[], text: string): number {
+  if (!text) return 0;
+  const normalized = text.toLowerCase();
+  let score = 0;
+  for (const query of queries) score = Math.max(score, fuzzyMatchWikiText(query, normalized));
+  return score;
+}
 
+export function rankWikiBlocks<T extends WikiSearchEntry>(
+  indexedBlocks: T[],
+  preparedQueries: PreparedWikiQuery[],
+  limit?: number,
+) {
   if (preparedQueries.length === 0) return [];
 
-  const results: WikiSearchResult[] = [];
+  const ranked: { block: T; score: number }[] = [];
 
   for (const block of indexedBlocks) {
-    let headScore = 0;
-    let directScore = 0;
-    let bodyScore = 0;
-
-    for (const preparedQuery of preparedQueries) {
-      headScore = Math.max(headScore, fuzzyMatchWikiText(preparedQuery, block.heading));
-      directScore = Math.max(directScore, fuzzyMatchWikiText(preparedQuery, block.directText));
-      bodyScore = Math.max(bodyScore, fuzzyMatchWikiText(preparedQuery, block.searchableText));
-    }
-
+    const headScore = bestWikiMatch(preparedQueries, block.heading);
+    const directScore = bestWikiMatch(preparedQueries, block.directText);
+    const bodyScore =
+      block.subtreeText && block.subtreeText !== block.directText
+        ? bestWikiMatch(preparedQueries, block.subtreeText)
+        : directScore;
     const hasDirectContent = block.directText.length > 0;
-    const isContainerHeading = !hasDirectContent && block.subtreeText.length > 0;
+    const isContainerHeading = !hasDirectContent && Boolean(block.subtreeText);
 
     if (headScore <= 0 && directScore <= 0 && bodyScore <= 0) continue;
 
-    const snippetSource = block.directText || block.subtreeText || block.searchableText;
     const score =
       Math.max(headScore * 1.8, directScore * 1.2, bodyScore) +
       block.level * 0.1 +
       (hasDirectContent ? 0.15 : 0) -
       (isContainerHeading ? 0.2 : 0);
 
-    results.push({
-      sectionId: block.sectionId,
-      path: block.path,
-      url: block.url,
-      content: block.content,
-      heading: block.heading,
-      slug: block.slug,
-      snippet: createWikiSearchSnippet(snippetSource, preparedQueries),
-      score,
-    });
+    ranked.push({ block, score });
   }
 
-  results.sort((a, b) => b.score - a.score);
+  ranked.sort((a, b) => b.score - a.score);
 
   const seen = new Set<string>();
-  const uniqueResults = results.filter((result) => {
-    const key = `${result.path}\n${result.url}`;
+  const unique = ranked.filter(({ block }) => {
+    const key = `${block.path}\n${block.url}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
-  return typeof limit === 'number' ? uniqueResults.slice(0, limit) : uniqueResults;
+  return typeof limit === 'number' ? unique.slice(0, limit) : unique;
+}
+
+export function searchWikiBlocks(
+  indexedBlocks: WikiSearchEntry[],
+  searchPhrases: string[],
+  limit?: number,
+): WikiSearchResult[] {
+  const queries = normalizeWikiSearchPhrases(searchPhrases);
+  return rankWikiBlocks(indexedBlocks, queries, limit).map(({ block, score }) => ({
+    sectionId: block.sectionId,
+    path: block.path,
+    url: block.url,
+    heading: block.heading,
+    slug: block.slug,
+    snippet: createWikiSearchSnippet(block.directText || block.subtreeText || '', queries),
+    score,
+  }));
 }

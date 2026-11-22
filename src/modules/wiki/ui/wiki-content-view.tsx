@@ -1,8 +1,19 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Suspense,
+  use,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { browser } from 'react-dom';
 import { getWikiNavigationScrollMinimum } from '@/modules/wiki/lib/wiki-navigation-scroll';
 import {
   decodeWikiHash,
@@ -14,7 +25,7 @@ import type { WikiNavigationPanel } from '@/modules/wiki/model/use-wiki-navigati
 import { useWikiPublicContent } from '@/modules/wiki/model/use-wiki-public-content';
 import { useWikiReading } from '@/modules/wiki/model/use-wiki-reading';
 import type { WikiSectionOutlineMap } from '@/modules/wiki/model/wiki-content-types';
-import type { SearchableWikiBlock } from '@/modules/wiki/model/wiki-search-types';
+import type { WikiSearchEntry } from '@/modules/wiki/model/wiki-search-types';
 import type {
   WikiSectionDefinition,
   WikiSectionGroupDefinition,
@@ -45,9 +56,7 @@ interface WikiContentProps {
   sectionGroups: WikiSectionGroupDefinition[];
   compiled: Record<string, string>;
   outlines: WikiSectionOutlineMap;
-  searchIndex: SearchableWikiBlock[];
-  initialSection?: WikiSectionId;
-  initialQuery?: string;
+  searchIndex: WikiSearchEntry[];
   staffStatus?: ReactNode;
 }
 
@@ -65,22 +74,21 @@ export default function WikiContent({
   compiled,
   outlines,
   searchIndex,
-  initialSection,
-  initialQuery = '',
   staffStatus,
 }: WikiContentProps) {
   const locale = useLocale();
   const common = useTranslations('common');
   const searchT = useTranslations('wiki.search');
-  const fallbackSection = sections[0]?.id || '';
-  const [activeSection, setActiveSection] = useState(initialSection || fallbackSection);
+  const fallbackSection = sections.find((section) => section.access === 'public')?.id ?? '';
+  const [activeSection, setActiveSection] = useState(fallbackSection);
   const [navigationPanel, setNavigationPanel] = useState<WikiNavigationPanel>(null);
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialQuery);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isSearchComposing, setIsSearchComposing] = useState(false);
   const liveSearchQuery = searchQuery.trim();
   const deferredLiveSearchQuery = useDeferredValue(liveSearchQuery);
-  const committedSearchQuery = useRef(initialQuery);
+  const pendingSearchEdit = useRef<string | null>(null);
+  const syncedLocation = useRef<{ href: string; section: string } | null>(null);
   const navigationRef = useRef<HTMLElement>(null);
   const activeSearchQuery = isSearchComposing
     ? debouncedSearchQuery
@@ -128,14 +136,6 @@ export default function WikiContent({
   const searchResultsCountLabel = searchT('resultsCount', { count: searchResults.length });
 
   useEffect(() => {
-    if (sectionIds.has(activeSection)) {
-      return;
-    }
-
-    setActiveSection(fallbackSection);
-  }, [activeSection, sectionIds, fallbackSection]);
-
-  useEffect(() => {
     if (isSearchComposing || liveSearchQuery === debouncedSearchQuery) {
       return;
     }
@@ -147,33 +147,28 @@ export default function WikiContent({
     return () => window.clearTimeout(timer);
   }, [debouncedSearchQuery, isSearchComposing, liveSearchQuery]);
 
-  useEffect(() => {
-    const previousScrollRestoration = window.history.scrollRestoration;
-    window.history.scrollRestoration = 'manual';
-    let lastPopstateUrl: string | null = null;
-    const syncLocationState = (event?: Event) => {
-      if (event?.type === 'hashchange' && lastPopstateUrl === window.location.href) {
-        lastPopstateUrl = null;
-        return;
-      }
-      lastPopstateUrl = event?.type === 'popstate' ? window.location.href : null;
+  const syncLocationState = useCallback(
+    (event?: Event) => {
+      const href = window.location.href;
       const params = new URLSearchParams(window.location.search);
-      const nextQuery = params.get('q')?.trim() ?? '';
       const selectedSectionId = params.get('section');
       const nextSection =
         selectedSectionId && sectionIds.has(selectedSectionId)
           ? selectedSectionId
           : fallbackSection;
 
-      committedSearchQuery.current = nextQuery;
-      setSearchQuery((currentQuery) => (currentQuery === nextQuery ? currentQuery : nextQuery));
-      setDebouncedSearchQuery((currentQuery) =>
-        currentQuery === nextQuery ? currentQuery : nextQuery,
-      );
-      setActiveSection((currentSection) =>
-        currentSection === nextSection ? currentSection : nextSection,
-      );
-      setNavigationPanel(null);
+      const previous = syncedLocation.current;
+      if (!event && previous?.href === href && previous.section === nextSection) return;
+      syncedLocation.current = { href, section: nextSection };
+      // Staff verification can resolve a deep link while the user is editing the search field.
+      if (event || previous?.href !== href) {
+        const nextQuery = params.get('q')?.trim() ?? '';
+        pendingSearchEdit.current = null;
+        setSearchQuery(nextQuery);
+        setDebouncedSearchQuery(nextQuery);
+        setNavigationPanel(null);
+      }
+      setActiveSection(nextSection);
       if (window.location.hash || event) {
         requestScroll({
           sectionId: nextSection,
@@ -184,24 +179,52 @@ export default function WikiContent({
             event?.type === 'popstate' ? getWikiHistoryScroll(window.history.state) : undefined,
         });
       }
-    };
-
-    syncLocationState();
-    window.addEventListener('popstate', syncLocationState);
-    window.addEventListener('hashchange', syncLocationState);
-    return () => {
-      window.history.scrollRestoration = previousScrollRestoration;
-      window.removeEventListener('popstate', syncLocationState);
-      window.removeEventListener('hashchange', syncLocationState);
-    };
-  }, [sectionIds, fallbackSection, requestScroll]);
+    },
+    [fallbackSection, requestScroll, sectionIds],
+  );
 
   useEffect(() => {
-    if (debouncedSearchQuery === committedSearchQuery.current) {
-      return;
-    }
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    let lastPopstateUrl: string | null = null;
+    const restore = (event: Event) => {
+      if (event.type === 'hashchange' && lastPopstateUrl === window.location.href) {
+        lastPopstateUrl = null;
+        return;
+      }
+      lastPopstateUrl = event.type === 'popstate' ? window.location.href : null;
+      syncLocationState(event);
+    };
+    syncLocationState();
+    window.addEventListener('popstate', restore);
+    window.addEventListener('hashchange', restore);
+    return () => {
+      window.history.scrollRestoration = previousScrollRestoration;
+      window.removeEventListener('popstate', restore);
+      window.removeEventListener('hashchange', restore);
+    };
+  }, [syncLocationState]);
+
+  const syncRouterLocation = useCallback(
+    (query: string) => {
+      // Ignore our own shallow updates and router state from a superseded navigation.
+      if (
+        syncedLocation.current?.href !== window.location.href &&
+        new URLSearchParams(window.location.search).toString() === query
+      ) {
+        syncLocationState();
+      }
+    },
+    [syncLocationState],
+  );
+
+  useEffect(() => {
+    // State restored from a link or Back/Forward must never write back into that URL.
+    if (isSearchComposing || pendingSearchEdit.current !== debouncedSearchQuery) return;
+    pendingSearchEdit.current = null;
 
     const params = new URLSearchParams(window.location.search);
+    if ((params.get('q')?.trim() ?? '') === debouncedSearchQuery) return;
     if (debouncedSearchQuery) {
       params.set('q', debouncedSearchQuery);
     } else {
@@ -216,9 +239,13 @@ export default function WikiContent({
     const nextQueryString = params.toString();
     const nextUrl = `${window.location.pathname}${nextQueryString ? `?${nextQueryString}` : ''}${window.location.hash}`;
 
-    window.history.replaceState(window.history.state, '', nextUrl);
-    committedSearchQuery.current = debouncedSearchQuery;
-  }, [activeSection, debouncedSearchQuery]);
+    window.history.replaceState(
+      { mikWikiScrollY: getWikiHistoryScroll(window.history.state) },
+      '',
+      nextUrl,
+    );
+    syncedLocation.current = { href: window.location.href, section: activeSection };
+  }, [activeSection, debouncedSearchQuery, isSearchComposing]);
 
   const pushUrlState = ({
     nextSection = activeSection,
@@ -229,6 +256,7 @@ export default function WikiContent({
     nextQuery?: string;
     nextHash?: string;
   }) => {
+    pendingSearchEdit.current = null;
     const params = new URLSearchParams(window.location.search);
     if (nextSection) {
       params.set('section', nextSection);
@@ -244,6 +272,7 @@ export default function WikiContent({
     const nextQueryString = params.toString();
     const nextUrl = `${window.location.pathname}${nextQueryString ? `?${nextQueryString}` : ''}${nextHash}`;
     pushWikiHistory(window.history, window.location.href, nextUrl, window.scrollY);
+    syncedLocation.current = { href: window.location.href, section: nextSection };
   };
 
   const handleSectionChange = (id: WikiSectionId) => {
@@ -251,7 +280,6 @@ export default function WikiContent({
     if (id === activeSection && !liveSearchQuery && !isSearching) return;
 
     const minScrollY = getWikiNavigationScrollMinimum(navigationRef.current);
-    committedSearchQuery.current = '';
     setActiveSection(id);
     setSearchQuery('');
     setDebouncedSearchQuery('');
@@ -268,7 +296,6 @@ export default function WikiContent({
 
   const handleSearchResultOpen = (result: (typeof searchResults)[number]) => {
     setNavigationPanel(null);
-    committedSearchQuery.current = '';
     setActiveSection(result.sectionId);
     setSearchQuery('');
     setDebouncedSearchQuery('');
@@ -277,14 +304,18 @@ export default function WikiContent({
     requestScroll({ sectionId: result.sectionId, slug: result.slug, focus: true, smooth: true });
   };
 
+  const handleSearchChange = (query: string) => {
+    pendingSearchEdit.current = query.trim();
+    setSearchQuery(query);
+  };
+
   const handleSearchClear = () => {
-    setSearchQuery('');
+    handleSearchChange('');
     setDebouncedSearchQuery('');
   };
 
   const handleOutlineOpen = (item: WikiSectionOutlineItem) => {
     if (!item.slug) return;
-    committedSearchQuery.current = '';
     setSearchQuery('');
     setDebouncedSearchQuery('');
     pushUrlState({ nextQuery: '', nextHash: `#${encodeURIComponent(item.slug)}` });
@@ -293,6 +324,9 @@ export default function WikiContent({
 
   return (
     <div className="wiki-page page-shell">
+      <Suspense fallback={null}>
+        <WikiRouterLocationObserver onChange={syncRouterLocation} />
+      </Suspense>
       <div className="wiki-page__inner">
         <ContentBrowserHeader
           title={pageTitle}
@@ -300,13 +334,13 @@ export default function WikiContent({
           search={
             <WikiSearchBox
               clearSearchLabel={clearSearchLabel}
-              onChange={setSearchQuery}
+              onChange={handleSearchChange}
               onClear={handleSearchClear}
               onCompositionEnd={(event) => {
                 const nextQuery = event.currentTarget.value.trim();
 
                 setIsSearchComposing(false);
-                setSearchQuery(event.currentTarget.value);
+                handleSearchChange(event.currentTarget.value);
                 setDebouncedSearchQuery(nextQuery);
               }}
               onCompositionStart={() => setIsSearchComposing(true)}
@@ -398,6 +432,14 @@ export default function WikiContent({
       </div>
     </div>
   );
+}
+
+/** Next.js links can change the query without dispatching popstate. */
+function WikiRouterLocationObserver({ onChange }: { onChange: (query: string) => void }) {
+  use(browser('Wiki query navigation is handled in the browser.'));
+  const query = useSearchParams()?.toString() ?? '';
+  useEffect(() => onChange(query), [onChange, query]);
+  return null;
 }
 
 function WikiResourceStatus({

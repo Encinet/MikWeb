@@ -25,34 +25,49 @@ export function filterBuildings(
   locale: string,
 ): Building[] {
   const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  return buildings
-    .filter((building) => {
-      if (buildingFilter === 'all') {
-        return true;
-      }
-
-      return building.buildType === buildingFilter;
-    })
-    .filter((building) => {
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      const buildingName = getLocalizedText(building.name, locale).toLowerCase();
-      const buildingDescription = getLocalizedText(building.description, locale).toLowerCase();
-      const builderNames = building.builders.map((builder) => builder.name.toLowerCase()).join(' ');
-      const tagValues = (building.tags ?? [])
+  if (buildingFilter === 'all' && !normalizedQuery) return buildings;
+  return buildings.filter((building) => {
+    if (buildingFilter !== 'all' && building.buildType !== buildingFilter) return false;
+    return (
+      !normalizedQuery ||
+      getLocalizedText(building.name, locale).toLowerCase().includes(normalizedQuery) ||
+      getLocalizedText(building.description, locale).toLowerCase().includes(normalizedQuery) ||
+      building.builders
+        .map((builder) => builder.name.toLowerCase())
+        .join(' ')
+        .includes(normalizedQuery) ||
+      (building.tags ?? [])
         .map((tag) => getLocalizedText(tag, locale).toLowerCase())
-        .join(' ');
+        .join(' ')
+        .includes(normalizedQuery)
+    );
+  });
+}
 
-      return (
-        buildingName.includes(normalizedQuery) ||
-        buildingDescription.includes(normalizedQuery) ||
-        builderNames.includes(normalizedQuery) ||
-        tagValues.includes(normalizedQuery)
-      );
-    });
+function newestFirst(left: Building, right: Building) {
+  return Date.parse(right.buildDate) - Date.parse(left.buildDate);
+}
+
+/** Choose the two homepage cards in catalog order when dates tie. */
+export function getRecentBuildingUpdates(buildings: Building[]): Building[] {
+  const recent: Building[] = [];
+  let newestTime = Number.NEGATIVE_INFINITY;
+  let secondTime = Number.NEGATIVE_INFINITY;
+  for (const building of buildings) {
+    const time = Date.parse(building.buildDate);
+    // Older records can contain free-form dates. Keep the archive's ordering for those catalogs.
+    if (Number.isNaN(time)) return [...buildings].sort(newestFirst).slice(0, 2);
+    if (time > newestTime) {
+      if (recent.length) recent[1] = recent[0];
+      recent[0] = building;
+      secondTime = newestTime;
+      newestTime = time;
+    } else if (time > secondTime) {
+      recent[1] = building;
+      secondTime = time;
+    }
+  }
+  return recent;
 }
 
 export function sortBuildings(
@@ -83,13 +98,9 @@ export function sortBuildings(
   return [...buildings].sort((leftBuilding, rightBuilding) => {
     switch (sortKey) {
       case 'date-desc':
-        return (
-          new Date(rightBuilding.buildDate).getTime() - new Date(leftBuilding.buildDate).getTime()
-        );
+        return newestFirst(leftBuilding, rightBuilding);
       case 'date-asc':
-        return (
-          new Date(leftBuilding.buildDate).getTime() - new Date(rightBuilding.buildDate).getTime()
-        );
+        return newestFirst(rightBuilding, leftBuilding);
       case 'name-asc': {
         const leftName = getLocalizedText(leftBuilding.name, locale).toLowerCase();
         const rightName = getLocalizedText(rightBuilding.name, locale).toLowerCase();

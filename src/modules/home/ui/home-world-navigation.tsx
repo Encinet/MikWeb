@@ -26,7 +26,7 @@ export function HomeWorldNavigation() {
   return (
     <nav className="home-player-shortcuts" aria-label={t('home.playerHome.tools.title')}>
       {shortcuts.map(({ href, icon: Icon, label }) => (
-        <Link key={href} href={href}>
+        <Link key={href} href={href} prefetch={href.startsWith('/wiki?') ? false : undefined}>
           <Icon className="h-4 w-4" aria-hidden="true" />
           <span>{label}</span>
         </Link>

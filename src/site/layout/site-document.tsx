@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { getAuthNavigationInitializationScript } from '@/modules/auth/lib/auth-navigation-hint';
 import { SITE_HOSTNAME, SITE_NAME } from '@/shared/config/site-config';
 import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
+import { getLocalePreferenceScript } from '@/shared/i18n/locale-preference-script';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { ServerInsertedScript } from '@/shared/ui/server-inserted-script';
 import { BrowserSupportNotice } from '@/site/browser-support/ui/browser-support-notice';
@@ -13,9 +14,11 @@ import { getAccentInitializationScript, getAccentProperties } from '@/site/theme
 export default async function SiteDocument({
   children,
   locale,
+  rememberLocale = false,
 }: Readonly<{
   children: React.ReactNode;
   locale: AppLocale;
+  rememberLocale?: boolean;
 }>) {
   const defaultPalette = getAccentProperties(DEFAULT_ACCENT_COLOR);
 
@@ -39,6 +42,7 @@ export default async function SiteDocument({
         </Suspense>
         <ServerInsertedScript code={getAccentInitializationScript()} />
         <ServerInsertedScript code={getAuthNavigationInitializationScript()} />
+        {rememberLocale ? <ServerInsertedScript code={getLocalePreferenceScript(locale)} /> : null}
       </head>
       <body className="app-body">
         <BrowserSupportNotice locale={locale} />

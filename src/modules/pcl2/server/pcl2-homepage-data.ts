@@ -29,6 +29,8 @@ const FALLBACK_ONLINE_PLAYERS: PlayerStatus = {
   players: [],
 };
 
+let pendingApiData: Promise<Pcl2HomepageApiData> | undefined;
+
 async function loadJson<TData>(
   pathname: string,
   validate: (value: unknown) => value is TData,
@@ -76,7 +78,11 @@ export async function loadPcl2HomepageData(
   request: Request,
   locale: AppLocale,
 ): Promise<Pcl2HomepageData> {
-  const [data, messages] = await Promise.all([loadPcl2HomepageApiData(), getMessages({ locale })]);
+  // Concurrent requests on a warm instance share only the four public upstream reads.
+  pendingApiData ??= loadPcl2HomepageApiData().finally(() => {
+    pendingApiData = undefined;
+  });
+  const [data, messages] = await Promise.all([pendingApiData, getMessages({ locale })]);
 
   return {
     ...data,

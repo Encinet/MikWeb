@@ -19,6 +19,7 @@ interface BuildingCardProps {
 
 export function BuildingCard({ building, locale, t, prioritizeCover = false }: BuildingCardProps) {
   const [imageErrors, setImageErrors] = useState<string[]>([]);
+  const [prefetch, setPrefetch] = useState(false);
   const buildingImages = building.images;
   const coverImage = buildingImages.find((imageUrl) => !imageErrors.includes(imageUrl));
   const buildingName = getBuildingName(building, locale);
@@ -35,6 +36,10 @@ export function BuildingCard({ building, locale, t, prioritizeCover = false }: B
       <article className="building-archive-card">
         <Link
           href={getBuildingPath(building.id)}
+          prefetch={prefetch ? 'auto' : false}
+          onMouseEnter={() => setPrefetch(true)}
+          onFocus={() => setPrefetch(true)}
+          onTouchStart={() => setPrefetch(true)}
           scroll={false}
           transitionTypes={['building-open']}
           className="building-archive-card__link"

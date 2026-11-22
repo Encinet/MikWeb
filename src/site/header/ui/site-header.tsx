@@ -3,7 +3,6 @@
 import { BookOpen, Building2, Home, MapIcon, Shield } from 'lucide-react';
 import { domAnimation, LazyMotion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { usePlayerStatus } from '@/modules/player/model/use-player-status';
@@ -31,7 +30,6 @@ export default function SiteHeader() {
     hasNetworkError,
   } = usePlayerStatus();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [navbarScrollProgress, setNavbarScrollProgress] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [menuPathname, setMenuPathname] = useState(pathname);
   if (menuPathname !== pathname) {
@@ -45,8 +43,6 @@ export default function SiteHeader() {
   const [playerDropdownRect, setPlayerDropdownRect] = useState<DOMRect | null>(null);
   const playerDropdownAnchorRef = useRef<HTMLDivElement | null>(null);
   const playerDropdownAnimationFrameRef = useRef<number | null>(null);
-  const navbarProgressAnimationFrameRef = useRef<number | null>(null);
-  const navbarProgressTargetRef = useRef(0);
   const navbarProgressCurrentRef = useRef(0);
   const previousActiveNavIndexRef = useRef<number | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -114,43 +110,27 @@ export default function SiteHeader() {
   };
 
   useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
     const scrollRange = 240;
-    const smoothProgress = (value: number) => value * value * (3 - 2 * value);
-
-    const stopAnimation = () => {
-      if (navbarProgressAnimationFrameRef.current !== null) {
-        cancelAnimationFrame(navbarProgressAnimationFrameRef.current);
-        navbarProgressAnimationFrameRef.current = null;
-      }
-    };
+    let frame: number | null = null;
+    let target = 0;
 
     const step = () => {
       const current = navbarProgressCurrentRef.current;
-      const target = navbarProgressTargetRef.current;
       const delta = target - current;
-
-      if (Math.abs(delta) < 0.001) {
-        navbarProgressCurrentRef.current = target;
-        setNavbarScrollProgress(target);
-        setIsScrolled(target >= 0.999);
-        navbarProgressAnimationFrameRef.current = null;
-        return;
-      }
-
-      const next = current + delta * 0.12;
+      const next = Math.abs(delta) < 0.001 ? target : current + delta * 0.12;
       navbarProgressCurrentRef.current = next;
-      setNavbarScrollProgress(next);
-      setIsScrolled(next >= 0.999);
-      navbarProgressAnimationFrameRef.current = requestAnimationFrame(step);
+      header.style.setProperty('--project-navbar-scroll-progress', next.toFixed(3));
+      if (current >= 0.999 !== next >= 0.999) setIsScrolled(next >= 0.999);
+      frame = next === target ? null : requestAnimationFrame(step);
     };
 
     const syncScrollProgress = () => {
-      const rawProgress = Math.min(1, window.scrollY / scrollRange);
-      navbarProgressTargetRef.current = smoothProgress(rawProgress);
-
-      if (navbarProgressAnimationFrameRef.current === null) {
-        navbarProgressAnimationFrameRef.current = requestAnimationFrame(step);
-      }
+      const progress = Math.max(0, Math.min(1, window.scrollY / scrollRange));
+      target = progress * progress * (3 - 2 * progress);
+      if (frame === null && target !== navbarProgressCurrentRef.current)
+        frame = requestAnimationFrame(step);
     };
 
     syncScrollProgress();
@@ -158,7 +138,7 @@ export default function SiteHeader() {
     window.addEventListener('resize', syncScrollProgress, { passive: true });
 
     return () => {
-      stopAnimation();
+      if (frame !== null) cancelAnimationFrame(frame);
       window.removeEventListener('scroll', syncScrollProgress);
       window.removeEventListener('resize', syncScrollProgress);
     };
@@ -205,11 +185,6 @@ export default function SiteHeader() {
       <div
         ref={headerRef}
         className={`project-navbar-shell${isScrolled ? ' is-scrolled' : ''}${pathname === '/wiki' || pathname === '/map' ? ' is-docked-page' : ''}`}
-        style={
-          {
-            '--project-navbar-scroll-progress': navbarScrollProgress.toFixed(3),
-          } as CSSProperties
-        }
       >
         <nav className="project-navbar-card">
           <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">

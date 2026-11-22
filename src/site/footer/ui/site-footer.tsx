@@ -65,7 +65,9 @@ export default async function SiteFooter() {
           <strong className="site-footer__col-title">{t('footer.siteInfo')}</strong>
           <ul className="site-footer__links">
             <li>
-              <Link href="/wiki?section=privacy">{t('footer.privacyPolicy')}</Link>
+              <Link href="/wiki?section=privacy" prefetch={false}>
+                {t('footer.privacyPolicy')}
+              </Link>
             </li>
             <li>
               <a

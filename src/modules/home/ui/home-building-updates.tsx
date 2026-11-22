@@ -2,29 +2,30 @@
 
 import { Building2, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
+import { getRecentBuildingUpdates } from '@/modules/building/lib/building-catalog';
 import { getBuildingPath } from '@/modules/building/lib/building-links';
 import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
 import type { Building } from '@/modules/building/model/building-types';
+import { useBuildings } from '@/modules/building/model/use-buildings';
 import { BuildingPreviewImage } from '@/modules/building/ui/building-preview-image';
 import { Link } from '@/shared/i18n/navigation';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
 export function HomeBuildingUpdates({
   buildings: recentBuildings,
-  unavailable,
+  onRetry,
+  isRefreshing = false,
 }: {
   buildings: Building[];
-  unavailable: boolean;
+  onRetry?: () => void;
+  isRefreshing?: boolean;
 }) {
   const t = useTranslations('home.playerHome.buildings');
   const mapT = useTranslations('map');
   const commonT = useTranslations('common');
   const locale = useLocale();
-  const router = useRouter();
-  const [isRefreshing, startRefresh] = useTransition();
   const [imageErrors, setImageErrors] = useState<string[]>([]);
 
   return (
@@ -92,13 +93,13 @@ export function HomeBuildingUpdates({
           })
         ) : (
           <div className="home-building-empty">
-            <p>{unavailable ? t('unavailable') : t('empty')}</p>
-            {unavailable ? (
+            <p>{onRetry ? t('unavailable') : t('empty')}</p>
+            {onRetry ? (
               <button
                 type="button"
                 className="home-building-retry"
                 disabled={isRefreshing}
-                onClick={() => startRefresh(() => router.refresh())}
+                onClick={onRetry}
               >
                 {isRefreshing ? t('retrying') : commonT('actions.retry')}
               </button>
@@ -107,6 +108,18 @@ export function HomeBuildingUpdates({
         )}
       </div>
     </section>
+  );
+}
+
+/** Recover a failed server snapshot from the public catalog without re-rendering the page. */
+export function HomeBuildingUpdatesRecovery() {
+  const { buildings, error, fetchBuildings, isLoading } = useBuildings();
+  return (
+    <HomeBuildingUpdates
+      buildings={getRecentBuildingUpdates(buildings)}
+      onRetry={error ? () => void fetchBuildings({ force: true }) : undefined}
+      isRefreshing={isLoading}
+    />
   );
 }
 

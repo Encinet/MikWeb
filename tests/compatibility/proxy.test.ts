@@ -5,25 +5,34 @@ import { NextRequest } from 'next/server';
 import proxy, { config } from '@/proxy';
 import { routing } from '@/shared/i18n/routing';
 
-test('Proxy skips ordinary APIs and public images, but handles locale and MCP routes', () => {
-  const matches = (url: string) => unstable_doesMiddlewareMatch({ config, nextConfig: {}, url });
+test('Proxy only negotiates unprefixed and noncanonical URLs and PCL2 documents', () => {
+  const matches = (url: string, headers?: Record<string, string>) =>
+    unstable_doesMiddlewareMatch({ config, nextConfig: {}, url, headers });
   for (const url of [
     '/api/wiki/section/en/rules',
+    '/api/mcp',
     '/_next/image',
     '/_not-found',
     '/opengraph-image',
   ]) {
     assert.equal(matches(url), false, url);
   }
-  for (const url of ['/', '/api/mcp']) {
+  for (const url of ['/', '/wiki', '/EN/map', '/zh-cn']) {
     assert.equal(matches(url), true, url);
   }
   for (const locale of routing.locales) {
-    for (const path of ['pcl2', 'buildings/example']) {
-      const url = `/${locale}/${path}`;
-      assert.equal(matches(url), true, url);
-    }
+    const pcl2 = `/${locale}/pcl2`;
+    assert.equal(matches(pcl2), true, pcl2);
+    assert.equal(matches(pcl2, { rsc: '1' }), false, `${pcl2} RSC`);
+    assert.equal(matches(`/${locale}`), false, `/${locale}`);
     for (const path of [
+      'wiki?section=rules',
+      'buildings',
+      'buildings/example',
+      'chat',
+      'account',
+      'pcl2/source',
+      'pcl2/version',
       'opengraph-image',
       'opengraph/wiki',
       'thumbnails/home',
@@ -36,16 +45,34 @@ test('Proxy skips ordinary APIs and public images, but handles locale and MCP ro
   }
 });
 
-test('Proxy keeps launcher XML rewriting and MCP preflight behavior', () => {
-  const launcher = proxy(new NextRequest('https://example.test/en/pcl2?raw'));
-  assert.equal(getRewrittenUrl(launcher), 'https://example.test/en/pcl2/source?raw');
+test('Proxy keeps launcher XML rewriting', () => {
+  const url = 'https://example.test/en/pcl2';
+  const launcher = proxy(new NextRequest(`${url}?tz=UTC`));
+  assert.equal(getRewrittenUrl(launcher), `${url}/source?tz=UTC`);
+  const raw = proxy(new NextRequest(`${url}?raw`, { headers: { accept: 'text/html' } }));
+  assert.equal(getRewrittenUrl(raw), `${url}/source?raw`);
+  for (const accept of ['application/xml', 'text/xml, */*;q=0.5']) {
+    const xml = proxy(new NextRequest(url, { headers: { accept, 'sec-fetch-dest': 'empty' } }));
+    assert.equal(getRewrittenUrl(xml), `${url}/source`);
+  }
 
-  const browser = proxy(
-    new NextRequest('https://example.test/en/pcl2', { headers: { accept: 'text/html' } }),
+  const browserHeaders: Record<string, string>[] = [
+    { accept: 'text/html' },
+    { accept: '*/*', 'user-agent': 'ExampleBot' },
+    { accept: '*/*', 'sec-fetch-dest': 'empty' },
+  ];
+  for (const headers of browserHeaders) {
+    const browser = proxy(new NextRequest(url, { headers }));
+    assert.equal(getRewrittenUrl(browser), null);
+  }
+});
+
+test('unprefixed URLs still honor the saved language and retain query parameters', () => {
+  const response = proxy(
+    new NextRequest('https://example.test/wiki?section=rules', {
+      headers: { cookie: 'NEXT_LOCALE=en', 'accept-language': 'zh-CN' },
+    }),
   );
-  assert.equal(browser.headers.get('x-middleware-rewrite'), null);
-
-  const preflight = proxy(new NextRequest('https://example.test/api/mcp', { method: 'OPTIONS' }));
-  assert.equal(preflight.status, 204);
-  assert.equal(preflight.headers.get('access-control-allow-origin'), '*');
+  assert.equal(response.status, 307);
+  assert.equal(response.headers.get('location'), 'https://example.test/en/wiki?section=rules');
 });

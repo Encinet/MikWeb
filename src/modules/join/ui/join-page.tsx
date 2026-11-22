@@ -54,7 +54,7 @@ export function JoinPage({ groups, matrixUrl, captcha }: JoinPageData) {
             )}
           </section>
         </div>
-        <Link className="join-rules-link" href="/wiki?section=rules">
+        <Link className="join-rules-link" href="/wiki?section=rules" prefetch={false}>
           <ScrollText aria-hidden="true" />
           {t('rules')}
         </Link>

@@ -2,8 +2,11 @@ import { compile } from '@mdx-js/mdx';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import { createWikiSectionGroups, sortWikiSections } from '@/modules/wiki/lib/wiki-grouping';
-import { buildWikiSearchIndex, parseWikiMarkdownBlocks } from '@/modules/wiki/lib/wiki-search';
-import type { WikiContentBundle } from '@/modules/wiki/model/wiki-content-types';
+import { buildWikiSearchIndex } from '@/modules/wiki/lib/wiki-search';
+import type {
+  WikiContentBundle,
+  WikiSectionOutlineMap,
+} from '@/modules/wiki/model/wiki-content-types';
 import type { WikiLocale, WikiSectionDocument } from '@/modules/wiki/model/wiki-section-types';
 
 export async function createWikiContentBundle(
@@ -14,6 +17,11 @@ export async function createWikiContentBundle(
   const content = Object.fromEntries(
     documents.map((document) => [document.section.id, document.content]),
   );
+  const searchIndex = buildWikiSearchIndex(locale, content);
+  const outlines: WikiSectionOutlineMap = Object.fromEntries(sections.map(({ id }) => [id, []]));
+  for (const { sectionId, heading, level, slug } of searchIndex) {
+    if (level === 2 || level === 3) outlines[sectionId].push({ heading, level, slug });
+  }
   return {
     compiled: Object.fromEntries(
       await Promise.all(
@@ -36,14 +44,7 @@ export async function createWikiContentBundle(
     sections,
     sectionGroups: createWikiSectionGroups(sections),
     content,
-    outlines: Object.fromEntries(
-      documents.map((document) => [
-        document.section.id,
-        parseWikiMarkdownBlocks(document.section.id, document.content)
-          .filter((block) => block.level >= 2 && block.level <= 3)
-          .map(({ heading, level, slug }) => ({ heading, level, slug })),
-      ]),
-    ),
-    searchIndex: buildWikiSearchIndex(locale, content),
+    outlines,
+    searchIndex,
   };
 }

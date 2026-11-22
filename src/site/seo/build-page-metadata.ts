@@ -40,6 +40,7 @@ export function buildPageMetadata({
       languages: {
         'zh-CN': getLocalePath('zh-CN', pathname),
         en: getLocalePath('en', pathname),
+        'x-default': pathname || '/',
       },
     },
     openGraph: {

@@ -13,24 +13,28 @@ export interface PreparedWikiQuery {
   tokens: string[];
 }
 
-export interface SearchableWikiBlock {
+export interface WikiSearchEntry {
   sectionId: WikiSectionId;
   path: string;
   url: string;
-  content: string;
   heading: string;
   slug: string;
   directText: string;
+  /** Omitted from the browser index when the direct text already covers the whole block. */
+  subtreeText?: string;
+  level: number;
+}
+
+export interface SearchableWikiBlock extends WikiSearchEntry {
+  content: string;
   subtreeText: string;
   searchableText: string;
-  level: number;
 }
 
 export interface WikiSearchResult {
   sectionId: WikiSectionId;
   path: string;
   url: string;
-  content: string;
   heading: string;
   slug: string;
   snippet: string;

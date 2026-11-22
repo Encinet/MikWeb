@@ -1,11 +1,11 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
 import {
   addTransitionType,
   startTransition,
   useCallback,
-  useEffect,
+  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -17,100 +17,86 @@ import {
 } from '@/modules/building/lib/building-catalog-query';
 
 export function useBuildingCatalogQuery() {
-  const params = useSearchParams();
-  const pathname = usePathname();
-  const isCatalog = pathname.endsWith('/buildings');
-  const routeSearch = params.toString();
-  const [catalogSearch, setCatalogSearch] = useState(routeSearch);
-  // Intercepted galleries keep the catalog mounted underneath a different URL.
-  if (isCatalog && catalogSearch !== routeSearch) setCatalogSearch(routeSearch);
-  const selection = readBuildingCatalogQuery(
-    new URLSearchParams(isCatalog ? routeSearch : catalogSearch),
+  const [catalogSearch, setCatalogSearch] = useState<string | null>(null);
+  const selection = useMemo(
+    () => readBuildingCatalogQuery(new URLSearchParams(catalogSearch ?? '')),
+    [catalogSearch],
   );
-  const [query, setQuery] = useState(selection.query);
+  const [query, setQuery] = useState('');
   const pendingQuery = useRef<{ value: string; href: string } | null>(null);
   const queryTimer = useRef<number | null>(null);
-  const clearQueryTimer = useCallback(() => {
+  const clearTimer = useCallback(() => {
     if (queryTimer.current !== null) window.clearTimeout(queryTimer.current);
     queryTimer.current = null;
   }, []);
 
-  useEffect(() => {
-    if (!isCatalog) {
-      clearQueryTimer();
-      pendingQuery.current = null;
-      setQuery(selection.query);
-      return;
-    }
-    const current = readBuildingCatalogQuery(new URLSearchParams(window.location.search));
-    if (selection.query !== current.query) return;
-    if (pendingQuery.current !== null) {
-      if (pendingQuery.current.href === window.location.href) {
-        if (pendingQuery.current.value === selection.query) pendingQuery.current = null;
-        return;
+  const syncLocation = useCallback(
+    (discardDraft = false) => {
+      const { href, pathname, search } = window.location;
+      const draft = pendingQuery.current;
+      if (pathname.endsWith('/buildings')) {
+        setCatalogSearch(search);
+        if (!discardDraft && draft?.href === href) return;
+        setQuery(new URLSearchParams(search).get('q') ?? '');
+      } else if (draft) {
+        // A gallery keeps the last committed catalog visible underneath it.
+        setQuery(new URL(draft.href).searchParams.get('q') ?? '');
       }
-      // A link or router navigation supersedes the draft, just like Back/Forward.
-      clearQueryTimer();
       pendingQuery.current = null;
-    }
-    setQuery(selection.query);
-  }, [clearQueryTimer, isCatalog, selection.query]);
+      clearTimer();
+    },
+    [clearTimer],
+  );
 
-  useEffect(() => {
-    const restore = () => {
-      clearQueryTimer();
-      pendingQuery.current = null;
-      setQuery(readBuildingCatalogQuery(new URLSearchParams(window.location.search)).query);
-    };
+  useLayoutEffect(() => {
+    syncLocation();
+    const restore = () => syncLocation(true);
     window.addEventListener('popstate', restore);
     return () => {
-      clearQueryTimer();
+      clearTimer();
+      pendingQuery.current = null;
       window.removeEventListener('popstate', restore);
     };
-  }, [clearQueryTimer]);
+  }, [clearTimer, syncLocation]);
 
   const update = (patch: Partial<BuildingCatalogQuery>, history: 'push' | 'replace') => {
     const url = new URL(window.location.href);
-    if (pendingQuery.current && pendingQuery.current.href !== url.href) {
-      pendingQuery.current = null;
-      setQuery(isCatalog ? readBuildingCatalogQuery(url.searchParams).query : selection.query);
+    const draft = pendingQuery.current;
+    if (!url.pathname.endsWith('/buildings') || (draft && draft.href !== url.href)) {
+      syncLocation(true);
       return;
     }
-    if (!url.pathname.endsWith('/buildings')) return;
+    clearTimer();
     const current = readBuildingCatalogQuery(url.searchParams);
-    const next = { ...current, query: pendingQuery.current?.value ?? current.query, ...patch };
+    const next = { ...current, query: draft?.value ?? current.query, ...patch };
     url.search = writeBuildingCatalogQuery(url.searchParams, next).toString();
-    if (url.href === window.location.href) {
-      pendingQuery.current = null;
-      return;
-    }
-    if (pendingQuery.current) pendingQuery.current.href = url.href;
+    pendingQuery.current = null;
     startTransition(() => {
       addTransitionType('building-catalog');
-      if (history === 'push') window.history.pushState(null, '', url);
-      else window.history.replaceState(null, '', url);
+      if (url.href !== window.location.href) {
+        if (history === 'push') window.history.pushState(null, '', url);
+        else window.history.replaceState(null, '', url);
+      }
+      setCatalogSearch(url.search);
+      setQuery(next.query);
     });
   };
 
   return {
     selection,
     query,
+    ready: catalogSearch !== null,
+    syncLocation,
     handleSearchChange(query: string) {
       setQuery(query);
       pendingQuery.current = { value: query, href: window.location.href };
-      clearQueryTimer();
-      // Keep keystrokes urgent and coalesce URL updates instead of navigating on every key.
-      queryTimer.current = window.setTimeout(() => {
-        queryTimer.current = null;
-        update({ query }, 'replace');
-      }, 180);
+      clearTimer();
+      queryTimer.current = window.setTimeout(() => update({ query }, 'replace'), 180);
     },
     handleFilterChange(filter: BuildingFilterId) {
-      clearQueryTimer();
       update({ filter }, 'push');
     },
     handleSortChange(sort: BuildingSortKey) {
-      clearQueryTimer();
       update({ sort }, 'push');
     },
   };

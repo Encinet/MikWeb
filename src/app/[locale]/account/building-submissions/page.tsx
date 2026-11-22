@@ -2,6 +2,7 @@ import '../../../styles/modules/building-submission.css';
 
 import type { Metadata } from 'next';
 import { BuildingSubmissionPage } from '@/modules/building-submission/ui/building-submission-page';
+import { ClientMessages } from '@/shared/i18n/client-messages';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';
 import { generateSitePageMetadata } from '@/site/seo/site-page-metadata';
 import { SiteShareMetadata } from '@/site/seo/site-share-metadata';
@@ -17,11 +18,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
+  const locale = requireRouteLocale(rawLocale);
   return (
     <>
-      <SiteShareMetadata locale={requireRouteLocale(locale)} page="submissions" />
-      <BuildingSubmissionPage />
+      <SiteShareMetadata locale={locale} page="submissions" />
+      <ClientMessages locale={locale} namespaces={['auth', 'buildingSubmission', 'buildings']}>
+        <BuildingSubmissionPage />
+      </ClientMessages>
     </>
   );
 }
