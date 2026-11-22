@@ -49,9 +49,7 @@ test('API errors validate optional messages before exposing them to callers', ()
 test('player responses convert wire field names without mutating shared cached data', () => {
   const response: PlayerStatusResponse = {
     online: 1,
-    // biome-ignore lint/style/useNamingConvention: Fixture uses the external data service format.
     peak_online: 10,
-    // biome-ignore lint/style/useNamingConvention: Fixture uses the external data service format.
     players: [{ name: 'Player', uuid: 'player-id', joined_at: '2026-11-12T00:00:00Z' }],
   };
   assert.equal(isPlayerStatusResponse(response), true);
@@ -74,7 +72,6 @@ test('player validation preserves the offline sentinel and rejects invalid count
   }
   const invalidPeak = {
     online: 0,
-    // biome-ignore lint/style/useNamingConvention: Fixture uses the external data service format.
     peak_online: -2,
     players: [],
   };
@@ -89,7 +86,6 @@ test('Mik Data fallback retains player counts when the plugin peak is unavailabl
   for (const online of [-1, 0, 3]) {
     const response: PlayerStatusResponse = {
       online,
-      // biome-ignore lint/style/useNamingConvention: Mik Data fallback response.
       peak_online: -1,
       players: [],
     };

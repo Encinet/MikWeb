@@ -2,18 +2,26 @@
 
 import { RotateCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
+
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { ChatGate } from '@/modules/chat/ui/chat-gate';
-import { ChatWorkspace } from '@/modules/chat/ui/chat-workspace';
 import { Link } from '@/shared/i18n/navigation';
+
+const ChatWorkspace = dynamic(() => import('./chat-workspace').then((mod) => mod.ChatWorkspace));
 
 export function ChatPage({ appearance }: { appearance: ReactNode }) {
   const { account, isLoading, verified, refresh } = useAuth();
   const t = useTranslations('chat');
   const commonT = useTranslations('common');
   if (account && verified)
-    return <ChatWorkspace key={account.playerUuid} account={account} appearance={appearance} />;
+    return (
+      <Suspense fallback={<ChatGate state="pending" message={commonT('states.loading')} />}>
+        <ChatWorkspace key={account.playerUuid} account={account} appearance={appearance} />
+      </Suspense>
+    );
   return (
     <ChatGate
       state={isLoading ? 'pending' : verified ? 'signed-out' : 'error'}

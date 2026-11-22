@@ -35,7 +35,6 @@ export default async function SiteDocument({
       }
       suppressHydrationWarning
     >
-      {/* biome-ignore lint/style/noHeadElement: Shared root document owns the native head and pre-paint initialization. */}
       <head>
         <Suspense>
           <ShareThumbnailMetadata />

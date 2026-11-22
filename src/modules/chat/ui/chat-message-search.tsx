@@ -3,7 +3,8 @@
 import { Hash, MessageCircle, Server, Shield, SlidersHorizontal } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
-import { useId, useMemo, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
 import type { HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
 import { destinationKey } from '@/modules/chat/model/chat-destination';
@@ -16,7 +17,7 @@ import {
   matchesChatSearch,
 } from '@/modules/chat/model/chat-search';
 import { useChatHistorySearch } from '@/modules/chat/model/history/use-chat-history-search';
-import { ChatPanel, ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
+import { ChatPanelSearch } from '@/modules/chat/ui/chat-panel';
 import { ChatAuthorAvatar } from '@/modules/chat/ui/messages/chat-author-avatar';
 import { useChatMessageContent } from '@/modules/chat/ui/messages/use-chat-message-content';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
@@ -54,7 +55,6 @@ function excerpt(text: string, query: string): string {
 
 /** A persistent workspace pane: choosing a message does not discard the search. */
 export function ChatMessageSearch({
-  id,
   inputRef,
   open,
   criteria,
@@ -65,9 +65,7 @@ export function ChatMessageSearch({
   owner,
   conversation,
   onChoose,
-  onClose,
 }: {
-  id: string;
   inputRef: RefObject<HTMLInputElement | null>;
   open: boolean;
   criteria: ChatSearchCriteria;
@@ -78,7 +76,6 @@ export function ChatMessageSearch({
   owner: string;
   conversation: ChatDestination;
   onChoose: (destination: ChatDestination, messageId: string) => void;
-  onClose: () => void;
 }) {
   const t = useTranslations('chat');
   const content = useChatMessageContent();
@@ -86,6 +83,11 @@ export function ChatMessageSearch({
   const locale = useLocale();
   const summaryId = useId();
   const list = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!open) return;
+    inputRef.current?.focus({ preventScroll: true });
+    inputRef.current?.select();
+  }, [inputRef, open]);
   const { query, scope } = criteria;
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<string | null>(null);
@@ -119,57 +121,55 @@ export function ChatMessageSearch({
     [open, searching, history, criteria, key, staff, templates],
   );
   const archive = useChatHistorySearch(archiveQuery);
-  const candidates = useMemo(
-    () =>
-      [
-        ...new Map(
-          [
-            ...archive.page.messages,
-            ...(archiveQuery && archive.page.messages.length
-              ? messages.filter((message) => message.order > archive.page.messages[0].order)
-              : messages),
-          ]
-            .filter((message) => mayReadMessage(message, owner, staff))
-            .map((message) => [message.id, message]),
-        ).values(),
-      ].sort((a, b) => a.order.localeCompare(b.order) || a.id.localeCompare(b.id)),
-    [archiveQuery, archive.page.messages, messages, owner, staff],
-  );
+  const candidates = useMemo(() => {
+    if (!open || !searching) return [];
+    return [
+      ...new Map(
+        [
+          ...archive.page.messages,
+          ...(archiveQuery && archive.page.messages.length
+            ? messages.filter((message) => message.order > archive.page.messages[0].order)
+            : messages),
+        ]
+          .filter((message) => mayReadMessage(message, owner, staff))
+          .map((message) => [message.id, message]),
+      ).values(),
+    ].sort((a, b) => a.order.localeCompare(b.order) || a.id.localeCompare(b.id));
+  }, [open, searching, archiveQuery, archive.page.messages, messages, owner, staff]);
   const indexed = useMemo(
     () =>
-      open
-        ? candidates
-            .flatMap((message) => {
-              const destination = messageDestination(message, owner);
-              if (!destination) return [];
-              return [
-                {
-                  message,
-                  destination,
-                  text: content(message)
-                    .map((part) => part.text)
-                    .join(''),
-                  name:
-                    message.kind === 'user' ? message.sender.name : (message.subject?.name ?? ''),
-                },
-              ];
-            })
-            .reverse()
-        : [],
-    [candidates, owner, content, open],
+      candidates
+        .flatMap((message) => {
+          const destination = messageDestination(message, owner);
+          if (!destination) return [];
+          return [
+            {
+              message,
+              destination,
+              text: content(message)
+                .map((part) => part.text)
+                .join(''),
+              name: message.kind === 'user' ? message.sender.name : (message.subject?.name ?? ''),
+            },
+          ];
+        })
+        .reverse(),
+    [candidates, owner, content],
   );
-  const results = useMemo(() => {
-    if (!searching) return [];
-    return indexed.filter(({ message, text, name }) =>
-      matchesChatSearch(message, text, name, criteria, owner, key),
-    );
-  }, [indexed, searching, criteria, owner, key]);
+  const results = useMemo(
+    () =>
+      indexed.filter(({ message, text, name }) =>
+        matchesChatSearch(message, text, name, criteria, owner, key),
+      ),
+    [indexed, criteria, owner, key],
+  );
   const authors = useMemo(() => {
+    if (!open) return [];
     const values = new Map<string, string>();
     for (const message of messages)
       if (message.kind === 'user') values.set(message.sender.id, message.sender.name);
     return [...values].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [messages]);
+  }, [open, messages]);
   const format = useMemo(
     () => ({
       date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }),
@@ -199,13 +199,7 @@ export function ChatMessageSearch({
   const today = format.date.format(Date.now());
 
   return (
-    <ChatPanel
-      id={id}
-      open={open}
-      inputRef={inputRef}
-      title={t('searchMessages')}
-      onClose={onClose}
-    >
+    <>
       <ChatPanelSearch
         inputRef={inputRef}
         label={t('searchMessages')}
@@ -435,6 +429,6 @@ export function ChatMessageSearch({
           </button>
         ) : null}
       </div>
-    </ChatPanel>
+    </>
   );
 }

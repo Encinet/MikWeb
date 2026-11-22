@@ -1,2 +1,9 @@
 [test]
 preload = ["./tests/support/setup-dom.ts"]
+
+[fmt]
+printWidth = 100
+singleQuote = true
+quoteProps = "preserve"
+sortImports = true
+ignorePatterns = ["**/*.md", "**/*.mdx"]

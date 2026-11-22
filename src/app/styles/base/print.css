@@ -1,4 +1,4 @@
-/* biome-ignore-all lint/complexity/noImportantStyles: Print rules override screen styles and inline values. */
+/* Print rules override screen styles and inline values. */
 .print-site-header,
 .print-site-footer,
 .building-archive-print-index {

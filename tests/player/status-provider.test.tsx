@@ -17,7 +17,6 @@ function PlayerConsumer({
 }
 
 function player(uuid: string, name: string, joinedAt: string) {
-  // biome-ignore lint/style/useNamingConvention: Player status fixtures use the data service's wire format.
   return { uuid, name, joined_at: joinedAt };
 }
 

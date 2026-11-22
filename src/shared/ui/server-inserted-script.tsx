@@ -9,7 +9,7 @@ export function ServerInsertedScript({ code }: { code: string }) {
   useServerInsertedHTML(() => {
     if (inserted.current) return null;
     inserted.current = true;
-    // biome-ignore lint/security/noDangerouslySetInnerHtml: Only trusted, repository-owned initialization scripts are passed here.
+    // Only trusted, repository-owned initialization scripts are passed here.
     return <script dangerouslySetInnerHTML={{ __html: code }} />;
   });
   return null;

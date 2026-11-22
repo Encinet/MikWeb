@@ -37,7 +37,6 @@ export async function createSiteShareThumbnail(locale: AppLocale, page: SitePage
   return new ImageResponse(
     <SocialImageCanvas>
       {photo ? (
-        // biome-ignore lint/performance/noImgElement: ImageResponse renders a standalone image.
         <img
           src={`data:image/jpeg;base64,${photo.toString('base64')}`}
           alt=""
@@ -61,7 +60,6 @@ export async function createSiteShareThumbnail(locale: AppLocale, page: SitePage
             : SOCIAL_IMAGE_COLORS.background,
         }}
       >
-        {/* biome-ignore lint/performance/noImgElement: ImageResponse renders a standalone image. */}
         <img src={logo} alt="" width={photo ? 80 : 192} height={photo ? 80 : 192} />
         <div
           style={{

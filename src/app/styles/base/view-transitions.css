@@ -17,9 +17,8 @@ html {
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
-    /* biome-ignore lint/complexity/noImportantStyles: Motion preferences must override every animation class. */
+    /* Motion preferences override durations and delays from all animation classes. */
     animation-duration: 0s !important;
-    /* biome-ignore lint/complexity/noImportantStyles: Motion preferences must also remove delayed animations. */
     animation-delay: 0s !important;
   }
 }

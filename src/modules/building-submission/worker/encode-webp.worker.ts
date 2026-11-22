@@ -8,7 +8,6 @@ scope.onmessage = async ({ data }: MessageEvent<{ pixels: ImageData; tryLossless
   try {
     const options = {
       quality: BUILDING_SUBMISSION_IMAGE_LIMITS.webpQuality,
-      // biome-ignore lint/style/useNamingConvention: libwebp names this encoder option.
       use_sharp_yuv: 1,
     };
     let output = await encode(data.pixels, options);
@@ -24,7 +23,7 @@ scope.onmessage = async ({ data }: MessageEvent<{ pixels: ImageData; tryLossless
     if (output.byteLength > BUILDING_SUBMISSION_IMAGE_LIMITS.maxBytes) {
       output = await encode(data.pixels, {
         ...options,
-        // biome-ignore lint/style/useNamingConvention: libwebp's byte budget for multipass encoding.
+        // Byte budget for multipass encoding.
         target_size: BUILDING_SUBMISSION_IMAGE_LIMITS.maxBytes,
         pass: 4,
       });

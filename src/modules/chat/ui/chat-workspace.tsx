@@ -11,10 +11,12 @@ import {
   Shield,
   Users,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { closeChatActionMenus } from '@/modules/chat/lib/chat-action-menu-events';
 import { focusChatConversation } from '@/modules/chat/lib/chat-conversation-focus';
@@ -36,7 +38,7 @@ import type { ChatPreferences, ChatThread } from '@/modules/chat/model/workspace
 import { chatThreads } from '@/modules/chat/model/workspace/chat-workspace';
 import { useChatWorkspace } from '@/modules/chat/model/workspace/use-chat-workspace';
 import { ChatGate } from '@/modules/chat/ui/chat-gate';
-import { ChatMessageSearch } from '@/modules/chat/ui/chat-message-search';
+import { ChatPanel } from '@/modules/chat/ui/chat-panel';
 import { ChatComposer } from '@/modules/chat/ui/composer/chat-composer';
 import { ChatConnectionBanner } from '@/modules/chat/ui/feedback/chat-connection-banner';
 import type { ChatMessageJump } from '@/modules/chat/ui/messages/chat-message-list';
@@ -45,13 +47,20 @@ import { useChatScroll } from '@/modules/chat/ui/messages/use-chat-scroll';
 import { ChatNavigation } from '@/modules/chat/ui/navigation/chat-navigation';
 import { ChatPlayerList, PeerPresence } from '@/modules/chat/ui/navigation/chat-player-list';
 import { ChatPlayerPicker } from '@/modules/chat/ui/navigation/chat-player-picker';
-import { ChatSettings } from '@/modules/chat/ui/settings/chat-settings';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { SITE_LOGO_PATH, SITE_SHORT_NAME } from '@/shared/config/site-config';
 import { hasTranslationKey } from '@/shared/i18n/has-translation-key';
 import { Link } from '@/shared/i18n/navigation';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
+import { LoadingState } from '@/shared/ui/feedback/loading-state';
+
+const ChatMessageSearch = dynamic(() =>
+  import('./chat-message-search').then((mod) => mod.ChatMessageSearch),
+);
+const ChatSettings = dynamic(() =>
+  import('./settings/chat-settings').then((mod) => mod.ChatSettings),
+);
 
 type ChatPanelMode = 'search' | 'players' | 'participants';
 
@@ -84,6 +93,7 @@ export function ChatWorkspace({
   }, []);
   const [overlay, setOverlay] = useState<'channels' | 'settings' | null>(null);
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
+  const [searchOpened, setSearchOpened] = useState(false);
   const searchOpen = panel === 'search';
   const peopleOpen = panel === 'players' || panel === 'participants';
   const [searchCriteria, setSearchCriteria] = useState<ChatSearchCriteria>(emptyChatSearch);
@@ -100,14 +110,24 @@ export function ChatWorkspace({
     panelOpener.current = trigger;
     setOverlay(null);
     setPanel(mode);
-    if (mode === 'players' || mode === 'participants') setPlayerQuery('');
+    if (mode === 'search') {
+      setSearchOpened(true);
+      return;
+    }
+    setPlayerQuery('');
     requestAnimationFrame(() => {
-      const field = mode === 'search' ? searchInput.current : playerInput.current;
-      field?.focus({ preventScroll: true });
-      field?.select();
+      playerInput.current?.focus({ preventScroll: true });
+      playerInput.current?.select();
     });
   }, []);
-  const openSearch = useCallback(() => openPanel('search', searchTrigger.current), [openPanel]);
+  const openSearch = useCallback(() => {
+    if (searchOpen) {
+      searchInput.current?.focus({ preventScroll: true });
+      searchInput.current?.select();
+      return;
+    }
+    openPanel('search', searchTrigger.current);
+  }, [openPanel, searchOpen]);
   const closePanel = useCallback(() => {
     setPanel(null);
     requestAnimationFrame(() => {
@@ -580,20 +600,30 @@ export function ChatWorkspace({
         />
       </div>
 
-      <ChatMessageSearch
+      <ChatPanel
         id={searchPanelId}
         inputRef={searchInput}
         open={searchOpen}
-        history={chat.historyLease}
-        staff={chat.staff}
-        criteria={searchCriteria}
-        onCriteriaChange={setSearchCriteria}
-        messages={chat.messages}
-        owner={owner}
-        conversation={selected}
-        onChoose={chooseSearchResult}
+        title={t('searchMessages')}
         onClose={closePanel}
-      />
+      >
+        {searchOpened ? (
+          <Suspense fallback={<LoadingState message={commonT('states.loading')} />}>
+            <ChatMessageSearch
+              inputRef={searchInput}
+              open={searchOpen}
+              history={chat.historyLease}
+              staff={chat.staff}
+              criteria={searchCriteria}
+              onCriteriaChange={setSearchCriteria}
+              messages={chat.messages}
+              owner={owner}
+              conversation={selected}
+              onChoose={chooseSearchResult}
+            />
+          </Suspense>
+        ) : null}
+      </ChatPanel>
 
       <ChatPlayerPicker
         id={playerPanelId}
@@ -653,17 +683,19 @@ export function ChatWorkspace({
           </>
         ) : null}
         {overlay === 'settings' ? (
-          <ChatSettings
-            chat={{
-              ...chat,
-              storageFailed: chat.storageFailed || workspaceStorageFailed,
-              setPersistence: (enabled) => chat.setPersistence(enabled, workspace),
-            }}
-            notifications={notifications}
-            appearance={appearance}
-            preferences={preferences}
-            onPreferenceChange={changePreferences}
-          />
+          <Suspense fallback={<LoadingState message={commonT('states.loading')} />}>
+            <ChatSettings
+              chat={{
+                ...chat,
+                storageFailed: chat.storageFailed || workspaceStorageFailed,
+                setPersistence: (enabled) => chat.setPersistence(enabled, workspace),
+              }}
+              notifications={notifications}
+              appearance={appearance}
+              preferences={preferences}
+              onPreferenceChange={changePreferences}
+            />
+          </Suspense>
         ) : null}
       </AppDialog>
     </section>

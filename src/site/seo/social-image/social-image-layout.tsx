@@ -29,7 +29,6 @@ export function SocialImageCanvas({ children }: { children: ReactNode }) {
 
 export function SocialImageBackdrop({ image }: { image: string }) {
   return (
-    // biome-ignore lint/performance/noImgElement: ImageResponse renders a standalone image.
     <img
       src={image}
       alt=""
@@ -60,7 +59,6 @@ export function SocialImageBrand({
         color,
       }}
     >
-      {/* biome-ignore lint/performance/noImgElement: ImageResponse renders a standalone image. */}
       <img
         src={logo}
         alt=""

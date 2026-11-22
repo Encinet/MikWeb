@@ -3,9 +3,9 @@
 import { Download } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState } from 'react';
+
 import type { HistoryCleanup, HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import type { HistoryExportFormat } from '@/modules/chat/lib/history/chat-history-export';
-import { exportChatHistory } from '@/modules/chat/lib/history/chat-history-export';
 import { AppDialog } from '@/shared/ui/dialog/app-dialog';
 
 interface ExportScope {
@@ -110,6 +110,8 @@ export function ChatHistoryExport({
     setBusy(true);
     setProgress(0);
     try {
+      const { exportChatHistory } = await import('@/modules/chat/lib/history/chat-history-export');
+      if (controller.signal.aborted) return;
       const result = await exportChatHistory({
         lease,
         staff,

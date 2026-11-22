@@ -5,11 +5,9 @@ import { isRecord } from '@/shared/lib/is-record';
 /** The data service's wire format is converted before it reaches application state. */
 export interface PlayerStatusResponse {
   online: number;
-  // biome-ignore lint/style/useNamingConvention: External data service field.
   peak_online?: number;
   players: Array<
     PlayerIdentity & {
-      // biome-ignore lint/style/useNamingConvention: External data service field.
       joined_at: string;
     }
   >;

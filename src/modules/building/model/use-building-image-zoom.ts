@@ -44,7 +44,7 @@ export function useBuildingImageZoom({
   const lastTap = useRef<{ time: number; point: Point } | null>(null);
   const lastTouch = useRef(0);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Image identity is the reset trigger, including a change to an empty source.
+  // Reset when the image changes, including when its source becomes empty.
   useLayoutEffect(() => {
     // Keep the viewport mounted so keyboard focus survives a change of image.
     current.current = INITIAL_IMAGE_TRANSFORM;

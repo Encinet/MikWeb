@@ -7,7 +7,7 @@ function rememberDocumentLocale(name: string, locale: string): void {
     try {
       const preference = `${name}=${locale}`;
       if (!document.cookie.split(';').some((entry) => entry.trim() === preference)) {
-        // biome-ignore lint/suspicious/noDocumentCookie: The Cookie Store API is not available in every supported browser.
+        // The Cookie Store API is not available in every supported browser.
         document.cookie = `${preference}; Path=/; SameSite=Lax`;
       }
     } catch {
