@@ -15,7 +15,7 @@ test('submission payloads remain separate from server-assigned building identiti
     weight: 1,
   };
   const image = {
-    url: 'https://i.ibb.co/example/building.webp',
+    url: `https://images.example/buildings/${'a'.repeat(32)}/${'b'.repeat(64)}.webp`,
     width: 1920,
     height: 1080,
     size: 120_000,
@@ -63,11 +63,11 @@ test('submission payloads remain separate from server-assigned building identiti
   const building = { ...payload, id: 'b'.repeat(32) };
   assert.equal(isBuilding(building), true);
   assert.equal(isBuilding({ ...building, id: 'b'.repeat(16) }), false);
-  const approved = { ...submission, status: 'approved', buildingId: building.id };
+  const approved = { ...submission, status: 'approved' };
   assert.equal(isBuildingSubmissionListResponse({ submissions: [approved] }), true);
   assert.equal(
     isBuildingSubmissionListResponse({
-      submissions: [{ ...approved, buildingId: 'b'.repeat(16) }],
+      submissions: [{ ...approved, id: 'b'.repeat(16) }],
     }),
     false,
   );

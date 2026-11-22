@@ -6,13 +6,6 @@ import { SITE_NAME, SITE_URL } from '@/shared/config/site-config';
 import { readLimitedResponse } from '@/shared/lib/read-limited-response';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const RASTER_IMAGE_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/avif',
-  'image/gif',
-]);
 
 /** Normalize a registered catalog image. Failures must propagate so ISR keeps its last good output. */
 export async function readBuildingImage(url: string) {
@@ -22,12 +15,12 @@ export async function readBuildingImage(url: string) {
   const response = await fetch(url, {
     signal: AbortSignal.timeout(8000),
     headers: {
-      Accept: 'image/webp,image/png,image/jpeg',
+      Accept: 'image/webp',
       'User-Agent': `${SITE_NAME.replace(/\s+/g, '')}-Preview/1.0 (+${SITE_URL})`,
     },
   });
   const contentType = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase();
-  if (!response.ok || !contentType || !RASTER_IMAGE_TYPES.has(contentType)) {
+  if (!response.ok || contentType !== 'image/webp') {
     await response.body?.cancel().catch(() => {});
     throw new Error(`Building image rejected (${response.status})`);
   }

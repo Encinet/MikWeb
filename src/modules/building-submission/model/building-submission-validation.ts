@@ -33,7 +33,6 @@ export function isBuildingSubmission(value: unknown): value is BuildingSubmissio
     (value.reviewNote === undefined || typeof value.reviewNote === 'string') &&
     (value.rejectedAt === undefined || typeof value.rejectedAt === 'string') &&
     (value.expiresAt === undefined || typeof value.expiresAt === 'string') &&
-    (value.buildingId === undefined || isBuildingId(value.buildingId)) &&
     typeof value.createdAt === 'string' &&
     typeof value.updatedAt === 'string'
   );

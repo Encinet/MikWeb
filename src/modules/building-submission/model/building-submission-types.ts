@@ -20,7 +20,6 @@ export interface BuildingSubmission {
   reviewNote?: string;
   rejectedAt?: string;
   expiresAt?: string;
-  buildingId?: string;
   createdAt: string;
   updatedAt: string;
 }
