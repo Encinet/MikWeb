@@ -6,16 +6,6 @@
   margin-bottom: 1.5rem;
 }
 
-.content-browser-header__title {
-  margin: 0;
-  color: var(--theme-text-heading);
-  font-family: var(--font-display-serif);
-  font-size: clamp(2rem, 3vw, 2.5rem);
-  font-weight: 500;
-  line-height: 1.25;
-  text-wrap: balance;
-}
-
 .content-browser-header__heading {
   display: flex;
   align-items: center;
@@ -23,7 +13,7 @@
   min-width: 0;
 }
 
-.content-browser-header__heading > .content-browser-header__title {
+.content-browser-header__heading > .page-title {
   flex-shrink: 0;
 }
 

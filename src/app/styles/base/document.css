@@ -109,6 +109,16 @@ body {
   flex: 1 0 auto;
 }
 
+.page-title {
+  margin: 0;
+  color: var(--theme-text-heading);
+  font-family: var(--font-display-serif);
+  font-size: clamp(2rem, 3vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
 .page-state-region {
   min-height: clamp(22rem, 48vh, 34rem);
 }

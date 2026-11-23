@@ -361,6 +361,7 @@
     },
     "list": {
       "totalAmount": "Total contributed",
+      "jumpToSponsor": "Jump to a sponsor",
       "loadMore": "Show more sponsors"
     },
     "states": {

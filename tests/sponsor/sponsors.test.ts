@@ -30,46 +30,46 @@ const sponsors: Sponsor[] = [
 
 const errorMessage = 'Sponsor list unavailable';
 
-test('the sponsor wall groups public messages by sponsor and sorts sponsors by name', () => {
+test('the sponsor wall sorts sponsors and public messages by most recent order', () => {
   const entries: Sponsor[] = [
-    {
-      ...sponsors[0],
-      orders: [
-        { amount: '0.00', at: '2026-11-23T00:00:00Z', message: ' \n ' },
-        ...sponsors[0].orders,
-      ],
-    },
     {
       ...sponsors[1],
       orders: [
-        { ...sponsors[1].orders[0], at: '2026-11-22T01:12:23.5Z', message: 'See you in game!' },
         { ...sponsors[1].orders[0], message: 'Welcome back!' },
+        { ...latestOrder, at: '2026-11-22T01:12:23.5Z', message: 'See you in game!' },
+        { ...latestOrder, at: '2026-11-22T01:12:23.50005Z', message: 'Thanks!' },
+        { ...latestOrder, at: '2026-11-22T01:12:23.5000Z', message: 'Hello!' },
       ],
     },
     {
       ...sponsors[1],
       uuid: '22222222-3333-4444-8555-666677778888',
       name: 'Lin',
+      totalAmount: '200.00',
+    },
+    {
+      ...sponsors[0],
+      orders: [latestOrder, { amount: '0.00', at: '2026-11-23T00:00:00Z', message: ' \n ' }],
     },
   ];
 
-  const wall = createSponsorWall(entries, 'en');
-  assert.deepEqual(
-    entries.map(({ name }) => name),
-    ['Zoe', 'Amy', 'Lin'],
-  );
+  const original = structuredClone(entries);
+  const wall = createSponsorWall(entries);
+  assert.deepEqual(entries, original);
   assert.deepEqual(
     wall.map(({ name, messages }) => [name, messages.map(({ at, text }) => [at, text])]),
     [
+      ['Zoe', [['2026-11-22T01:12:23.000Z', 'Good luck!']]],
       [
         'Amy',
         [
+          ['2026-11-22T01:12:23.50005Z', 'Thanks!'],
           ['2026-11-22T01:12:23.5Z', 'See you in game!'],
+          ['2026-11-22T01:12:23.5000Z', 'Hello!'],
           ['2023-12-31T21:15:30.000Z', 'Welcome back!'],
         ],
       ],
       ['Lin', []],
-      ['Zoe', [['2026-11-22T01:12:23.000Z', 'Good luck!']]],
     ],
   );
 });

@@ -2,29 +2,93 @@
 
 import { UserRound } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import type { Sponsor } from '@/modules/sponsor/model/sponsor-types';
-import { createSponsorWall } from '@/modules/sponsor/model/sponsor-wall-data';
+import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
+import type { createSponsorWall } from '@/modules/sponsor/model/sponsor-wall-data';
 
 const SPONSOR_PAGE_SIZE = 24;
+type SponsorWallEntry = ReturnType<typeof createSponsorWall>[number];
+
+function sponsorId(uuid: string) {
+  return `sponsor-${uuid.toLowerCase()}`;
+}
+
+function SponsorAvatar({ uuid, name }: Pick<SponsorWallEntry, 'uuid' | 'name'>) {
+  return (
+    <span className="sponsors-avatar" aria-hidden="true">
+      <MinecraftAvatar uuid={uuid} name={name} size={36} fallback={null} />
+      <UserRound size={19} />
+    </span>
+  );
+}
+
+export function SponsorsIndex({ sponsors }: { sponsors: readonly SponsorWallEntry[] }) {
+  const t = useTranslations('sponsors');
+  return (
+    <nav className="sponsors-index" aria-labelledby="sponsors-index-label">
+      <p id="sponsors-index-label">{t('list.jumpToSponsor')}</p>
+      <ul className="sponsors-index__list" role="list">
+        {sponsors.map(({ uuid, name }) => {
+          const label = name.trim() || uuid;
+          return (
+            <li key={uuid}>
+              <a href={`#${sponsorId(uuid)}`} aria-label={label} title={label}>
+                <SponsorAvatar uuid={uuid} name={name} />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
 
 function focusNewSponsor(item: HTMLLIElement | null) {
   item?.focus();
 }
 
-export function SponsorsWall({ entries }: { entries: Sponsor[] }) {
+export function SponsorsWall({ sponsors }: { sponsors: readonly SponsorWallEntry[] }) {
   const t = useTranslations('sponsors');
   const locale = useLocale();
-  const [visibleCount, setVisibleCount] = useState(SPONSOR_PAGE_SIZE);
-  const { sponsors, currency, dateTime } = useMemo(
+  const [{ visibleCount, focusIndex }, setPage] = useState({
+    visibleCount: SPONSOR_PAGE_SIZE,
+    focusIndex: -1,
+  });
+  const [targetId, setTargetId] = useState('');
+  const { currency, dateTime } = useMemo(
     () => ({
-      sponsors: createSponsorWall(entries, locale),
       currency: new Intl.NumberFormat(locale, { style: 'currency', currency: 'CNY' }),
       dateTime: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }),
     }),
-    [entries, locale],
+    [locale],
   );
+
+  useEffect(() => {
+    function revealFragment() {
+      const id = window.location.hash.slice(1);
+      const index = sponsors.findIndex(({ uuid }) => sponsorId(uuid) === id);
+      setTargetId(index >= 0 ? id : '');
+      if (index < 0) return;
+
+      const requiredCount = (Math.floor(index / SPONSOR_PAGE_SIZE) + 1) * SPONSOR_PAGE_SIZE;
+      setPage((page) =>
+        page.visibleCount >= requiredCount ? page : { visibleCount: requiredCount, focusIndex: -1 },
+      );
+    }
+
+    revealFragment();
+    window.addEventListener('hashchange', revealFragment);
+    return () => window.removeEventListener('hashchange', revealFragment);
+  }, [sponsors]);
+
+  useEffect(() => {
+    if (!targetId) return;
+    // Wait for the entry to mount when the data or its page was not yet visible.
+    const target = document.getElementById(targetId);
+    target?.focus({ preventScroll: true });
+    target?.scrollIntoView({ block: 'start' });
+  }, [targetId]);
 
   if (sponsors.length === 0) {
     return (
@@ -38,17 +102,17 @@ export function SponsorsWall({ entries }: { entries: Sponsor[] }) {
     <>
       <ul className="sponsors-list" role="list" aria-label={t('title')}>
         {sponsors.slice(0, visibleCount).map(({ uuid, name, totalAmount, messages }, index) => {
-          const justRevealed = index === visibleCount - SPONSOR_PAGE_SIZE && index > 0;
+          const id = sponsorId(uuid);
           return (
             <li
               key={uuid}
+              id={id}
               className="sponsors-entry"
-              ref={justRevealed ? focusNewSponsor : undefined}
-              tabIndex={justRevealed ? -1 : undefined}
+              data-targeted={id === targetId ? '' : undefined}
+              ref={index === focusIndex ? focusNewSponsor : undefined}
+              tabIndex={-1}
             >
-              <span className="sponsors-avatar" aria-hidden="true">
-                <UserRound size={19} />
-              </span>
+              <SponsorAvatar uuid={uuid} name={name} />
               <div>
                 <div className="sponsors-entry__byline">
                   <bdi>{name}</bdi>
@@ -77,7 +141,12 @@ export function SponsorsWall({ entries }: { entries: Sponsor[] }) {
           <button
             className="ui-action-button"
             type="button"
-            onClick={() => setVisibleCount((count) => count + SPONSOR_PAGE_SIZE)}
+            onClick={() =>
+              setPage(({ visibleCount }) => ({
+                visibleCount: visibleCount + SPONSOR_PAGE_SIZE,
+                focusIndex: visibleCount,
+              }))
+            }
           >
             {t('list.loadMore')}
           </button>

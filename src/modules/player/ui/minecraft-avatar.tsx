@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+
 import { usePlayerAvatar } from '@/modules/player/model/use-player-avatar';
 
 interface MinecraftAvatarProps {
@@ -11,6 +12,7 @@ interface MinecraftAvatarProps {
   size: number;
   className?: string;
   style?: CSSProperties;
+  fallback?: ReactNode;
 }
 
 /** Size controls the display; all placements of a player share one image resource. */
@@ -20,11 +22,13 @@ export default function MinecraftAvatar({
   size,
   className = '',
   style = {},
+  fallback,
 }: MinecraftAvatarProps) {
   const avatar = usePlayerAvatar({ uuid, name });
-  const normalizedName = name.trim();
-  const fallbackLabel = normalizedName ? normalizedName.charAt(0).toUpperCase() : '?';
   if (!avatar.src) {
+    if (fallback !== undefined) return fallback;
+    const normalizedName = name.trim();
+    const fallbackLabel = normalizedName ? normalizedName.charAt(0).toUpperCase() : '?';
     return (
       <div
         role="img"

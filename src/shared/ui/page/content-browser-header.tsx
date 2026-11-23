@@ -13,7 +13,7 @@ export function ContentBrowserHeader({
   search,
   children,
 }: ContentBrowserHeaderProps) {
-  const heading = <h1 className="content-browser-header__title">{title}</h1>;
+  const heading = <h1 className="page-title">{title}</h1>;
 
   return (
     <header className="content-browser-header">

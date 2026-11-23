@@ -361,6 +361,7 @@
     },
     "list": {
       "totalAmount": "累计金额",
+      "jumpToSponsor": "按头像跳转",
       "loadMore": "查看更多赞助者"
     },
     "states": {
