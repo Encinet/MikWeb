@@ -353,6 +353,31 @@
     },
     "shownCount": "已显示 {count} / {total} 条"
   },
+  "sponsor": {
+    "title": "赞助者",
+    "subtitle": "感谢支持 {siteName} 的每一位赞助者。",
+    "meta": {
+      "description": "查看 {siteName} 的赞助者名单。"
+    },
+    "countUnit": " 位赞助者",
+    "remarkCount": "{count, plural, other {# 条留言}}",
+    "fields": {
+      "sponsor": "赞助者",
+      "amount": "累计金额",
+      "remarks": "留言"
+    },
+    "states": {
+      "empty": "暂无赞助记录",
+      "error": "赞助者名单暂时无法加载，请稍后刷新页面。",
+      "amountUnknown": "未知",
+      "timeUnknown": "未知",
+      "noRemarks": "暂无留言"
+    },
+    "actions": {
+      "loadMore": "加载更多"
+    },
+    "cta": "支持服务器"
+  },
   "auth": {
     "fields": {
       "passkeys": "Passkey"

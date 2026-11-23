@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Building2, Home, MapIcon, Shield } from 'lucide-react';
+import { BookOpen, Building2, Heart, Home, MapIcon, Shield } from 'lucide-react';
 import { domAnimation, LazyMotion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -61,6 +61,7 @@ export default function SiteHeader() {
       { id: 'wiki', icon: BookOpen, label: t('nav.items.wiki'), path: '/wiki' },
       { id: 'map', icon: MapIcon, label: t('map.title'), path: '/map' },
       { id: 'bans', icon: Shield, label: t('bans.title'), path: '/bans' },
+      { id: 'sponsors', icon: Heart, label: t('sponsor.title'), path: '/sponsors' },
     ],
     [t],
   );

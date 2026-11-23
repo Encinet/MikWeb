@@ -23,6 +23,7 @@ export default async function SiteFooter() {
     { href: '/wiki', label: t('nav.items.wiki') },
     { href: '/map', label: t('map.title') },
     { href: '/bans', label: t('bans.title') },
+    { href: '/sponsors', label: t('sponsor.title') },
     { href: '/pcl2', label: t('pcl2.title') },
     { href: '/mcp', label: t('mcp.title') },
   ];

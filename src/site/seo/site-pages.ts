@@ -45,6 +45,12 @@ export const SITE_PAGES = {
     title: 'bans.title',
     description: 'bans.meta.description',
   },
+  sponsor: {
+    sitemap: true,
+    pathname: '/sponsors',
+    title: 'sponsor.title',
+    description: 'sponsor.meta.description',
+  },
   mcp: {
     sitemap: true,
     pathname: '/mcp',
