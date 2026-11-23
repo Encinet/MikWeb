@@ -353,6 +353,24 @@
     },
     "shownCount": "已显示 {count} / {total} 条"
   },
+  "sponsors": {
+    "title": "赞助者",
+    "subtitle": "感谢支持 {siteName} 的每一位赞助者。",
+    "meta": {
+      "description": "查看 {siteName} 的赞助者名单。"
+    },
+    "list": {
+      "totalAmount": "累计金额",
+      "loadMore": "查看更多赞助者"
+    },
+    "states": {
+      "empty": "暂无赞助记录",
+      "error": "赞助者名单暂时无法加载。"
+    },
+    "actions": {
+      "supportServer": "支持服务器"
+    }
+  },
   "auth": {
     "fields": {
       "passkeys": "Passkey"

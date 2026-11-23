@@ -30,6 +30,7 @@ export const SITE_TRANSLATION_VALUES = {
 } as const;
 export const ORGANIZATION_URL = 'https://encinet.netlify.app/';
 export const SOURCE_CODE_URL = 'https://github.com/Encinet/MikWeb';
+export const AFDIAN_SUPPORT_URL = 'https://afdian.com/a/Encinet';
 export const ORGANIZATION_LOGO_PATH = '/brand/encinet/logo.webp';
 export const ORGANIZATION_LOGO_URL = 'https://avatars.githubusercontent.com/u/102745297?s=200&v=4';
 export const ORGANIZATION_SOCIAL_LINKS = [

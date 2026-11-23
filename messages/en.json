@@ -353,6 +353,24 @@
     },
     "shownCount": "Showing {count} of {total}"
   },
+  "sponsors": {
+    "title": "Sponsors",
+    "subtitle": "Thanks to everyone who supports {siteName}.",
+    "meta": {
+      "description": "View the sponsor wall for {siteName}."
+    },
+    "list": {
+      "totalAmount": "Total contributed",
+      "loadMore": "Show more sponsors"
+    },
+    "states": {
+      "empty": "No sponsor records yet",
+      "error": "The sponsor list is temporarily unavailable."
+    },
+    "actions": {
+      "supportServer": "Support the server"
+    }
+  },
   "auth": {
     "fields": {
       "passkeys": "Passkeys"

@@ -14,6 +14,7 @@ const getNavigationMessages = cache((messages: Messages) => ({
   common: messages.common,
   map: { title: messages.map.title },
   nav: messages.nav,
+  sponsors: { title: messages.sponsors.title },
 }));
 
 export async function ClientMessages({
