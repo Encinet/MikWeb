@@ -18,12 +18,14 @@ export function createSponsorWall(entries: readonly Sponsor[]) {
       const sortedOrders = orders
         .map(({ at, message }, index) => ({ at, message, index, timeKey: orderTimeKey(at) }))
         .sort((a, b) => compareNewestFirst(a.timeKey, b.timeKey));
+      const latestOrder = sortedOrders[0];
       return {
-        latestOrderTimeKey: sortedOrders[0].timeKey,
+        latestOrderTimeKey: latestOrder.timeKey,
         sponsor: {
           uuid,
           name,
           totalAmount,
+          latestOrderAt: latestOrder.at,
           messages: sortedOrders.flatMap(({ at, message, index }) =>
             message?.trim() ? [{ index, at, text: message }] : [],
           ),

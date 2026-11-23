@@ -101,7 +101,8 @@ export function SponsorsWall({ sponsors }: { sponsors: readonly SponsorWallEntry
   return (
     <>
       <ul className="sponsors-list" role="list" aria-label={t('title')}>
-        {sponsors.slice(0, visibleCount).map(({ uuid, name, totalAmount, messages }, index) => {
+        {sponsors.slice(0, visibleCount).map((sponsor, index) => {
+          const { uuid, name, totalAmount, latestOrderAt, messages } = sponsor;
           const id = sponsorId(uuid);
           return (
             <li
@@ -121,7 +122,7 @@ export function SponsorsWall({ sponsors }: { sponsors: readonly SponsorWallEntry
                     {currency.format(totalAmount)}
                   </span>
                 </div>
-                {messages.length > 0 && (
+                {messages.length > 0 ? (
                   <ol className="sponsors-entry__messages" role="list">
                     {messages.map(({ index: orderIndex, at, text }) => (
                       <li key={orderIndex} className="sponsors-message">
@@ -130,6 +131,8 @@ export function SponsorsWall({ sponsors }: { sponsors: readonly SponsorWallEntry
                       </li>
                     ))}
                   </ol>
+                ) : (
+                  <time dateTime={latestOrderAt}>{dateTime.format(new Date(latestOrderAt))}</time>
                 )}
               </div>
             </li>

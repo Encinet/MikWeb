@@ -57,6 +57,10 @@ test('the sponsor wall sorts sponsors and public messages by most recent order',
   const wall = createSponsorWall(entries);
   assert.deepEqual(entries, original);
   assert.deepEqual(
+    wall.map(({ latestOrderAt }) => latestOrderAt),
+    ['2026-11-23T00:00:00Z', '2026-11-22T01:12:23.50005Z', sponsors[1].orders[0].at],
+  );
+  assert.deepEqual(
     wall.map(({ name, messages }) => [name, messages.map(({ at, text }) => [at, text])]),
     [
       ['Zoe', [['2026-11-22T01:12:23.000Z', 'Good luck!']]],
