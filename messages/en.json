@@ -362,6 +362,7 @@
     "list": {
       "totalAmount": "Total contributed",
       "jumpToSponsor": "Jump to a sponsor",
+      "missingSponsor": "If you’ve sponsored and your name isn’t listed, please contact a maintainer.",
       "loadMore": "Show more sponsors"
     },
     "states": {

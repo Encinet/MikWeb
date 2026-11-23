@@ -41,6 +41,7 @@ export function SponsorsPage() {
             </a>
           </header>
           {sponsors.length > 0 && <SponsorsIndex sponsors={sponsors} />}
+          <p className="sponsors-sidebar__note">{t('list.missingSponsor')}</p>
         </div>
 
         <div>

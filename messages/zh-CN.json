@@ -362,6 +362,7 @@
     "list": {
       "totalAmount": "累计金额",
       "jumpToSponsor": "按头像跳转",
+      "missingSponsor": "赞助后若未在名单中看到自己的名字，请联系维护者。",
       "loadMore": "查看更多赞助者"
     },
     "states": {
