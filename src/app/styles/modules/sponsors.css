@@ -49,7 +49,23 @@
 }
 
 .sponsors-entry[data-targeted] .sponsors-avatar {
-  box-shadow: 0 0 0 2px var(--theme-accent-strong);
+  animation: sponsors-target-highlight 250ms ease-out 2.5s backwards;
+}
+
+@keyframes sponsors-target-highlight {
+  from {
+    box-shadow: 0 0 0 2px var(--theme-accent-strong);
+  }
+
+  to {
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sponsors-entry[data-targeted] .sponsors-avatar {
+    animation-timing-function: step-end;
+  }
 }
 
 .sponsors-entry {
