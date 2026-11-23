@@ -1,33 +1,46 @@
-import type { SponsorOrderWire, SponsorRecordWire } from '@/modules/sponsor/model/sponsor-types';
+import type { Sponsor, SponsorOrder } from '@/modules/sponsor/model/sponsor-types';
 import { isRecord } from '@/shared/lib/is-record';
 
-function isSponsorOrderWire(value: unknown): value is SponsorOrderWire {
+const UUID_PATTERN = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+const AMOUNT_PATTERN = /^\d+\.\d{2}$/;
+const UTC_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
+
+function isAmount(value: unknown): value is `${number}` {
+  return typeof value === 'string' && AMOUNT_PATTERN.test(value);
+}
+
+function isUtcTimestamp(value: unknown): value is string {
+  if (typeof value !== 'string' || !UTC_TIMESTAMP_PATTERN.test(value)) return false;
+  const timestamp = new Date(value);
+  // Date accepts some out-of-range dates by rolling them into the next month.
+  return (
+    Number.isFinite(timestamp.getTime()) &&
+    timestamp.toISOString().slice(0, 19) === value.slice(0, 19)
+  );
+}
+
+function isSponsorOrder(value: unknown): value is SponsorOrder {
   return (
     isRecord(value) &&
-    typeof value.id === 'string' &&
-    value.id.length > 0 &&
-    typeof value.amount === 'string' &&
-    typeof value.remark === 'string' &&
-    typeof value.at === 'number' &&
-    Number.isFinite(value.at)
+    isAmount(value.amount) &&
+    isUtcTimestamp(value.at) &&
+    (value.message === undefined || typeof value.message === 'string')
   );
 }
 
-/** A sponsor row. `uuid` and `name` are required; `totalAmount` and `orders` may be
- * omitted (orders is dropped entirely when the sponsor has no remarks). */
-export function isSponsorRecordWire(value: unknown): value is SponsorRecordWire {
-  if (!isRecord(value)) return false;
+function isSponsor(value: unknown): value is Sponsor {
   return (
+    isRecord(value) &&
     typeof value.uuid === 'string' &&
-    value.uuid.length > 0 &&
+    UUID_PATTERN.test(value.uuid) &&
     typeof value.name === 'string' &&
-    (value.totalAmount === undefined || typeof value.totalAmount === 'string') &&
-    (value.orders === undefined ||
-      (Array.isArray(value.orders) && value.orders.every(isSponsorOrderWire)))
+    isAmount(value.totalAmount) &&
+    Array.isArray(value.orders) &&
+    value.orders.length > 0 &&
+    value.orders.every(isSponsorOrder)
   );
 }
 
-/** The public endpoint returns a bare array of sponsor records. */
-export function isSponsorsArray(value: unknown): value is SponsorRecordWire[] {
-  return Array.isArray(value) && value.every(isSponsorRecordWire);
+export function isSponsorArray(value: unknown): value is Sponsor[] {
+  return Array.isArray(value) && value.every(isSponsor);
 }

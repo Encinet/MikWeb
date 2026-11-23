@@ -1,3 +1,5 @@
+import '../../styles/modules/sponsors.css';
+
 import type { Metadata } from 'next';
 
 import { ClientMessages } from '@/shared/i18n/client-messages';
@@ -27,7 +29,7 @@ export default async function SponsorsLayout({
   return (
     <>
       <SiteShareMetadata locale={locale} page="sponsor" />
-      <ClientMessages locale={locale} namespaces={['sponsor']}>
+      <ClientMessages locale={locale} namespaces={['sponsors']}>
         {children}
       </ClientMessages>
     </>

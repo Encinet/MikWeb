@@ -5,6 +5,7 @@ import { withRequestTimeout } from '@/shared/lib/request-timeout';
 interface FetchValidatedJsonOptions<TData> {
   url: string;
   validate: (value: unknown) => value is TData;
+  validateHeaders?: (headers: Headers) => boolean;
   timeoutMs: number;
   cache?: RequestCache;
   request?: Omit<RequestInit, 'cache' | 'signal'>;
@@ -63,6 +64,7 @@ const browserInFlightRequests = new Map<string, Promise<FetchValidatedJsonResult
 export async function fetchValidatedJson<TData>({
   url,
   validate,
+  validateHeaders,
   timeoutMs,
   cache = 'default',
   request: requestInit,
@@ -99,6 +101,7 @@ export async function fetchValidatedJson<TData>({
     timeoutMs,
     url,
     validate,
+    validateHeaders,
   });
 
   if (!browserCacheKey) {
@@ -133,13 +136,14 @@ async function fetchAndValidateJson<TData>({
   request,
   fallbackErrorMessage,
   invalidDataMessage,
+  validateHeaders,
 }: Required<
   Pick<
     FetchValidatedJsonOptions<TData>,
     'fallbackErrorMessage' | 'invalidDataMessage' | 'timeoutMs' | 'url' | 'validate'
   >
 > &
-  Pick<FetchValidatedJsonOptions<TData>, 'cache' | 'request'>): Promise<
+  Pick<FetchValidatedJsonOptions<TData>, 'cache' | 'request' | 'validateHeaders'>): Promise<
   FetchValidatedJsonResult<TData>
 > {
   try {
@@ -164,7 +168,7 @@ async function fetchAndValidateJson<TData>({
       };
     }
 
-    if (!validate(payload)) {
+    if ((validateHeaders && !validateHeaders(response.headers)) || !validate(payload)) {
       return {
         status: 'invalid-data',
         error: invalidDataMessage,

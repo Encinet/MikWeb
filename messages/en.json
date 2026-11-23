@@ -353,30 +353,23 @@
     },
     "shownCount": "Showing {count} of {total}"
   },
-  "sponsor": {
+  "sponsors": {
     "title": "Sponsors",
     "subtitle": "Thanks to everyone who supports {siteName}.",
     "meta": {
       "description": "View the sponsor wall for {siteName}."
     },
-    "countUnit": " sponsors",
-    "remarkCount": "{count, plural, one {# remark} other {# remarks}}",
-    "fields": {
-      "sponsor": "Sponsor",
-      "amount": "Total",
-      "remarks": "Remarks"
+    "list": {
+      "totalAmount": "Total contributed",
+      "loadMore": "Show more sponsors"
     },
     "states": {
       "empty": "No sponsor records yet",
-      "error": "The sponsor list is unavailable right now. Refresh the page to retry.",
-      "amountUnknown": "—",
-      "timeUnknown": "Unknown",
-      "noRemarks": "No remarks yet"
+      "error": "The sponsor list is temporarily unavailable."
     },
     "actions": {
-      "loadMore": "Load more"
-    },
-    "cta": "Support the server"
+      "supportServer": "Support the server"
+    }
   },
   "auth": {
     "fields": {

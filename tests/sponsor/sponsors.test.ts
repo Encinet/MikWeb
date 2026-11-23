@@ -1,119 +1,167 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { toSortedSponsorEntries, toSponsorEntries } from '@/modules/sponsor/lib/sponsor-list';
-import type {
-  SponsorRecordWire,
-} from '@/modules/sponsor/model/sponsor-types';
-import { isSponsorRecordWire, isSponsorsArray } from '@/modules/sponsor/model/sponsor-validation';
 
-const records: SponsorRecordWire[] = [
+import { loadSponsors } from '@/modules/sponsor/lib/sponsor-api';
+import type { Sponsor, SponsorOrder } from '@/modules/sponsor/model/sponsor-types';
+import { createSponsorWall } from '@/modules/sponsor/model/sponsor-wall-data';
+import { clearFetchValidatedJsonBrowserCache } from '@/shared/api/fetch-validated-json';
+
+import { createBrowserEnvironment } from '../support/browser-environment';
+
+const latestOrder: SponsorOrder = {
+  amount: '100.01',
+  at: '2026-11-22T01:12:23.000Z',
+  message: 'Good luck!',
+};
+const sponsors: Sponsor[] = [
   {
     uuid: '069a79f4-44e9-4726-a5be-fca4e82d3858',
-    name: 'Hee',
-    totalAmount: '128.00',
-    orders: [
-      { id: 'af:1', remark: '二周年快乐', amount: '98.00', at: 1769909459 },
-      { id: 'af:2', remark: '支持服务器！', amount: '30.00', at: 1624455517 },
-    ],
+    name: 'Zoe',
+    totalAmount: '128.01',
+    orders: [latestOrder, { amount: '28.00', at: '2024-02-29T11:35:00Z' }],
   },
   {
     uuid: '11111111-2222-4333-8444-555566667777',
-    name: '某位朋友',
-    orders: [{ id: 'mn:1', remark: '感谢转账支持', amount: '50', at: 1752950400 }],
-  },
-  // Orders may be omitted entirely by the service when a sponsor has no remarks.
-  { uuid: '22222222-3333-4444-5555-666677778888', name: '沉默赞助者', totalAmount: '10.00' },
-  {
-    uuid: '33333333-4444-5555-6666-777788889999',
-    name: '坏时间戳',
-    orders: [{ id: 'mn:2', remark: '无法解析时间', amount: '1', at: 0 }],
+    name: 'Amy',
+    totalAmount: '0.00',
+    orders: [{ amount: '0.00', at: '2023-12-31T21:15:30.000Z' }],
   },
 ];
 
-test('wire records convert to application state without leaking wire fields', () => {
-  const entries = toSponsorEntries(records);
-  assert.deepEqual(entries, [
+const errorMessage = 'Sponsor list unavailable';
+
+test('the sponsor wall groups public messages by sponsor and sorts sponsors by name', () => {
+  const entries: Sponsor[] = [
     {
-      uuid: '069a79f4-44e9-4726-a5be-fca4e82d3858',
-      name: 'Hee',
-      totalAmount: '128.00',
+      ...sponsors[0],
       orders: [
-        { id: 'af:1', remark: '二周年快乐', amount: '98.00', at: 1769909459 },
-        { id: 'af:2', remark: '支持服务器！', amount: '30.00', at: 1624455517 },
+        { amount: '0.00', at: '2026-11-23T00:00:00Z', message: ' \n ' },
+        ...sponsors[0].orders,
       ],
-      recentAt: 1769909459,
     },
     {
-      uuid: '11111111-2222-4333-8444-555566667777',
-      name: '某位朋友',
-      totalAmount: '',
-      orders: [{ id: 'mn:1', remark: '感谢转账支持', amount: '50', at: 1752950400 }],
-      recentAt: 1752950400,
+      ...sponsors[1],
+      orders: [
+        { ...sponsors[1].orders[0], at: '2026-11-22T01:12:23.5Z', message: 'See you in game!' },
+        { ...sponsors[1].orders[0], message: 'Welcome back!' },
+      ],
     },
     {
-      uuid: '22222222-3333-4444-5555-666677778888',
-      name: '沉默赞助者',
-      totalAmount: '10.00',
-      orders: [],
-      recentAt: null,
-    },
-    {
-      uuid: '33333333-4444-5555-6666-777788889999',
-      name: '坏时间戳',
-      totalAmount: '',
-      orders: [{ id: 'mn:2', remark: '无法解析时间', amount: '1', at: 0 }],
-      recentAt: null,
-    },
-  ]);
-});
-
-test('entries sort newest first with remark-less sponsors sinking', () => {
-  const entries = toSortedSponsorEntries(records);
-  assert.deepEqual(entries.map((entry) => entry.name), [
-    'Hee',
-    '某位朋友',
-    '沉默赞助者',
-    '坏时间戳',
-  ]);
-});
-
-test('sorting is stable by name when timestamps tie', () => {
-  const tied: SponsorRecordWire[] = [
-    {
-      uuid: '11111111-2222-4333-8444-555566667777',
-      name: 'Zoe',
-      orders: [{ id: 'o1', remark: '', amount: '1', at: 100 }],
-    },
-    {
-      uuid: '22222222-3333-4444-5555-666677778888',
-      name: 'Amy',
-      orders: [{ id: 'o2', remark: '', amount: '1', at: 100 }],
+      ...sponsors[1],
+      uuid: '22222222-3333-4444-8555-666677778888',
+      name: 'Lin',
     },
   ];
-  const entries = toSortedSponsorEntries(tied);
-  assert.deepEqual(entries.map((entry) => entry.name), ['Amy', 'Zoe']);
+
+  const wall = createSponsorWall(entries, 'en');
+  assert.deepEqual(
+    entries.map(({ name }) => name),
+    ['Zoe', 'Amy', 'Lin'],
+  );
+  assert.deepEqual(
+    wall.map(({ name, messages }) => [name, messages.map(({ at, text }) => [at, text])]),
+    [
+      [
+        'Amy',
+        [
+          ['2026-11-22T01:12:23.5Z', 'See you in game!'],
+          ['2023-12-31T21:15:30.000Z', 'Welcome back!'],
+        ],
+      ],
+      ['Lin', []],
+      ['Zoe', [['2026-11-22T01:12:23.000Z', 'Good luck!']]],
+    ],
+  );
 });
 
-test('response validators accept and reject', () => {
-  assert.equal(isSponsorsArray(records), true);
-  // Omitted totalAmount and orders are both legal.
-  assert.equal(isSponsorsArray([{ uuid: 'u', name: 'n' }]), true);
+test('sponsors and orders retain API order and can use the last complete snapshot', async (t) => {
+  const environment = createBrowserEnvironment();
+  try {
+    const request = t.mock.method(globalThis, 'fetch', async () =>
+      Response.json(sponsors, { headers: { 'X-Sponsor-Data': 'stale' } }),
+    );
+    const snapshot = { status: 'success', data: sponsors };
+    assert.deepEqual(await loadSponsors(errorMessage, false), snapshot);
+    assert.deepEqual(await loadSponsors(errorMessage, false), snapshot);
+    assert.equal(request.mock.callCount(), 1);
 
-  const record: SponsorRecordWire = {
-    uuid: 'x',
-    name: 'x',
-    orders: [{ id: 'o', remark: '', amount: '1', at: 1 }],
-  };
-  assert.equal(isSponsorRecordWire(record), true);
-  assert.equal(isSponsorsArray([]), true);
+    request.mock.mockImplementation(async () =>
+      Response.json([], { headers: { 'X-Sponsor-Data': 'complete' } }),
+    );
+    assert.deepEqual(await loadSponsors(errorMessage, true), {
+      status: 'success',
+      data: [],
+    });
+    assert.equal(request.mock.callCount(), 2);
+  } finally {
+    clearFetchValidatedJsonBrowserCache();
+    await environment.close();
+  }
+});
 
-  assert.equal(isSponsorsArray({ uuid: 'x', name: 'x' }), false);
-  assert.equal(
-    isSponsorsArray([{ uuid: '', name: 'x' }]),
-    false,
-  );
-  assert.equal(
-    isSponsorRecordWire({ ...record, orders: [{ id: 'o', remark: '', amount: '1', at: '1' }] }),
-    false,
-  );
+test('partial results are unavailable even with valid rows or an empty list and are not cached', async (t) => {
+  const environment = createBrowserEnvironment();
+  try {
+    const request = t.mock.method(globalThis, 'fetch', async () =>
+      Response.json(sponsors, { headers: { 'X-Sponsor-Data': 'partial' } }),
+    );
+    const unavailable = { status: 'invalid-data', error: errorMessage };
+    assert.deepEqual(await loadSponsors(errorMessage, false), unavailable);
+
+    request.mock.mockImplementation(async () =>
+      Response.json([{ ...sponsors[0], totalAmount: undefined }], {
+        headers: { 'X-Sponsor-Data': 'partial' },
+      }),
+    );
+    assert.deepEqual(await loadSponsors(errorMessage, false), unavailable);
+
+    request.mock.mockImplementation(async () =>
+      Response.json([], { headers: { 'X-Sponsor-Data': 'partial' } }),
+    );
+    assert.deepEqual(await loadSponsors(errorMessage, false), unavailable);
+
+    request.mock.mockImplementation(async () =>
+      Response.json(sponsors, { headers: { 'X-Sponsor-Data': 'complete' } }),
+    );
+    assert.deepEqual(await loadSponsors(errorMessage, false), {
+      status: 'success',
+      data: sponsors,
+    });
+    assert.equal(request.mock.callCount(), 4);
+  } finally {
+    clearFetchValidatedJsonBrowserCache();
+    await environment.close();
+  }
+});
+
+test('sponsors reject invalid records and accept snapshots without the freshness header', async (t) => {
+  const valid = sponsors[0];
+  const request = t.mock.method(globalThis, 'fetch', async () => Response.json([valid]));
+  assert.deepEqual(await loadSponsors(errorMessage, false), {
+    status: 'success',
+    data: [valid],
+  });
+
+  for (const payload of [
+    valid,
+    [{ ...valid, uuid: '' }],
+    [{ ...valid, totalAmount: undefined }],
+    [{ ...valid, totalAmount: 'unknown' }],
+    [{ ...valid, totalAmount: '128.1' }],
+    [{ ...valid, orders: undefined }],
+    [{ ...valid, orders: [] }],
+    [{ ...valid, orders: [{ ...latestOrder, amount: 100.01 }] }],
+    [{ ...valid, orders: [{ ...latestOrder, amount: '100.001' }] }],
+    [{ ...valid, orders: [{ ...latestOrder, at: 1795309943 }] }],
+    [{ ...valid, orders: [{ ...latestOrder, at: '2026-02-29T01:12:23.000Z' }] }],
+    [{ ...valid, orders: [{ ...latestOrder, at: '2026-11-22T24:00:00.000Z' }] }],
+    [{ ...valid, orders: [{ ...latestOrder, at: '2026-11-22T01:12:23+00:00' }] }],
+    [{ ...valid, orders: [{ ...latestOrder, message: null }] }],
+  ]) {
+    request.mock.mockImplementation(async () => Response.json(payload));
+    assert.deepEqual(await loadSponsors(errorMessage, true), {
+      status: 'invalid-data',
+      error: errorMessage,
+    });
+  }
 });
