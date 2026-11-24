@@ -1,8 +1,7 @@
 import { TriangleAlert } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
+
 import type { AppLocale } from '@/shared/i18n/routing';
-import { ServerInsertedScript } from '@/shared/ui/server-inserted-script';
-import { getBrowserSupportScript } from '@/site/browser-support/lib/browser-support-script';
 
 // Keep fallback styles outside the CSS build: unsupported browsers may not understand its output.
 const fallbackStyles = `
@@ -95,7 +94,6 @@ export async function BrowserSupportNotice({ locale }: { locale: AppLocale }) {
           </button>
         </div>
       </aside>
-      <ServerInsertedScript code={getBrowserSupportScript()} />
     </>
   );
 }
