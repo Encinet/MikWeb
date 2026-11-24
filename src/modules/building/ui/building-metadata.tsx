@@ -3,15 +3,18 @@
 import { CheckCircle, Copy, MapPin, User } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
-import { getBuildingSourceNotes } from '@/modules/building/lib/building-view-helpers';
-import type { Building } from '@/modules/building/model/building-types';
+import type {
+  Builder,
+  BuildingSource,
+  BuildingType,
+  LocalizedBuilding,
+} from '@/modules/building/model/building-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
-import { getLocalizedText } from '@/shared/i18n/localized-text';
 
 export type BuildingsTranslator = ReturnType<typeof useTranslations<'buildings'>>;
 
 interface BuildingTypeBadgeProps {
-  buildType: Building['buildType'];
+  buildType: BuildingType;
   compact?: boolean;
   t: BuildingsTranslator;
 }
@@ -53,12 +56,11 @@ export function BuildingTypeBadge({ buildType, compact = false, t }: BuildingTyp
 }
 
 interface BuildingTagsProps {
-  building: Building;
-  locale: string;
+  building: LocalizedBuilding;
   compact?: boolean;
 }
 
-export function BuildingTags({ building, locale, compact = false }: BuildingTagsProps) {
+export function BuildingTags({ building, compact = false }: BuildingTagsProps) {
   if (!building.tags || building.tags.length === 0) {
     return null;
   }
@@ -67,7 +69,7 @@ export function BuildingTags({ building, locale, compact = false }: BuildingTags
     <div className="flex flex-wrap gap-2">
       {building.tags.map((tag) => (
         <span
-          key={`${building.id}:${getLocalizedText(tag, locale)}`}
+          key={`${building.id}:${tag}`}
           className={
             compact
               ? 'rounded-full px-2.5 py-1 text-xs font-medium'
@@ -79,7 +81,7 @@ export function BuildingTags({ building, locale, compact = false }: BuildingTags
             border: '1px solid color-mix(in srgb, var(--theme-accent) 15%, transparent)',
           }}
         >
-          {getLocalizedText(tag, locale)}
+          {tag}
         </span>
       ))}
     </div>
@@ -87,7 +89,7 @@ export function BuildingTags({ building, locale, compact = false }: BuildingTags
 }
 
 interface BuilderNamesProps {
-  builders: Building['builders'];
+  builders: Builder[];
   compact?: boolean;
 }
 
@@ -98,7 +100,7 @@ interface BuilderSummaryProps extends BuilderNamesProps {
 const BUILDER_SUMMARY_RELATIVE_WEIGHT = 0.5;
 const BUILDER_SUMMARY_MIN_SHARE = 0.25;
 
-function getBuilderSummary(builders: Building['builders'], maxVisible: number) {
+function getBuilderSummary(builders: Builder[], maxVisible: number) {
   const sortedBuilders = sortBuildersByWeight(builders);
 
   if (sortedBuilders.length <= maxVisible) {
@@ -134,7 +136,7 @@ function BuilderPill({
   compact,
   primary,
 }: {
-  builder: Building['builders'][number];
+  builder: Builder;
   compact: boolean;
   primary: boolean;
 }) {
@@ -161,7 +163,7 @@ function BuilderAvatarStack({
   builders,
   compact,
 }: {
-  builders: Building['builders'];
+  builders: Builder[];
   compact: boolean;
 }) {
   if (builders.length === 0) {
@@ -225,19 +227,15 @@ export function BuilderNames({ builders, compact = false }: BuilderNamesProps) {
 }
 
 interface BuildingSourceDetailsProps {
-  building: Building;
-  locale: string;
+  source: BuildingSource<string>;
   t: BuildingsTranslator;
 }
 
-export function BuildingSourceDetails({ building, locale, t }: BuildingSourceDetailsProps) {
-  if (!building.source) {
-    return null;
-  }
+export function BuildingSourceDetails({ source, t }: BuildingSourceDetailsProps) {
 
   return (
     <>
-      {building.source.originalAuthor ? (
+      {source.originalAuthor ? (
         <div
           className="flex items-start gap-2 border-t pt-2 text-sm"
           style={{ borderColor: 'var(--theme-border-glass-light)' }}
@@ -249,12 +247,12 @@ export function BuildingSourceDetails({ building, locale, t }: BuildingSourceDet
           <div className="min-w-0 flex-1">
             <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.originalAuthor')}</span>
             <p className="font-medium" style={{ color: 'var(--theme-text-muted-strong)' }}>
-              {building.source.originalAuthor}
+              {source.originalAuthor}
             </p>
           </div>
         </div>
       ) : null}
-      {building.source.originalLink ? (
+      {source.originalLink ? (
         <div className="flex items-start gap-2 text-sm">
           <MapPin
             className="mt-0.5 h-4 w-4 shrink-0"
@@ -263,19 +261,19 @@ export function BuildingSourceDetails({ building, locale, t }: BuildingSourceDet
           <div className="min-w-0 flex-1">
             <span style={{ color: 'var(--theme-text-muted)' }}>{t('fields.source')}</span>
             <a
-              href={building.source.originalLink}
+              href={source.originalLink}
               target="_blank"
               rel="noopener noreferrer"
               className="ui-content-link ui-content-link--accent block truncate"
             >
-              {building.source.originalLink}
+              {source.originalLink}
             </a>
           </div>
         </div>
       ) : null}
-      {building.source.notes ? (
+      {source.notes ? (
         <div className="pt-1 text-xs italic" style={{ color: 'var(--theme-text-muted)' }}>
-          {getBuildingSourceNotes(building, locale)}
+          {source.notes}
         </div>
       ) : null}
     </>

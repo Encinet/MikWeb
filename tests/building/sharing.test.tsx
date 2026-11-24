@@ -6,9 +6,11 @@ import {
   getBuildingShareData,
   getBuildingUrl,
 } from '@/modules/building/lib/building-links';
+import { localizeBuilding } from '@/modules/building/model/building-api';
 import type { Building } from '@/modules/building/model/building-types';
 import { useBuildingCardShare } from '@/modules/building/model/use-building-card-share';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
+import type { AppLocale } from '@/shared/i18n/routing';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
 const building: Building = {
@@ -41,7 +43,7 @@ function GalleryHarness({
   modal?: boolean;
   images?: string[];
 }) {
-  onState(useBuildingGallery({ ...building, images }, modal));
+  onState(useBuildingGallery(images, modal));
   return null;
 }
 
@@ -94,10 +96,10 @@ function CardShareHarness({
   locale,
   onState,
 }: {
-  locale: string;
+  locale: AppLocale;
   onState: (value: ReturnType<typeof useBuildingCardShare>) => void;
 }) {
-  onState(useBuildingCardShare(building, locale));
+  onState(useBuildingCardShare(localizeBuilding(building, locale), locale));
   return null;
 }
 
@@ -138,7 +140,7 @@ test('card sharing downloads only on demand, cancels stale requests and shares t
       assert.ok(init.signal);
       requests.push({ url: input, signal: init.signal, resolve });
     })) as typeof fetch;
-  const render = (locale: string) =>
+  const render = (locale: AppLocale) =>
     act(async () => {
       environment.root.render(
         <CardShareHarness
@@ -348,16 +350,19 @@ test('building preview URLs retain the public object path for both widths', () =
 });
 
 test('sharing uses immutable identity across locales, renames and coordinate edits', () => {
-  const data = getBuildingShareData(building, 'zh-CN');
+  const data = getBuildingShareData(localizeBuilding(building, 'zh-CN'), 'zh-CN');
   assert.equal(data.title, '樱之庭 · Mik Casual');
   assert.equal(data.text, 'Lead, Guest · 樱花与庭院。');
   assert.equal(data.url, `https://mcmik.top/zh-CN/buildings/${building.id}`);
-  assert.equal(getBuildingShareData(building, 'en').title, 'Sakura Garden · Mik Casual');
+  assert.equal(
+    getBuildingShareData(localizeBuilding(building, 'en'), 'en').title,
+    'Sakura Garden · Mik Casual',
+  );
   assert.equal(
     getBuildingShareData(
       {
-        ...building,
-        name: { en: 'New name' },
+        ...localizeBuilding(building, 'zh-CN'),
+        name: 'New name',
         coordinates: { world: 'other', x: 9, y: 70, z: 9 },
       },
       'zh-CN',

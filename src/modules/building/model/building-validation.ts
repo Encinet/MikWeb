@@ -3,10 +3,11 @@ import type {
   Building,
   BuildingCoordinates,
   BuildingSource,
+  LocalizedBuilding,
 } from '@/modules/building/model/building-types';
 import { BUILDING_TYPES } from '@/modules/building/model/building-types';
 import { isPlayerIdentity } from '@/modules/player/model/player-validation';
-import { isLocalizedText } from '@/shared/i18n/localized-text';
+import { isLocalizedText, type LocalizedText } from '@/shared/i18n/localized-text';
 import { isRecord } from '@/shared/lib/is-record';
 
 const BUILDING_ID_PATTERN = /^[0-9a-f]{32}$/;
@@ -69,6 +70,17 @@ export function isBuildingDate(value: unknown): value is string {
 }
 
 export function isBuildingSource(value: unknown): value is BuildingSource {
+  return isBuildingSourceWithNotes(
+    value,
+    (notes): notes is LocalizedText =>
+      isLocalizedText(notes) && Object.values(notes).some((text) => text.trim()),
+  );
+}
+
+function isBuildingSourceWithNotes<Text>(
+  value: unknown,
+  isNotes: (value: unknown) => value is Text,
+): value is BuildingSource<Text> {
   if (!isRecord(value)) {
     return false;
   }
@@ -79,8 +91,7 @@ export function isBuildingSource(value: unknown): value is BuildingSource {
     (originalAuthor === undefined || (typeof originalAuthor === 'string' && !!originalAuthor.trim())) &&
     (originalLink === undefined ||
       (typeof originalLink === 'string' && isHttpLink(originalLink))) &&
-    (notes === undefined ||
-      (isLocalizedText(notes) && Object.values(notes).some((text) => text.trim())))
+    (notes === undefined || isNotes(notes))
   );
 }
 
@@ -94,12 +105,30 @@ function isHttpLink(value: string): boolean {
 }
 
 export function isBuilding(value: unknown): value is Building {
+  return isBuildingWithText(value, isLocalizedText, isBuildingSource);
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+export function isLocalizedBuilding(value: unknown): value is LocalizedBuilding {
+  return isBuildingWithText(value, isString, (source): source is BuildingSource<string> =>
+    isBuildingSourceWithNotes(source, isString),
+  );
+}
+
+function isBuildingWithText<Text>(
+  value: unknown,
+  isText: (value: unknown) => value is Text,
+  isSource: (value: unknown) => value is BuildingSource<Text>,
+): value is Building<Text> {
   return (
     isRecord(value) &&
     isBuildingId(value.id) &&
     Object.keys(value).every((field) => BUILDING_FIELDS.has(field)) &&
-    isLocalizedText(value.name) &&
-    isLocalizedText(value.description) &&
+    isText(value.name) &&
+    isText(value.description) &&
     isBuildingCoordinates(value.coordinates) &&
     Array.isArray(value.builders) &&
     value.builders.length > 0 &&
@@ -109,8 +138,8 @@ export function isBuilding(value: unknown): value is Building {
     value.images.every(isBuildingImageFilename) &&
     isBuildingDate(value.buildDate) &&
     (value.tags === undefined ||
-      (Array.isArray(value.tags) && value.tags.every(isLocalizedText))) &&
-    (value.source === undefined || isBuildingSource(value.source))
+      (Array.isArray(value.tags) && value.tags.every(isText))) &&
+    (value.source === undefined || isSource(value.source))
   );
 }
 

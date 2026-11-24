@@ -1,9 +1,9 @@
 import { createContext } from 'react';
 
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 
 export interface BuildingsState {
-  buildings: Building[];
+  buildings: LocalizedBuilding[];
   isLoading: boolean;
   error: string | null;
   fetchBuildings: (options?: { force?: boolean }) => Promise<void>;

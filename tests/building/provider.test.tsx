@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Activity, act } from 'react';
-import type { BuildingCatalogSnapshot } from '@/modules/building/model/building-types';
+import { NextIntlClientProvider } from 'next-intl';
+import { Activity, act, type ComponentProps } from 'react';
 import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { clearFetchValidatedJsonBrowserCache } from '@/shared/api/fetch-validated-json';
+import type { AppLocale } from '@/shared/i18n/routing';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
 function Consumer({ onState }: { onState: (state: ReturnType<typeof useBuildings>) => void }) {
@@ -13,23 +14,36 @@ function Consumer({ onState }: { onState: (state: ReturnType<typeof useBuildings
   return null;
 }
 
-const emptyCatalog = { imageBaseUrl: null, buildings: [] };
+function TestBuildingsProvider({
+  locale = 'en',
+  ...props
+}: ComponentProps<typeof BuildingsProvider> & { locale?: AppLocale }) {
+  return (
+    <NextIntlClientProvider locale={locale} timeZone="UTC">
+      <BuildingsProvider {...props} />
+    </NextIntlClientProvider>
+  );
+}
 
-test('the archive loads shared catalog JSON on entry and reuses a successful direct retry', async () => {
+const emptyCatalog = { imageBaseUrl: null, buildings: [] };
+const imageBaseUrl = 'https://images.example/gallery';
+const building = {
+  id: 'a'.repeat(32),
+  name: 'Building',
+  description: 'Description',
+  coordinates: { world: 'world', x: 0, y: 64, z: 0 },
+  builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
+  buildType: 'original',
+  images: [`${'b'.repeat(64)}.webp`, `${'c'.repeat(64)}.webp`],
+  buildDate: '2026-11-10',
+  tags: ['Tower'],
+  source: { notes: 'Source notes' },
+};
+
+test('the archive loads localized catalog JSON on entry and reuses a successful direct retry', async () => {
   const env = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
-  const requests: string[] = [];
-  const imageBaseUrl = 'https://images.example/gallery';
-  const building = {
-    id: 'a'.repeat(32),
-    name: { en: 'Building' },
-    description: { en: 'Description' },
-    coordinates: { world: 'world', x: 0, y: 64, z: 0 },
-    builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
-    buildType: 'original',
-    images: [`${'b'.repeat(64)}.webp`, `${'c'.repeat(64)}.webp`],
-    buildDate: '2026-11-10',
-  };
+  const requests: [string, RequestCache | undefined][] = [];
   let latest: ReturnType<typeof useBuildings> | undefined;
   const current = () => {
     assert.ok(latest);
@@ -38,34 +52,41 @@ test('the archive loads shared catalog JSON on entry and reuses a successful dir
   const mount = () =>
     act(async () => {
       env.root.render(
-        <BuildingsProvider>
+        <TestBuildingsProvider>
           <Consumer
             onState={(value) => {
               latest = value;
             }}
           />
-        </BuildingsProvider>,
+        </TestBuildingsProvider>,
       );
     });
   clearFetchValidatedJsonBrowserCache();
-  globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
-    requests.push(String(input));
+  globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
+    requests.push([String(input), init?.cache]);
     return requests.length === 1
       ? Response.json({}, { status: 503 })
       : Response.json({ imageBaseUrl, buildings: [building] });
   }, previousFetch);
   try {
     await mount();
-    assert.deepEqual(requests, ['/api/buildings']);
+    assert.deepEqual(requests, [['/api/buildings/en', 'default']]);
     assert.equal(current().isLoading, false);
     assert.ok(current().error);
     await act(async () => current().fetchBuildings({ force: true }));
-    assert.deepEqual(requests, ['/api/buildings', dataApiUrl('/buildings')]);
+    assert.deepEqual(requests, [
+      ['/api/buildings/en', 'default'],
+      [dataApiUrl('/buildings?locale=en'), 'reload'],
+    ]);
     assert.equal(current().error, null);
     const expectedImages = building.images.map(
       (filename) => `${imageBaseUrl}/buildings/${building.id}/${filename}`,
     );
     assert.deepEqual(current().buildings[0].images, expectedImages);
+    assert.equal(current().buildings[0].name, 'Building');
+    assert.equal(current().buildings[0].description, 'Description');
+    assert.deepEqual(current().buildings[0].tags, ['Tower']);
+    assert.equal(current().buildings[0].source?.notes, 'Source notes');
     await act(async () => env.root.render(null));
     await mount();
     assert.equal(requests.length, 2);
@@ -77,11 +98,56 @@ test('the archive loads shared catalog JSON on entry and reuses a successful dir
   }
 });
 
-test('leaving during a refresh clears its loading state and permits a new refresh on return', async () => {
+test('switching languages isolates pending requests and cached catalogs', async () => {
+  const env = createBrowserEnvironment();
+  const previousFetch = globalThis.fetch;
+  const requests: string[] = [];
+  const pending: ((response: Response) => void)[] = [];
+  let state: ReturnType<typeof useBuildings> | undefined;
+  const current = () => {
+    assert.ok(state);
+    return state;
+  };
+  const render = (locale: AppLocale) =>
+    act(async () =>
+      env.root.render(
+        <TestBuildingsProvider locale={locale}>
+          <Consumer onState={(value) => { state = value; }} />
+        </TestBuildingsProvider>,
+      ),
+    );
+  globalThis.fetch = Object.assign((input: RequestInfo | URL) => {
+    requests.push(String(input));
+    return new Promise<Response>((resolve) => pending.push(resolve));
+  }, previousFetch);
+  clearFetchValidatedJsonBrowserCache();
+  try {
+    await render('en');
+    await render('zh-CN');
+    assert.deepEqual(requests, ['/api/buildings/en', '/api/buildings/zh-CN']);
+    await act(async () => pending[0](Response.json({ imageBaseUrl, buildings: [building] })));
+    assert.equal(current().isLoading, true);
+    assert.deepEqual(current().buildings, []);
+    await act(async () =>
+      pending[1](Response.json({ imageBaseUrl, buildings: [{ ...building, name: '建筑' }] })),
+    );
+    assert.equal(current().buildings[0].name, '建筑');
+    await render('en');
+    assert.equal(current().buildings[0].name, 'Building');
+    await render('zh-CN');
+    assert.equal(current().buildings[0].name, '建筑');
+    assert.equal(requests.length, 2);
+  } finally {
+    await env.close();
+    globalThis.fetch = previousFetch;
+    clearFetchValidatedJsonBrowserCache();
+  }
+});
+
+test('the archive can resume an interrupted catalog load when shown again', async () => {
   const environment = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
   const requests: ((response: Response) => void)[] = [];
-  const snapshot = { buildings: [], error: null, updatedAt: null };
   let state: ReturnType<typeof useBuildings> | undefined;
   const current = () => {
     assert.ok(state);
@@ -91,13 +157,13 @@ test('leaving during a refresh clears its loading state and permits a new refres
     act(async () =>
       environment.root.render(
         <Activity mode={mode}>
-          <BuildingsProvider initialSnapshot={snapshot}>
+          <TestBuildingsProvider>
             <Consumer
               onState={(value) => {
                 state = value;
               }}
             />
-          </BuildingsProvider>
+          </TestBuildingsProvider>
         </Activity>,
       ),
     );
@@ -106,27 +172,14 @@ test('leaving during a refresh clears its loading state and permits a new refres
   clearFetchValidatedJsonBrowserCache();
   try {
     await render('visible');
-    let first: Promise<void> | undefined;
-    await act(async () => {
-      first = current().fetchBuildings({ force: true });
-    });
+    assert.equal(requests.length, 1);
     assert.equal(current().isLoading, true);
     await render('hidden');
-    await act(async () => {
-      requests[0](new Response(null, { status: 503 }));
-      await first;
-    });
+    await act(async () => requests[0](Response.json({}, { status: 503 })));
     await render('visible');
-    assert.equal(current().isLoading, false);
-    let second: Promise<void> | undefined;
-    await act(async () => {
-      second = current().fetchBuildings();
-    });
-    assert.equal(requests.length, 2, 'the old promise must not block another refresh');
-    await act(async () => {
-      requests[1](Response.json(emptyCatalog));
-      await second;
-    });
+    assert.equal(requests.length, 2, 'the old promise must not block another load');
+    assert.equal(current().isLoading, true);
+    await act(async () => requests[1](Response.json(emptyCatalog)));
     assert.equal(current().isLoading, false);
     assert.equal(current().error, null);
     await act(async () => current().fetchBuildings());
@@ -138,7 +191,7 @@ test('leaving during a refresh clears its loading state and permits a new refres
   }
 });
 
-test('server-seeded catalogs need no browser request, and newer refreshes win over stale responses', async () => {
+test('late responses from an older retry cannot overwrite a newer retry', async () => {
   const environment = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
   const requests: ((response: Response) => void)[] = [];
@@ -153,17 +206,18 @@ test('server-seeded catalogs need no browser request, and newer refreshes win ov
   try {
     await act(async () =>
       environment.root.render(
-        <BuildingsProvider initialSnapshot={{ buildings: [], error: null, updatedAt: Date.now() }}>
+        <TestBuildingsProvider>
           <Consumer
             onState={(value) => {
               state = value;
             }}
           />
-        </BuildingsProvider>,
+        </TestBuildingsProvider>,
       ),
     );
-    await act(async () => current().fetchBuildings());
-    assert.equal(requests.length, 0);
+    assert.equal(requests.length, 1);
+    await act(async () => requests[0](Response.json({}, { status: 503 })));
+    assert.ok(current().error);
     let first: Promise<void> | undefined;
     let second: Promise<void> | undefined;
     await act(async () => {
@@ -172,98 +226,18 @@ test('server-seeded catalogs need no browser request, and newer refreshes win ov
     await act(async () => {
       second = current().fetchBuildings({ force: true });
     });
-    assert.equal(requests.length, 2);
+    assert.equal(requests.length, 3);
     await act(async () => {
-      requests[1](Response.json(emptyCatalog));
+      requests[2](Response.json(emptyCatalog));
       await second;
     });
     assert.equal(current().error, null);
     assert.equal(current().isLoading, false);
     await act(async () => {
-      requests[0](new Response(null, { status: 503 }));
+      requests[1](new Response(null, { status: 503 }));
       await first;
     });
     assert.equal(current().error, null, 'older failure cannot replace the successful refresh');
-  } finally {
-    globalThis.fetch = previousFetch;
-    clearFetchValidatedJsonBrowserCache();
-    await environment.close();
-  }
-});
-
-test('a fresh server snapshot replaces mounted data and invalidates an older browser request', async () => {
-  const environment = createBrowserEnvironment();
-  const previousFetch = globalThis.fetch;
-  let resolveRequest: ((response: Response) => void) | undefined;
-  let state: ReturnType<typeof useBuildings> | undefined;
-  const current = () => {
-    assert.ok(state);
-    return state;
-  };
-  const render = (snapshot: BuildingCatalogSnapshot) =>
-    act(async () =>
-      environment.root.render(
-        <BuildingsProvider initialSnapshot={snapshot}>
-          <Consumer
-            onState={(value) => {
-              state = value;
-            }}
-          />
-        </BuildingsProvider>,
-      ),
-    );
-  globalThis.fetch = (() =>
-    new Promise<Response>((resolve) => {
-      resolveRequest = resolve;
-    })) as typeof fetch;
-  clearFetchValidatedJsonBrowserCache();
-  try {
-    const initial = { buildings: [], error: null, updatedAt: Date.now() - 1000 };
-    await render(initial);
-    let request: Promise<void> | undefined;
-    await act(async () => {
-      request = current().fetchBuildings({ force: true });
-    });
-    assert.equal(current().isLoading, true);
-    const refreshed: BuildingCatalogSnapshot = {
-      buildings: [
-        {
-          id: 'a'.repeat(32),
-          name: { en: 'New building' },
-          description: { en: 'Refreshed from the server' },
-          coordinates: { world: 'world', x: 0, y: 64, z: 0 },
-          builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
-          buildType: 'original',
-          images: [],
-          buildDate: '2026-11-10',
-        },
-      ],
-      error: null,
-      updatedAt: Date.now(),
-    };
-    await render(refreshed);
-    assert.deepEqual(current().buildings, refreshed.buildings);
-    assert.equal(current().isLoading, false);
-    await act(async () => {
-      assert.ok(resolveRequest);
-      resolveRequest(new Response(null, { status: 503 }));
-      await request;
-    });
-    assert.equal(current().error, null, 'a superseded request cannot overwrite server data');
-    assert.deepEqual(current().buildings, refreshed.buildings);
-    await render({ ...initial });
-    assert.deepEqual(
-      current().buildings,
-      refreshed.buildings,
-      'older server snapshots cannot roll data back',
-    );
-    await render({ buildings: [], error: 'unavailable', updatedAt: null });
-    assert.equal(current().error, null);
-    assert.deepEqual(
-      current().buildings,
-      refreshed.buildings,
-      'a failed server refresh keeps usable data',
-    );
   } finally {
     globalThis.fetch = previousFetch;
     clearFetchValidatedJsonBrowserCache();

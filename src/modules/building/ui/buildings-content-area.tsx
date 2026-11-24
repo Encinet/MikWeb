@@ -1,12 +1,11 @@
 'use client';
 
-import type { useTranslations } from 'next-intl';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
-import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import { BuildingCard } from '@/modules/building/ui/building-card';
+import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
 import {
   BuildingsLoadingState,
   BuildingsStatusMessage,
@@ -14,19 +13,16 @@ import {
 import { Link } from '@/shared/i18n/navigation';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
-type BuildingsTranslator = ReturnType<typeof useTranslations<'buildings'>>;
-
 interface BuildingsContentAreaProps {
-  buildings: Building[];
+  buildings: LocalizedBuilding[];
   hasMore: boolean;
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
   retryLabel: string;
   errorMessage: string;
-  filteredBuildings: Building[];
+  filteredBuildings: LocalizedBuilding[];
   loadMore: () => void;
-  locale: string;
   t: BuildingsTranslator;
   loadingMessage: string;
   errorTitle: string;
@@ -44,7 +40,6 @@ export function BuildingsContentArea({
   errorMessage,
   filteredBuildings,
   loadMore,
-  locale,
   t,
   loadingMessage,
   errorTitle,
@@ -100,7 +95,6 @@ export function BuildingsContentArea({
             <BuildingCard
               key={building.id}
               building={building}
-              locale={locale}
               t={t}
               prioritizeCover={building.id === firstCoverId}
             />
@@ -122,7 +116,7 @@ export function BuildingsContentArea({
             <div className="building-archive-print-row">
               <span className="building-archive-print-heading">
                 <Link href={getBuildingPath(building.id)} prefetch={false}>
-                  {getBuildingName(building, locale)}
+                  {building.name}
                 </Link>
                 <small>{t(`types.${building.buildType}`)}</small>
               </span>

@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { cacheLife } from 'next/cache';
-import { getBuilding } from '@/modules/building/server/building-queries';
+import { getBuilding, getLocalizedBuilding } from '@/modules/building/server/building-queries';
 import type { AppLocale } from '@/shared/i18n/routing';
 import type { SitePage } from '@/site/seo/site-pages';
 import { createBuildingSocialImage } from '@/site/seo/social-image/building-social-image';
@@ -26,7 +26,7 @@ export async function getSiteShareThumbnail(locale: AppLocale, page: SitePage) {
 export async function getBuildingSocialImage(id: string, locale: AppLocale) {
   'use cache';
   cacheLife('days');
-  const building = await getBuilding(id, 86400);
+  const building = await getLocalizedBuilding(id, locale, 86400);
   return new Uint8Array(await (await createBuildingSocialImage(building, locale)).arrayBuffer());
 }
 

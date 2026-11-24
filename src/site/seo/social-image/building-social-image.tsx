@@ -3,8 +3,7 @@ import 'server-only';
 import { ImageResponse } from 'next/og';
 import { getTranslations } from 'next-intl/server';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
-import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { readBuildingImage } from '@/site/seo/social-image/read-building-image';
 import { readSocialImageLogo } from '@/site/seo/social-image/social-image-assets';
@@ -22,7 +21,7 @@ import {
 } from '@/site/seo/social-image/social-image-layout';
 import { DEFAULT_BUILDING_SOCIAL_IMAGE_PALETTE } from '@/site/seo/social-image/social-image-palette';
 
-export async function createBuildingSocialImage(building: Building, locale: AppLocale) {
+export async function createBuildingSocialImage(building: LocalizedBuilding, locale: AppLocale) {
   const t = await getTranslations({ locale, namespace: 'buildings' });
   const [cover, fonts, logo] = await Promise.all([
     building.images[0]
@@ -31,7 +30,7 @@ export async function createBuildingSocialImage(building: Building, locale: AppL
     readSocialImageFonts(),
     readSocialImageLogo(),
   ]);
-  const title = getBuildingName(building, locale).normalize('NFKC');
+  const title = building.name.normalize('NFKC');
   const authors = sortBuildersByWeight(building.builders)
     .map((builder) => builder.name)
     .join(', ')

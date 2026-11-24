@@ -5,7 +5,7 @@ import {
   getBuildingShareData,
   getBuildingSocialImagePath,
 } from '@/modules/building/lib/building-links';
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { canNativeShare, isShareCancellation } from '@/shared/lib/native-share';
 import { readLimitedResponse } from '@/shared/lib/read-limited-response';
@@ -25,7 +25,7 @@ async function fetchShareCard(url: string, filename: string, signal: AbortSignal
   return new File([bytes], filename, { type: 'image/png' });
 }
 
-export function useBuildingCardShare(building: Building, locale: string) {
+export function useBuildingCardShare(building: LocalizedBuilding, locale: string) {
   const url = getBuildingSocialImagePath(building.id, locale);
   const filename = `${building.id}-${locale}.png`;
   const mounted = useHasMounted();

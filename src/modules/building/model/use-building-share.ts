@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { getBuildingShareData } from '@/modules/building/lib/building-links';
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import { useCopyFeedback } from '@/shared/hooks/use-copy-feedback';
 import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { canNativeShare, isShareCancellation } from '@/shared/lib/native-share';
 
-export function useBuildingShare(building: Building, locale: string) {
+export function useBuildingShare(building: LocalizedBuilding, locale: string) {
   const data = getBuildingShareData(building, locale);
   const link = data.url ?? '';
   const clipboard = useCopyFeedback(link);

@@ -3,12 +3,8 @@
 import { ArrowUpRight, CalendarDays, ChevronDown, MapPin } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
-import {
-  formatBuildingDate,
-  getBuildingDescription,
-  getBuildingName,
-} from '@/modules/building/lib/building-view-helpers';
-import type { Building } from '@/modules/building/model/building-types';
+import { formatBuildingDate } from '@/modules/building/lib/building-view-helpers';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import { BuildingCardActions } from '@/modules/building/ui/building-card-actions';
 import {
   BuilderNames,
@@ -25,7 +21,7 @@ export function BuildingGalleryDetails({
   titleId,
   modal,
 }: {
-  building: Building;
+  building: LocalizedBuilding;
   titleId: string;
   modal: boolean;
 }) {
@@ -35,7 +31,7 @@ export function BuildingGalleryDetails({
   const detailsId = useId();
   const [expanded, setExpanded] = useState(false);
   const Heading = modal ? 'h2' : 'h1';
-  const description = getBuildingDescription(building, locale).trim();
+  const description = building.description.trim();
   const { world, x, y, z } = building.coordinates;
   const coordinates = `${x}, ${y}, ${z}`;
   const mapUrl = mapPositionUrl(world, x, z);
@@ -45,7 +41,7 @@ export function BuildingGalleryDetails({
       <div className="building-detail-summary">
         <div className="building-detail-identity">
           <div className="building-archive-info-bar__header">
-            <Heading id={titleId}>{getBuildingName(building, locale)}</Heading>
+            <Heading id={titleId}>{building.name}</Heading>
             <span className="building-detail-type">
               <BuildingTypeBadge buildType={building.buildType} compact t={t} />
             </span>
@@ -122,7 +118,7 @@ export function BuildingGalleryDetails({
               {description ? (
                 <p className="building-archive-info-expanded__desc">{description}</p>
               ) : null}
-              <BuildingTags building={building} locale={locale} compact />
+              <BuildingTags building={building} compact />
               {building.builders.length > 2 ? (
                 <div className="building-detail-contributors">
                   <h3>{t('details.builders')}</h3>
@@ -134,7 +130,7 @@ export function BuildingGalleryDetails({
             </div>
             {building.source ? (
               <div className="building-detail-source">
-                <BuildingSourceDetails building={building} locale={locale} t={t} />
+                <BuildingSourceDetails source={building.source} t={t} />
               </div>
             ) : null}
           </div>

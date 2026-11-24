@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
-import type { Building } from '@/modules/building/model/building-types';
 
 export interface BuildingGalleryState {
   imageIndex: number;
@@ -21,7 +20,7 @@ export interface BuildingGalleryState {
 
 type ImageStatus = 'loaded' | 'error';
 
-export function useBuildingGallery(building: Building, modal = false): BuildingGalleryState {
+export function useBuildingGallery(images: string[], modal = false): BuildingGalleryState {
   const [selection, setSelection] = useState<{ url: string; index: number } | null>(null);
   const [imageStatus, setImageStatus] = useState(() => {
     const status = new Map<string, ImageStatus>();
@@ -34,7 +33,6 @@ export function useBuildingGallery(building: Building, modal = false): BuildingG
     return status;
   });
 
-  const images = building.images;
   // A refreshed catalog may reorder or remove photos while the detail page stays mounted.
   const resolveIndex = (selected: typeof selection) =>
     !selected

@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
   let buildings: Building[];
   try {
-    buildings = (await readBuildingCatalog(REVALIDATE_SECONDS)).catalog.buildings;
+    buildings = (await readBuildingCatalog({ revalidate: REVALIDATE_SECONDS })).buildings;
   } catch (error) {
     // At runtime, let ISR retain the complete sitemap instead of caching a partial replacement.
     if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD) throw error;

@@ -3,7 +3,7 @@
 import { ArrowLeft, X } from 'lucide-react';
 import { useReducedMotion } from 'motion/react';
 import Image from 'next/image';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import {
   addTransitionType,
   startTransition,
@@ -13,8 +13,7 @@ import {
   useState,
   ViewTransition,
 } from 'react';
-import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
 import { useBuildingGalleryControls } from '@/modules/building/model/use-building-gallery-controls';
 import { BuildingGalleryDetails } from '@/modules/building/ui/building-gallery-details';
@@ -28,14 +27,13 @@ export function BuildingGallery({
   building,
   modal = false,
 }: {
-  building: Building;
+  building: LocalizedBuilding;
   modal?: boolean;
 }) {
-  const locale = useLocale();
   const t = useTranslations('buildings');
   const router = useRouter();
   const titleId = useId();
-  const gallery = useBuildingGallery(building, modal);
+  const gallery = useBuildingGallery(building.images, modal);
   const reduceMotion = useReducedMotion();
   const [focused, setFocused] = useState(false);
   const imageOccurrences = new Map<string, number>();
@@ -51,7 +49,6 @@ export function BuildingGallery({
     prev: gallery.prev,
     reduceMotion: Boolean(reduceMotion),
   });
-  const name = getBuildingName(building, locale);
   const close = () => router.back();
   const changeFocus = (next: boolean) => {
     if (reduceMotion) {
@@ -100,7 +97,7 @@ export function BuildingGallery({
             <span>{t('title')}</span>
           </Link>
         ) : (
-          <span className="building-gallery-toolbar__name">{name}</span>
+          <span className="building-gallery-toolbar__name">{building.name}</span>
         )}
         <div className="building-gallery-toolbar__actions">
           <BuildingShareActions building={building} />
@@ -123,7 +120,7 @@ export function BuildingGallery({
         gallery={gallery}
         imageCount={building.images.length}
         stageRef={stageRef}
-        name={name}
+        name={building.name}
         focused={focused}
         onToggleFocus={() => changeFocus(!focused)}
       >

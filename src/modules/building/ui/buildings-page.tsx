@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { memo, Suspense, use, useLayoutEffect, ViewTransition } from 'react';
 import { browser, preload } from 'react-dom';
 import type { BuildingCatalogQuery } from '@/modules/building/lib/building-catalog-query';
-import { BUILDING_CATALOG_PATH } from '@/modules/building/lib/building-links';
+import { getBuildingCatalogPath } from '@/modules/building/lib/building-links';
 import { useBuildingCatalog } from '@/modules/building/model/use-building-catalog';
 import { useBuildingCatalogQuery } from '@/modules/building/model/use-building-catalog-query';
 import { useBuildings } from '@/modules/building/model/use-buildings';
@@ -14,7 +14,11 @@ import { BuildingsContentArea } from '@/modules/building/ui/buildings-content-ar
 import { BuildingsLoadingState } from '@/modules/building/ui/buildings-status-states';
 
 export default function BuildingsPage() {
-  preload(BUILDING_CATALOG_PATH, { as: 'fetch', crossOrigin: 'anonymous' });
+  const locale = useLocale();
+  // The provider can reuse its in-memory catalog on client navigation.
+  if (typeof window === 'undefined') {
+    preload(getBuildingCatalogPath(locale), { as: 'fetch', crossOrigin: 'anonymous' });
+  }
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');
   const controls = useBuildingCatalogQuery();
@@ -96,9 +100,8 @@ const CatalogResults = memo(function CatalogResults({
 }) {
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');
-  const locale = useLocale();
   const { buildings, isLoading, error, fetchBuildings } = useBuildings();
-  const catalog = useBuildingCatalog(buildings, locale, selection);
+  const catalog = useBuildingCatalog(buildings, selection);
   return (
     <BuildingsContentArea
       buildings={catalog.displayed}
@@ -110,7 +113,6 @@ const CatalogResults = memo(function CatalogResults({
       errorMessage={t('states.loadFailed')}
       filteredBuildings={catalog.filtered}
       loadMore={catalog.loadMore}
-      locale={locale}
       t={t}
       loadingMessage={commonT('states.loading')}
       errorTitle={commonT('states.error')}

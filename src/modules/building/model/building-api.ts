@@ -1,10 +1,13 @@
+import { dataApiUrl } from '@/shared/api/data-api-url';
+import { getLocalizedText, type LocalizedText } from '@/shared/i18n/localized-text';
+import type { AppLocale } from '@/shared/i18n/routing';
 import { isRecord } from '@/shared/lib/is-record';
-import type { Building } from './building-types';
-import { isBuilding } from './building-validation';
+import type { Building, LocalizedBuilding } from './building-types';
+import { isBuilding, isLocalizedBuilding } from './building-validation';
 
-export interface BuildingCatalogResponse {
+export interface BuildingCatalogResponse<Text = LocalizedText> {
   imageBaseUrl: string | null;
-  buildings: Building[];
+  buildings: Building<Text>[];
 }
 
 interface BuildingDetailResponse {
@@ -30,32 +33,93 @@ function isImageBaseUrl(value: unknown): value is string | null {
   }
 }
 
-function isBuildingWithImageBase(value: unknown, imageBaseUrl: string | null): value is Building {
-  return isBuilding(value) && (value.images.length === 0 || imageBaseUrl !== null);
+export function getPublicBuildingCatalogUrl({
+  locale,
+  limit,
+}: { locale?: AppLocale; limit?: number } = {}) {
+  const params = new URLSearchParams();
+  if (locale !== undefined) params.set('locale', locale);
+  if (limit !== undefined) params.set('limit', String(limit));
+  return dataApiUrl(params.size ? `/buildings?${params}` : '/buildings');
 }
 
-export function isBuildingCatalogResponse(value: unknown): value is BuildingCatalogResponse {
+export function isBuildingCatalogResponse(
+  value: unknown,
+  limit?: number,
+): value is BuildingCatalogResponse {
+  return isCatalogResponse(value, isBuilding, limit);
+}
+
+export function isLocalizedBuildingCatalogResponse(
+  value: unknown,
+  limit?: number,
+): value is BuildingCatalogResponse<string> {
+  return isCatalogResponse(value, isLocalizedBuilding, limit);
+}
+
+function isCatalogResponse<Text>(
+  value: unknown,
+  isCatalogBuilding: (value: unknown) => value is Building<Text>,
+  limit?: number,
+): value is BuildingCatalogResponse<Text> {
   if (!isRecord(value) || !isImageBaseUrl(value.imageBaseUrl) || !Array.isArray(value.buildings)) {
     return false;
   }
-  const { imageBaseUrl } = value;
-  return value.buildings.every((building) => isBuildingWithImageBase(building, imageBaseUrl));
+  const { buildings, imageBaseUrl } = value;
+  if (limit !== undefined && buildings.length > limit) return false;
+  return buildings.every(
+    (building) => isCatalogBuilding(building) && (building.images.length === 0 || imageBaseUrl !== null),
+  );
 }
 
 export function isBuildingDetailResponse(value: unknown): value is BuildingDetailResponse {
   return (
     isRecord(value) &&
     isImageBaseUrl(value.imageBaseUrl) &&
-    isBuildingWithImageBase(value.building, value.imageBaseUrl)
+    isBuilding(value.building) &&
+    (value.building.images.length === 0 || value.imageBaseUrl !== null)
   );
 }
 
-export function resolveBuildingImages(building: Building, imageBaseUrl: string | null): Building {
+export function localizeBuilding(
+  { name, description, tags, source, ...building }: Building,
+  locale: AppLocale,
+): LocalizedBuilding {
+  return {
+    ...building,
+    name: getLocalizedText(name, locale),
+    description: getLocalizedText(description, locale),
+    tags: tags?.map((tag) => getLocalizedText(tag, locale)),
+    source: source && {
+      originalAuthor: source.originalAuthor,
+      originalLink: source.originalLink,
+      notes: source.notes === undefined ? undefined : getLocalizedText(source.notes, locale),
+    },
+  };
+}
+
+export function localizeBuildingCatalog(
+  { buildings, imageBaseUrl }: BuildingCatalogResponse,
+  locale: AppLocale,
+): BuildingCatalogResponse<string> {
+  return {
+    imageBaseUrl,
+    buildings: buildings.map((building) => localizeBuilding(building, locale)),
+  };
+}
+
+export function resolveBuildingImages<Text>(
+  building: Building<Text>,
+  imageBaseUrl: string | null,
+): Building<Text> {
   if (imageBaseUrl === null || building.images.length === 0) return building;
   const prefix = `${imageBaseUrl}/buildings/${building.id}/`;
   return { ...building, images: building.images.map((filename) => prefix + filename) };
 }
 
-export function resolveBuildingCatalog({ buildings, imageBaseUrl }: BuildingCatalogResponse) {
+export function resolveBuildingCatalog<Text>({
+  buildings,
+  imageBaseUrl,
+}: BuildingCatalogResponse<Text>): Building<Text>[] {
   return buildings.map((building) => resolveBuildingImages(building, imageBaseUrl));
 }

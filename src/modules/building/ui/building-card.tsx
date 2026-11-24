@@ -4,25 +4,22 @@ import { Building2, Images, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useState, ViewTransition } from 'react';
 import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
-import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
 import { BuilderSummary } from '@/modules/building/ui/building-metadata';
 import { Link } from '@/shared/i18n/navigation';
 
 interface BuildingCardProps {
-  building: Building;
-  locale: string;
+  building: LocalizedBuilding;
   t: BuildingsTranslator;
   prioritizeCover?: boolean;
 }
 
-export function BuildingCard({ building, locale, t, prioritizeCover = false }: BuildingCardProps) {
+export function BuildingCard({ building, t, prioritizeCover = false }: BuildingCardProps) {
   const [imageErrors, setImageErrors] = useState<string[]>([]);
   const [prefetch, setPrefetch] = useState(false);
   const buildingImages = building.images;
   const coverImage = buildingImages.find((imageUrl) => !imageErrors.includes(imageUrl));
-  const buildingName = getBuildingName(building, locale);
 
   return (
     <ViewTransition
@@ -50,7 +47,7 @@ export function BuildingCard({ building, locale, t, prioritizeCover = false }: B
                 src={getBuildingPreviewUrl(coverImage, 'cover')}
                 fill
                 unoptimized
-                alt={buildingName}
+                alt={building.name}
                 className="object-cover"
                 loading={prioritizeCover ? 'eager' : 'lazy'}
                 fetchPriority={prioritizeCover ? 'high' : 'auto'}
@@ -76,7 +73,7 @@ export function BuildingCard({ building, locale, t, prioritizeCover = false }: B
           {/* Info band — always visible */}
           <div className="building-archive-card__info">
             <div className="building-archive-card__heading">
-              <h2>{buildingName}</h2>
+              <h2>{building.name}</h2>
               <span className="building-archive-card__type">
                 {t(`types.${building.buildType}`)}
               </span>

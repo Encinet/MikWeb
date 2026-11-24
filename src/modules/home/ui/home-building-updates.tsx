@@ -2,14 +2,22 @@
 
 import { Building2, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { getRecentBuildingUpdates } from '@/modules/building/lib/building-catalog';
 import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
-import { getBuildingName } from '@/modules/building/lib/building-view-helpers';
-import type { Building } from '@/modules/building/model/building-types';
-import { useBuildings } from '@/modules/building/model/use-buildings';
+import {
+  getPublicBuildingCatalogUrl,
+  isLocalizedBuildingCatalogResponse,
+  resolveBuildingCatalog,
+} from '@/modules/building/model/building-api';
+import {
+  HOME_BUILDING_LIMIT,
+  type HomeBuildingPreview,
+  toHomeBuildingPreview,
+} from '@/modules/home/model/home-building-preview';
+import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { Link } from '@/shared/i18n/navigation';
+import type { AppLocale } from '@/shared/i18n/routing';
 import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 
 export function HomeBuildingUpdates({
@@ -17,14 +25,13 @@ export function HomeBuildingUpdates({
   onRetry,
   isRefreshing = false,
 }: {
-  buildings: Building[];
+  buildings: HomeBuildingPreview[];
   onRetry?: () => void;
   isRefreshing?: boolean;
 }) {
   const t = useTranslations('home.playerHome.buildings');
   const mapT = useTranslations('map');
   const commonT = useTranslations('common');
-  const locale = useLocale();
   const [imageErrors, setImageErrors] = useState<string[]>([]);
 
   return (
@@ -50,7 +57,6 @@ export function HomeBuildingUpdates({
         </Link>
         {recentBuildings.length > 0 ? (
           recentBuildings.map((building) => {
-            const name = getBuildingName(building, locale);
             const cover = building.images.find((url) => !imageErrors.includes(url));
             return (
               <Link
@@ -58,7 +64,7 @@ export function HomeBuildingUpdates({
                 href={getBuildingPath(building.id)}
                 scroll={false}
                 className="home-building-preview"
-                aria-label={t('open', { name })}
+                aria-label={t('open', { name: building.name })}
               >
                 <span className="home-building-preview__image">
                   {cover ? (
@@ -75,9 +81,9 @@ export function HomeBuildingUpdates({
                   )}
                 </span>
                 <span className="home-building-preview__copy">
-                  <strong>{name}</strong>
-                  {building.builders.length > 0 ? (
-                    <span>{building.builders.map((builder) => builder.name).join(', ')}</span>
+                  <strong>{building.name}</strong>
+                  {building.builderNames.length > 0 ? (
+                    <span>{building.builderNames.join(', ')}</span>
                   ) : null}
                   <span className="home-building-preview__coordinates">
                     <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
@@ -111,13 +117,32 @@ export function HomeBuildingUpdates({
 }
 
 /** Recover a failed server snapshot from the public catalog without re-rendering the page. */
-export function HomeBuildingUpdatesRecovery() {
-  const { buildings, error, fetchBuildings, isLoading } = useBuildings();
+export function HomeBuildingUpdatesRecovery({ locale }: { locale: AppLocale }) {
+  const [buildings, setBuildings] = useState<HomeBuildingPreview[] | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  async function retry() {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    const result = await fetchValidatedJson({
+      url: getPublicBuildingCatalogUrl({ locale, limit: HOME_BUILDING_LIMIT }),
+      validate: (value) =>
+        isLocalizedBuildingCatalogResponse(value, HOME_BUILDING_LIMIT),
+      timeoutMs: 15_000,
+      cache: 'reload',
+      fallbackErrorMessage: 'building_catalog_unavailable',
+    });
+    if (result.status === 'success') {
+      setBuildings(resolveBuildingCatalog(result.data).map(toHomeBuildingPreview));
+    }
+    setIsRefreshing(false);
+  }
+
   return (
     <HomeBuildingUpdates
-      buildings={getRecentBuildingUpdates(buildings)}
-      onRetry={error ? () => void fetchBuildings({ force: true }) : undefined}
-      isRefreshing={isLoading}
+      buildings={buildings ?? []}
+      onRetry={buildings === null ? retry : undefined}
+      isRefreshing={isRefreshing}
     />
   );
 }

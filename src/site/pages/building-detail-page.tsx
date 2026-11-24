@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { getBuilding } from '@/modules/building/server/building-queries';
+import { getLocalizedBuilding } from '@/modules/building/server/building-queries';
 import { BuildingGallery } from '@/modules/building/ui/building-gallery';
 import { BuildingGalleryLoading } from '@/modules/building/ui/building-route-state';
 import { BuildingsLoading } from '@/modules/building/ui/buildings-loading';
@@ -24,8 +24,8 @@ export function BuildingDetailPage(props: BuildingDetailProps) {
 async function BuildingDetail({ params, modal = false }: BuildingDetailProps) {
   const { locale, id } = await params;
   const routeLocale = requireRouteLocale(locale);
-  const building = await getBuilding(id);
-  const { title, description } = getBuildingMetadataContent(building, routeLocale);
+  const building = await getLocalizedBuilding(id, routeLocale);
+  const { title, description } = getBuildingMetadataContent(building);
   return (
     <>
       <ShareTextMetadata

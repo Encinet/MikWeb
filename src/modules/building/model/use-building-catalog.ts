@@ -7,12 +7,11 @@ import {
   sortBuildings,
 } from '@/modules/building/lib/building-catalog';
 import type { BuildingCatalogQuery } from '@/modules/building/lib/building-catalog-query';
-import type { Building } from '@/modules/building/model/building-types';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 
 /** Catalog derivation and pagination are independent of routing, labels and input handling. */
 export function useBuildingCatalog(
-  buildings: Building[],
-  locale: string,
+  buildings: LocalizedBuilding[],
   selection: BuildingCatalogQuery,
 ) {
   const { query, filter, sort } = selection;
@@ -21,8 +20,8 @@ export function useBuildingCatalog(
   if (pagination.key !== key) setPagination({ key, count: BUILDINGS_PAGE_SIZE });
   const count = pagination.key === key ? pagination.count : BUILDINGS_PAGE_SIZE;
   const filtered = useMemo(
-    () => sortBuildings(filterBuildings(buildings, filter, query, locale), sort, locale),
-    [buildings, filter, query, sort, locale],
+    () => sortBuildings(filterBuildings(buildings, filter, query), sort),
+    [buildings, filter, query, sort],
   );
   const displayed = useMemo(() => filtered.slice(0, count), [filtered, count]);
 

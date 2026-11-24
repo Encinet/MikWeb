@@ -1,6 +1,10 @@
-import { getRecentBuildingUpdates } from '@/modules/building/lib/building-catalog';
-import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
-import { getBuildingCatalogSnapshot } from '@/modules/building/server/building-queries';
+import { getLocale } from 'next-intl/server';
+import { localizeBuilding, resolveBuildingCatalog } from '@/modules/building/model/building-api';
+import { readBuildingCatalog } from '@/modules/building/server/building-queries';
+import {
+  HOME_BUILDING_LIMIT,
+  toHomeBuildingPreview,
+} from '@/modules/home/model/home-building-preview';
 import {
   HomeBuildingUpdates,
   HomeBuildingUpdatesRecovery,
@@ -8,13 +12,15 @@ import {
 
 /** Only the two visible cards cross the server/client boundary. */
 export async function HomeBuildingUpdatesSection() {
-  const snapshot = await getBuildingCatalogSnapshot();
-  if (snapshot.error) {
-    return (
-      <BuildingsProvider initialSnapshot={snapshot}>
-        <HomeBuildingUpdatesRecovery />
-      </BuildingsProvider>
-    );
+  const [catalog, locale] = await Promise.all([
+    readBuildingCatalog({ limit: HOME_BUILDING_LIMIT }).catch(() => null),
+    getLocale(),
+  ]);
+  if (!catalog) {
+    return <HomeBuildingUpdatesRecovery key={locale} locale={locale} />;
   }
-  return <HomeBuildingUpdates buildings={getRecentBuildingUpdates(snapshot.buildings)} />;
+  const buildings = resolveBuildingCatalog(catalog).map((building) =>
+    toHomeBuildingPreview(localizeBuilding(building, locale)),
+  );
+  return <HomeBuildingUpdates buildings={buildings} />;
 }

@@ -2,9 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { NextIntlClientProvider } from 'next-intl';
 import { act } from 'react';
-import { getRecentBuildingUpdates, sortBuildings } from '@/modules/building/lib/building-catalog';
-import type { Building } from '@/modules/building/model/building-types';
-import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
+import type { LocalizedBuilding } from '@/modules/building/model/building-types';
+import { toHomeBuildingPreview } from '@/modules/home/model/home-building-preview';
 import {
   HomeBuildingUpdates,
   HomeBuildingUpdatesRecovery,
@@ -13,10 +12,10 @@ import { dataApiUrl } from '@/shared/api/data-api-url';
 import messages from '../../messages/en.json';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
-const building: Building = {
+const building: LocalizedBuilding = {
   id: 'a'.repeat(32),
-  name: { en: 'Latest build' },
-  description: {},
+  name: 'Latest build',
+  description: 'Description',
   coordinates: { world: 'world', x: 0, y: 0, z: 0 },
   builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
   buildType: 'original',
@@ -24,27 +23,18 @@ const building: Building = {
   buildDate: '2026-11-12',
 };
 
-test('recent cards match the archive for tied construction dates and small catalogs', () => {
-  for (const dates of [
-    [],
-    ['2025-01-01'],
-    ['2025-01-01', '2026-01-01'],
-    ['2025-01-01', '2026-01-01', '2025-12-31', '2026-01-01'],
-    ['2026-01-01', '2025-01-01', '2026-01-01', '2026-06-01'],
-  ]) {
-    const catalog = dates.map((buildDate, i) => ({ ...building, id: String(i), buildDate }));
-    assert.deepEqual(
-      getRecentBuildingUpdates(catalog),
-      sortBuildings(catalog, 'date-desc', 'en').slice(0, 2),
-    );
-    assert.deepEqual(
-      catalog.map(({ buildDate }) => buildDate),
-      dates,
-    );
-  }
+test('home previews include only fields rendered by the cards', () => {
+  const cover = `https://images.example/gallery/buildings/${building.id}/${'b'.repeat(64)}.webp`;
+  assert.deepEqual(toHomeBuildingPreview({ ...building, images: [cover] }), {
+    id: building.id,
+    name: 'Latest build',
+    images: [cover],
+    coordinates: building.coordinates,
+    builderNames: ['Builder'],
+  });
 });
 
-test('home building errors retry only the public catalog and successful snapshots need no fetch', async () => {
+test('home building errors retry only the two newest localized buildings and rendered previews need no fetch', async () => {
   const env = createBrowserEnvironment();
   // happy-dom has no layout engine; provide non-zero layout metrics for next/image.
   const imagePrototype = env.window.HTMLImageElement.prototype;
@@ -60,22 +50,18 @@ test('home building errors retry only the public catalog and successful snapshot
   const originalFetch = globalThis.fetch;
   const pending: ((response: Response) => void)[] = [];
   globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
-    assert.equal(String(input), dataApiUrl('/buildings'));
+    assert.equal(String(input), dataApiUrl('/buildings?locale=en&limit=2'));
     assert.equal(init?.cache, 'reload');
     return new Promise<Response>((resolve) => pending.push(resolve));
   }, originalFetch);
-  const render = (unavailable: boolean, buildings: Building[] = []) =>
+  const render = (unavailable: boolean, buildings: LocalizedBuilding[] = []) =>
     act(async () => {
       env.root.render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
           {unavailable ? (
-            <BuildingsProvider
-              initialSnapshot={{ buildings: [], error: 'unavailable', updatedAt: null }}
-            >
-              <HomeBuildingUpdatesRecovery />
-            </BuildingsProvider>
+            <HomeBuildingUpdatesRecovery locale="en" />
           ) : (
-            <HomeBuildingUpdates buildings={buildings} />
+            <HomeBuildingUpdates buildings={buildings.map(toHomeBuildingPreview)} />
           )}
         </NextIntlClientProvider>,
       );
@@ -101,10 +87,10 @@ test('home building errors retry only the public catalog and successful snapshot
         Response.json({
           imageBaseUrl: null,
           buildings: [
-            { ...building, id: 'c'.repeat(32), name: { en: 'Oldest' }, buildDate: '2025-01-01' },
             building,
-            { ...building, id: 'b'.repeat(32), name: { en: 'Second' }, buildDate: '2026-01-01' },
+            { ...building, id: 'b'.repeat(32), name: 'Second', buildDate: '2026-01-01' },
           ],
+          total: 3,
         }),
       ),
     );

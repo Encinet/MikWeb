@@ -15,30 +15,26 @@ export interface BuildingCoordinates {
   z: number;
 }
 
-export interface BuildingSource {
+export interface BuildingSource<Text = LocalizedText> {
   originalAuthor?: string;
   originalLink?: string;
-  notes?: LocalizedText;
+  notes?: Text;
 }
 
-export interface BuildingInput {
-  name: LocalizedText;
-  description: LocalizedText;
+export interface BuildingInput<Text = LocalizedText> {
+  name: Text;
+  description: Text;
   coordinates: BuildingCoordinates;
   builders: Builder[];
   buildType: BuildingType;
   images: string[];
   buildDate: string;
-  tags?: LocalizedText[];
-  source?: BuildingSource;
+  tags?: Text[];
+  source?: BuildingSource<Text>;
 }
 
-export interface Building extends BuildingInput {
+export interface Building<Text = LocalizedText> extends BuildingInput<Text> {
   readonly id: string;
 }
 
-export interface BuildingCatalogSnapshot {
-  buildings: Building[];
-  error: string | null;
-  updatedAt: number | null;
-}
+export type LocalizedBuilding = Building<string>;
