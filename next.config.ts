@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+
 import { SESSION_COOKIE_NAME } from './src/modules/auth/model/auth-cookies';
 import { CHAT_WEBSOCKET_URL, DATA_API_ORIGIN } from './src/shared/config/service-config';
 import { routing } from './src/shared/i18n/routing';
@@ -9,6 +10,11 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // Bun misses Turbopack's generated Sharp alias in the development server.
+  turbopack:
+    process.env.NODE_ENV === 'development' && process.versions.bun
+      ? { resolveAlias: { sharp: './src/shared/server/sharp-dev.ts' } }
+      : undefined,
   async rewrites() {
     // Filesystem routes run first. Send remaining non-locale paths through the unlocalized
     // root's global 404 instead of treating missing resource names as locale parameters.
