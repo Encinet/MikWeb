@@ -14,7 +14,6 @@ import { attr, renderXamlFragment, xaml } from './xaml-builder';
 
 const MAX_PCL2_PLAYERS = 12;
 const MAX_PCL2_ANNOUNCEMENTS = 5;
-const MAX_PCL2_BUILDINGS = 6;
 const MAX_BUILDING_IMAGES = 3;
 
 type HomepageTranslator = ReturnType<typeof createTranslator<Messages['pcl2']['homepage']>>;
@@ -295,10 +294,9 @@ function buildBanCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
 }
 
 function buildBuildingCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlNode {
-  if (!data.buildings || data.buildings.length === 0)
+  if (!data.buildings?.length || data.buildingCount === null)
     return card(t('buildings.title'), [textBlock(t('buildings.empty'))]);
-  const visible = data.buildings.slice(0, MAX_PCL2_BUILDINGS);
-  const innerCards = visible.map((building) => {
+  const innerCards = data.buildings.map((building) => {
     const name = getLocalizedText(building.name, data.locale) || '?';
     const description = getLocalizedText(building.description, data.locale);
     const builders = sortBuildersByWeight(building.builders)
@@ -348,7 +346,7 @@ function buildBuildingCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlN
     [
       attr('CanSwap', true),
       attr('Margin', '0,0,0,15'),
-      attr('Title', `${t('buildings.title')} (${data.buildings.length})`),
+      attr('Title', `${t('buildings.title')} (${data.buildingCount})`),
     ],
     [stackPanel([attr('Margin', '25,40,23,15')], innerCards)],
   );

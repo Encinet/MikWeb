@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { buildPcl2HomepageXml } from '@/modules/pcl2/lib/pcl2-homepage-xml';
 import { formatPcl2Time } from '@/modules/pcl2/lib/pcl2-time-zone';
 import en from '../../messages/en.json';
 import zh from '../../messages/zh-CN.json';
@@ -17,13 +18,26 @@ test('overlapping launcher requests share public reads but use their own origin,
   const originalFetch = globalThis.fetch;
   const gate = Promise.withResolvers<void>();
   const paths: string[] = [];
+  const buildings = Array.from({ length: 6 }, (_, index) => ({
+    id: (index + 1).toString().repeat(32),
+    name: { 'zh-CN': '建筑', en: 'Building' },
+    description: { 'zh-CN': '描述', en: 'Description' },
+    coordinates: { world: 'world', x: 0, y: 64, z: 0 },
+    builders: [{ name: 'Player', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
+    buildType: 'original',
+    images: [],
+    buildDate: '2026-11-24',
+  }));
   let online = 1;
   globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
-    const path = new URL(String(input)).pathname;
+    const url = new URL(String(input));
+    const path = url.pathname + url.search;
     paths.push(path);
     await gate.promise;
     if (path === '/api/players') return Response.json({ online, players: [] });
-    if (path === '/api/buildings') return Response.json({ imageBaseUrl: null, buildings: [] });
+    if (path === '/api/buildings?limit=6') {
+      return Response.json({ imageBaseUrl: null, buildings, total: 20 });
+    }
     return Response.json([]);
   }, originalFetch);
   const english = new Request('https://one.example/en/pcl2/version?timezone=UTC');
@@ -36,7 +50,7 @@ test('overlapping launcher requests share public reads but use their own origin,
     assert.deepEqual(paths.sort(), [
       '/api/announcements',
       '/api/bans',
-      '/api/buildings',
+      '/api/buildings?limit=6',
       '/api/players',
     ]);
     assert.equal(one.messages, en.pcl2.homepage);
@@ -47,8 +61,10 @@ test('overlapping launcher requests share public reads but use their own origin,
     assert.equal(two.timeZone, 'Asia/Singapore');
     assert.equal(one.onlinePlayers.online, 1);
     assert.equal(two.onlinePlayers.online, 1);
-    assert.equal(one.buildingCount, 0);
-    assert.equal(two.buildingCount, 0);
+    assert.equal(one.buildingCount, 20);
+    assert.equal(two.buildingCount, 20);
+    assert.equal(one.buildings?.length, 6);
+    assert.ok(buildPcl2HomepageXml(one, 'Map').includes('Title="Buildings (20)"'));
     online = 2;
     const next = await loadPcl2HomepageData(english, 'en');
     assert.equal(paths.length, 8);

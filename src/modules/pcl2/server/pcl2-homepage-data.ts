@@ -4,6 +4,7 @@ import { isAnnouncementItemArray } from '@/modules/announcement/model/announceme
 import type { BanItem } from '@/modules/ban/model/ban-types';
 import { isBanItemArray } from '@/modules/ban/model/ban-validation';
 import {
+  type BuildingCatalogResponse,
   isBuildingCatalogResponse,
   resolveBuildingCatalog,
 } from '@/modules/building/model/building-api';
@@ -27,6 +28,7 @@ interface Pcl2HomepageApiData {
   onlinePlayers: PlayerStatus;
 }
 
+const MAX_PCL2_BUILDINGS = 6;
 const FALLBACK_ONLINE_PLAYERS: PlayerStatus = {
   online: -1,
   players: [],
@@ -60,18 +62,32 @@ async function loadJson<TData>(
   return null;
 }
 
+function isPcl2BuildingCatalog(value: unknown): value is BuildingCatalogResponse & { total: number } {
+  return (
+    isBuildingCatalogResponse(value) &&
+    'total' in value &&
+    typeof value.total === 'number' &&
+    Number.isSafeInteger(value.total) &&
+    value.buildings.length === Math.min(value.total, MAX_PCL2_BUILDINGS)
+  );
+}
+
 async function loadPcl2HomepageApiData(): Promise<Pcl2HomepageApiData> {
   const [onlinePlayers, announcements, catalog, bans] = await Promise.all([
     loadJson('/players', isPlayerStatusResponse, 'Failed to load online players'),
     loadJson('/announcements', isAnnouncementItemArray, 'Failed to load announcements'),
-    loadJson('/buildings', isBuildingCatalogResponse, 'Failed to load buildings'),
+    loadJson(
+      `/buildings?limit=${MAX_PCL2_BUILDINGS}`,
+      isPcl2BuildingCatalog,
+      'Failed to load buildings',
+    ),
     loadJson('/bans', isBanItemArray, 'Failed to load bans'),
   ]);
 
   return {
     announcements: announcements ?? [],
     bans,
-    buildingCount: catalog?.buildings.length ?? null,
+    buildingCount: catalog?.total ?? null,
     buildings: catalog ? resolveBuildingCatalog(catalog) : null,
     onlinePlayers: onlinePlayers ? toPlayerStatus(onlinePlayers) : FALLBACK_ONLINE_PLAYERS,
   };
