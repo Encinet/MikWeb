@@ -22,7 +22,9 @@ test('overlapping launcher requests share public reads but use their own origin,
     const path = new URL(String(input)).pathname;
     paths.push(path);
     await gate.promise;
-    return Response.json(path === '/api/players' ? { online, players: [] } : []);
+    if (path === '/api/players') return Response.json({ online, players: [] });
+    if (path === '/api/buildings') return Response.json({ imageBaseUrl: null, buildings: [] });
+    return Response.json([]);
   }, originalFetch);
   const english = new Request('https://one.example/en/pcl2/version?timezone=UTC');
   const chinese = new Request('https://two.example/zh-CN/pcl2/source?timezone=Asia%2FSingapore');
@@ -45,6 +47,8 @@ test('overlapping launcher requests share public reads but use their own origin,
     assert.equal(two.timeZone, 'Asia/Singapore');
     assert.equal(one.onlinePlayers.online, 1);
     assert.equal(two.onlinePlayers.online, 1);
+    assert.equal(one.buildingCount, 0);
+    assert.equal(two.buildingCount, 0);
     online = 2;
     const next = await loadPcl2HomepageData(english, 'en');
     assert.equal(paths.length, 8);

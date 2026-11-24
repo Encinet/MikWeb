@@ -81,7 +81,3 @@ export function isBuilding(value: unknown): value is Building {
 export function isBuildingId(value: unknown): value is string {
   return typeof value === 'string' && BUILDING_ID_PATTERN.test(value);
 }
-
-export function isBuildingArray(value: unknown): value is Building[] {
-  return Array.isArray(value) && value.every(isBuilding);
-}

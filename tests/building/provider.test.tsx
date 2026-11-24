@@ -13,10 +13,23 @@ function Consumer({ onState }: { onState: (state: ReturnType<typeof useBuildings
   return null;
 }
 
+const emptyCatalog = { imageBaseUrl: null, buildings: [] };
+
 test('the archive loads shared catalog JSON on entry and reuses a successful direct retry', async () => {
   const env = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
   const requests: string[] = [];
+  const imageBaseUrl = 'https://images.example/gallery';
+  const building = {
+    id: 'a'.repeat(32),
+    name: { en: 'Building' },
+    description: { en: 'Description' },
+    coordinates: { world: 'world', x: 0, y: 64, z: 0 },
+    builders: [],
+    buildType: 'original',
+    images: [`${'b'.repeat(64)}.webp`, `${'c'.repeat(64)}.webp`],
+    buildDate: '2026-11-10',
+  };
   let latest: ReturnType<typeof useBuildings> | undefined;
   const current = () => {
     assert.ok(latest);
@@ -37,7 +50,9 @@ test('the archive loads shared catalog JSON on entry and reuses a successful dir
   clearFetchValidatedJsonBrowserCache();
   globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
     requests.push(String(input));
-    return Response.json([], { status: requests.length === 1 ? 503 : 200 });
+    return requests.length === 1
+      ? Response.json({}, { status: 503 })
+      : Response.json({ imageBaseUrl, buildings: [building] });
   }, previousFetch);
   try {
     await mount();
@@ -47,9 +62,14 @@ test('the archive loads shared catalog JSON on entry and reuses a successful dir
     await act(async () => current().fetchBuildings({ force: true }));
     assert.deepEqual(requests, ['/api/buildings', dataApiUrl('/buildings')]);
     assert.equal(current().error, null);
+    const expectedImages = building.images.map(
+      (filename) => `${imageBaseUrl}/buildings/${building.id}/${filename}`,
+    );
+    assert.deepEqual(current().buildings[0].images, expectedImages);
     await act(async () => env.root.render(null));
     await mount();
     assert.equal(requests.length, 2);
+    assert.deepEqual(current().buildings[0].images, expectedImages);
     assert.notEqual(current().lastUpdatedAt, null);
   } finally {
     await env.close();
@@ -105,7 +125,7 @@ test('leaving during a refresh clears its loading state and permits a new refres
     });
     assert.equal(requests.length, 2, 'the old promise must not block another refresh');
     await act(async () => {
-      requests[1](Response.json([]));
+      requests[1](Response.json(emptyCatalog));
       await second;
     });
     assert.equal(current().isLoading, false);
@@ -155,7 +175,7 @@ test('server-seeded catalogs need no browser request, and newer refreshes win ov
     });
     assert.equal(requests.length, 2);
     await act(async () => {
-      requests[1](Response.json([]));
+      requests[1](Response.json(emptyCatalog));
       await second;
     });
     assert.equal(current().error, null);

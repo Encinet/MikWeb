@@ -10,18 +10,32 @@ const { mock } = (await import(bunTestModule)) as {
 mock.module('server-only', () => ({}));
 mock.module('next/cache', () => ({ cacheLife: () => undefined }));
 const { GET } = await import('@/app/api/buildings/route');
+const { getBuilding } = await import('@/modules/building/server/building-queries');
+
+const imageBaseUrl = 'https://images.example/gallery';
+const building = {
+  id: 'a'.repeat(32),
+  name: { en: 'Building' },
+  description: { en: 'Description' },
+  coordinates: { world: 'world', x: 0, y: 64, z: 0 },
+  builders: [],
+  buildType: 'original',
+  images: [`${'b'.repeat(64)}.webp`],
+  buildDate: '2026-11-01',
+};
 
 test('only a valid catalog is cacheable and only an initial build failure redirects', async () => {
   const previousFetch = globalThis.fetch;
   const previousPhase = process.env.NEXT_PHASE;
-  let payload: unknown = [];
+  const catalog = { imageBaseUrl, buildings: [building] };
+  let payload: unknown = catalog;
   globalThis.fetch = Object.assign(async () => Response.json(payload), previousFetch);
   try {
     delete process.env.NEXT_PHASE;
-    const empty = await GET();
-    assert.equal(empty.status, 200);
-    assert.deepEqual(await empty.json(), []);
-    assert.match(empty.headers.get('cache-control') ?? '', /\bmax-age=[1-9]/);
+    const response = await GET();
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), catalog);
+    assert.match(response.headers.get('cache-control') ?? '', /\bmax-age=[1-9]/);
 
     payload = { error: 'unavailable' };
     await assert.rejects(GET(), /Invalid building catalog/);
@@ -35,5 +49,21 @@ test('only a valid catalog is cacheable and only an initial build failure redire
     globalThis.fetch = previousFetch;
     if (previousPhase === undefined) delete process.env.NEXT_PHASE;
     else process.env.NEXT_PHASE = previousPhase;
+  }
+});
+
+test('building detail resolves image URLs from its single response', async () => {
+  const previousFetch = globalThis.fetch;
+  const requests: string[] = [];
+  globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
+    requests.push(String(input));
+    return Response.json({ imageBaseUrl, building });
+  }, previousFetch);
+  try {
+    const detail = await getBuilding(building.id);
+    assert.deepEqual(detail.images, [`${imageBaseUrl}/buildings/${building.id}/${building.images[0]}`]);
+    assert.deepEqual(requests, [dataApiUrl(`/buildings/${building.id}`)]);
+  } finally {
+    globalThis.fetch = previousFetch;
   }
 });

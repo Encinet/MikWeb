@@ -3,7 +3,10 @@
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BUILDING_CATALOG_PATH } from '@/modules/building/lib/building-links';
-import { isBuildingArray } from '@/modules/building/model/building-validation';
+import {
+  isBuildingCatalogResponse,
+  resolveBuildingCatalog,
+} from '@/modules/building/model/building-api';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import type { BuildingCatalogSnapshot } from './building-types';
@@ -65,7 +68,7 @@ export function BuildingsProvider({
       const request = (async () => {
         const result = await fetchValidatedJson({
           url: force ? PUBLIC_CATALOG_URL : BUILDING_CATALOG_PATH,
-          validate: isBuildingArray,
+          validate: isBuildingCatalogResponse,
           timeoutMs: 15_000,
           cache: force ? 'reload' : 'default',
           browserCache: { key: PUBLIC_CATALOG_URL, force, ttlMs: BUILDINGS_CACHE_TTL_MS },
@@ -74,7 +77,7 @@ export function BuildingsProvider({
         if (generation.current !== requestGeneration) return;
         setSnapshot((previous) =>
           result.status === 'success'
-            ? { buildings: result.data, error: null, updatedAt: Date.now() }
+            ? { buildings: resolveBuildingCatalog(result.data), error: null, updatedAt: Date.now() }
             : { ...previous, error: result.error },
         );
         setIsLoading(false);

@@ -1,10 +1,11 @@
 import { PHASE_PRODUCTION_BUILD } from 'next/constants';
-import { getBuildingCatalog } from '@/modules/building/server/building-queries';
+import { readBuildingCatalog } from '@/modules/building/server/building-queries';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 
 export async function GET() {
   try {
-    return Response.json(await getBuildingCatalog(), {
+    const { catalog } = await readBuildingCatalog();
+    return Response.json(catalog, {
       headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, must-revalidate' },
     });
   } catch (error) {

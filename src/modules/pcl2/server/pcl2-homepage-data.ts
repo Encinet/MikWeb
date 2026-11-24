@@ -3,8 +3,11 @@ import type { AnnouncementItem } from '@/modules/announcement/model/announcement
 import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-validation';
 import type { BanItem } from '@/modules/ban/model/ban-types';
 import { isBanItemArray } from '@/modules/ban/model/ban-validation';
+import {
+  isBuildingCatalogResponse,
+  resolveBuildingCatalog,
+} from '@/modules/building/model/building-api';
 import type { Building } from '@/modules/building/model/building-types';
-import { isBuildingArray } from '@/modules/building/model/building-validation';
 import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
 import { getPcl2TimeZoneFromUrl } from '@/modules/pcl2/lib/pcl2-time-zone';
 import type { Pcl2HomepageData } from '@/modules/pcl2/model/pcl2-homepage';
@@ -58,18 +61,18 @@ async function loadJson<TData>(
 }
 
 async function loadPcl2HomepageApiData(): Promise<Pcl2HomepageApiData> {
-  const [onlinePlayers, announcements, buildings, bans] = await Promise.all([
+  const [onlinePlayers, announcements, catalog, bans] = await Promise.all([
     loadJson('/players', isPlayerStatusResponse, 'Failed to load online players'),
     loadJson('/announcements', isAnnouncementItemArray, 'Failed to load announcements'),
-    loadJson('/buildings', isBuildingArray, 'Failed to load buildings'),
+    loadJson('/buildings', isBuildingCatalogResponse, 'Failed to load buildings'),
     loadJson('/bans', isBanItemArray, 'Failed to load bans'),
   ]);
 
   return {
     announcements: announcements ?? [],
     bans,
-    buildingCount: buildings?.length ?? null,
-    buildings,
+    buildingCount: catalog?.buildings.length ?? null,
+    buildings: catalog ? resolveBuildingCatalog(catalog) : null,
     onlinePlayers: onlinePlayers ? toPlayerStatus(onlinePlayers) : FALLBACK_ONLINE_PLAYERS,
   };
 }

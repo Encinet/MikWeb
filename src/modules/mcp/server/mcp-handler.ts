@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { isAnnouncementItemArray } from '@/modules/announcement/model/announcement-validation';
 import { isBanItemArray } from '@/modules/ban/model/ban-validation';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
-import { isBuildingArray } from '@/modules/building/model/building-validation';
+import { isBuildingCatalogResponse } from '@/modules/building/model/building-api';
 import { isPlayerStatusResponse } from '@/modules/player/lib/player-status-api';
 import { WIKI_LOCALES } from '@/modules/wiki/lib/wiki-grouping';
 import { normalizeWikiSearchPhrases, rankWikiBlocks } from '@/modules/wiki/lib/wiki-search';
@@ -113,7 +113,10 @@ const sdkHandler = createMcpHandler(
         }),
       },
       async ({ locale }) => {
-        const data = await fetchDataServiceJson(dataApiUrl('/buildings'), isBuildingArray);
+        const { buildings: data } = await fetchDataServiceJson(
+          dataApiUrl('/buildings'),
+          isBuildingCatalogResponse,
+        );
 
         if (data.length === 0) {
           return {

@@ -98,11 +98,14 @@ test('home building errors retry only the public catalog and successful snapshot
     await act(async () => retry.click());
     await act(async () =>
       pending[1](
-        Response.json([
-          { ...building, id: 'c'.repeat(32), name: { en: 'Oldest' }, buildDate: '2025-01-01' },
-          building,
-          { ...building, id: 'b'.repeat(32), name: { en: 'Second' }, buildDate: '2026-01-01' },
-        ]),
+        Response.json({
+          imageBaseUrl: null,
+          buildings: [
+            { ...building, id: 'c'.repeat(32), name: { en: 'Oldest' }, buildDate: '2025-01-01' },
+            building,
+            { ...building, id: 'b'.repeat(32), name: { en: 'Second' }, buildDate: '2026-01-01' },
+          ],
+        }),
       ),
     );
     assert.equal(env.container.querySelector('.home-building-retry'), null);

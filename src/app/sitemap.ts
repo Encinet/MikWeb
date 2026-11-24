@@ -4,7 +4,7 @@ import { PHASE_PRODUCTION_BUILD } from 'next/constants';
 
 import { getBuildingUrl } from '@/modules/building/lib/building-links';
 import type { Building } from '@/modules/building/model/building-types';
-import { getBuildingCatalog } from '@/modules/building/server/building-queries';
+import { readBuildingCatalog } from '@/modules/building/server/building-queries';
 import { SITE_URL } from '@/shared/config/site-config';
 import { routing } from '@/shared/i18n/routing';
 import { SITEMAP_PATHS } from '@/site/seo/site-pages';
@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
   let buildings: Building[];
   try {
-    buildings = await getBuildingCatalog(REVALIDATE_SECONDS);
+    buildings = (await readBuildingCatalog(REVALIDATE_SECONDS)).catalog.buildings;
   } catch (error) {
     // At runtime, let ISR retain the complete sitemap instead of caching a partial replacement.
     if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD) throw error;
