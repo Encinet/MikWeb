@@ -14,7 +14,7 @@
   grid-template-columns: 1.3fr 1fr 1fr;
   gap: clamp(1.5rem, 4vw, 3rem);
   font-size: 0.8rem;
-  color: var(--theme-text-muted);
+  color: var(--theme-text-muted-strong);
 }
 
 .site-footer__col {
@@ -34,15 +34,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  color: var(--theme-text-muted);
   font-weight: 700;
   font-size: 1rem;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.site-footer__brand:hover {
-  color: var(--theme-text-heading);
 }
 
 .site-footer__logo {
@@ -52,7 +45,7 @@
   transition: opacity 0.2s ease;
 }
 
-[data-theme="light"] .site-footer__logo {
+[data-theme='light'] .site-footer__logo {
   box-shadow: 0 2px 8px var(--theme-shadow-glass);
 }
 
@@ -62,13 +55,11 @@
 
 .site-footer__desc {
   max-width: 22rem;
-  color: var(--theme-text-muted);
   line-height: 1.65;
   font-size: 0.8rem;
 }
 
 .site-footer__copyright {
-  color: var(--theme-text-dim);
   font-size: 0.75rem;
 }
 
@@ -79,16 +70,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-}
-
-.site-footer__links a {
-  color: var(--theme-text-muted);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.site-footer__links a:hover {
-  color: var(--theme-text-heading);
 }
 
 .site-footer__gh-link,
@@ -110,30 +91,24 @@
 
 .site-footer__legal {
   margin-top: 0.35rem;
-  color: var(--theme-text-dim);
   font-size: 0.7rem;
   line-height: 1.55;
   max-width: 22rem;
 }
 
-.site-footer__legal a {
-  color: var(--theme-text-dim);
-  text-decoration: underline;
-}
-
-.site-footer__legal a:hover {
-  color: var(--theme-text-muted);
-}
-
 .site-footer a {
+  color: inherit;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
-[data-theme="light"] .site-footer__copyright,
-[data-theme="light"] .site-footer__legal,
-[data-theme="light"] .site-footer__legal a {
-  color: var(--theme-text-muted);
+.site-footer a:is(:hover, :focus-visible) {
+  color: var(--theme-text-heading);
+}
+
+.site-footer :is(.site-footer__copyright, .site-footer__legal) a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 @media (max-width: 768px) {

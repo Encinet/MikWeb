@@ -1,4 +1,7 @@
 .page {
+  --error-accent: #a7d79d;
+  --error-accent-hover: #b7e5ae;
+  --error-on-accent: #172b36;
   box-sizing: border-box;
   display: grid;
   flex: 1;
@@ -23,7 +26,7 @@
   height: 3rem;
   border: 1px solid currentColor;
   border-radius: 50%;
-  color: var(--theme-accent-strong, #a7d79d);
+  color: var(--theme-accent-strong, var(--error-accent));
   font-size: 1.5rem;
 }
 .card h1 {
@@ -55,25 +58,30 @@
   cursor: pointer;
 }
 .actions button {
-  background: var(--theme-accent-strong, #a7d79d);
+  background: var(--theme-accent, var(--error-accent));
   border-color: transparent;
-  color: var(--theme-neutral-ink, #172b36);
+  color: var(--theme-on-accent, var(--error-on-accent));
+}
+.actions button:hover:not(:disabled) {
+  background: var(--theme-accent-hover, var(--error-accent-hover));
 }
 .actions a {
   background: transparent;
   color: inherit;
 }
 .actions :focus-visible {
-  outline: 2px solid currentColor;
+  outline: 2px solid var(--theme-accent-strong, var(--error-accent));
   outline-offset: 4px;
 }
 .actions button:disabled {
-  opacity: 0.65;
   cursor: wait;
 }
 
 @media (prefers-color-scheme: light) {
   .page {
+    --error-accent: #2e6b35;
+    --error-accent-hover: #26592c;
+    --error-on-accent: #ffffff;
     background: var(--theme-bg-base, #f3f6f1);
     color: var(--theme-text-heading, #172b36);
   }

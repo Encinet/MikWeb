@@ -41,11 +41,6 @@ body:has(.map-page),
     background 0.2s ease;
 }
 
-.map-page__external-link:hover {
-  border-color: color-mix(in srgb, var(--theme-accent) 32%, transparent);
-  background: color-mix(in srgb, var(--theme-accent) 10%, transparent);
-}
-
 .map-page__frame-shell {
   position: relative;
   height: 100%;
@@ -72,7 +67,7 @@ body:has(.map-page),
   box-shadow: 0 10px 28px var(--theme-shadow-glass);
 }
 
-[data-theme="light"] .map-page__external-link:hover {
+.map-page__external-link:hover {
   border-color: color-mix(in srgb, var(--theme-accent-strong) 32%, transparent);
-  background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+  background: color-mix(in srgb, var(--theme-accent) 12%, var(--theme-surface-modal));
 }

@@ -127,8 +127,6 @@
 
 .art-guide-address__copy,
 .mcp-config-code__copy {
-  --copy-success-color: #b5d3a3;
-  --copy-error-color: #e9b8b2;
   flex: 0 0 auto;
   border-color: var(--art-guide-control-border);
   background: var(--art-guide-accent-bg);
