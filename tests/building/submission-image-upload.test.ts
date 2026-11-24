@@ -8,17 +8,19 @@ const bunTestModule: string = 'bun:test';
 const { mock, spyOn } = await import(bunTestModule);
 mock.module('server-only', () => ({}));
 let signedHash: string | undefined;
+let completion: unknown;
+const expiresAt = Date.now() + 60_000;
 mock.module('@/modules/auth/server/auth-bff', () => ({
   callImageUploadService: (_: Request, action: string, payload: Record<string, unknown>) => {
     if (action === 'reserve') return Response.json({ uploadId: 'draft' });
     if (action === 'prepare') {
       signedHash = String(payload.hash);
       return Response.json({
-        url: 'image.webp',
         put: { url: 'https://storage.test', headers: {} },
       });
     }
-    return Response.json(payload.image);
+    completion = payload;
+    return Response.json({ filename: `${signedHash}.webp`, expiresAt });
   },
 }));
 const { POST } = await import('@/app/api/account/images/upload/route');
@@ -74,13 +76,8 @@ test('validated still WebP pixels survive upload unchanged and metadata is strip
         [960, 540, undefined],
       );
       assert.equal(signedHash, createHash('sha256').update(stored).digest('hex'));
-      assert.deepEqual(await response.json(), {
-        url: 'image.webp',
-        width: 960,
-        height: 540,
-        size: stored.length,
-        mime: 'image/webp',
-      });
+      assert.deepEqual(await response.json(), { filename: `${signedHash}.webp`, expiresAt });
+      assert.deepEqual(completion, { uploadId: 'draft', size: stored.length });
     }
     const pixelReads = spyOn(sharp.prototype, 'raw');
     assert.equal((await upload(opaque)).status, 200);

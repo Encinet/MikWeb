@@ -25,7 +25,7 @@ test('the archive loads shared catalog JSON on entry and reuses a successful dir
     name: { en: 'Building' },
     description: { en: 'Description' },
     coordinates: { world: 'world', x: 0, y: 64, z: 0 },
-    builders: [],
+    builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
     buildType: 'original',
     images: [`${'b'.repeat(64)}.webp`, `${'c'.repeat(64)}.webp`],
     buildDate: '2026-11-10',
@@ -70,7 +70,6 @@ test('the archive loads shared catalog JSON on entry and reuses a successful dir
     await mount();
     assert.equal(requests.length, 2);
     assert.deepEqual(current().buildings[0].images, expectedImages);
-    assert.notEqual(current().lastUpdatedAt, null);
   } finally {
     await env.close();
     globalThis.fetch = previousFetch;
@@ -130,7 +129,8 @@ test('leaving during a refresh clears its loading state and permits a new refres
     });
     assert.equal(current().isLoading, false);
     assert.equal(current().error, null);
-    assert.notEqual(current().lastUpdatedAt, null);
+    await act(async () => current().fetchBuildings());
+    assert.equal(requests.length, 2);
   } finally {
     globalThis.fetch = previousFetch;
     clearFetchValidatedJsonBrowserCache();
@@ -164,7 +164,6 @@ test('server-seeded catalogs need no browser request, and newer refreshes win ov
     );
     await act(async () => current().fetchBuildings());
     assert.equal(requests.length, 0);
-    assert.equal(current().lastUpdatedAt !== null, true);
     let first: Promise<void> | undefined;
     let second: Promise<void> | undefined;
     await act(async () => {
@@ -233,7 +232,7 @@ test('a fresh server snapshot replaces mounted data and invalidates an older bro
           name: { en: 'New building' },
           description: { en: 'Refreshed from the server' },
           coordinates: { world: 'world', x: 0, y: 64, z: 0 },
-          builders: [],
+          builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
           buildType: 'original',
           images: [],
           buildDate: '2026-11-10',
@@ -244,7 +243,6 @@ test('a fresh server snapshot replaces mounted data and invalidates an older bro
     };
     await render(refreshed);
     assert.deepEqual(current().buildings, refreshed.buildings);
-    assert.equal(current().lastUpdatedAt, refreshed.updatedAt);
     assert.equal(current().isLoading, false);
     await act(async () => {
       assert.ok(resolveRequest);
@@ -254,18 +252,18 @@ test('a fresh server snapshot replaces mounted data and invalidates an older bro
     assert.equal(current().error, null, 'a superseded request cannot overwrite server data');
     assert.deepEqual(current().buildings, refreshed.buildings);
     await render({ ...initial });
-    assert.equal(
-      current().lastUpdatedAt,
-      refreshed.updatedAt,
-      'older server payloads cannot roll data back',
+    assert.deepEqual(
+      current().buildings,
+      refreshed.buildings,
+      'older server snapshots cannot roll data back',
     );
     await render({ buildings: [], error: 'unavailable', updatedAt: null });
-    assert.equal(
-      current().lastUpdatedAt,
-      refreshed.updatedAt,
+    assert.equal(current().error, null);
+    assert.deepEqual(
+      current().buildings,
+      refreshed.buildings,
       'a failed server refresh keeps usable data',
     );
-    assert.deepEqual(current().buildings, refreshed.buildings);
   } finally {
     globalThis.fetch = previousFetch;
     clearFetchValidatedJsonBrowserCache();

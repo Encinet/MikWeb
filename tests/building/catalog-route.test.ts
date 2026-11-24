@@ -18,7 +18,7 @@ const building = {
   name: { en: 'Building' },
   description: { en: 'Description' },
   coordinates: { world: 'world', x: 0, y: 64, z: 0 },
-  builders: [],
+  builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
   buildType: 'original',
   images: [`${'b'.repeat(64)}.webp`],
   buildDate: '2026-11-01',

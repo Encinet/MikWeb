@@ -9,7 +9,7 @@ import {
   createBuildingSubmissionImageDrafts,
   uploadBuildingSubmissionImageDrafts,
 } from '@/modules/building-submission/lib/building-submission-images';
-import type { BuildingSubmission } from '@/modules/building-submission/model/building-submission-types';
+import type { BuildingSubmissionSummary } from '@/modules/building-submission/model/building-submission-types';
 import { useBuildingSubmissionForm } from '@/modules/building-submission/model/use-building-submission-form';
 import { clearFetchValidatedJsonBrowserCache } from '@/shared/api/fetch-validated-json';
 import messages from '../../messages/en.json';
@@ -19,10 +19,9 @@ const account: AuthAccount = {
   playerUuid: '00000000-0000-4000-8000-000000000001',
   currentName: 'Builder',
   role: 'member',
-  updatedAt: '2026-11-10',
   passkeyCount: 0,
 };
-test('reselecting identical bytes reuses the prepared file and only its own draft receipt', async () => {
+test('reselecting identical bytes reuses the prepared file and uploads within its own draft', async () => {
   const prefix = new Uint8Array(256 * 1024);
   const prepared = ['a', 'b'].map((suffix) => ({
     id: suffix,
@@ -44,13 +43,7 @@ test('reselecting identical bytes reuses the prepared file and only its own draf
   globalThis.fetch = (async () => {
     requests++;
     return Response.json({
-      image: {
-        url: `https://example.test/${requests}.webp`,
-        width: 960,
-        height: 540,
-        size: 1,
-        mime: 'image/webp',
-      },
+      filename: `${requests.toString(16).padStart(64, '0')}.webp`,
       expiresAt: Date.now() + 60_000,
     });
   }) as typeof fetch;
@@ -62,7 +55,7 @@ test('reselecting identical bytes reuses the prepared file and only its own draf
       account,
       'first',
     );
-    assert.equal(first.url, second.url);
+    assert.equal(first, second);
     assert.equal(requests, 1);
     await uploadBuildingSubmissionImageDrafts([draft], account, 'new-draft');
     await uploadBuildingSubmissionImageDrafts(
@@ -76,24 +69,10 @@ test('reselecting identical bytes reuses the prepared file and only its own draf
     globalThis.fetch = previousFetch;
   }
 });
-const submission: BuildingSubmission = {
+const submission: BuildingSubmissionSummary = {
   id: 'a'.repeat(32),
   status: 'pending',
-  submitterUuid: account.playerUuid,
-  submitterName: account.currentName,
-  submitterRole: account.role,
-  payload: {
-    name: { en: 'Building' },
-    description: { en: 'Description' },
-    coordinates: { world: 'world', x: 0, y: 64, z: 0 },
-    builders: [],
-    buildType: 'original',
-    images: [],
-    buildDate: '2026-11-10',
-  },
-  images: [],
-  createdAt: '2026-11-10',
-  updatedAt: '2026-11-10',
+  name: { en: 'Building' },
 };
 function Consumer({
   onState,
@@ -134,7 +113,7 @@ for (const role of ['member', 'moderator', 'custodian'] as const) {
   test(`${role} submission only allows staff to remove themselves`, async () => {
     const environment = createBrowserEnvironment();
     const previousFetch = globalThis.fetch;
-    globalThis.fetch = (async () => Response.json({ submissions: [] })) as typeof fetch;
+    globalThis.fetch = (async () => Response.json({ playerUuid: account.playerUuid, submissions: [] })) as typeof fetch;
     const currentAccount = { ...account, role };
     let state: ReturnType<typeof useBuildingSubmissionForm> | undefined;
     const current = () => {
@@ -192,12 +171,12 @@ test('submission history keeps the newest refresh when older same-account reques
       refresh = current().loadSubmissions({ force: true });
     });
     await act(async () => {
-      requests[1](Response.json({ submissions: [submission] }));
+      requests[1](Response.json({ playerUuid: account.playerUuid, submissions: [submission] }));
       await refresh;
     });
     assert.equal(current().submissions.length, 1);
     await act(async () => {
-      requests[0](Response.json({ submissions: [] }));
+      requests[0](Response.json({ playerUuid: account.playerUuid, submissions: [] }));
     });
     assert.equal(
       current().submissions.length,
@@ -235,7 +214,7 @@ test('reset during image preparation cancels the old batch and preserves the nex
       return decode.promise;
     },
   });
-  globalThis.fetch = (async () => Response.json({ submissions: [] })) as typeof fetch;
+  globalThis.fetch = (async () => Response.json({ playerUuid: account.playerUuid, submissions: [] })) as typeof fetch;
   let state!: ReturnType<typeof useBuildingSubmissionForm>;
   try {
     await renderForm(environment, account, (value) => (state = value));

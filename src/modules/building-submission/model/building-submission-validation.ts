@@ -1,40 +1,30 @@
-import { isBuildingId, isBuildingInput } from '@/modules/building/model/building-validation';
+import { isBuildingId } from '@/modules/building/model/building-validation';
 import type {
-  BuildingSubmission,
   BuildingSubmissionCreateResponse,
-  BuildingSubmissionImage,
   BuildingSubmissionListResponse,
+  BuildingSubmissionSummary,
 } from '@/modules/building-submission/model/building-submission-types';
+import { isLocalizedText } from '@/shared/i18n/localized-text';
 import { isRecord } from '@/shared/lib/is-record';
 
-export function isBuildingSubmissionImage(value: unknown): value is BuildingSubmissionImage {
-  return (
-    isRecord(value) &&
-    typeof value.url === 'string' &&
-    typeof value.width === 'number' &&
-    typeof value.height === 'number' &&
-    typeof value.size === 'number' &&
-    value.mime === 'image/webp'
-  );
-}
+const SUBMISSION_FIELDS = new Set<string>([
+  'id',
+  'name',
+  'status',
+  'reviewNote',
+  'expiresAt',
+] satisfies (keyof BuildingSubmissionSummary)[]);
 
-export function isBuildingSubmission(value: unknown): value is BuildingSubmission {
+function isBuildingSubmissionSummary(value: unknown): value is BuildingSubmissionSummary {
   return (
     isRecord(value) &&
     isBuildingId(value.id) &&
+    Object.keys(value).every((field) => SUBMISSION_FIELDS.has(field)) &&
+    isLocalizedText(value.name) &&
     (value.status === 'pending' || value.status === 'approved' || value.status === 'rejected') &&
-    typeof value.submitterUuid === 'string' &&
-    typeof value.submitterName === 'string' &&
-    typeof value.submitterRole === 'string' &&
-    isBuildingInput(value.payload) &&
-    Array.isArray(value.images) &&
-    value.images.every(isBuildingSubmissionImage) &&
-    (value.reviewer === undefined || typeof value.reviewer === 'string') &&
     (value.reviewNote === undefined || typeof value.reviewNote === 'string') &&
-    (value.rejectedAt === undefined || typeof value.rejectedAt === 'string') &&
-    (value.expiresAt === undefined || typeof value.expiresAt === 'string') &&
-    typeof value.createdAt === 'string' &&
-    typeof value.updatedAt === 'string'
+    (value.expiresAt === undefined ||
+      (typeof value.expiresAt === 'string' && Number.isFinite(Date.parse(value.expiresAt))))
   );
 }
 
@@ -43,13 +33,18 @@ export function isBuildingSubmissionListResponse(
 ): value is BuildingSubmissionListResponse {
   return (
     isRecord(value) &&
+    typeof value.playerUuid === 'string' &&
     Array.isArray(value.submissions) &&
-    value.submissions.every(isBuildingSubmission)
+    value.submissions.every(isBuildingSubmissionSummary)
   );
 }
 
 export function isBuildingSubmissionCreateResponse(
   value: unknown,
 ): value is BuildingSubmissionCreateResponse {
-  return isRecord(value) && isBuildingSubmission(value.submission);
+  return (
+    isRecord(value) &&
+    typeof value.playerUuid === 'string' &&
+    isBuildingSubmissionSummary(value.submission)
+  );
 }

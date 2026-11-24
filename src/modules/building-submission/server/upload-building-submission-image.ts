@@ -13,7 +13,7 @@ import {
 const MAX_UPLOAD_BYTES = BUILDING_SUBMISSION_IMAGE_LIMITS.maxBytes;
 const MAX_MULTIPART_BYTES = MAX_UPLOAD_BYTES + 16 * 1024;
 // Only server-verified byte digests and dimensions are shared across requests.
-const validatedWebps = new Map<string, { width: number; height: number }>();
+const validatedWebps = new Set<string>();
 const MAX_VALIDATED_WEBPS = 256;
 let activeUploads = 0;
 
@@ -25,29 +25,27 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const draftKey = request.headers.get('X-Building-Draft');
     const requestKey = request.headers.get('X-Upload-Request');
     if (!draftKey || !requestKey) return uploadError('invalid_draft', 422);
+    const contentType = request.headers.get('Content-Type');
+    if (!contentType?.toLowerCase().startsWith('multipart/form-data;')) {
+      return uploadError('multipart_required', 415);
+    }
     const authorized = await callImageUploadService(request, 'reserve', { draftKey, requestKey });
     if (!authorized.ok) return authorized;
     const {
       uploadId,
-      image: previous,
+      filename,
       expiresAt,
     } = (await authorized.json()) as {
       uploadId?: string;
-      image?: { url: string };
+      filename?: string;
       expiresAt?: number;
     };
-    if (previous)
-      return Response.json(
-        { image: previous, expiresAt },
-        { headers: { 'Cache-Control': 'no-store' } },
-      );
+    if (filename)
+      return Response.json({ filename, expiresAt }, { headers: { 'Cache-Control': 'no-store' } });
     if (typeof uploadId !== 'string') return uploadError('image_upload_unavailable', 502);
-    if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('multipart/form-data;')) {
-      return uploadError('multipart_required', 415);
-    }
     const body = await readLimitedRequestBody(request, MAX_MULTIPART_BYTES);
     const form = await new Response(body as BodyInit, {
-      headers: { 'Content-Type': request.headers.get('Content-Type') ?? '' },
+      headers: { 'Content-Type': contentType },
     }).formData();
     const image = form.get('image');
     if (!(image instanceof File) || [...form.keys()].length !== 1)
@@ -58,11 +56,10 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const input = Buffer.from(await image.arrayBuffer());
     const result = await validateWebp(input);
     if (result instanceof Response) return result;
-    const { data, hash, width, height } = result;
+    const { data, hash } = result;
     const prepared = await callImageUploadService(request, 'prepare', { uploadId, hash });
     if (!prepared.ok) return prepared;
-    const { url, put } = (await prepared.json()) as {
-      url: string;
+    const { put } = (await prepared.json()) as {
       put: { url: string; headers: Record<string, string> };
     };
     const stored = await fetch(put.url, {
@@ -74,14 +71,7 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     });
     await stored.body?.cancel();
     if (!stored.ok) return uploadError('image_upload_unavailable', 502);
-    const receipt = {
-      url,
-      width,
-      height,
-      size: data.length,
-      mime: 'image/webp',
-    };
-    return await callImageUploadService(request, 'complete', { uploadId, image: receipt });
+    return await callImageUploadService(request, 'complete', { uploadId, size: data.length });
   } catch (error) {
     return uploadError(
       error instanceof RequestBodyLimitError ? 'image_too_large' : 'image_upload_unavailable',
@@ -96,8 +86,7 @@ async function validateWebp(input: Buffer) {
   if (input.toString('ascii', 0, 4) !== 'RIFF' || input.toString('ascii', 8, 12) !== 'WEBP')
     return uploadError('invalid_image', 422);
   const hash = createHash('sha256').update(input).digest('hex');
-  const cached = validatedWebps.get(hash);
-  if (cached) return { ...cached, data: input, hash };
+  if (validatedWebps.has(hash)) return { data: input, hash };
 
   const limits = BUILDING_SUBMISSION_IMAGE_LIMITS;
   try {
@@ -119,15 +108,15 @@ async function validateWebp(input: Buffer) {
         const oldest = validatedWebps.keys().next().value;
         if (oldest !== undefined) validatedWebps.delete(oldest);
       }
-      validatedWebps.set(hash, { width, height });
-      return { data: input, hash, width, height };
+      validatedWebps.add(hash);
+      return { data: input, hash };
     }
     const data = await decoder
       .autoOrient()
       .webp({ quality: limits.webpQuality, smartSubsample: true })
       .toBuffer();
     if (data.length > MAX_UPLOAD_BYTES) return uploadError('image_too_large', 413);
-    return { data, width, height, hash: createHash('sha256').update(data).digest('hex') };
+    return { data, hash: createHash('sha256').update(data).digest('hex') };
   } catch {
     return uploadError('invalid_image', 422);
   }

@@ -24,7 +24,6 @@ const account: AuthAccount = {
   playerUuid: 'wiki-staff-player',
   currentName: 'Staff',
   role: 'moderator',
-  updatedAt: '2026-11-09T00:00:00Z',
   passkeyCount: 1,
 };
 

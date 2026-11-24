@@ -20,7 +20,6 @@ const account: AuthAccount = {
   playerUuid: OWNER,
   currentName: 'Player',
   role: 'member',
-  updatedAt: '2026-11-12T00:00:00.000Z',
   passkeyCount: 1,
 };
 const signedIn = () => Response.json({ authenticated: true, account });

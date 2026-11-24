@@ -5,12 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { authRequest } from '@/modules/auth/lib/auth-request';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import type { BuildingInput } from '@/modules/building/model/building-types';
 import {
   createBuildingSubmissionImageDrafts,
   uploadBuildingSubmissionImageDrafts,
 } from '@/modules/building-submission/lib/building-submission-images';
-import { buildBuildingSubmissionPayload } from '@/modules/building-submission/lib/building-submission-payload';
+import { buildBuildingSubmissionDetails } from '@/modules/building-submission/lib/building-submission-payload';
 import type {
   BuilderDraft,
   BuildingSubmissionImageDraft,
@@ -24,11 +23,12 @@ import {
 } from '@/modules/building-submission/model/building-submission-form';
 import {
   MAX_BUILDING_SUBMISSION_IMAGES,
+  MAX_BUILDING_SUBMISSION_TAGS,
   MAX_PENDING_BUILDING_SUBMISSIONS,
 } from '@/modules/building-submission/model/building-submission-limits';
 import type {
-  BuildingSubmission,
   BuildingSubmissionListResponse,
+  BuildingSubmissionSummary,
 } from '@/modules/building-submission/model/building-submission-types';
 import {
   isBuildingSubmissionCreateResponse,
@@ -58,7 +58,7 @@ export function useBuildingSubmissionForm() {
     },
     [],
   );
-  const [submissions, setSubmissions] = useState<BuildingSubmission[]>([]);
+  const [submissions, setSubmissions] = useState<BuildingSubmissionSummary[]>([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -127,10 +127,7 @@ export function useBuildingSubmissionForm() {
           request: { method: 'POST' },
           cache: 'no-store',
           validate: (value): value is BuildingSubmissionListResponse =>
-            isBuildingSubmissionListResponse(value) &&
-            value.submissions.every(
-              (submission) => submission.submitterUuid === account.playerUuid,
-            ),
+            isBuildingSubmissionListResponse(value) && value.playerUuid === account.playerUuid,
           timeoutMs: 8000,
           browserCache: {
             force: options.force,
@@ -256,8 +253,15 @@ export function useBuildingSubmissionForm() {
   const addTag = () => {
     const zh = tagDraft.zh.trim();
     const en = tagDraft.en.trim();
-    if (!zh || !en) {
+    if (!zh && !en) {
       showFeedback('tags', { message: t('states.tagRequired'), kind: 'error' });
+      return;
+    }
+    if (tags.length >= MAX_BUILDING_SUBMISSION_TAGS) {
+      showFeedback('tags', {
+        message: t('states.tagLimit', { max: MAX_BUILDING_SUBMISSION_TAGS }),
+        kind: 'error',
+      });
       return;
     }
     setTags((current) => [...current, { zh, en }]);
@@ -318,14 +322,10 @@ export function useBuildingSubmissionForm() {
     }
 
     const images = draftImagesRef.current;
-    let payload: BuildingInput;
+    let details: ReturnType<typeof buildBuildingSubmissionDetails>;
     try {
-      payload = buildBuildingSubmissionPayload(
-        form,
-        builders,
-        tags,
-        images.map((image) => image.previewUrl),
-      );
+      details = buildBuildingSubmissionDetails(form, builders, tags);
+      if (!images.length) throw new Error('imagesRequired');
     } catch (error) {
       const key = error instanceof Error ? `states.${error.message}` : null;
       showFeedback('form', {
@@ -343,47 +343,37 @@ export function useBuildingSubmissionForm() {
     try {
       draftKey.current ||= crypto.randomUUID();
       const currentDraft = draftKey.current;
-      const uploadedImages = await uploadBuildingSubmissionImageDrafts(
+      const filenames = await uploadBuildingSubmissionImageDrafts(
         images,
         account,
         currentDraft,
         controller.signal,
       );
       controller.signal.throwIfAborted();
-      payload = {
-        ...payload,
-        images: uploadedImages.map((image) => image.url),
-      };
       showFeedback('form', { message: t('states.submitting'), kind: 'loading' });
       const result = await authRequest<unknown>('/api/account/building-submissions', {
         signal: controller.signal,
         body: {
-          payload,
           draftKey: currentDraft,
-          images: uploadedImages.map(({ url, width, height, size, mime }) => ({
-            url,
-            width,
-            height,
-            size,
-            mime,
-          })),
+          payload: { ...details, images: filenames },
         },
       });
       controller.signal.throwIfAborted();
       if (
         !isBuildingSubmissionCreateResponse(result) ||
-        result.submission.submitterUuid !== account.playerUuid
+        result.playerUuid !== account.playerUuid
       )
         throw new Error('invalid_response');
       historyRequest.current++;
       setIsLoadingSubmissions(false);
       setSubmissions((current) => {
-        const next = [
-          result.submission,
-          ...current.filter((submission) => submission.id !== result.submission.id),
-        ];
+        const next = current.some((submission) => submission.id === result.submission.id)
+          ? current.map((submission) =>
+              submission.id === result.submission.id ? result.submission : submission,
+            )
+          : [result.submission, ...current];
         writeFetchValidatedJsonBrowserCache<BuildingSubmissionListResponse>({
-          data: { submissions: next },
+          data: { playerUuid: result.playerUuid, submissions: next },
           key: buildingSubmissionsCacheKey(account.playerUuid),
           ttlMs: SUBMISSIONS_CACHE_TTL_MS,
         });

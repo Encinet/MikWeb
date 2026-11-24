@@ -160,13 +160,7 @@ function buildUpstreamBody({
         clientPublicKey: requestBody.clientPublicKey,
       };
     if (routePath === '/players/resolve') return { name: requestBody.name };
-    if (routePath === '/building-submissions') {
-      return {
-        payload: requestBody.payload,
-        images: requestBody.images,
-        draftKey: requestBody.draftKey,
-      };
-    }
+    if (routePath === '/building-submissions') return requestBody;
     if (routePath === '/sessions/revoke') {
       return {
         targetSessionId: requestBody.targetSessionId,

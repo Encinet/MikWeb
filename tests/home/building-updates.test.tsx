@@ -18,19 +18,19 @@ const building: Building = {
   name: { en: 'Latest build' },
   description: {},
   coordinates: { world: 'world', x: 0, y: 0, z: 0 },
-  builders: [],
+  builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
   buildType: 'original',
   images: [],
   buildDate: '2026-11-12',
 };
 
-test('recent cards match the archive for tied instants, small catalogs and legacy dates', () => {
+test('recent cards match the archive for tied construction dates and small catalogs', () => {
   for (const dates of [
     [],
     ['2025-01-01'],
     ['2025-01-01', '2026-01-01'],
-    ['2025-01-01', '2026-01-01T08:00:00+08:00', '2026-01-01T00:00:00Z', '2026-01-01'],
-    ['2025-01-01', 'unknown', '2026-01-01', '2026-06-01'],
+    ['2025-01-01', '2026-01-01', '2025-12-31', '2026-01-01'],
+    ['2026-01-01', '2025-01-01', '2026-01-01', '2026-06-01'],
   ]) {
     const catalog = dates.map((buildDate, i) => ({ ...building, id: String(i), buildDate }));
     assert.deepEqual(

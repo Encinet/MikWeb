@@ -97,9 +97,7 @@ export function BuildingsProvider({
     <BuildingsStateContext
       value={{
         buildings: snapshot.buildings,
-        buildingCount: snapshot.buildings.length,
         error: snapshot.error,
-        lastUpdatedAt: snapshot.updatedAt,
         isLoading,
         fetchBuildings,
       }}

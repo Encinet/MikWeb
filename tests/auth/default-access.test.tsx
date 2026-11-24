@@ -13,7 +13,6 @@ const account: AuthAccount = {
   playerUuid: OWNER,
   currentName: 'Newcomer',
   role: 'default',
-  updatedAt: '2026-11-03T00:00:00.000Z',
   passkeyCount: 0,
 };
 
@@ -42,11 +41,12 @@ test('all player roles can verify a website account while member and staff grant
 });
 
 test('newcomers can load their account security response', () => {
+  const issuedAt = '2026-11-03T00:00:00.000Z';
   const session: AuthSession = {
     id: 'session',
     current: true,
-    issuedAt: account.updatedAt,
-    lastSeenAt: account.updatedAt,
+    issuedAt,
+    lastSeenAt: issuedAt,
     idleExpiresAt: '2026-12-03T00:00:00.000Z',
     absoluteExpiresAt: '2027-02-03T00:00:00.000Z',
     authMethod: 'minecraft-challenge',

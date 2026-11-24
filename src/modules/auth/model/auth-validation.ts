@@ -14,7 +14,6 @@ export function isAuthAccount(value: unknown): value is AuthAccount {
     typeof value.playerUuid === 'string' &&
     typeof value.currentName === 'string' &&
     (value.role === 'default' || isMemberRole(value.role)) &&
-    typeof value.updatedAt === 'string' &&
     typeof value.passkeyCount === 'number' &&
     Number.isSafeInteger(value.passkeyCount) &&
     value.passkeyCount >= 0

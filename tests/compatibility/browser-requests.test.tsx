@@ -82,7 +82,6 @@ test('session verification and logout work without AbortSignal.timeout', async (
               playerUuid: OWNER,
               currentName: 'Player',
               role: 'default',
-              updatedAt: '2026-11-03T00:00:00.000Z',
               passkeyCount: 0,
             },
           })

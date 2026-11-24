@@ -45,26 +45,20 @@ export function filterBuildings(
 }
 
 function newestFirst(left: Building, right: Building) {
-  return Date.parse(right.buildDate) - Date.parse(left.buildDate);
+  return right.buildDate.localeCompare(left.buildDate);
 }
 
 /** Choose the two homepage cards in catalog order when dates tie. */
 export function getRecentBuildingUpdates(buildings: Building[]): Building[] {
   const recent: Building[] = [];
-  let newestTime = Number.NEGATIVE_INFINITY;
-  let secondTime = Number.NEGATIVE_INFINITY;
   for (const building of buildings) {
-    const time = Date.parse(building.buildDate);
-    // Older records can contain free-form dates. Keep the archive's ordering for those catalogs.
-    if (Number.isNaN(time)) return [...buildings].sort(newestFirst).slice(0, 2);
-    if (time > newestTime) {
-      if (recent.length) recent[1] = recent[0];
+    const first = recent[0];
+    const second = recent[1];
+    if (!first || newestFirst(building, first) < 0) {
+      if (first) recent[1] = first;
       recent[0] = building;
-      secondTime = newestTime;
-      newestTime = time;
-    } else if (time > secondTime) {
+    } else if (!second || newestFirst(building, second) < 0) {
       recent[1] = building;
-      secondTime = time;
     }
   }
   return recent;

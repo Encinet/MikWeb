@@ -25,11 +25,11 @@ export async function getBuilding(id: string, revalidate = REVALIDATE_SECONDS) {
   'use cache';
   cacheLife({ stale: 300, revalidate, expire: Math.max(3600, revalidate * 7) });
   if (!isBuildingId(id)) notFound();
-  const response = await readBuildingResponse(`/buildings/${id.toLowerCase()}`);
+  const response = await readBuildingResponse(`/buildings/${id}`);
   if (response.status === 404) notFound();
   if (!response.ok) throw new Error('Building data unavailable');
   const data: unknown = await response.json();
-  if (!isBuildingDetailResponse(data) || data.building.id !== id.toLowerCase()) {
+  if (!isBuildingDetailResponse(data) || data.building.id !== id) {
     throw new Error('Invalid building data');
   }
   return resolveBuildingImages(data.building, data.imageBaseUrl);

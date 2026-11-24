@@ -2,8 +2,6 @@ import { isRecord } from '@/shared/lib/is-record';
 import type { Building } from './building-types';
 import { isBuilding } from './building-validation';
 
-const IMAGE_FILENAME = /^[0-9a-f]{64}\.webp$/;
-
 export interface BuildingCatalogResponse {
   imageBaseUrl: string | null;
   buildings: Building[];
@@ -32,14 +30,8 @@ function isImageBaseUrl(value: unknown): value is string | null {
   }
 }
 
-function isBuildingWithFilenames(value: unknown, imageBaseUrl: string | null): value is Building {
-  return (
-    isBuilding(value) &&
-    (value.images.length === 0 ||
-      (imageBaseUrl !== null &&
-        value.id === value.id.toLowerCase() &&
-        value.images.every((filename) => IMAGE_FILENAME.test(filename))))
-  );
+function isBuildingWithImageBase(value: unknown, imageBaseUrl: string | null): value is Building {
+  return isBuilding(value) && (value.images.length === 0 || imageBaseUrl !== null);
 }
 
 export function isBuildingCatalogResponse(value: unknown): value is BuildingCatalogResponse {
@@ -47,14 +39,14 @@ export function isBuildingCatalogResponse(value: unknown): value is BuildingCata
     return false;
   }
   const { imageBaseUrl } = value;
-  return value.buildings.every((building) => isBuildingWithFilenames(building, imageBaseUrl));
+  return value.buildings.every((building) => isBuildingWithImageBase(building, imageBaseUrl));
 }
 
 export function isBuildingDetailResponse(value: unknown): value is BuildingDetailResponse {
   return (
     isRecord(value) &&
     isImageBaseUrl(value.imageBaseUrl) &&
-    isBuildingWithFilenames(value.building, value.imageBaseUrl)
+    isBuildingWithImageBase(value.building, value.imageBaseUrl)
   );
 }
 

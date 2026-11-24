@@ -30,7 +30,7 @@ export interface BuildingInput {
   images: string[];
   buildDate: string;
   tags?: LocalizedText[];
-  source?: BuildingSource | null;
+  source?: BuildingSource;
 }
 
 export interface Building extends BuildingInput {

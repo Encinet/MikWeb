@@ -1,15 +1,14 @@
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
+import { isBuildingImageFilename } from '@/modules/building/model/building-validation';
 import { isPixelOnlyWebp } from '@/modules/building-submission/lib/is-pixel-only-webp';
 import type { BuildingSubmissionImageDraft } from '@/modules/building-submission/model/building-submission-form';
 import { BUILDING_SUBMISSION_IMAGE_LIMITS } from '@/modules/building-submission/model/building-submission-limits';
-import type { BuildingSubmissionImage } from '@/modules/building-submission/model/building-submission-types';
-import { isBuildingSubmissionImage } from '@/modules/building-submission/model/building-submission-validation';
 import { isApiErrorPayload } from '@/shared/api/api-error-payload';
 import { isRecord } from '@/shared/lib/is-record';
 
 const uploadedDrafts = new WeakMap<
   File,
-  { draftKey: string; owner: string; expiresAt: number; image: BuildingSubmissionImage }
+  { draftKey: string; owner: string; expiresAt: number; filename: string }
 >();
 
 export async function createBuildingSubmissionImageDrafts(
@@ -198,8 +197,8 @@ export async function uploadBuildingSubmissionImageDrafts(
   account: AuthAccount,
   draftKey: string,
   signal?: AbortSignal,
-): Promise<BuildingSubmissionImage[]> {
-  const uploaded: BuildingSubmissionImage[] = [];
+): Promise<string[]> {
+  const filenames: string[] = [];
   for (const draft of images) {
     signal?.throwIfAborted();
     const cached = uploadedDrafts.get(draft.file);
@@ -209,19 +208,19 @@ export async function uploadBuildingSubmissionImageDrafts(
       cached.owner === account.playerUuid &&
       cached.expiresAt > Date.now()
     ) {
-      uploaded.push(cached.image);
+      filenames.push(cached.filename);
       continue;
     }
-    const { image, expiresAt } = await uploadWebp(draft.file, draftKey, draft.id, signal);
+    const { filename, expiresAt } = await uploadWebp(draft.file, draftKey, draft.id, signal);
     uploadedDrafts.set(draft.file, {
       draftKey,
       owner: account.playerUuid,
-      image,
+      filename,
       expiresAt,
     });
-    uploaded.push(image);
+    filenames.push(filename);
   }
-  return uploaded;
+  return filenames;
 }
 
 async function uploadWebp(
@@ -229,7 +228,7 @@ async function uploadWebp(
   draftKey: string,
   requestKey: string,
   signal?: AbortSignal,
-): Promise<{ image: BuildingSubmissionImage; expiresAt: number }> {
+): Promise<{ filename: string; expiresAt: number }> {
   const formData = new FormData();
   formData.set('image', file, 'building.webp');
   const response = await fetch('/api/account/images/upload', {
@@ -242,10 +241,11 @@ async function uploadWebp(
   if (
     !response.ok ||
     !isRecord(payload) ||
-    !isBuildingSubmissionImage(payload.image) ||
-    typeof payload.expiresAt !== 'number'
+    !isBuildingImageFilename(payload.filename) ||
+    typeof payload.expiresAt !== 'number' ||
+    !Number.isFinite(payload.expiresAt)
   ) {
     throw new Error(isApiErrorPayload(payload) ? payload.error : 'upload_failed');
   }
-  return { image: payload.image, expiresAt: payload.expiresAt };
+  return { filename: payload.filename, expiresAt: payload.expiresAt };
 }

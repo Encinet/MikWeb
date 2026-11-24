@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { isBuildingInput, isBuildingSource } from '@/modules/building/model/building-validation';
+import { isBuilding } from '@/modules/building/model/building-validation';
 import type { PlayerStatusResponse } from '@/modules/player/lib/player-status-api';
 import { isPlayerStatusResponse, toPlayerStatus } from '@/modules/player/lib/player-status-api';
 import { isApiErrorPayload } from '@/shared/api/api-error-payload';
@@ -18,24 +18,33 @@ test('localized content rejects JSON arrays and preserves the language fallback 
   assert.equal(getLocalizedText(undefined, 'en'), '');
 });
 
-test('optional building sources remain optional without narrowing null into an object', () => {
+test('the building contract accepts filenames and optional attribution', () => {
   const input = {
+    id: 'a'.repeat(32),
     name: { en: 'Building' },
     description: { en: 'Description' },
     coordinates: { world: 'world', x: 0, y: 64, z: 0 },
-    builders: [{ name: 'Player', uuid: 'player-id', weight: 1 }],
+    builders: [{ name: 'Player', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
     buildType: 'original',
     images: [],
     buildDate: '2026-11-12',
   };
-  assert.equal(isBuildingInput(input), true);
-  assert.equal(isBuildingInput({ ...input, source: null }), true);
-  assert.equal(isBuildingInput({ ...input, source: { notes: { en: 'Credit' } } }), true);
-  for (const source of [null, undefined, [], { notes: [] }, { originalAuthor: 1 }]) {
-    assert.equal(isBuildingSource(source), false);
+  assert.equal(isBuilding(input), true);
+  assert.equal(isBuilding({
+    ...input,
+    images: [`${'b'.repeat(64)}.webp`],
+    source: { notes: { en: 'Credit' } },
+  }), true);
+  for (const change of [
+    { builders: [] },
+    { buildDate: '2026-02-30' },
+    { id: 'A'.repeat(32) },
+    { images: ['blob:https://example.test/preview'] },
+    { source: {} },
+    { source: { originalLink: 'ftp://example.test/source' } },
+  ]) {
+    assert.equal(isBuilding({ ...input, ...change }), false);
   }
-  assert.equal(isBuildingInput({ ...input, name: [] }), false);
-  assert.equal(isBuildingInput({ ...input, source: [] }), false);
 });
 
 test('API errors validate optional messages before exposing them to callers', () => {

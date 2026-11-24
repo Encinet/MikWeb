@@ -2,7 +2,6 @@ import type {
   Builder,
   Building,
   BuildingCoordinates,
-  BuildingInput,
   BuildingSource,
 } from '@/modules/building/model/building-types';
 import { BUILDING_TYPES } from '@/modules/building/model/building-types';
@@ -10,17 +9,35 @@ import { isPlayerIdentity } from '@/modules/player/model/player-validation';
 import { isLocalizedText } from '@/shared/i18n/localized-text';
 import { isRecord } from '@/shared/lib/is-record';
 
-const BUILDING_ID_PATTERN = /^[0-9a-f]{32}$/i;
+const BUILDING_ID_PATTERN = /^[0-9a-f]{32}$/;
+const BUILDING_FIELDS = new Set<string>([
+  'id',
+  'name',
+  'description',
+  'coordinates',
+  'builders',
+  'buildType',
+  'images',
+  'buildDate',
+  'tags',
+  'source',
+] satisfies (keyof Building)[]);
+const BUILDING_IMAGE_FILENAME_PATTERN = /^[0-9a-f]{64}\.webp$/;
+const BUILDING_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+export const MAX_BUILDING_WORLD_NAME_LENGTH = 128;
 
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+export function isBuildingImageFilename(value: unknown): value is string {
+  return typeof value === 'string' && BUILDING_IMAGE_FILENAME_PATTERN.test(value);
 }
 
-export function isBuilder(value: unknown): value is Builder {
-  return isPlayerIdentity(value) && isRecord(value) && typeof value.weight === 'number';
+function isBuilder(value: unknown): value is Builder {
+  return (
+    isPlayerIdentity(value) && isRecord(value) &&
+    typeof value.weight === 'number' && Number.isFinite(value.weight) && value.weight >= 0
+  );
 }
 
-export function isBuildingCoordinates(value: unknown): value is BuildingCoordinates {
+function isBuildingCoordinates(value: unknown): value is BuildingCoordinates {
   return (
     isRecord(value) &&
     isWorldName(value.world) &&
@@ -37,7 +54,7 @@ export function isWorldName(value: unknown): value is string {
   return (
     typeof value === 'string' &&
     value.trim().length > 0 &&
-    value.length <= 128 &&
+    value.length <= MAX_BUILDING_WORLD_NAME_LENGTH &&
     [...value].every((character) => {
       const code = character.codePointAt(0) ?? 0;
       return code > 31 && (code < 127 || code > 159);
@@ -45,37 +62,56 @@ export function isWorldName(value: unknown): value is string {
   );
 }
 
+export function isBuildingDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !BUILDING_DATE_PATTERN.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
 export function isBuildingSource(value: unknown): value is BuildingSource {
   if (!isRecord(value)) {
     return false;
   }
 
+  const { originalAuthor, originalLink, notes } = value;
   return (
-    (value.originalAuthor === undefined || typeof value.originalAuthor === 'string') &&
-    (value.originalLink === undefined || typeof value.originalLink === 'string') &&
-    (value.notes === undefined || isLocalizedText(value.notes))
+    (originalAuthor !== undefined || originalLink !== undefined || notes !== undefined) &&
+    (originalAuthor === undefined || (typeof originalAuthor === 'string' && !!originalAuthor.trim())) &&
+    (originalLink === undefined ||
+      (typeof originalLink === 'string' && isHttpLink(originalLink))) &&
+    (notes === undefined ||
+      (isLocalizedText(notes) && Object.values(notes).some((text) => text.trim())))
   );
 }
 
-export function isBuildingInput(value: unknown): value is BuildingInput {
+function isHttpLink(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export function isBuilding(value: unknown): value is Building {
   return (
     isRecord(value) &&
+    isBuildingId(value.id) &&
+    Object.keys(value).every((field) => BUILDING_FIELDS.has(field)) &&
     isLocalizedText(value.name) &&
     isLocalizedText(value.description) &&
     isBuildingCoordinates(value.coordinates) &&
     Array.isArray(value.builders) &&
+    value.builders.length > 0 &&
     value.builders.every(isBuilder) &&
     BUILDING_TYPES.some((type) => type === value.buildType) &&
-    isStringArray(value.images) &&
-    typeof value.buildDate === 'string' &&
+    Array.isArray(value.images) &&
+    value.images.every(isBuildingImageFilename) &&
+    isBuildingDate(value.buildDate) &&
     (value.tags === undefined ||
       (Array.isArray(value.tags) && value.tags.every(isLocalizedText))) &&
-    (value.source === undefined || value.source === null || isBuildingSource(value.source))
+    (value.source === undefined || isBuildingSource(value.source))
   );
-}
-
-export function isBuilding(value: unknown): value is Building {
-  return isRecord(value) && isBuildingId(value.id) && isBuildingInput(value);
 }
 
 export function isBuildingId(value: unknown): value is string {

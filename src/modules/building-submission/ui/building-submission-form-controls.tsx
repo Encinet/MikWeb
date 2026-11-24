@@ -2,7 +2,7 @@
 
 import { Check } from 'lucide-react';
 import { useId } from 'react';
-import type { BuildingSubmission } from '@/modules/building-submission/model/building-submission-types';
+import type { BuildingSubmissionSummary } from '@/modules/building-submission/model/building-submission-types';
 
 export function Section({
   children,
@@ -31,6 +31,7 @@ export function TextField({
   maxLength,
   onChange,
   required = false,
+  step,
   type = 'text',
   value,
 }: {
@@ -39,6 +40,7 @@ export function TextField({
   maxLength?: number;
   onChange: (value: string) => void;
   required?: boolean;
+  step?: 'any';
   type?: string;
   value: string;
 }) {
@@ -52,6 +54,7 @@ export function TextField({
         id={id}
         required={required}
         maxLength={maxLength}
+        step={step}
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -62,11 +65,13 @@ export function TextField({
 
 export function TextArea({
   label,
+  maxLength,
   onChange,
   required = false,
   value,
 }: {
   label: string;
+  maxLength?: number;
   onChange: (value: string) => void;
   required?: boolean;
   value: string;
@@ -77,6 +82,7 @@ export function TextArea({
       <label htmlFor={id}>{label}</label>
       <textarea
         id={id}
+        maxLength={maxLength}
         required={required}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -90,11 +96,11 @@ export function StatusBadge({
   status,
 }: {
   label: string;
-  status: BuildingSubmission['status'];
+  status: BuildingSubmissionSummary['status'];
 }) {
   return (
     <span className={`building-submission-status building-submission-status--${status}`}>
-      {status === 'approved' ? <Check className="h-3.5 w-3.5" /> : null}
+      {status === 'approved' ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
       {label}
     </span>
   );

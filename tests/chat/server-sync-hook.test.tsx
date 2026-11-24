@@ -177,7 +177,6 @@ const account = {
   playerUuid: OWNER,
   currentName: 'Owner',
   role: 'member' as const,
-  updatedAt: '',
   passkeyCount: 0,
 };
 function Harness() {

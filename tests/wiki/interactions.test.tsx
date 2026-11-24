@@ -14,7 +14,6 @@ const account: AuthAccount = {
   playerUuid: 'first-staff',
   currentName: 'Staff',
   role: 'moderator',
-  updatedAt: '2026-11-09T00:00:00Z',
   passkeyCount: 1,
 };
 

@@ -16,7 +16,7 @@ export function resolveShareTarget(pathname: string): ShareTarget | null {
   const [, locale, ...segments] = pathname.replace(/\/$/, '').split('/');
   if (!isRoutingLocale(locale)) return null;
   if (segments.length === 2 && segments[0] === 'buildings' && isBuildingId(segments[1])) {
-    return { kind: 'building', locale, id: segments[1].toLowerCase() };
+    return { kind: 'building', locale, id: segments[1] };
   }
   const path = segments.length ? `/${segments.join('/')}` : '';
   const page = pagesBySpecificity.find((page) => {

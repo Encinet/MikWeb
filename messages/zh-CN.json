@@ -258,7 +258,8 @@
       "loadFailed": "申请加载失败",
       "memberRequired": "成为正式成员后即可提交建筑作品。",
       "playerNotFound": "没有找到该玩家",
-      "tagRequired": "标签需要同时填写中文和英文",
+      "tagRequired": "标签至少填写一种语言",
+      "tagLimit": "最多添加 {max} 个标签",
       "imageLimit": "最多上传 15 张图片",
       "imageSelectFailed": "图片读取失败",
       "uploading": "正在上传图片",
@@ -272,21 +273,23 @@
       "pendingLimit": "待审核申请已达到 10 个",
       "required": "中文和英文内容都需要填写",
       "buildersRequired": "至少需要一个建造者",
+      "buildersLimit": "已达到建造者人数上限",
       "imagesRequired": "至少需要一张图片",
       "coordinatesRequired": "请填写世界名和有效坐标",
-      "sourceRequired": "二创和复刻需要填写完整来源",
+      "dateInvalid": "请填写有效的建造日期",
+      "sourceInvalid": "请检查来源信息。链接需使用 HTTP 或 HTTPS。",
       "invalid": "表单内容有误",
       "uploadLimited": "上传过于频繁或已有上传正在处理，请稍后重试。"
     },
     "status": {
       "pending": "待审核",
-      "approved": "已收入",
-      "rejected": "已拒绝"
+      "approved": "已收录",
+      "rejected": "已退回"
     },
     "history": {
       "title": "我的申请",
       "empty": "还没有提交记录",
-      "rejectionReason": "拒绝原因：{reason}",
+      "rejectionReason": "退回原因：{reason}",
       "expiresAt": "保留至 {time}"
     },
     "imageDescription": "提交作品，通过审核后加入建筑收录"

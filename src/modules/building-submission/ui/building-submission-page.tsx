@@ -2,17 +2,20 @@
 
 import { ImagePlus, Minus, Plus, Send, Trash2, UserPlus, X } from 'lucide-react';
 import Image from 'next/image';
-import { useLocale, useTranslations } from 'next-intl';
+import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { isMemberRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import { AccountLayout } from '@/modules/auth/ui/account-layout';
+import { getBuildingPath } from '@/modules/building/lib/building-links';
 import { BUILDING_TYPES } from '@/modules/building/model/building-types';
+import { MAX_BUILDING_WORLD_NAME_LENGTH } from '@/modules/building/model/building-validation';
 import {
   formatBuilderContribution,
   normalizeBuilderWeight,
 } from '@/modules/building-submission/model/building-submission-form';
 import {
+  BUILDING_SUBMISSION_TEXT_LIMITS as textLimits,
   MAX_BUILDING_SUBMISSION_IMAGES,
   MAX_PENDING_BUILDING_SUBMISSIONS,
 } from '@/modules/building-submission/model/building-submission-limits';
@@ -25,6 +28,7 @@ import {
 } from '@/modules/building-submission/ui/building-submission-form-controls';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { getLocalizedText } from '@/shared/i18n/localized-text';
+import { Link } from '@/shared/i18n/navigation';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
 import { InlineFeedback } from '@/shared/ui/feedback/async-state';
 import { ProgressRing } from '@/shared/ui/feedback/loading-state';
@@ -52,6 +56,7 @@ function BuildingSubmissionForm() {
   const buildingT = useTranslations('buildings');
   const commonT = useTranslations('common');
   const locale = useLocale();
+  const format = useFormatter();
   const {
     feedback,
     account,
@@ -114,6 +119,7 @@ function BuildingSubmissionForm() {
               <TextField
                 className="building-submission-field--half"
                 label={t('fields.nameZh')}
+                maxLength={textLimits.name}
                 value={form.nameZh}
                 onChange={(value) => updateForm('nameZh', value)}
                 required
@@ -121,18 +127,21 @@ function BuildingSubmissionForm() {
               <TextField
                 className="building-submission-field--half"
                 label={t('fields.nameEn')}
+                maxLength={textLimits.name}
                 value={form.nameEn}
                 onChange={(value) => updateForm('nameEn', value)}
                 required
               />
               <TextArea
                 label={t('fields.descriptionZh')}
+                maxLength={textLimits.description}
                 value={form.descriptionZh}
                 onChange={(value) => updateForm('descriptionZh', value)}
                 required
               />
               <TextArea
                 label={t('fields.descriptionEn')}
+                maxLength={textLimits.description}
                 value={form.descriptionEn}
                 onChange={(value) => updateForm('descriptionEn', value)}
                 required
@@ -170,12 +179,13 @@ function BuildingSubmissionForm() {
                 label={t('fields.world')}
                 value={form.world}
                 onChange={(value) => updateForm('world', value)}
-                maxLength={128}
+                maxLength={MAX_BUILDING_WORLD_NAME_LENGTH}
                 required
               />
               <TextField
                 label="X"
                 type="number"
+                step="any"
                 value={form.x}
                 onChange={(value) => updateForm('x', value)}
                 required
@@ -183,6 +193,7 @@ function BuildingSubmissionForm() {
               <TextField
                 label="Y"
                 type="number"
+                step="any"
                 value={form.y}
                 onChange={(value) => updateForm('y', value)}
                 required
@@ -190,6 +201,7 @@ function BuildingSubmissionForm() {
               <TextField
                 label="Z"
                 type="number"
+                step="any"
                 value={form.z}
                 onChange={(value) => updateForm('z', value)}
                 required
@@ -339,12 +351,14 @@ function BuildingSubmissionForm() {
               <TextField
                 className="building-submission-field--tag"
                 label={t('fields.tagZh')}
+                maxLength={textLimits.tag}
                 value={tagDraft.zh}
                 onChange={(value) => setTagDraft((current) => ({ ...current, zh: value }))}
               />
               <TextField
                 className="building-submission-field--tag"
                 label={t('fields.tagEn')}
+                maxLength={textLimits.tag}
                 value={tagDraft.en}
                 onChange={(value) => setTagDraft((current) => ({ ...current, en: value }))}
               />
@@ -365,7 +379,7 @@ function BuildingSubmissionForm() {
                       setTags((current) => current.filter((_, itemIndex) => itemIndex !== index))
                     }
                   >
-                    {tag.zh} / {tag.en}
+                    {[tag.zh, tag.en].filter(Boolean).join(' / ')}
                     <X className="h-3.5 w-3.5" />
                   </button>
                 ))}
@@ -373,38 +387,39 @@ function BuildingSubmissionForm() {
               <InlineFeedback value={feedback.tags} />
             </Section>
 
-            {form.buildType !== 'original' ? (
-              <Section title={buildingT('fields.source')}>
+            <details className="building-submission-source">
+              <summary>{buildingT('fields.source')}</summary>
+              <div className="building-submission-section__grid">
                 <TextField
                   className="building-submission-field--source"
                   label={buildingT('fields.originalAuthor')}
+                  maxLength={textLimits.sourceAuthor}
                   value={form.sourceAuthor}
                   onChange={(value) => updateForm('sourceAuthor', value)}
-                  required
                 />
                 <TextField
                   className="building-submission-field--source"
                   label={t('fields.sourceLink')}
+                  maxLength={textLimits.sourceLink}
                   value={form.sourceLink}
                   onChange={(value) => updateForm('sourceLink', value)}
-                  required
                 />
                 <TextField
                   className="building-submission-field--source"
                   label={t('fields.sourceNoteZh')}
+                  maxLength={textLimits.sourceNote}
                   value={form.sourceNoteZh}
                   onChange={(value) => updateForm('sourceNoteZh', value)}
-                  required
                 />
                 <TextField
                   className="building-submission-field--source"
                   label={t('fields.sourceNoteEn')}
+                  maxLength={textLimits.sourceNote}
                   value={form.sourceNoteEn}
                   onChange={(value) => updateForm('sourceNoteEn', value)}
-                  required
                 />
-              </Section>
-            ) : null}
+              </div>
+            </details>
 
             <InlineFeedback value={feedback.form} />
             <div className="building-submission-actions">
@@ -433,42 +448,52 @@ function BuildingSubmissionForm() {
               <button
                 className="ui-action-button"
                 type="button"
-                onClick={() => void loadSubmissions()}
+                disabled={isLoadingSubmissions}
+                onClick={() => void loadSubmissions({ force: true })}
               >
                 {isLoadingSubmissions ? <ProgressRing size="sm" /> : null}
                 {commonT('actions.refresh')}
               </button>
             </div>
             <InlineFeedback value={feedback.history} />
-            <div className="building-submission-history__list">
-              {submissions.length === 0 ? (
+            <div
+              className="building-submission-history__list"
+              aria-busy={isLoadingSubmissions}
+            >
+              {submissions.length === 0 && !isLoadingSubmissions && !feedback.history ? (
                 <p>{t('history.empty')}</p>
-              ) : (
-                submissions.map((submission) => (
-                  <article key={submission.id}>
-                    <div>
-                      <h3>{getLocalizedText(submission.payload.name, locale)}</h3>
-                      <span>{new Date(submission.createdAt).toLocaleString(locale)}</span>
-                      {submission.status === 'rejected' && submission.reviewNote ? (
-                        <p className="building-submission-history__note">
-                          {t('history.rejectionReason', { reason: submission.reviewNote })}
-                        </p>
-                      ) : null}
-                      {submission.status === 'rejected' && submission.expiresAt ? (
-                        <p className="building-submission-history__note">
-                          {t('history.expiresAt', {
-                            time: new Date(submission.expiresAt).toLocaleString(locale),
-                          })}
-                        </p>
-                      ) : null}
+              ) : null}
+              {submissions.map(({ id, name, status, reviewNote, expiresAt }) => {
+                const title = getLocalizedText(name, locale);
+                return (
+                  <article key={id}>
+                    <div className="building-archive-card__heading">
+                      <h3>
+                        {status === 'approved' ? (
+                          <Link href={getBuildingPath(id)} prefetch={false}>
+                            {title}
+                          </Link>
+                        ) : (
+                          title
+                        )}
+                      </h3>
+                      <StatusBadge status={status} label={t(`status.${status}`)} />
                     </div>
-                    <StatusBadge
-                      status={submission.status}
-                      label={t(`status.${submission.status}`)}
-                    />
+                    {reviewNote ? (
+                      <p className="building-submission-history__note">
+                        {t('history.rejectionReason', { reason: reviewNote })}
+                      </p>
+                    ) : null}
+                    {expiresAt ? (
+                      <p className="building-submission-history__expiry">
+                        {t('history.expiresAt', {
+                          time: format.dateTime(new Date(expiresAt), { dateStyle: 'medium' }),
+                        })}
+                      </p>
+                    ) : null}
                   </article>
-                ))
-              )}
+                );
+              })}
             </div>
           </section>
         </div>

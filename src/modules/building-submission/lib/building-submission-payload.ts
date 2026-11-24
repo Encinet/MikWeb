@@ -1,28 +1,32 @@
 import type { BuildingInput } from '@/modules/building/model/building-types';
-import { isWorldName } from '@/modules/building/model/building-validation';
+import { isBuildingDate, isBuildingSource, isWorldName } from '@/modules/building/model/building-validation';
 import type {
   BuilderDraft,
   BuildingSubmissionFormState,
   BuildingSubmissionTagDraft,
 } from '@/modules/building-submission/model/building-submission-form';
 import { normalizeBuilderWeight } from '@/modules/building-submission/model/building-submission-form';
+import {
+  BUILDING_SUBMISSION_TEXT_LIMITS as textLimits,
+  MAX_BUILDING_SUBMISSION_BUILDERS,
+} from '@/modules/building-submission/model/building-submission-limits';
 
-export function buildBuildingSubmissionPayload(
+export function buildBuildingSubmissionDetails(
   form: BuildingSubmissionFormState,
   builders: BuilderDraft[],
   tags: BuildingSubmissionTagDraft[],
-  imageUrls: string[],
-): BuildingInput {
-  const required = [
-    form.nameZh,
-    form.nameEn,
-    form.descriptionZh,
-    form.descriptionEn,
-    form.buildDate,
-  ];
-  if (required.some((value) => !value.trim())) throw new Error('required');
+): Omit<BuildingInput, 'images'> {
+  const name = { 'zh-CN': form.nameZh.trim(), en: form.nameEn.trim() };
+  const description = { 'zh-CN': form.descriptionZh.trim(), en: form.descriptionEn.trim() };
+  if (!name['zh-CN'] || !name.en || !description['zh-CN'] || !description.en)
+    throw new Error('required');
+  if (
+    Object.values(name).some((text) => text.length > textLimits.name) ||
+    Object.values(description).some((text) => text.length > textLimits.description)
+  ) throw new Error('invalid');
+  if (!isBuildingDate(form.buildDate)) throw new Error('dateInvalid');
   if (!builders.length) throw new Error('buildersRequired');
-  if (!imageUrls.length) throw new Error('imagesRequired');
+  if (builders.length > MAX_BUILDING_SUBMISSION_BUILDERS) throw new Error('buildersLimit');
   const coordinates = {
     world: form.world.trim(),
     x: Number(form.x),
@@ -41,19 +45,27 @@ export function buildBuildingSubmissionPayload(
     throw new Error('coordinatesRequired');
   }
 
-  const source =
-    form.buildType === 'original'
-      ? null
-      : buildRequiredSource({
-          sourceAuthor: form.sourceAuthor,
-          sourceLink: form.sourceLink,
-          sourceNoteEn: form.sourceNoteEn,
-          sourceNoteZh: form.sourceNoteZh,
-        });
+  const originalAuthor = form.sourceAuthor.trim();
+  const originalLink = form.sourceLink.trim();
+  const notes = { 'zh-CN': form.sourceNoteZh.trim(), en: form.sourceNoteEn.trim() };
+  const hasNotes = Boolean(notes['zh-CN'] || notes.en);
+  const source = originalAuthor || originalLink || hasNotes
+    ? {
+        originalAuthor: originalAuthor || undefined,
+        originalLink: originalLink || undefined,
+        notes: hasNotes ? notes : undefined,
+      }
+    : undefined;
+  if (
+    originalAuthor.length > textLimits.sourceAuthor ||
+    originalLink.length > textLimits.sourceLink ||
+    Object.values(notes).some((text) => text.length > textLimits.sourceNote) ||
+    (source !== undefined && !isBuildingSource(source))
+  ) throw new Error('sourceInvalid');
 
   return {
-    name: { 'zh-CN': form.nameZh.trim(), en: form.nameEn.trim() },
-    description: { 'zh-CN': form.descriptionZh.trim(), en: form.descriptionEn.trim() },
+    name,
+    description,
     coordinates,
     builders: builders.map((builder) => ({
       uuid: builder.uuid,
@@ -61,39 +73,8 @@ export function buildBuildingSubmissionPayload(
       weight: normalizeBuilderWeight(builder.weight),
     })),
     buildType: form.buildType,
-    images: imageUrls,
     buildDate: form.buildDate,
-    tags: tags.map((tag) => ({ 'zh-CN': tag.zh, en: tag.en })),
+    tags: tags.length ? tags.map((tag) => ({ 'zh-CN': tag.zh, en: tag.en })) : undefined,
     source,
-  };
-}
-
-function buildRequiredSource({
-  sourceAuthor,
-  sourceLink,
-  sourceNoteEn,
-  sourceNoteZh,
-}: {
-  sourceAuthor: string;
-  sourceLink: string;
-  sourceNoteEn: string;
-  sourceNoteZh: string;
-}): NonNullable<BuildingInput['source']> {
-  const originalAuthor = sourceAuthor.trim();
-  const originalLink = sourceLink.trim();
-  const zhNote = sourceNoteZh.trim();
-  const enNote = sourceNoteEn.trim();
-
-  if (!originalAuthor || !originalLink || !zhNote || !enNote) {
-    throw new Error('sourceRequired');
-  }
-
-  return {
-    originalAuthor,
-    originalLink,
-    notes: {
-      'zh-CN': zhNote,
-      en: enNote,
-    },
   };
 }
