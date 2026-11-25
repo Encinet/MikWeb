@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { act } from 'react';
+
 import { useWikiPublicContent } from '@/modules/wiki/model/use-wiki-public-content';
+
 import { createBackgroundEnvironment } from '../support/background-environment';
 
 const candidates = ['commands', 'rules', 'open-source'];
@@ -19,8 +22,11 @@ function Probe({
     searchEnabled: search,
     prefetchSectionIds: candidates,
   });
+  const body = resource.section?.article.children[0];
   return (
-    <output>{resource.section?.compiled ?? (resource.sectionFailed ? 'error' : 'initial')}</output>
+    <output>
+      {body?.type === 'text' ? body.value : resource.sectionFailed ? 'error' : 'initial'}
+    </output>
   );
 }
 
@@ -53,7 +59,16 @@ test('prefetch is serial, shares clicked chapters, yields to search and keeps sp
   const reply = (index: number, id?: string, status = 200) =>
     act(async () => {
       requests[index].resolve(
-        Response.json(id ? { id, compiled: `${id}-body`, outline: [] } : [], { status }),
+        Response.json(
+          id
+            ? {
+                id,
+                article: { type: 'root', children: [{ type: 'text', value: `${id}-body` }] },
+                outline: [],
+              }
+            : [],
+          { status },
+        ),
       );
     });
   try {

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { act } from 'react';
+
 import { useWikiPublicContent } from '@/modules/wiki/model/use-wiki-public-content';
+
 import { createBrowserEnvironment } from '../support/browser-environment';
 
 function Probe({
@@ -21,10 +24,11 @@ function Probe({
     hasInitialSection: initial,
     searchEnabled: search,
   });
+  const body = resource.section?.article.children[0];
   return (
     <>
       <output>
-        {resource.section?.compiled ?? (resource.sectionFailed ? 'section-error' : 'waiting')}
+        {body?.type === 'text' ? body.value : resource.sectionFailed ? 'section-error' : 'waiting'}
       </output>
       <span>
         {resource.searchIndex
@@ -67,7 +71,11 @@ test('loads only requested public resources, ignores stale responses, reuses cha
     act(async () => {
       pending[index].resolve(Response.json(body, { status }));
     });
-  const chapter = (id: string) => ({ id, compiled: `${id}-content`, outline: [] });
+  const chapter = (id: string, value = `${id}-content`) => ({
+    id,
+    article: { type: 'root', children: [{ type: 'text', value }] },
+    outline: [],
+  });
   const output = () => environment.container.querySelector('output')?.textContent;
   try {
     await render('getting-started', true);
@@ -108,7 +116,7 @@ test('loads only requested public resources, ignores stale responses, reuses cha
     assert.equal(output(), 'waiting');
     assert.ok(environment.container.textContent?.includes('no-search'));
     assert.equal(pending[6].url, '/api/wiki/section/zh-CN/commands');
-    await reply(6, { ...chapter('commands'), compiled: '中文章节' });
+    await reply(6, chapter('commands', '中文章节'));
     await reply(7, []);
     assert.equal(output(), '中文章节');
     await render('commands', false, true);

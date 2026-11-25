@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { act } from 'react';
+
 import type { AuthState } from '@/modules/auth/model/auth-state-context';
 import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
@@ -8,6 +10,7 @@ import { useWikiStaffContent } from '@/modules/wiki/model/use-wiki-staff-content
 import type { WikiContentBundle } from '@/modules/wiki/model/wiki-content-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+
 import { createBrowserEnvironment } from '../support/browser-environment';
 
 const account: AuthAccount = {
@@ -45,7 +48,7 @@ test('private content requires verified staff and clears on logout, demotion, an
     sections: [],
     sectionGroups: [],
     content: {},
-    compiled: {},
+    articles: {},
     outlines: {},
     searchIndex: [],
   } satisfies WikiContentBundle;
@@ -101,12 +104,9 @@ test('private content requires verified staff and clears on logout, demotion, an
   }
 });
 
-test('public content bundles compile without staff strings after an authenticated load', async () => {
-  await createWikiContentBundle('zh-CN', await loadWikiSectionDocuments('zh-CN', 'staff'));
-  const publicBundle = await createWikiContentBundle(
-    'zh-CN',
-    await loadWikiSectionDocuments('zh-CN'),
-  );
-  assert.equal(publicBundle.compiled.moderator, undefined);
+test('public content bundles omit staff strings after an authenticated load', async () => {
+  createWikiContentBundle('zh-CN', await loadWikiSectionDocuments('zh-CN', 'staff'));
+  const publicBundle = createWikiContentBundle('zh-CN', await loadWikiSectionDocuments('zh-CN'));
+  assert.equal(publicBundle.articles.moderator, undefined);
   assert.equal(JSON.stringify(publicBundle).includes('/tpforce'), false);
 });

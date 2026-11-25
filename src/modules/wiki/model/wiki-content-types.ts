@@ -1,3 +1,5 @@
+import type { Root } from 'hast';
+
 import type { SearchableWikiBlock } from '@/modules/wiki/model/wiki-search-types';
 import type {
   WikiSectionDefinition,
@@ -10,8 +12,10 @@ export type WikiSectionContentMap = Record<string, string>;
 
 export type WikiSectionOutlineMap = Record<string, WikiSectionOutlineItem[]>;
 
+export type WikiArticleMap = Record<string, Root>;
+
 export interface WikiContentBundle {
-  compiled: Record<string, string>;
+  articles: WikiArticleMap;
   sections: WikiSectionDefinition[];
   sectionGroups: WikiSectionGroupDefinition[];
   content: WikiSectionContentMap;
@@ -21,6 +25,6 @@ export interface WikiContentBundle {
 
 export interface WikiSectionPayload {
   id: WikiSectionId;
-  compiled: string;
+  article: Root;
   outline: WikiSectionOutlineItem[];
 }

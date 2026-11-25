@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 
 // Keep Bun's test-only mock API scoped here, without adding Bun globals to app types.
@@ -64,7 +65,7 @@ test('staff endpoint verifies the real session and rejects public roles, forged 
       const response = await staffWikiRequest(request());
       assert.equal(response.status, role === null ? 401 : role === 'admin' ? 502 : 403);
       assert.equal(requests - before, role === null ? 0 : 1);
-      assert.equal((await response.text()).includes('compiled'), false);
+      assert.equal((await response.text()).includes('articles'), false);
       assert.ok(response.headers.get('Cache-Control')?.includes('no-store'));
     }
     for (const role of ['moderator', 'custodian'] as const) {
@@ -74,7 +75,7 @@ test('staff endpoint verifies the real session and rejects public roles, forged 
         assert.equal(response.status, 200);
         assert.equal(response.headers.get('Vary'), 'Cookie');
         const bundle = await response.json();
-        assert.deepEqual(Object.keys(bundle.compiled), ['moderator']);
+        assert.deepEqual(Object.keys(bundle.articles), ['moderator']);
         assert.ok(
           bundle.sections.every((section: { access: string }) => section.access === 'staff'),
         );

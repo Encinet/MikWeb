@@ -1,7 +1,7 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
 import {
   Suspense,
@@ -14,6 +14,7 @@ import {
   useState,
 } from 'react';
 import { browser } from 'react-dom';
+
 import { getWikiNavigationScrollMinimum } from '@/modules/wiki/lib/wiki-navigation-scroll';
 import {
   decodeWikiHash,
@@ -24,7 +25,10 @@ import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import type { WikiNavigationPanel } from '@/modules/wiki/model/use-wiki-navigation-panel';
 import { useWikiPublicContent } from '@/modules/wiki/model/use-wiki-public-content';
 import { useWikiReading } from '@/modules/wiki/model/use-wiki-reading';
-import type { WikiSectionOutlineMap } from '@/modules/wiki/model/wiki-content-types';
+import type {
+  WikiArticleMap,
+  WikiSectionOutlineMap,
+} from '@/modules/wiki/model/wiki-content-types';
 import type { WikiSearchEntry } from '@/modules/wiki/model/wiki-search-types';
 import type {
   WikiSectionDefinition,
@@ -54,7 +58,7 @@ interface WikiContentProps {
   clearSearchLabel: string;
   sections: WikiSectionDefinition[];
   sectionGroups: WikiSectionGroupDefinition[];
-  compiled: Record<string, string>;
+  articles: WikiArticleMap;
   outlines: WikiSectionOutlineMap;
   searchIndex: WikiSearchEntry[];
   staffStatus?: ReactNode;
@@ -71,7 +75,7 @@ export default function WikiContent({
   clearSearchLabel,
   sections,
   sectionGroups,
-  compiled,
+  articles,
   outlines,
   searchIndex,
   staffStatus,
@@ -100,9 +104,9 @@ export default function WikiContent({
   const prefetchSectionIds = useMemo(
     () =>
       sections
-        .filter((section) => section.access === 'public' && !Object.hasOwn(compiled, section.id))
+        .filter((section) => section.access === 'public' && !Object.hasOwn(articles, section.id))
         .map((section) => section.id),
-    [sections, compiled],
+    [sections, articles],
   );
   const publicSectionId =
     sections.find((section) => section.id === activeSection && section.access === 'public')?.id ??
@@ -110,11 +114,13 @@ export default function WikiContent({
   const resources = useWikiPublicContent({
     locale,
     sectionId: publicSectionId,
-    hasInitialSection: Boolean(compiled[activeSection]),
+    hasInitialSection: Object.hasOwn(articles, activeSection),
     searchEnabled: liveSearchQuery.length > 0,
     prefetchSectionIds,
   });
-  const activeCode = compiled[activeSection] ?? resources.section?.compiled;
+  const activeArticle = Object.hasOwn(articles, activeSection)
+    ? articles[activeSection]
+    : resources.section?.article;
   const activeOutline = outlines[activeSection] ?? resources.section?.outline ?? emptyOutline;
   const fullSearchIndex = useMemo(() => {
     const publicSearchIndex = resources.searchIndex;
@@ -128,7 +134,7 @@ export default function WikiContent({
   const { articleRef, activeSlug, requestScroll } = useWikiReading(
     activeSection,
     activeOutline,
-    !isSearching && Boolean(activeCode),
+    !isSearching && Boolean(activeArticle),
   );
   const searchResults = useMemo(() => {
     if (!isSearching) return [];
@@ -404,8 +410,8 @@ export default function WikiContent({
                   tabIndex={-1}
                   className="wiki-markdown"
                 >
-                  {activeCode ? (
-                    <WikiMdx code={activeCode} />
+                  {activeArticle ? (
+                    <WikiMdx article={activeArticle} />
                   ) : (
                     <WikiResourceStatus
                       failed={resources.sectionFailed}

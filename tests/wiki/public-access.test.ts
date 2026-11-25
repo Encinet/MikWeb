@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+
 import { searchWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import type { SearchableWikiBlock, WikiSearchEntry } from '@/modules/wiki/model/wiki-search-types';
 
@@ -26,9 +27,10 @@ test('public endpoints return only public content regardless of cookies or reque
     const section = await getSection('getting-started');
     assert.equal(section.status, 200);
     const payload = await section.json();
-    assert.deepEqual(Object.keys(payload).sort(), ['compiled', 'id', 'outline']);
+    assert.deepEqual(Object.keys(payload).sort(), ['article', 'id', 'outline']);
     assert.equal(payload.id, 'getting-started');
-    assert.ok(payload.compiled.includes('function'));
+    assert.equal(payload.article.type, 'root');
+    assert.ok(payload.article.children.length > 0);
     assert.ok(Array.isArray(payload.outline));
     const privateSection = await getSection('moderator');
     assert.equal(privateSection.status, 404);

@@ -1,10 +1,10 @@
 /* Chat owns the screen; site navigation and account panels stay outside the conversation. */
-html:has(.chat-workspace),
-body:has(.chat-workspace) {
+html[data-fullscreen-page="chat"],
+html[data-fullscreen-page="chat"] body {
   overflow: hidden;
   scrollbar-gutter: auto;
 }
-body:has(.chat-workspace)
+html[data-fullscreen-page="chat"] body
   :is(
     .project-navbar-shell,
     .site-footer,

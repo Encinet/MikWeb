@@ -40,7 +40,8 @@ export class WikiResourceCache {
       (value: WikiSectionPayload) => {
         if (
           value?.id !== id ||
-          typeof value.compiled !== 'string' ||
+          value.article?.type !== 'root' ||
+          !Array.isArray(value.article.children) ||
           !Array.isArray(value.outline)
         ) {
           throw new Error('Invalid Wiki section');

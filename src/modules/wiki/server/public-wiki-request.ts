@@ -22,7 +22,7 @@ export async function wikiSectionResponse(locale: string, id: string) {
   return Response.json(
     {
       id,
-      compiled: bundle.compiled[id],
+      article: bundle.articles[id],
       outline: bundle.outlines[id],
     } satisfies WikiSectionPayload,
     { headers: publicHeaders },

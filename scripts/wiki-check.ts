@@ -1,4 +1,3 @@
-import { createProcessor } from '@mdx-js/mdx';
 import { createWikiSectionGroups, sortWikiSections } from '@/modules/wiki/lib/wiki-grouping';
 import { parseWikiMarkdownBlocks } from '@/modules/wiki/lib/wiki-search';
 import type {
@@ -9,7 +8,9 @@ import type {
 } from '@/modules/wiki/model/wiki-section-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+import { wikiMarkdownParser } from '@/modules/wiki/server/parse-wiki-article';
 import { routing } from '@/shared/i18n/routing';
+
 import { formatEnglishHeading } from './lib/english-headings';
 
 function createWikiCheckError(title: string, details: string[], suggestion?: string): Error {
@@ -39,7 +40,7 @@ function getWikiComponentHeadings(content: string): string[] {
     }
     for (const child of node.children ?? []) visit(child);
   };
-  visit(createProcessor().parse(content));
+  visit(wikiMarkdownParser.parse(content));
   return headings;
 }
 
@@ -254,7 +255,7 @@ async function runWikiCheck(): Promise<void> {
     validateSectionStructure(locale, wikiDocuments);
     validateUniqueSectionOrder(locale, wikiSections);
     validateEnglishHeadings(locale, wikiDocuments);
-    await createWikiContentBundle(locale, wikiDocuments);
+    createWikiContentBundle(locale, wikiDocuments);
     wikiSectionIdsByLocale.set(locale, wikiSectionIdSet);
     wikiDocumentsByLocale.set(locale, wikiDocumentBySectionId);
 

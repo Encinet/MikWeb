@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SearchParamsContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime';
+
 import { NextIntlClientProvider } from 'next-intl';
+import { SearchParamsContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime';
 import { act } from 'react';
+
 import type { WikiSectionDocument } from '@/modules/wiki/model/wiki-section-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import WikiContentView from '@/modules/wiki/ui/wiki-content-view';
+
 import en from '../../messages/en.json';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
@@ -13,24 +16,22 @@ test('static Wiki content follows shared URLs, shallow chapter changes, and Back
   const documents = [
     ['start', 'Getting started'],
     ['rules', 'Server rules'],
-  ].map(
-    ([id, title], index): WikiSectionDocument => ({
-      section: {
-        id,
-        icon: 'Home',
-        label: title,
-        description: title,
-        order: index,
-        groupOrder: 0,
-        groupId: 'basics',
-        groupLabel: 'Basics',
-        access: 'public',
-      },
-      content: `# ${title}\n\n## Details\n\n${title} details.`,
-      sourcePath: `${id}.mdx`,
-    }),
-  );
-  const bundle = await createWikiContentBundle('en', documents);
+  ].map(([id, title], index): WikiSectionDocument => ({
+    section: {
+      id,
+      icon: 'Home',
+      label: title,
+      description: title,
+      order: index,
+      groupOrder: 0,
+      groupId: 'basics',
+      groupLabel: 'Basics',
+      access: 'public',
+    },
+    content: `# ${title}\n\n## Details\n\n${title} details.`,
+    sourcePath: `${id}.mdx`,
+  }));
+  const bundle = createWikiContentBundle('en', documents);
   const environment = createBrowserEnvironment();
   const { window, root, container } = environment;
   Object.defineProperty(window.document, 'visibilityState', { value: 'hidden' });
@@ -43,7 +44,7 @@ test('static Wiki content follows shared URLs, shallow chapter changes, and Back
     if (url === '/api/wiki/section/en/rules') {
       return Response.json({
         id: 'rules',
-        compiled: bundle.compiled.rules,
+        article: bundle.articles.rules,
         outline: bundle.outlines.rules,
       });
     }
@@ -62,9 +63,9 @@ test('static Wiki content follows shared URLs, shallow chapter changes, and Back
             <WikiContentView
               sections={staff ? withStaff : bundle.sections}
               sectionGroups={bundle.sectionGroups}
-              compiled={{
-                start: bundle.compiled.start,
-                ...(staff ? { moderator: bundle.compiled.rules } : {}),
+              articles={{
+                start: bundle.articles.start,
+                ...(staff ? { moderator: bundle.articles.rules } : {}),
               }}
               outlines={{ start: bundle.outlines.start }}
               searchIndex={[]}

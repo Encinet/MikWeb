@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import type { ComponentProps } from 'react';
 import { useMemo } from 'react';
+
 import { createWikiSectionGroups, sortWikiSections } from '@/modules/wiki/lib/wiki-grouping';
 import { useWikiStaffContent } from '@/modules/wiki/model/use-wiki-staff-content';
 import WikiContentView from '@/modules/wiki/ui/wiki-content-view';
@@ -19,7 +20,7 @@ export default function WikiContentGateway(props: ComponentProps<typeof WikiCont
       ...props,
       sections,
       sectionGroups: createWikiSectionGroups(sections),
-      compiled: { ...props.compiled, ...staff.bundle.compiled },
+      articles: { ...props.articles, ...staff.bundle.articles },
       outlines: { ...props.outlines, ...staff.bundle.outlines },
       searchIndex: [...props.searchIndex, ...staff.bundle.searchIndex],
     };

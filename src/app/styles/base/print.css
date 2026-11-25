@@ -867,9 +867,8 @@
   }
 
   /* The embedded map cannot be printed reliably; retain its direct URL. */
-  html:has(.map-page),
-  body:has(.map-page),
-  .app-body:has(.map-page) {
+  html[data-fullscreen-page],
+  html[data-fullscreen-page] body {
     overflow: visible !important;
   }
 
@@ -905,11 +904,11 @@
   }
 
   /* Print the current conversation as a transcript. */
-  body:has(.chat-workspace) :is(.print-site-header, .print-site-footer) {
+  html[data-fullscreen-page="chat"] :is(.print-site-header, .print-site-footer) {
     display: flex !important;
   }
 
-  .chat-workspace {
+  html[data-fullscreen-page="chat"] .chat-workspace {
     position: static !important;
     display: block !important;
     width: 100% !important;

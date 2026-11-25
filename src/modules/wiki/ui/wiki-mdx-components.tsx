@@ -1,9 +1,9 @@
 'use client';
 
 import { AlertTriangle, ChevronRight, Info } from 'lucide-react';
-import type { MDXComponents } from 'mdx/types';
 import type { ReactNode } from 'react';
 import { Children, isValidElement, useId, useState } from 'react';
+
 import { createWikiMarkdownRenderers } from '@/modules/wiki/ui/wiki-markdown-renderers';
 import { CopyButton } from '@/shared/ui/action/copy-button';
 
@@ -193,20 +193,17 @@ function Tabs({ defaultValue, children }: { defaultValue: string; children?: Rea
 
 const markdown = createWikiMarkdownRenderers();
 
-export const wikiMdxComponents: MDXComponents = {
+export const wikiMdxComponents = {
   ...markdown,
   pre: CodeBlock,
-  ...Object.fromEntries([
-    ['WikiTable', markdown.table],
-    ['Callout', Callout],
-    ['Steps', Steps],
-    ['Step', Step],
-    ['Cards', Cards],
-    ['Card', Card],
-    ['Details', Details],
-    ['Definitions', Definitions],
-    ['Definition', Definition],
-    ['Tabs', Tabs],
-    ['Tab', Tab],
-  ]),
+  Callout,
+  Steps,
+  Step,
+  Cards,
+  Card,
+  Details,
+  Definitions,
+  Definition,
+  Tabs,
+  Tab,
 };

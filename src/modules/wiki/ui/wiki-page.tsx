@@ -30,7 +30,7 @@ async function WikiPageContent({ params }: { params: Promise<{ locale: string }>
     <WikiContentGateway
       sections={bundle.sections}
       sectionGroups={bundle.sectionGroups}
-      compiled={initialSection ? { [initialSection]: bundle.compiled[initialSection] } : {}}
+      articles={initialSection ? { [initialSection]: bundle.articles[initialSection] } : {}}
       outlines={initialSection ? { [initialSection]: bundle.outlines[initialSection] } : {}}
       searchIndex={[]}
       pageTitle={t('title')}

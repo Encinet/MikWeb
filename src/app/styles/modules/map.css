@@ -8,13 +8,12 @@
   background: #0b1110;
 }
 
-html:has(.map-page),
-body:has(.map-page),
-.app-body:has(.map-page) {
+html[data-fullscreen-page="map"],
+html[data-fullscreen-page="map"] body {
   overflow: hidden;
 }
 
-.app-body:has(.map-page) .site-footer {
+html[data-fullscreen-page="map"] .site-footer {
   display: none;
 }
 
