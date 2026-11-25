@@ -9,13 +9,13 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { ReactNode, Ref } from 'react';
 import { useId, ViewTransition } from 'react';
 import { MAX_IMAGE_SCALE } from '@/modules/building/lib/building-image-transform';
 import type { BuildingGalleryState } from '@/modules/building/model/use-building-gallery';
 import { useBuildingImageZoom } from '@/modules/building/model/use-building-image-zoom';
+import { BuildingPicture } from '@/modules/building/ui/building-picture';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 export function BuildingGalleryViewer({
@@ -40,7 +40,6 @@ export function BuildingGalleryViewer({
   const helpId = useId();
   const {
     activeImage,
-    activePreview,
     loading,
     isImageError,
     handleImageLoad,
@@ -51,7 +50,7 @@ export function BuildingGalleryViewer({
   const available = Boolean(activeImage && !failed && !loading);
   const zoom = useBuildingImageZoom({
     enabled: available,
-    imageKey: activeImage,
+    imageKey: activeImage?.webp,
     next: gallery.next,
     prev: gallery.prev,
   });
@@ -72,37 +71,24 @@ export function BuildingGalleryViewer({
           >
             <div
               ref={zoom.transformRef}
-              key={activeImage ?? 'empty'}
+              key={activeImage?.webp ?? 'empty'}
               className="building-archive-stage-image"
               data-smooth-zoom={zoom.smooth || undefined}
               style={{ transform: `translate3d(${x}px, ${y}px, 0px) scale(${scale})` }}
             >
               {activeImage && !failed ? (
                 <>
-                  {activePreview ? (
-                    <Image
-                      src={activePreview}
-                      alt=""
-                      aria-hidden="true"
-                      fill
-                      unoptimized
-                      loading="eager"
-                      draggable={false}
-                      className="building-gallery-preview object-contain"
-                      onError={() => handleImageError(activePreview)}
-                    />
-                  ) : loading ? (
+                  {loading ? (
                     <div className="building-archive-stage-loader">
                       <LoadingState message={commonT('states.loading')} />
                     </div>
                   ) : null}
-                  <Image
+                  <BuildingPicture
                     ref={zoom.imageRef}
-                    src={activeImage}
+                    image={activeImage}
                     alt={name}
                     fill
                     className="object-contain"
-                    unoptimized
                     loading="eager"
                     fetchPriority="high"
                     decoding="auto"

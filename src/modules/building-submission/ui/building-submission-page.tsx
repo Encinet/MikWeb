@@ -1,7 +1,7 @@
 'use client';
 
 import { ImagePlus, Minus, Plus, Send, Trash2, UserPlus, X } from 'lucide-react';
-import Image from 'next/image';
+import { BuildingPicture } from '@/modules/building/ui/building-picture';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { isMemberRole } from '@/modules/auth/model/auth-access';
@@ -323,11 +323,10 @@ function BuildingSubmissionForm() {
               <div className="building-submission-images">
                 {draftImages.map((image) => (
                   <figure key={image.id}>
-                    <Image
+                    <BuildingPicture
                       alt=""
                       height={Math.max(1, image.height)}
-                      src={image.previewUrl}
-                      unoptimized
+                      image={image.preview}
                       width={Math.max(1, image.width)}
                     />
                     <figcaption>

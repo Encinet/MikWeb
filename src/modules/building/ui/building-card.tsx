@@ -1,11 +1,11 @@
 'use client';
 
 import { Building2, Images, MapPin } from 'lucide-react';
-import Image from 'next/image';
 import { useState, ViewTransition } from 'react';
-import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
+import { getBuildingPath } from '@/modules/building/lib/building-links';
 import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
+import { BuildingPicture } from '@/modules/building/ui/building-picture';
 import { BuilderSummary } from '@/modules/building/ui/building-metadata';
 import { Link } from '@/shared/i18n/navigation';
 
@@ -19,7 +19,7 @@ export function BuildingCard({ building, t, prioritizeCover = false }: BuildingC
   const [imageErrors, setImageErrors] = useState<string[]>([]);
   const [prefetch, setPrefetch] = useState(false);
   const buildingImages = building.images;
-  const coverImage = buildingImages.find((imageUrl) => !imageErrors.includes(imageUrl));
+  const coverImage = buildingImages.find(({ webp }) => !imageErrors.includes(webp));
 
   return (
     <ViewTransition
@@ -43,15 +43,14 @@ export function BuildingCard({ building, t, prioritizeCover = false }: BuildingC
         >
           <div className="building-archive-card__media">
             {coverImage ? (
-              <Image
-                src={getBuildingPreviewUrl(coverImage, 'cover')}
+              <BuildingPicture
+                image={coverImage}
                 fill
-                unoptimized
                 alt={building.name}
                 className="object-cover"
                 loading={prioritizeCover ? 'eager' : 'lazy'}
                 fetchPriority={prioritizeCover ? 'high' : 'auto'}
-                onError={() => setImageErrors((previous) => [...previous, coverImage])}
+                onError={() => setImageErrors((previous) => [...previous, coverImage.webp])}
               />
             ) : (
               <div className="building-archive-card__fallback">

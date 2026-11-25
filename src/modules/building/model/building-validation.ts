@@ -2,8 +2,8 @@ import type {
   Builder,
   Building,
   BuildingCoordinates,
+  BuildingImageRef,
   BuildingSource,
-  LocalizedBuilding,
 } from '@/modules/building/model/building-types';
 import { BUILDING_TYPES } from '@/modules/building/model/building-types';
 import { isPlayerIdentity } from '@/modules/player/model/player-validation';
@@ -23,12 +23,17 @@ const BUILDING_FIELDS = new Set<string>([
   'tags',
   'source',
 ] satisfies (keyof Building)[]);
-const BUILDING_IMAGE_FILENAME_PATTERN = /^[0-9a-f]{64}\.webp$/;
+const IMAGE_HASH_PATTERN = /^[0-9a-f]{64}$/;
 const BUILDING_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 export const MAX_BUILDING_WORLD_NAME_LENGTH = 128;
 
-export function isBuildingImageFilename(value: unknown): value is string {
-  return typeof value === 'string' && BUILDING_IMAGE_FILENAME_PATTERN.test(value);
+export function isBuildingImageRef(value: unknown): value is BuildingImageRef {
+  return (
+    isRecord(value) &&
+    Object.keys(value).length === 2 &&
+    typeof value.webp === 'string' && IMAGE_HASH_PATTERN.test(value.webp) &&
+    typeof value.jxl === 'string' && IMAGE_HASH_PATTERN.test(value.jxl)
+  );
 }
 
 function isBuilder(value: unknown): value is Builder {
@@ -112,7 +117,7 @@ function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
-export function isLocalizedBuilding(value: unknown): value is LocalizedBuilding {
+export function isLocalizedBuildingRecord(value: unknown): value is Building<string> {
   return isBuildingWithText(value, isString, (source): source is BuildingSource<string> =>
     isBuildingSourceWithNotes(source, isString),
   );
@@ -135,7 +140,7 @@ function isBuildingWithText<Text>(
     value.builders.every(isBuilder) &&
     BUILDING_TYPES.some((type) => type === value.buildType) &&
     Array.isArray(value.images) &&
-    value.images.every(isBuildingImageFilename) &&
+    value.images.every(isBuildingImageRef) &&
     isBuildingDate(value.buildDate) &&
     (value.tags === undefined ||
       (Array.isArray(value.tags) && value.tags.every(isText))) &&

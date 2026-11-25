@@ -1,14 +1,14 @@
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
-import { isBuildingImageFilename } from '@/modules/building/model/building-validation';
-import { isPixelOnlyWebp } from '@/modules/building-submission/lib/is-pixel-only-webp';
+import type { BuildingImagePair, BuildingImageRef, BuildingImageUrl } from '@/modules/building/model/building-types';
+import { isBuildingImageRef } from '@/modules/building/model/building-validation';
 import type { BuildingSubmissionImageDraft } from '@/modules/building-submission/model/building-submission-form';
 import { BUILDING_SUBMISSION_IMAGE_LIMITS } from '@/modules/building-submission/model/building-submission-limits';
 import { isApiErrorPayload } from '@/shared/api/api-error-payload';
 import { isRecord } from '@/shared/lib/is-record';
 
 const uploadedDrafts = new WeakMap<
-  File,
-  { draftKey: string; owner: string; expiresAt: number; filename: string }
+  BuildingSubmissionImageDraft['files'],
+  { draftKey: string; owner: string; expiresAt: number; image: BuildingImageRef }
 >();
 
 export async function createBuildingSubmissionImageDrafts(
@@ -17,27 +17,11 @@ export async function createBuildingSubmissionImageDrafts(
   existing: readonly BuildingSubmissionImageDraft[] = [],
 ): Promise<BuildingSubmissionImageDraft[]> {
   const drafts: BuildingSubmissionImageDraft[] = [];
-  let worker: Worker | null | undefined;
+  let worker: Worker | undefined;
   async function encodeCanvas(context: CanvasRenderingContext2D, tryLossless: boolean) {
-    const { canvas } = context;
-    if (worker !== null) {
-      try {
-        worker ??= new Worker(new URL('../worker/encode-webp.worker.ts', import.meta.url));
-        const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-        const bytes = await encodeInWorker(worker, pixels, tryLossless, signal);
-        return new Blob([bytes], { type: 'image/webp' });
-      } catch {
-        signal.throwIfAborted();
-        worker?.terminate();
-        worker = null;
-      }
-    }
-    // Native encoding also works when workers or WebAssembly are restricted.
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, 'image/webp', BUILDING_SUBMISSION_IMAGE_LIMITS.webpQuality / 100),
-    );
-    if (blob?.type !== 'image/webp') throw new Error('upload_failed');
-    return blob;
+    worker ??= new Worker(new URL('../worker/encode-building-image.worker.ts', import.meta.url));
+    const { width, height } = context.canvas;
+    return encodeInWorker(worker, context.getImageData(0, 0, width, height), tryLossless, signal);
   }
 
   try {
@@ -45,26 +29,36 @@ export async function createBuildingSubmissionImageDrafts(
       signal.throwIfAborted();
       const cached = await findPreparedSource(source, [...existing, ...drafts], signal);
       signal.throwIfAborted();
-      const { file, width, height } = cached ?? (await prepareImage(source, signal, encodeCanvas));
+      const { files, width, height } = cached ?? (await prepareImage(source, signal, encodeCanvas));
       signal.throwIfAborted();
       drafts.push({
         id: crypto.randomUUID(),
         source,
-        file,
-        previewUrl: URL.createObjectURL(file),
+        files,
+        preview: {
+          webp: URL.createObjectURL(files.webp) as BuildingImageUrl,
+          jxl: URL.createObjectURL(files.jxl) as BuildingImageUrl,
+        },
         width,
         height,
-        size: file.size,
+        size: files.webp.size + files.jxl.size,
       });
     }
     return drafts;
   } catch (error) {
-    for (const draft of drafts) URL.revokeObjectURL(draft.previewUrl);
+    for (const draft of drafts) releaseBuildingImagePreview(draft);
     throw error;
   } finally {
     worker?.terminate();
   }
 }
+
+export function releaseBuildingImagePreview({ preview }: BuildingSubmissionImageDraft) {
+  URL.revokeObjectURL(preview.webp);
+  URL.revokeObjectURL(preview.jxl);
+}
+
+type EncodedImage = BuildingImagePair<ArrayBuffer>;
 
 async function findPreparedSource(
   source: File,
@@ -100,7 +94,7 @@ async function findPreparedSource(
 async function prepareImage(
   source: File,
   signal: AbortSignal,
-  encodeCanvas: (context: CanvasRenderingContext2D, tryLossless: boolean) => Promise<Blob>,
+  encodeCanvas: (context: CanvasRenderingContext2D, tryLossless: boolean) => Promise<EncodedImage>,
 ) {
   const limits = BUILDING_SUBMISSION_IMAGE_LIMITS;
   const bitmap = await createImageBitmap(source);
@@ -113,41 +107,36 @@ async function prepareImage(
   try {
     signal.throwIfAborted();
     if (width < limits.minWidth || height < limits.minHeight) throw new Error('image_too_small');
-    if (
-      scale === 1 &&
-      source.type === 'image/webp' &&
-      source.size <= limits.maxBytes &&
-      isPixelOnlyWebp(new Uint8Array(await source.arrayBuffer()))
-    ) {
-      return { file: source, width, height };
-    }
     signal.throwIfAborted();
     context = drawResizedImage(bitmap, width, height);
   } finally {
     bitmap.close();
   }
   try {
-    let blob = await encodeCanvas(context, tryLossless);
-    while (blob.size > limits.maxBytes) {
+    let encoded = await encodeCanvas(context, tryLossless);
+    let size = encoded.webp.byteLength + encoded.jxl.byteLength;
+    while (size > limits.maxBytes) {
       signal.throwIfAborted();
       const canvas = context.canvas;
       // Alpha-heavy images can exceed the encoder's target. Scale the pixels before retrying.
       const scale = Math.max(
         limits.minWidth / canvas.width,
         limits.minHeight / canvas.height,
-        0.95 * Math.sqrt(limits.maxBytes / blob.size),
+        0.95 * Math.sqrt(limits.maxBytes / size),
       );
-      if (scale >= 1) throw new Error('image_too_large');
-      context = drawResizedImage(
-        canvas,
-        Math.round(canvas.width * scale),
-        Math.round(canvas.height * scale),
-      );
+      const width = Math.round(canvas.width * scale);
+      const height = Math.round(canvas.height * scale);
+      if (width === canvas.width && height === canvas.height) throw new Error('image_too_large');
+      context = drawResizedImage(canvas, width, height);
       canvas.width = 0;
-      blob = await encodeCanvas(context, tryLossless);
+      encoded = await encodeCanvas(context, tryLossless);
+      size = encoded.webp.byteLength + encoded.jxl.byteLength;
     }
     return {
-      file: new File([blob], 'building.webp', { type: 'image/webp' }),
+      files: {
+        webp: new File([encoded.webp], 'building.webp', { type: 'image/webp' }),
+        jxl: new File([encoded.jxl], 'building.jxl', { type: 'image/jxl' }),
+      },
       width: context.canvas.width,
       height: context.canvas.height,
     };
@@ -175,14 +164,14 @@ function encodeInWorker(
 ) {
   const listeners = new AbortController();
   const options = { signal: listeners.signal };
-  return new Promise<ArrayBuffer>((resolve, reject) => {
+  return new Promise<EncodedImage>((resolve, reject) => {
     const failed = () => reject(new Error('upload_failed'));
     signal.addEventListener('abort', () => reject(signal.reason), options);
     worker.addEventListener('error', failed, options);
     worker.addEventListener('messageerror', failed, options);
     worker.addEventListener(
       'message',
-      ({ data }: MessageEvent<ArrayBuffer | null>) => {
+      ({ data }: MessageEvent<EncodedImage | null>) => {
         if (data) resolve(data);
         else failed();
       },
@@ -197,40 +186,41 @@ export async function uploadBuildingSubmissionImageDrafts(
   account: AuthAccount,
   draftKey: string,
   signal?: AbortSignal,
-): Promise<string[]> {
-  const filenames: string[] = [];
+): Promise<BuildingImageRef[]> {
+  const uploaded: BuildingImageRef[] = [];
   for (const draft of images) {
     signal?.throwIfAborted();
-    const cached = uploadedDrafts.get(draft.file);
+    const cached = uploadedDrafts.get(draft.files);
     if (
       cached &&
       cached.draftKey === draftKey &&
       cached.owner === account.playerUuid &&
       cached.expiresAt > Date.now()
     ) {
-      filenames.push(cached.filename);
+      uploaded.push(cached.image);
       continue;
     }
-    const { filename, expiresAt } = await uploadWebp(draft.file, draftKey, draft.id, signal);
-    uploadedDrafts.set(draft.file, {
+    const { image, expiresAt } = await uploadImage(draft.files, draftKey, draft.id, signal);
+    uploadedDrafts.set(draft.files, {
       draftKey,
       owner: account.playerUuid,
-      filename,
+      image,
       expiresAt,
     });
-    filenames.push(filename);
+    uploaded.push(image);
   }
-  return filenames;
+  return uploaded;
 }
 
-async function uploadWebp(
-  file: File,
+async function uploadImage(
+  files: BuildingSubmissionImageDraft['files'],
   draftKey: string,
   requestKey: string,
   signal?: AbortSignal,
-): Promise<{ filename: string; expiresAt: number }> {
+): Promise<{ image: BuildingImageRef; expiresAt: number }> {
   const formData = new FormData();
-  formData.set('image', file, 'building.webp');
+  formData.set('webp', files.webp);
+  formData.set('jxl', files.jxl);
   const response = await fetch('/api/account/images/upload', {
     method: 'POST',
     headers: { 'X-Building-Draft': draftKey, 'X-Upload-Request': requestKey },
@@ -241,11 +231,11 @@ async function uploadWebp(
   if (
     !response.ok ||
     !isRecord(payload) ||
-    !isBuildingImageFilename(payload.filename) ||
+    !isBuildingImageRef(payload.image) ||
     typeof payload.expiresAt !== 'number' ||
     !Number.isFinite(payload.expiresAt)
   ) {
     throw new Error(isApiErrorPayload(payload) ? payload.error : 'upload_failed');
   }
-  return { filename: payload.filename, expiresAt: payload.expiresAt };
+  return { image: payload.image, expiresAt: payload.expiresAt };
 }

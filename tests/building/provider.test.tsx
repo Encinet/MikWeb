@@ -34,13 +34,16 @@ const building = {
   coordinates: { world: 'world', x: 0, y: 64, z: 0 },
   builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
   buildType: 'original',
-  images: [`${'b'.repeat(64)}.webp`, `${'c'.repeat(64)}.webp`],
+  images: [
+    { webp: 'b'.repeat(64), jxl: 'd'.repeat(64) },
+    { webp: 'c'.repeat(64), jxl: 'e'.repeat(64) },
+  ],
   buildDate: '2026-11-10',
   tags: ['Tower'],
   source: { notes: 'Source notes' },
 };
 
-test('the archive loads localized catalog JSON on entry and reuses a successful direct retry', async () => {
+test('the archive loads its localized catalog directly and reuses a successful retry', async () => {
   const env = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
   const requests: [string, RequestCache | undefined][] = [];
@@ -70,18 +73,21 @@ test('the archive loads localized catalog JSON on entry and reuses a successful 
   }, previousFetch);
   try {
     await mount();
-    assert.deepEqual(requests, [['/api/buildings/en', 'default']]);
+    const url = dataApiUrl('/buildings?locale=en');
+    assert.deepEqual(requests, [[url, 'default']]);
     assert.equal(current().isLoading, false);
     assert.ok(current().error);
     await act(async () => current().fetchBuildings({ force: true }));
     assert.deepEqual(requests, [
-      ['/api/buildings/en', 'default'],
-      [dataApiUrl('/buildings?locale=en'), 'reload'],
+      [url, 'default'],
+      [url, 'reload'],
     ]);
     assert.equal(current().error, null);
-    const expectedImages = building.images.map(
-      (filename) => `${imageBaseUrl}/buildings/${building.id}/${filename}`,
-    );
+    const prefix = `${imageBaseUrl}/buildings/${building.id}/`;
+    const expectedImages = building.images.map(({ webp, jxl }) => ({
+      webp: `${prefix}${webp}.webp`,
+      jxl: `${prefix}${jxl}.jxl`,
+    }));
     assert.deepEqual(current().buildings[0].images, expectedImages);
     assert.equal(current().buildings[0].name, 'Building');
     assert.equal(current().buildings[0].description, 'Description');
@@ -124,7 +130,7 @@ test('switching languages isolates pending requests and cached catalogs', async 
   try {
     await render('en');
     await render('zh-CN');
-    assert.deepEqual(requests, ['/api/buildings/en', '/api/buildings/zh-CN']);
+    assert.deepEqual(requests, [dataApiUrl('/buildings?locale=en'), dataApiUrl('/buildings?locale=zh-CN')]);
     await act(async () => pending[0](Response.json({ imageBaseUrl, buildings: [building] })));
     assert.equal(current().isLoading, true);
     assert.deepEqual(current().buildings, []);

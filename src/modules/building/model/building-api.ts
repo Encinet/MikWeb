@@ -2,20 +2,22 @@ import { dataApiUrl } from '@/shared/api/data-api-url';
 import { getLocalizedText, type LocalizedText } from '@/shared/i18n/localized-text';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { isRecord } from '@/shared/lib/is-record';
-import type { Building, LocalizedBuilding } from './building-types';
-import { isBuilding, isLocalizedBuilding } from './building-validation';
+import type { Building, BuildingWithImageUrls, LocalizedBuilding } from './building-types';
+import { isBuilding, isLocalizedBuildingRecord } from './building-validation';
 
 export interface BuildingCatalogResponse<Text = LocalizedText> {
-  imageBaseUrl: string | null;
+  imageBaseUrl: BuildingImageBaseUrl | null;
   buildings: Building<Text>[];
 }
 
 interface BuildingDetailResponse {
-  imageBaseUrl: string | null;
+  imageBaseUrl: BuildingImageBaseUrl | null;
   building: Building;
 }
 
-function isImageBaseUrl(value: unknown): value is string | null {
+type BuildingImageBaseUrl = `https://${string}`;
+
+function isImageBaseUrl(value: unknown): value is BuildingImageBaseUrl | null {
   if (value === null) return true;
   if (
     typeof value !== 'string' ||
@@ -54,7 +56,7 @@ export function isLocalizedBuildingCatalogResponse(
   value: unknown,
   limit?: number,
 ): value is BuildingCatalogResponse<string> {
-  return isCatalogResponse(value, isLocalizedBuilding, limit);
+  return isCatalogResponse(value, isLocalizedBuildingRecord, limit);
 }
 
 function isCatalogResponse<Text>(
@@ -82,7 +84,7 @@ export function isBuildingDetailResponse(value: unknown): value is BuildingDetai
 }
 
 export function localizeBuilding(
-  { name, description, tags, source, ...building }: Building,
+  { name, description, tags, source, ...building }: BuildingWithImageUrls,
   locale: AppLocale,
 ): LocalizedBuilding {
   return {
@@ -98,28 +100,27 @@ export function localizeBuilding(
   };
 }
 
-export function localizeBuildingCatalog(
-  { buildings, imageBaseUrl }: BuildingCatalogResponse,
-  locale: AppLocale,
-): BuildingCatalogResponse<string> {
-  return {
-    imageBaseUrl,
-    buildings: buildings.map((building) => localizeBuilding(building, locale)),
-  };
-}
-
 export function resolveBuildingImages<Text>(
   building: Building<Text>,
-  imageBaseUrl: string | null,
-): Building<Text> {
-  if (imageBaseUrl === null || building.images.length === 0) return building;
-  const prefix = `${imageBaseUrl}/buildings/${building.id}/`;
-  return { ...building, images: building.images.map((filename) => prefix + filename) };
+  imageBaseUrl: BuildingImageBaseUrl | null,
+): BuildingWithImageUrls<Text> {
+  if (imageBaseUrl === null) {
+    if (building.images.length) throw new Error('Missing building image base URL');
+    return { ...building, images: [] };
+  }
+  const prefix = `${imageBaseUrl}/buildings/${building.id}/` as const;
+  return {
+    ...building,
+    images: building.images.map(({ webp, jxl }) => ({
+      webp: `${prefix}${webp}.webp`,
+      jxl: `${prefix}${jxl}.jxl`,
+    })),
+  };
 }
 
 export function resolveBuildingCatalog<Text>({
   buildings,
   imageBaseUrl,
-}: BuildingCatalogResponse<Text>): Building<Text>[] {
+}: BuildingCatalogResponse<Text>): BuildingWithImageUrls<Text>[] {
   return buildings.map((building) => resolveBuildingImages(building, imageBaseUrl));
 }

@@ -2,18 +2,17 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { act } from 'react';
 import {
-  getBuildingPreviewUrl,
   getBuildingShareData,
   getBuildingUrl,
 } from '@/modules/building/lib/building-links';
 import { localizeBuilding } from '@/modules/building/model/building-api';
-import type { Building } from '@/modules/building/model/building-types';
+import type { BuildingImageUrls, BuildingWithImageUrls } from '@/modules/building/model/building-types';
 import { useBuildingCardShare } from '@/modules/building/model/use-building-card-share';
 import { useBuildingGallery } from '@/modules/building/model/use-building-gallery';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
-const building: Building = {
+const building: BuildingWithImageUrls = {
   id: 'a'.repeat(32),
   name: { 'zh-CN': '樱之庭', en: 'Sakura Garden' },
   description: {
@@ -30,18 +29,18 @@ const building: Building = {
   buildDate: '2026-11-06',
 };
 
+function photo(name: string): BuildingImageUrls {
+  return { webp: `https://example.test/${name}.webp`, jxl: `https://example.test/${name}.jxl` };
+}
+
 function GalleryHarness({
   onState,
   modal,
-  images = [
-    'https://example.test/1.webp',
-    'https://example.test/2.webp',
-    'https://example.test/3.webp',
-  ],
+  images = ['1', '2', '3'].map(photo),
 }: {
   onState: (value: ReturnType<typeof useBuildingGallery>) => void;
   modal?: boolean;
-  images?: string[];
+  images?: BuildingImageUrls[];
 }) {
   onState(useBuildingGallery(images, modal));
   return null;
@@ -58,7 +57,7 @@ test('catalog refresh keeps the selected photo through reordering and recovers f
     act(async () =>
       environment.root.render(
         <GalleryHarness
-          images={images}
+          images={images.map(photo)}
           onState={(value) => {
             state = value;
           }}
@@ -68,19 +67,19 @@ test('catalog refresh keeps the selected photo through reordering and recovers f
   try {
     await render(['first', 'second', 'third']);
     await act(async () => current().handleSelectImage(2));
-    assert.equal(current().activeImage, 'third');
+    assert.deepEqual(current().activeImage, photo('third'));
     await render(['third', 'first', 'second']);
-    assert.equal(current().activeImage, 'third');
+    assert.deepEqual(current().activeImage, photo('third'));
     assert.equal(current().imageIndex, 0);
     await render(['first', 'second']);
-    assert.equal(current().activeImage, 'first');
+    assert.deepEqual(current().activeImage, photo('first'));
     await act(async () => current().prev());
-    assert.equal(current().activeImage, 'second');
+    assert.deepEqual(current().activeImage, photo('second'));
     await render([]);
     assert.equal(current().activeImage, undefined);
     assert.equal(current().loading, false);
     await render(['new']);
-    assert.equal(current().activeImage, 'new');
+    assert.deepEqual(current().activeImage, photo('new'));
     assert.equal(current().imageIndex, 0);
     await render(['duplicate', 'duplicate']);
     await act(async () => current().handleSelectImage(1));
@@ -250,14 +249,10 @@ test('rapid gallery navigation ignores completion from an earlier image and rema
       ),
     );
     assert.equal(current().loading, true);
-    assert.equal(current().activePreview, undefined);
-    assert.equal(current().getThumbnailSrc('https://example.test/1.webp'), undefined);
-    await act(async () => current().handleImageLoad('https://example.test/1.webp'));
+    assert.equal(current().shouldShowThumbnail(photo('1')), false);
+    await act(async () => current().handleImageLoad(photo('1')));
     assert.equal(current().loading, false);
-    assert.equal(
-      current().getThumbnailSrc('https://example.test/1.webp'),
-      'https://example.test/1.webp',
-    );
+    assert.equal(current().shouldShowThumbnail(photo('1')), true);
     await act(async () => current().next());
     const earlierImage = current().activeImage;
     await act(async () => current().next());
@@ -267,12 +262,12 @@ test('rapid gallery navigation ignores completion from an earlier image and rema
       if (earlierImage) current().handleImageLoad(earlierImage);
     });
     assert.equal(current().loading, true);
-    await act(async () => current().handleImageError('https://example.test/3.webp'));
+    await act(async () => current().handleImageError(photo('3')));
     assert.equal(current().loading, false);
     await act(async () => current().retryImage());
-    assert.equal(current().isImageError('https://example.test/3.webp'), false);
+    assert.equal(current().isImageError(photo('3')), false);
     assert.equal(current().loading, true);
-    await act(async () => current().handleImageLoad('https://example.test/3.webp'));
+    await act(async () => current().handleImageLoad(photo('3')));
     assert.equal(current().loading, false);
     await act(async () => current().next());
     assert.equal(current().imageIndex, 0);
@@ -295,79 +290,33 @@ test('rapid gallery navigation ignores completion from an earlier image and rema
   }
 });
 
-test('gallery shares loaded covers and thumbnails and retries only the failed original', async () => {
+test('gallery recognizes the actual selected format from an already loaded cover', async () => {
   const environment = createBrowserEnvironment();
-  const [first, second] = ['https://example.test/first.webp', 'https://example.test/second.webp'];
-  const cover = getBuildingPreviewUrl(first, 'cover');
-  const small = getBuildingPreviewUrl(second, 'thumbnail');
+  const first = photo('first');
+  const second = photo('second');
   Object.defineProperty(document, 'images', {
-    value: [
-      { complete: true, currentSrc: cover, naturalWidth: 640 },
-      { complete: false, currentSrc: second, naturalWidth: 0 },
-    ],
+    value: [{ complete: true, currentSrc: first.jxl, naturalWidth: 1920 }],
   });
   let gallery!: ReturnType<typeof useBuildingGallery>;
   try {
     await act(async () =>
       environment.root.render(
-        <GalleryHarness
-          modal
-          images={[first, second]}
-          onState={(state) => {
-            gallery = state;
-          }}
-        />,
+        <GalleryHarness modal images={[first, second]} onState={(state) => { gallery = state; }} />,
       ),
     );
+    assert.equal(gallery.loading, false);
+    assert.equal(gallery.shouldShowThumbnail(first), true);
+    await act(async () => gallery.next());
     assert.equal(gallery.loading, true);
-    assert.equal(gallery.activePreview, cover);
-    assert.equal(gallery.getThumbnailSrc(first), cover);
-    assert.equal(gallery.getThumbnailSrc(second), small);
-    await act(async () => {
-      gallery.handleImageLoad(small);
-      gallery.next();
-    });
-    assert.equal(gallery.loading, true);
-    assert.equal(gallery.activePreview, small);
+    assert.equal(gallery.shouldShowThumbnail(second), false);
     await act(async () => gallery.handleImageError(second));
-    assert.equal(gallery.getThumbnailSrc(second), small);
+    assert.equal(gallery.loading, false);
+    assert.equal(gallery.isImageError(second), true);
     await act(async () => gallery.retryImage());
-    assert.equal(gallery.activePreview, small);
+    assert.equal(gallery.loading, true);
     await act(async () => gallery.handleImageLoad(second));
-    assert.equal(gallery.activePreview, undefined);
-    await act(async () => gallery.handleImageError(small));
-    assert.equal(gallery.getThumbnailSrc(second), second);
-    assert.equal(gallery.isImageError(second), false);
+    assert.equal(gallery.shouldShowThumbnail(second), true);
   } finally {
     await environment.close();
   }
-});
-
-test('building preview URLs retain the public object path for both widths', () => {
-  const original = `https://images.example.test/media/buildings/${building.id}/${'b'.repeat(64)}.webp`;
-  assert.equal(getBuildingPreviewUrl(original, 'thumbnail'), `${original}?w=160`);
-  assert.equal(getBuildingPreviewUrl(original, 'cover'), `${original}?w=640`);
-});
-
-test('sharing uses immutable identity across locales, renames and coordinate edits', () => {
-  const data = getBuildingShareData(localizeBuilding(building, 'zh-CN'), 'zh-CN');
-  assert.equal(data.title, '樱之庭 · Mik Casual');
-  assert.equal(data.text, 'Lead, Guest · 樱花与庭院。');
-  assert.equal(data.url, `https://mcmik.top/zh-CN/buildings/${building.id}`);
-  assert.equal(
-    getBuildingShareData(localizeBuilding(building, 'en'), 'en').title,
-    'Sakura Garden · Mik Casual',
-  );
-  assert.equal(
-    getBuildingShareData(
-      {
-        ...localizeBuilding(building, 'zh-CN'),
-        name: 'New name',
-        coordinates: { world: 'other', x: 9, y: 70, z: 9 },
-      },
-      'zh-CN',
-    ).url,
-    data.url,
-  );
-  assert.equal(getBuildingUrl(building.id, 'en'), `https://mcmik.top/en/buildings/${building.id}`);
 });

@@ -1,17 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
+import type { BuildingImageUrls } from '@/modules/building/model/building-types';
 
 export interface BuildingGalleryState {
   imageIndex: number;
   loading: boolean;
-  activeImage: string | undefined;
-  activePreview: string | undefined;
-  getThumbnailSrc: (url: string) => string | undefined;
-  isImageError: (url: string) => boolean;
-  handleImageError: (url: string) => void;
-  handleImageLoad: (url: string) => void;
+  activeImage: BuildingImageUrls | undefined;
+  shouldShowThumbnail: (image: BuildingImageUrls) => boolean;
+  isImageError: (image: BuildingImageUrls) => boolean;
+  handleImageError: (image: BuildingImageUrls) => void;
+  handleImageLoad: (image: BuildingImageUrls) => void;
   retryImage: () => void;
   handleSelectImage: (index: number) => void;
   next: () => void;
@@ -20,8 +19,12 @@ export interface BuildingGalleryState {
 
 type ImageStatus = 'loaded' | 'error';
 
-export function useBuildingGallery(images: string[], modal = false): BuildingGalleryState {
-  const [selection, setSelection] = useState<{ url: string; index: number } | null>(null);
+function sameImage(left: BuildingImageUrls | undefined, right: BuildingImageUrls) {
+  return left?.webp === right.webp && left.jxl === right.jxl;
+}
+
+export function useBuildingGallery(images: BuildingImageUrls[], modal = false): BuildingGalleryState {
+  const [selection, setSelection] = useState<{ image: BuildingImageUrls; index: number } | null>(null);
   const [imageStatus, setImageStatus] = useState(() => {
     const status = new Map<string, ImageStatus>();
     // The underlying page can already be displaying a cover when a gallery opens over it.
@@ -37,31 +40,20 @@ export function useBuildingGallery(images: string[], modal = false): BuildingGal
   const resolveIndex = (selected: typeof selection) =>
     !selected
       ? 0
-      : images[selected.index] === selected.url
+      : sameImage(images[selected.index], selected.image)
         ? selected.index
-        : Math.max(0, images.indexOf(selected.url));
+        : Math.max(0, images.findIndex((image) => sameImage(image, selected.image)));
   const imageIndex = resolveIndex(selection);
   const activeImage = images[imageIndex];
-  const loading = Boolean(activeImage && !imageStatus.has(activeImage));
+  const statusFor = ({ webp, jxl }: BuildingImageUrls) =>
+    imageStatus.get(webp) ?? (imageStatus.get(jxl) === 'loaded' ? 'loaded' : undefined);
+  const loading = Boolean(activeImage && !statusFor(activeImage));
 
-  const isImageError = (url: string) => imageStatus.get(url) === 'error';
+  const isImageError = (image: BuildingImageUrls) => statusFor(image) === 'error';
 
-  const loadedPreview = (url: string) => {
-    const cover = getBuildingPreviewUrl(url, 'cover');
-    if (imageStatus.get(cover) === 'loaded') return cover;
-    const small = getBuildingPreviewUrl(url, 'thumbnail');
-    if (imageStatus.get(small) === 'loaded') return small;
-  };
-
-  const getThumbnailSrc = (url: string) => {
-    const preview = loadedPreview(url);
-    if (preview) return preview;
-    if (imageStatus.get(url) === 'loaded') return url;
-    // Let the stage finish its request before displaying the same original in the strip.
-    if (url === activeImage) return;
-    const small = getBuildingPreviewUrl(url, 'thumbnail');
-    if (!isImageError(small)) return small;
-  };
+  // Let the stage finish its request before displaying the same original in the strip.
+  const shouldShowThumbnail = (image: BuildingImageUrls) =>
+    statusFor(image) === 'loaded' || (!sameImage(activeImage, image) && !isImageError(image));
 
   const markImage = (url: string, status: ImageStatus) => {
     setImageStatus((previous) =>
@@ -73,21 +65,22 @@ export function useBuildingGallery(images: string[], modal = false): BuildingGal
     if (!activeImage) return;
     setImageStatus((previous) => {
       const next = new Map(previous);
-      next.delete(activeImage);
+      next.delete(activeImage.webp);
+      next.delete(activeImage.jxl);
       return next;
     });
   };
 
   const handleSelectImage = (index: number) => {
     if (!Number.isInteger(index) || index < 0 || index >= images.length) return;
-    setSelection({ url: images[index], index });
+    setSelection({ image: images[index], index });
   };
 
   const navigate = (dir: -1 | 1) => {
     if (images.length < 2) return;
     setSelection((previous) => {
       const index = (resolveIndex(previous) + dir + images.length) % images.length;
-      return { url: images[index], index };
+      return { image: images[index], index };
     });
   };
 
@@ -98,11 +91,10 @@ export function useBuildingGallery(images: string[], modal = false): BuildingGal
     imageIndex,
     loading,
     activeImage,
-    activePreview: activeImage && loading ? loadedPreview(activeImage) : undefined,
-    getThumbnailSrc,
+    shouldShowThumbnail,
     isImageError,
-    handleImageError: (url) => markImage(url, 'error'),
-    handleImageLoad: (url) => markImage(url, 'loaded'),
+    handleImageError: (image) => markImage(image.webp, 'error'),
+    handleImageLoad: (image) => markImage(image.webp, 'loaded'),
     retryImage,
     handleSelectImage,
     next,

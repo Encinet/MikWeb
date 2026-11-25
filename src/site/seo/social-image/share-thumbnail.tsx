@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import sharp from 'sharp';
-import type { Building } from '@/modules/building/model/building-types';
+import type { BuildingWithImageUrls } from '@/modules/building/model/building-types';
 import { SITE_NAME } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { getSitePageContent } from '@/site/seo/site-page-metadata';
@@ -78,7 +78,7 @@ export async function createSiteShareThumbnail(locale: AppLocale, page: SitePage
   );
 }
 
-export async function createBuildingShareThumbnail(building: Building) {
+export async function createBuildingShareThumbnail(building: BuildingWithImageUrls) {
   if (!building.images[0]) {
     const logo = await readSocialImageLogo();
     return new Response(
@@ -98,7 +98,7 @@ export async function createBuildingShareThumbnail(building: Building) {
     );
   }
   const photo = await frameSocialImagePhoto(
-    await readBuildingImage(building.images[0]),
+    await readBuildingImage(building.images[0].webp),
     SHARE_THUMBNAIL_SIZE,
   );
   return new Response(new Uint8Array(photo), { headers: { 'Content-Type': 'image/png' } });

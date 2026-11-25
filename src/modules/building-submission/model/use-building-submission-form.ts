@@ -7,6 +7,7 @@ import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import { useAuth } from '@/modules/auth/model/use-auth';
 import {
   createBuildingSubmissionImageDrafts,
+  releaseBuildingImagePreview,
   uploadBuildingSubmissionImageDrafts,
 } from '@/modules/building-submission/lib/building-submission-images';
 import { buildBuildingSubmissionDetails } from '@/modules/building-submission/lib/building-submission-payload';
@@ -73,7 +74,7 @@ export function useBuildingSubmissionForm() {
   const [form, setForm] = useState(() => createInitialBuildingSubmissionForm());
 
   const releaseDraftImages = useCallback(() => {
-    for (const image of draftImagesRef.current) URL.revokeObjectURL(image.previewUrl);
+    for (const image of draftImagesRef.current) releaseBuildingImagePreview(image);
     draftImagesRef.current = [];
   }, []);
 
@@ -292,7 +293,7 @@ export function useBuildingSubmissionForm() {
         draftImagesRef.current,
       );
       if (controller.signal.aborted) {
-        for (const draft of drafts) URL.revokeObjectURL(draft.previewUrl);
+        for (const draft of drafts) releaseBuildingImagePreview(draft);
         return;
       }
       draftImagesRef.current = [...draftImagesRef.current, ...drafts];
@@ -343,7 +344,7 @@ export function useBuildingSubmissionForm() {
     try {
       draftKey.current ||= crypto.randomUUID();
       const currentDraft = draftKey.current;
-      const filenames = await uploadBuildingSubmissionImageDrafts(
+      const uploaded = await uploadBuildingSubmissionImageDrafts(
         images,
         account,
         currentDraft,
@@ -355,7 +356,7 @@ export function useBuildingSubmissionForm() {
         signal: controller.signal,
         body: {
           draftKey: currentDraft,
-          payload: { ...details, images: filenames },
+          payload: { ...details, images: uploaded },
         },
       });
       controller.signal.throwIfAborted();
@@ -420,7 +421,7 @@ export function useBuildingSubmissionForm() {
   const removeDraftImage = (id: string) => {
     const target = draftImagesRef.current.find((image) => image.id === id);
     if (!target) return;
-    URL.revokeObjectURL(target.previewUrl);
+    releaseBuildingImagePreview(target);
     draftImagesRef.current = draftImagesRef.current.filter((image) => image.id !== id);
     setDraftImages(draftImagesRef.current);
   };

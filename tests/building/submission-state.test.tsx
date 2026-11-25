@@ -7,8 +7,10 @@ import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
 import {
   createBuildingSubmissionImageDrafts,
+  releaseBuildingImagePreview,
   uploadBuildingSubmissionImageDrafts,
 } from '@/modules/building-submission/lib/building-submission-images';
+import type { BuildingSubmissionImageDraft } from '@/modules/building-submission/model/building-submission-form';
 import type { BuildingSubmissionSummary } from '@/modules/building-submission/model/building-submission-types';
 import { useBuildingSubmissionForm } from '@/modules/building-submission/model/use-building-submission-form';
 import { clearFetchValidatedJsonBrowserCache } from '@/shared/api/fetch-validated-json';
@@ -23,11 +25,14 @@ const account: AuthAccount = {
 };
 test('reselecting identical bytes reuses the prepared file and uploads within its own draft', async () => {
   const prefix = new Uint8Array(256 * 1024);
-  const prepared = ['a', 'b'].map((suffix) => ({
+  const prepared = ['a', 'b'].map<BuildingSubmissionImageDraft>((suffix) => ({
     id: suffix,
     source: new File([prefix, suffix], 'screenshot.png', { type: 'image/png' }),
-    file: new File([suffix], 'building.webp', { type: 'image/webp' }),
-    previewUrl: `blob:${suffix}`,
+    files: {
+      webp: new File([suffix], 'building.webp', { type: 'image/webp' }),
+      jxl: new File([suffix], 'building.jxl', { type: 'image/jxl' }),
+    },
+    preview: { webp: `blob:${suffix}-webp`, jxl: `blob:${suffix}-jxl` },
     size: 1,
     width: 960,
     height: 540,
@@ -43,13 +48,13 @@ test('reselecting identical bytes reuses the prepared file and uploads within it
   globalThis.fetch = (async () => {
     requests++;
     return Response.json({
-      filename: `${requests.toString(16).padStart(64, '0')}.webp`,
+      image: { webp: 'a'.repeat(64), jxl: 'b'.repeat(64) },
       expiresAt: Date.now() + 60_000,
     });
   }) as typeof fetch;
   try {
-    assert.equal(draft.file, prepared[1].file);
-    assert.notEqual(draft.previewUrl, prepared[1].previewUrl);
+    assert.equal(draft.files, prepared[1].files);
+    assert.notEqual(draft.preview.webp, prepared[1].preview.webp);
     const [first, second] = await uploadBuildingSubmissionImageDrafts(
       [prepared[1], draft],
       account,
@@ -65,7 +70,7 @@ test('reselecting identical bytes reuses the prepared file and uploads within it
     );
     assert.equal(requests, 3);
   } finally {
-    URL.revokeObjectURL(draft.previewUrl);
+    releaseBuildingImagePreview(draft);
     globalThis.fetch = previousFetch;
   }
 });
@@ -202,6 +207,26 @@ test('reset during image preparation cancels the old batch and preserves the nex
     Object.assign(files, { item: (index: number) => files[index] ?? null });
   const environment = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
+  const previousWorker = globalThis.Worker;
+  const canvas = environment.window.HTMLCanvasElement.prototype;
+  const originalContext = canvas.getContext;
+  canvas.getContext = function () {
+    return {
+      canvas: this,
+      drawImage() {},
+      getImageData: () => ({ data: new Uint8ClampedArray(4) }),
+    } as unknown as ReturnType<typeof canvas.getContext>;
+  };
+  class EncoderWorker extends EventTarget {
+    postMessage() {
+      const event = new environment.window.MessageEvent('message', {
+        data: { webp: new Uint8Array([1]).buffer, jxl: new Uint8Array([2]).buffer },
+      });
+      queueMicrotask(() => this.dispatchEvent(event as unknown as Event));
+    }
+    terminate() {}
+  }
+  globalThis.Worker = EncoderWorker as unknown as typeof Worker;
   const previousDecode = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap');
   const decodes: ReturnType<typeof Promise.withResolvers<ImageBitmap>>[] = [];
   let closed = 0;
@@ -246,9 +271,12 @@ test('reset during image preparation cancels the old batch and preserves the nex
     });
     assert.equal(state.isUploading, false);
     assert.equal(state.draftImages.length, 1);
-    assert.equal(state.draftImages[0].file, file);
+    assert.equal(state.draftImages[0].source, file);
+    assert.equal(state.draftImages[0].files.jxl.type, 'image/jxl');
     assert.equal(closed, 2);
   } finally {
+    globalThis.Worker = previousWorker;
+    canvas.getContext = originalContext;
     if (previousDecode) Object.defineProperty(globalThis, 'createImageBitmap', previousDecode);
     else Reflect.deleteProperty(globalThis, 'createImageBitmap');
     globalThis.fetch = previousFetch;

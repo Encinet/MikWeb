@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { memo, Suspense, use, useLayoutEffect, ViewTransition } from 'react';
 import { browser, preload } from 'react-dom';
 import type { BuildingCatalogQuery } from '@/modules/building/lib/building-catalog-query';
-import { getBuildingCatalogPath } from '@/modules/building/lib/building-links';
+import { getPublicBuildingCatalogUrl } from '@/modules/building/model/building-api';
 import { useBuildingCatalog } from '@/modules/building/model/use-building-catalog';
 import { useBuildingCatalogQuery } from '@/modules/building/model/use-building-catalog-query';
 import { useBuildings } from '@/modules/building/model/use-buildings';
@@ -17,7 +17,7 @@ export default function BuildingsPage() {
   const locale = useLocale();
   // The provider can reuse its in-memory catalog on client navigation.
   if (typeof window === 'undefined') {
-    preload(getBuildingCatalogPath(locale), { as: 'fetch', crossOrigin: 'anonymous' });
+    preload(getPublicBuildingCatalogUrl({ locale }), { as: 'fetch', crossOrigin: 'anonymous' });
   }
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');

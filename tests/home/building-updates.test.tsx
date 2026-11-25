@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { NextIntlClientProvider } from 'next-intl';
 import { act } from 'react';
-import type { LocalizedBuilding } from '@/modules/building/model/building-types';
+import type { BuildingImageUrls, LocalizedBuilding } from '@/modules/building/model/building-types';
 import { toHomeBuildingPreview } from '@/modules/home/model/home-building-preview';
 import {
   HomeBuildingUpdates,
@@ -24,7 +24,8 @@ const building: LocalizedBuilding = {
 };
 
 test('home previews include only fields rendered by the cards', () => {
-  const cover = `https://images.example/gallery/buildings/${building.id}/${'b'.repeat(64)}.webp`;
+  const prefix = `https://images.example/gallery/buildings/${building.id}/${'b'.repeat(64)}` as const;
+  const cover: BuildingImageUrls = { webp: `${prefix}.webp`, jxl: `${prefix}.jxl` };
   assert.deepEqual(toHomeBuildingPreview({ ...building, images: [cover] }), {
     id: building.id,
     name: 'Latest build',
@@ -67,10 +68,14 @@ test('home building errors retry only the two newest localized buildings and ren
       );
     });
   try {
-    const cover = `https://images.example.test/buildings/${building.id}/${'b'.repeat(64)}.webp`;
+    const prefix = `https://images.example.test/buildings/${building.id}/${'b'.repeat(64)}` as const;
+    const cover: BuildingImageUrls = { webp: `${prefix}.webp`, jxl: `${prefix}.jxl` };
     await render(false, [{ ...building, images: [cover] }]);
     const image = env.container.querySelector('.home-building-preview img');
-    assert.equal(image?.getAttribute('src'), `${cover}?w=640`);
+    assert.equal(image?.getAttribute('src'), cover.webp);
+    const preferred = env.container.querySelector('.home-building-preview source');
+    assert.equal(preferred?.getAttribute('type'), 'image/jxl');
+    assert.equal(preferred?.getAttribute('srcset'), cover.jxl);
     assert.equal(image?.getAttribute('srcset'), null);
     await render(true);
     assert.equal(pending.length, 0);

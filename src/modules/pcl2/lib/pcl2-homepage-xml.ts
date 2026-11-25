@@ -316,7 +316,7 @@ function buildBuildingCard(data: Pcl2HomepageData, t: HomepageTranslator): XamlN
           attr('Height', 150),
           attr('HorizontalAlignment', 'Center'),
           attr('Margin', imageIndex > 0 ? '0,6,0,0' : '0,0,0,0'),
-          attr('Source', images[imageIndex]),
+          attr('Source', images[imageIndex].webp),
         ]),
       );
     }

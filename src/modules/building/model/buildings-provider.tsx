@@ -3,7 +3,6 @@
 import { useLocale } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { getBuildingCatalogPath } from '@/modules/building/lib/building-links';
 import {
   getPublicBuildingCatalogUrl,
   isLocalizedBuildingCatalogResponse,
@@ -65,13 +64,12 @@ function LocalizedBuildingsProvider({
       const requestGeneration = ++generation.current;
       setIsLoading(true);
       const request = (async () => {
-        const publicUrl = getPublicBuildingCatalogUrl({ locale });
         const result = await fetchValidatedJson({
-          url: force ? publicUrl : getBuildingCatalogPath(locale),
+          url: getPublicBuildingCatalogUrl({ locale }),
           validate: isLocalizedBuildingCatalogResponse,
           timeoutMs: 15_000,
           cache: force ? 'reload' : 'default',
-          browserCache: { key: publicUrl, force, ttlMs: BUILDINGS_CACHE_TTL_MS },
+          browserCache: { force, ttlMs: BUILDINGS_CACHE_TTL_MS },
           fallbackErrorMessage: 'building_catalog_unavailable',
         });
         if (generation.current !== requestGeneration) return;

@@ -2,32 +2,38 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import sharp from 'sharp';
-import { isPixelOnlyWebp } from '@/modules/building-submission/lib/is-pixel-only-webp';
 
 const bunTestModule: string = 'bun:test';
-const { mock, spyOn } = await import(bunTestModule);
+const { mock } = await import(bunTestModule);
 mock.module('server-only', () => ({}));
-let signedHash: string | undefined;
+let hashes: { webp: string; jxl: string } | undefined;
 let completion: unknown;
 const expiresAt = Date.now() + 60_000;
 mock.module('@/modules/auth/server/auth-bff', () => ({
   callImageUploadService: (_: Request, action: string, payload: Record<string, unknown>) => {
     if (action === 'reserve') return Response.json({ uploadId: 'draft' });
     if (action === 'prepare') {
-      signedHash = String(payload.hash);
+      hashes = payload.hashes as typeof hashes;
       return Response.json({
-        put: { url: 'https://storage.test', headers: {} },
+        put: {
+          webp: { url: 'https://storage.test/image.webp', headers: { 'Content-Type': 'image/webp' } },
+          jxl: { url: 'https://storage.test/image.jxl', headers: { 'Content-Type': 'image/jxl' } },
+        },
       });
     }
     completion = payload;
-    return Response.json({ filename: `${signedHash}.webp`, expiresAt });
+    return Response.json({ image: hashes, expiresAt });
   },
 }));
 const { POST } = await import('@/app/api/account/images/upload/route');
 
-async function upload(data: Buffer) {
+// MikData checks the JXL dimensions after storage. This gateway checks the signature.
+const jxlBytes = new Uint8Array([0xff, 0x0a, 0x12, 0x34]);
+
+async function upload(data: Buffer, jxl: Uint8Array<ArrayBuffer> | null = jxlBytes) {
   const form = new FormData();
-  form.set('image', new Blob([new Uint8Array(data)], { type: 'image/webp' }), 'building.webp');
+  form.set('webp', new File([new Uint8Array(data)], 'building.webp', { type: 'image/webp' }));
+  if (jxl) form.set('jxl', new File([jxl], 'building.jxl', { type: 'image/jxl' }));
   return POST(
     new Request('https://example.test/api/account/images/upload', {
       method: 'POST',
@@ -37,64 +43,65 @@ async function upload(data: Buffer) {
   );
 }
 
-test('validated still WebP pixels survive upload unchanged and metadata is stripped before signing', async () => {
+test('forwards client-encoded images unchanged and rejects unprepared files before signing', async () => {
   const image = sharp({ create: { width: 960, height: 540, channels: 3, background: '#369' } });
   const opaque = await image.clone().webp().toBuffer();
   const alpha = await image.clone().ensureAlpha(0.5).webp().toBuffer();
   const lossless = await image.clone().webp({ lossless: true }).toBuffer();
   const tagged = await image.clone().withMetadata().webp().toBuffer();
-  const rotated = await sharp({
-    create: { width: 540, height: 960, channels: 3, background: '#369' },
-  })
-    .withMetadata({ orientation: 6 })
-    .webp()
-    .toBuffer();
+  const atLimit = await sharp({
+    create: { width: 3840, height: 2160, channels: 3, background: '#369' },
+  }).webp().toBuffer();
+  const beyondLimit = await sharp({
+    create: { width: 3841, height: 2160, channels: 3, background: '#369' },
+  }).webp().toBuffer();
   const withTail = Buffer.concat([opaque, Buffer.from('trailing bytes')]);
   const previousFetch = globalThis.fetch;
   let stored = Buffer.alloc(0);
-  globalThis.fetch = Object.assign(async (_: RequestInfo | URL, init?: RequestInit) => {
-    stored = Buffer.from(await new Response(init?.body).arrayBuffer());
+  let failJxl = false;
+  globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
+    assert.equal(init?.method, 'PUT');
+    const bytes = Buffer.from(await new Response(init?.body).arrayBuffer());
+    if (String(input).endsWith('.jxl')) {
+      assert.equal(new Headers(init?.headers).get('Content-Type'), 'image/jxl');
+      assert.deepEqual(new Uint8Array(bytes), jxlBytes);
+      if (failJxl) return new Response(null, { status: 503 });
+    } else {
+      stored = bytes;
+    }
     return new Response(null, { status: 200 });
   }, previousFetch);
   try {
-    for (const [source, reuse] of [
-      [opaque, true],
-      [alpha, true],
-      [lossless, true],
-      [tagged, false],
-      [rotated, false],
-      [withTail, false],
-    ] as const) {
-      assert.equal(isPixelOnlyWebp(source), reuse);
+    for (const source of [opaque, alpha, lossless, atLimit]) {
       const response = await upload(source);
       assert.equal(response.status, 200);
-      if (reuse) assert.deepEqual(stored, source);
-      else assert.ok(isPixelOnlyWebp(stored));
-      const metadata = await sharp(stored).metadata();
-      assert.deepEqual(
-        [metadata.width, metadata.height, metadata.orientation],
-        [960, 540, undefined],
-      );
-      assert.equal(signedHash, createHash('sha256').update(stored).digest('hex'));
-      assert.deepEqual(await response.json(), { filename: `${signedHash}.webp`, expiresAt });
-      assert.deepEqual(completion, { uploadId: 'draft', size: stored.length });
+      assert.deepEqual(stored, source);
+      assert.deepEqual(hashes, {
+        webp: createHash('sha256').update(stored).digest('hex'),
+        jxl: createHash('sha256').update(jxlBytes).digest('hex'),
+      });
+      assert.deepEqual(await response.json(), { image: hashes, expiresAt });
+      assert.deepEqual(completion, { uploadId: 'draft', sizes: { webp: stored.length, jxl: jxlBytes.length } });
     }
-    const pixelReads = spyOn(sharp.prototype, 'raw');
-    assert.equal((await upload(opaque)).status, 200);
-    assert.deepEqual(stored, opaque);
-    assert.equal(pixelReads.mock.calls.length, 0);
-    const incomplete = Buffer.from(opaque.subarray(0, 40));
+    const incomplete = Buffer.from(opaque.subarray(0, 30));
     incomplete.writeUInt32LE(incomplete.length - 8, 4);
     incomplete.writeUInt32LE(incomplete.length - 20, 16);
-    assert.ok(isPixelOnlyWebp(incomplete));
-    signedHash = undefined;
-    assert.equal((await upload(incomplete)).status, 422);
-    assert.equal(signedHash, undefined);
-    const tooNarrow = await image.clone().withMetadata({ orientation: 6 }).webp().toBuffer();
-    const response = await upload(tooNarrow);
+    hashes = undefined;
+    for (const source of [incomplete, tagged, withTail]) {
+      const response = await upload(source);
+      assert.equal(response.status, 422);
+      assert.deepEqual(await response.json(), { error: 'invalid_image' });
+    }
+    const response = await upload(beyondLimit);
     assert.equal(response.status, 422);
     assert.deepEqual(await response.json(), { error: 'invalid_image_dimensions' });
-    assert.equal(signedHash, undefined);
+    assert.equal((await upload(opaque, null)).status, 400);
+    assert.equal((await upload(opaque, new Uint8Array([0]))).status, 422);
+    assert.equal(hashes, undefined);
+    completion = undefined;
+    failJxl = true;
+    assert.equal((await upload(opaque)).status, 502);
+    assert.equal(completion, undefined);
   } finally {
     globalThis.fetch = previousFetch;
     mock.restore();

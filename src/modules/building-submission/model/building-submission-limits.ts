@@ -16,7 +16,7 @@ export const BUILDING_SUBMISSION_TEXT_LIMITS = {
 export const BUILDING_SUBMISSION_IMAGE_LIMITS = {
   minWidth: 960,
   minHeight: 540,
-  maxDimension: 1920,
+  maxDimension: 3840,
   maxBytes: 4 * 1024 * 1024,
   webpQuality: 92,
 } as const;

@@ -25,7 +25,7 @@ export async function createBuildingSocialImage(building: LocalizedBuilding, loc
   const t = await getTranslations({ locale, namespace: 'buildings' });
   const [cover, fonts, logo] = await Promise.all([
     building.images[0]
-      ? readBuildingImage(building.images[0]).then(createBuildingSocialImageBackdrop)
+      ? readBuildingImage(building.images[0].webp).then(createBuildingSocialImageBackdrop)
       : null,
     readSocialImageFonts(),
     readSocialImageLogo(),

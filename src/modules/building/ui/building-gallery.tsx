@@ -2,7 +2,6 @@
 
 import { ArrowLeft, X } from 'lucide-react';
 import { useReducedMotion } from 'motion/react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import {
   addTransitionType,
@@ -19,6 +18,7 @@ import { useBuildingGalleryControls } from '@/modules/building/model/use-buildin
 import { BuildingGalleryDetails } from '@/modules/building/ui/building-gallery-details';
 import { BuildingGalleryFrame } from '@/modules/building/ui/building-gallery-frame';
 import { BuildingGalleryViewer } from '@/modules/building/ui/building-gallery-viewer';
+import { BuildingPicture } from '@/modules/building/ui/building-picture';
 import { BuildingShareActions } from '@/modules/building/ui/building-share-actions';
 import { Link, useRouter } from '@/shared/i18n/navigation';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
@@ -37,14 +37,15 @@ export function BuildingGallery({
   const reduceMotion = useReducedMotion();
   const [focused, setFocused] = useState(false);
   const imageOccurrences = new Map<string, number>();
-  const thumbnails = building.images.map((url) => {
-    const occurrence = imageOccurrences.get(url) ?? 0;
-    imageOccurrences.set(url, occurrence + 1);
-    return { src: gallery.getThumbnailSrc(url), key: JSON.stringify([url, occurrence]) };
+  const thumbnails = building.images.map((image) => {
+    const identity = JSON.stringify([image.webp, image.jxl]);
+    const occurrence = imageOccurrences.get(identity) ?? 0;
+    imageOccurrences.set(identity, occurrence + 1);
+    return { image, key: JSON.stringify([identity, occurrence]) };
   });
-  const { stageRef, thumbnailsRef } = useBuildingGalleryControls({
+  const { stageRef, thumbnailsRef, seenThumbnails } = useBuildingGalleryControls({
     imageIndex: gallery.imageIndex,
-    imageCount: building.images.length,
+    images: building.images,
     next: gallery.next,
     prev: gallery.prev,
     reduceMotion: Boolean(reduceMotion),
@@ -151,9 +152,10 @@ export function BuildingGallery({
                   className="building-archive-thumbnails"
                   aria-label={t('viewer.thumbnails')}
                 >
-                  {thumbnails.map(({ src, key }, index) => (
+                  {thumbnails.map(({ image, key }, index) => (
                     <button
                       key={key}
+                      data-thumbnail={key}
                       type="button"
                       onClick={() => gallery.handleSelectImage(index)}
                       aria-label={t('dialog.currentImage', {
@@ -163,18 +165,16 @@ export function BuildingGallery({
                       aria-pressed={index === gallery.imageIndex}
                       className={index === gallery.imageIndex ? 'is-active' : ''}
                     >
-                      {src ? (
-                        <Image
-                          key={src}
-                          src={src}
+                      {seenThumbnails.has(key) && gallery.shouldShowThumbnail(image) ? (
+                        <BuildingPicture
+                          image={image}
                           fill
-                          unoptimized
                           alt=""
                           className="object-cover"
                           loading="lazy"
                           fetchPriority="low"
-                          onLoad={() => gallery.handleImageLoad(src)}
-                          onError={() => gallery.handleImageError(src)}
+                          onLoad={() => gallery.handleImageLoad(image)}
+                          onError={() => gallery.handleImageError(image)}
                         />
                       ) : (
                         <span>{index + 1}</span>

@@ -4,12 +4,13 @@ import { Building2, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
+import { getBuildingPath } from '@/modules/building/lib/building-links';
 import {
   getPublicBuildingCatalogUrl,
   isLocalizedBuildingCatalogResponse,
   resolveBuildingCatalog,
 } from '@/modules/building/model/building-api';
+import { BuildingPicture } from '@/modules/building/ui/building-picture';
 import {
   HOME_BUILDING_LIMIT,
   type HomeBuildingPreview,
@@ -57,7 +58,7 @@ export function HomeBuildingUpdates({
         </Link>
         {recentBuildings.length > 0 ? (
           recentBuildings.map((building) => {
-            const cover = building.images.find((url) => !imageErrors.includes(url));
+            const cover = building.images.find(({ webp }) => !imageErrors.includes(webp));
             return (
               <Link
                 key={building.id}
@@ -68,13 +69,12 @@ export function HomeBuildingUpdates({
               >
                 <span className="home-building-preview__image">
                   {cover ? (
-                    <Image
-                      src={getBuildingPreviewUrl(cover, 'cover')}
+                    <BuildingPicture
+                      image={cover}
                       fill
-                      unoptimized
                       alt=""
                       className="object-cover"
-                      onError={() => setImageErrors((previous) => [...previous, cover])}
+                      onError={() => setImageErrors((previous) => [...previous, cover.webp])}
                     />
                   ) : (
                     <Building2 className="h-10 w-10" aria-hidden="true" />

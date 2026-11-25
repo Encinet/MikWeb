@@ -2,7 +2,8 @@
 
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
-import { getBuildingPath, getBuildingPreviewUrl } from '@/modules/building/lib/building-links';
+import { getBuildingPath } from '@/modules/building/lib/building-links';
+import { BuildingPicture } from '@/modules/building/ui/building-picture';
 import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import { BuildingCard } from '@/modules/building/ui/building-card';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
@@ -105,13 +106,15 @@ export function BuildingsContentArea({
         {filteredBuildings.map((building) => (
           <li className="building-archive-print-item" key={building.id}>
             {building.images.length > 0 ? (
-              <picture className="building-archive-print-image">
-                <source media="print" srcSet={getBuildingPreviewUrl(building.images[0], 'cover')} />
-                <img
-                  alt=""
-                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                />
-              </picture>
+              <BuildingPicture
+                image={building.images[0]}
+                media="print"
+                pictureClassName="building-archive-print-image"
+                loading="eager"
+                width={1}
+                height={1}
+                alt=""
+              />
             ) : null}
             <div className="building-archive-print-row">
               <span className="building-archive-print-heading">

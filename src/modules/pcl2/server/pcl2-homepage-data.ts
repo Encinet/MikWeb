@@ -8,7 +8,7 @@ import {
   isBuildingCatalogResponse,
   resolveBuildingCatalog,
 } from '@/modules/building/model/building-api';
-import type { Building } from '@/modules/building/model/building-types';
+import type { BuildingWithImageUrls } from '@/modules/building/model/building-types';
 import { echoQuotes } from '@/modules/pcl2/lib/echo-quotes';
 import { getPcl2TimeZoneFromUrl } from '@/modules/pcl2/lib/pcl2-time-zone';
 import type { Pcl2HomepageData } from '@/modules/pcl2/model/pcl2-homepage';
@@ -24,7 +24,7 @@ interface Pcl2HomepageApiData {
   announcements: AnnouncementItem[];
   bans: BanItem[] | null;
   buildingCount: number | null;
-  buildings: Building[] | null;
+  buildings: BuildingWithImageUrls[] | null;
   onlinePlayers: PlayerStatus;
 }
 

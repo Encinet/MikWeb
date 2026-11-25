@@ -4,6 +4,11 @@ import { act } from 'react';
 import { useBuildingGalleryControls } from '@/modules/building/model/use-building-gallery-controls';
 import { createBrowserEnvironment } from '../support/browser-environment';
 
+const images = [0, 1, 2].map((index) => ({
+  webp: `https://example.test/${index}.webp` as const,
+  jxl: `https://example.test/${index}.jxl` as const,
+}));
+
 function Harness({
   onNavigate,
   imageIndex = 0,
@@ -13,7 +18,7 @@ function Harness({
 }) {
   const { stageRef, thumbnailsRef } = useBuildingGalleryControls({
     imageIndex,
-    imageCount: 3,
+    images,
     next: () => onNavigate(1),
     prev: () => onNavigate(-1),
     reduceMotion: true,
