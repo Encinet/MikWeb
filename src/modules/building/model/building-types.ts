@@ -24,11 +24,12 @@ export interface BuildingSource<Text = LocalizedText> {
 export const MAX_JXL_PREVIEW_BYTES = 128 * 1024;
 
 export type BuildingImagePair<Value> = { webp: Value; jxl: Value };
+export type BuildingImageFiles<Value> = BuildingImagePair<Value> & { thumbnailWebp: Value };
 
 declare const imageHashBrand: unique symbol;
 type BuildingImageHash = string & { readonly [imageHashBrand]: true };
 
-type PublishedImage<Value> = BuildingImagePair<Value> & { thumbnailWebp?: Value; jxlPreviewBytes?: number };
+type PublishedImage<Value> = BuildingImageFiles<Value> & { jxlPreviewBytes: number };
 
 export type BuildingImageRef = PublishedImage<BuildingImageHash>;
 export type BuildingImageUrl = `https://${string}` | `blob:${string}`;

@@ -30,10 +30,10 @@ export const MAX_BUILDING_WORLD_NAME_LENGTH = 128;
 export function isBuildingImageRef(value: unknown): value is BuildingImageRef {
   return (
     isRecord(value) &&
-    Object.keys(value).every(key => key === 'webp' || key === 'jxl' || key === 'thumbnailWebp' || key === 'jxlPreviewBytes') &&
-    (value.thumbnailWebp === undefined || (typeof value.thumbnailWebp === 'string' && IMAGE_HASH_PATTERN.test(value.thumbnailWebp))) &&
-    (value.jxlPreviewBytes === undefined || (typeof value.jxlPreviewBytes === 'number' &&
-      Number.isInteger(value.jxlPreviewBytes) && value.jxlPreviewBytes >= 0 && value.jxlPreviewBytes <= MAX_JXL_PREVIEW_BYTES)) &&
+    Object.keys(value).length === 4 &&
+    typeof value.thumbnailWebp === 'string' && IMAGE_HASH_PATTERN.test(value.thumbnailWebp) &&
+    typeof value.jxlPreviewBytes === 'number' && Number.isInteger(value.jxlPreviewBytes) &&
+    value.jxlPreviewBytes >= 0 && value.jxlPreviewBytes <= MAX_JXL_PREVIEW_BYTES &&
     typeof value.webp === 'string' && IMAGE_HASH_PATTERN.test(value.webp) &&
     typeof value.jxl === 'string' && IMAGE_HASH_PATTERN.test(value.jxl)
   );

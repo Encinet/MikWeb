@@ -31,6 +31,7 @@ test('reselecting identical bytes reuses the prepared file and uploads within it
     files: {
       webp: new File([suffix], 'building.webp', { type: 'image/webp' }),
       jxl: new File([suffix], 'building.jxl', { type: 'image/jxl' }),
+      thumbnailWebp: new File([suffix], 'thumbnail.webp', { type: 'image/webp' }),
     },
     preview: { webp: `blob:${suffix}-webp`, jxl: `blob:${suffix}-jxl` },
     size: 1,
@@ -48,7 +49,7 @@ test('reselecting identical bytes reuses the prepared file and uploads within it
   globalThis.fetch = (async () => {
     requests++;
     return Response.json({
-      image: { webp: 'a'.repeat(64), jxl: 'b'.repeat(64) },
+      image: { webp: 'a'.repeat(64), jxl: 'b'.repeat(64), thumbnailWebp: 'c'.repeat(64), jxlPreviewBytes: 0 },
       expiresAt: Date.now() + 60_000,
     });
   }) as typeof fetch;
@@ -220,7 +221,7 @@ test('reset during image preparation cancels the old batch and preserves the nex
   class EncoderWorker extends EventTarget {
     postMessage() {
       const event = new environment.window.MessageEvent('message', {
-        data: { webp: new Uint8Array([1]).buffer, jxl: new Uint8Array([2]).buffer },
+        data: { webp: new Uint8Array([1]).buffer, jxl: new Uint8Array([2]).buffer, thumbnailWebp: new Uint8Array([3]).buffer },
       });
       queueMicrotask(() => this.dispatchEvent(event as unknown as Event));
     }

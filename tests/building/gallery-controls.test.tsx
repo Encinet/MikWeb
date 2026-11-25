@@ -7,6 +7,8 @@ import { createBrowserEnvironment } from '../support/browser-environment';
 const images = [0, 1, 2].map((index) => ({
   webp: `https://example.test/${index}.webp` as const,
   jxl: `https://example.test/${index}.jxl` as const,
+  thumbnailWebp: `https://example.test/${index}-small.webp` as const,
+  jxlPreviewBytes: 0,
 }));
 
 function Harness({

@@ -30,7 +30,12 @@ const building: BuildingWithImageUrls = {
 };
 
 function photo(name: string): BuildingImageUrls {
-  return { webp: `https://example.test/${name}.webp`, jxl: `https://example.test/${name}.jxl` };
+  return {
+    webp: `https://example.test/${name}.webp`,
+    jxl: `https://example.test/${name}.jxl`,
+    thumbnailWebp: `https://example.test/${name}-small.webp`,
+    jxlPreviewBytes: 0,
+  };
 }
 
 function GalleryHarness({

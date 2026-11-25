@@ -1,5 +1,5 @@
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
-import type { BuildingImagePair, BuildingImageRef, BuildingImageUrl } from '@/modules/building/model/building-types';
+import type { BuildingImageFiles, BuildingImageRef, BuildingImageUrl } from '@/modules/building/model/building-types';
 import { isBuildingImageRef } from '@/modules/building/model/building-validation';
 import type { BuildingSubmissionImageDraft } from '@/modules/building-submission/model/building-submission-form';
 import { BUILDING_SUBMISSION_IMAGE_LIMITS } from '@/modules/building-submission/model/building-submission-limits';
@@ -45,7 +45,7 @@ export async function createBuildingSubmissionImageDrafts(
         },
         width,
         height,
-        size: files.webp.size + files.jxl.size + (files.thumbnailWebp?.size ?? 0),
+        size: files.webp.size + files.jxl.size + files.thumbnailWebp.size,
       });
     }
     return drafts;
@@ -62,7 +62,7 @@ export function releaseBuildingImagePreview({ preview }: BuildingSubmissionImage
   URL.revokeObjectURL(preview.jxl);
 }
 
-type EncodedImage = BuildingImagePair<ArrayBuffer> & { thumbnailWebp: ArrayBuffer };
+type EncodedImage = BuildingImageFiles<ArrayBuffer>;
 
 async function findPreparedSource(
   source: File,
@@ -227,7 +227,7 @@ async function uploadImage(
   const formData = new FormData();
   formData.set('webp', files.webp);
   formData.set('jxl', files.jxl);
-  if (files.thumbnailWebp) formData.set('thumbnailWebp', files.thumbnailWebp);
+  formData.set('thumbnailWebp', files.thumbnailWebp);
   const response = await fetch('/api/account/images/upload', {
     method: 'POST',
     headers: { 'X-Building-Draft': draftKey, 'X-Upload-Request': requestKey },

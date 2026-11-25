@@ -4,7 +4,6 @@ import { MAX_JXL_PREVIEW_BYTES } from '../model/building-types';
 
 const MIME = 'image/jxl';
 const MAX_BYTES = 4 * 1024 * 1024;
-const DEFAULT_PREVIEW_BYTES = 96 * 1024;
 let support: Promise<boolean> | undefined;
 
 export interface JxlPrefix {
@@ -14,7 +13,7 @@ export interface JxlPrefix {
 
 export async function readJxlPrefix(
   url: string,
-  hint = DEFAULT_PREVIEW_BYTES,
+  hint: number,
 ): Promise<JxlPrefix | null> {
   if (!hint || typeof ImageDecoder === 'undefined') return null;
   support ??= ImageDecoder.isTypeSupported(MIME).catch(() => false);

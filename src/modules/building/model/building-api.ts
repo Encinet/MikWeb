@@ -114,8 +114,8 @@ export function resolveBuildingImages<Text>(
     images: building.images.map(({ webp, jxl, thumbnailWebp, jxlPreviewBytes }) => ({
       webp: `${prefix}${webp}.webp`,
       jxl: `${prefix}${jxl}.jxl`,
-      ...(thumbnailWebp && { thumbnailWebp: `${prefix}${thumbnailWebp}.webp` as const }),
-      ...(jxlPreviewBytes !== undefined && { jxlPreviewBytes }),
+      thumbnailWebp: `${prefix}${thumbnailWebp}.webp` as const,
+      jxlPreviewBytes,
     })),
   };
 }

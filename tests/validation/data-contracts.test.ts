@@ -32,7 +32,7 @@ test('the building contract accepts filenames and optional attribution', () => {
   assert.equal(isBuilding(input), true);
   assert.equal(isBuilding({
     ...input,
-    images: [{ webp: 'b'.repeat(64), jxl: 'd'.repeat(64) }],
+    images: [{ webp: 'b'.repeat(64), jxl: 'd'.repeat(64), thumbnailWebp: 'e'.repeat(64), jxlPreviewBytes: 0 }],
     source: { notes: { en: 'Credit' } },
   }), true);
   for (const change of [
@@ -40,8 +40,8 @@ test('the building contract accepts filenames and optional attribution', () => {
     { buildDate: '2026-02-30' },
     { id: 'A'.repeat(32) },
     { images: ['blob:https://example.test/preview'] },
-    { images: [{ webp: 'b'.repeat(64) }] },
-    { images: [{ webp: `${'b'.repeat(64)}.webp`, jxl: 'd'.repeat(64) }] },
+    { images: [{ webp: 'b'.repeat(64), jxl: 'd'.repeat(64) }] },
+    { images: [{ webp: `${'b'.repeat(64)}.webp`, jxl: 'd'.repeat(64), thumbnailWebp: 'e'.repeat(64), jxlPreviewBytes: 0 }] },
     { source: {} },
     { source: { originalLink: 'ftp://example.test/source' } },
   ]) {

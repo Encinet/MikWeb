@@ -35,8 +35,8 @@ const building = {
   builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
   buildType: 'original',
   images: [
-    { webp: 'b'.repeat(64), jxl: 'd'.repeat(64) },
-    { webp: 'c'.repeat(64), jxl: 'e'.repeat(64) },
+    { webp: 'b'.repeat(64), jxl: 'd'.repeat(64), thumbnailWebp: 'f'.repeat(64), jxlPreviewBytes: 0 },
+    { webp: 'c'.repeat(64), jxl: 'e'.repeat(64), thumbnailWebp: 'a'.repeat(64), jxlPreviewBytes: 100 },
   ],
   buildDate: '2026-11-10',
   tags: ['Tower'],
@@ -84,9 +84,11 @@ test('the archive loads its localized catalog directly and reuses a successful r
     ]);
     assert.equal(current().error, null);
     const prefix = `${imageBaseUrl}/buildings/${building.id}/`;
-    const expectedImages = building.images.map(({ webp, jxl }) => ({
+    const expectedImages = building.images.map(({ webp, jxl, thumbnailWebp, jxlPreviewBytes }) => ({
       webp: `${prefix}${webp}.webp`,
       jxl: `${prefix}${jxl}.jxl`,
+      thumbnailWebp: `${prefix}${thumbnailWebp}.webp`,
+      jxlPreviewBytes,
     }));
     assert.deepEqual(current().buildings[0].images, expectedImages);
     assert.equal(current().buildings[0].name, 'Building');

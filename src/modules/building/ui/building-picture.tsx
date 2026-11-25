@@ -2,10 +2,10 @@
 
 import Image, { type ImageProps } from 'next/image';
 import { type Ref, useState } from 'react';
-import type { BuildingImageUrls } from '@/modules/building/model/building-types';
+import type { BuildingImagePair, BuildingImageUrl } from '@/modules/building/model/building-types';
 
 interface BuildingPictureProps extends Omit<ImageProps, 'src' | 'unoptimized'> {
-  image: BuildingImageUrls;
+  image: BuildingImagePair<BuildingImageUrl>;
   media?: 'print';
   pictureClassName?: string;
   ref?: Ref<HTMLImageElement>;

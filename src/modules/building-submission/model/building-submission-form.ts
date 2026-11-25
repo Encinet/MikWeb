@@ -1,6 +1,6 @@
 import { isStaffRole } from '@/modules/auth/model/auth-access';
 import type { AuthAccount } from '@/modules/auth/model/auth-types';
-import type { BuildingImageUrls, BuildingType } from '@/modules/building/model/building-types';
+import type { BuildingImageFiles, BuildingImagePair, BuildingImageUrl, BuildingType } from '@/modules/building/model/building-types';
 import type { PlayerIdentity } from '@/modules/player/model/player-types';
 
 export interface BuilderDraft extends PlayerIdentity {
@@ -16,8 +16,8 @@ export interface BuildingSubmissionTagDraft {
 export interface BuildingSubmissionImageDraft {
   id: string;
   source: File;
-  files: { webp: File; jxl: File; thumbnailWebp?: File };
-  preview: BuildingImageUrls;
+  files: BuildingImageFiles<File>;
+  preview: BuildingImagePair<BuildingImageUrl>;
   width: number;
   height: number;
   size: number;

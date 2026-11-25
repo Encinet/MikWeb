@@ -1,16 +1,9 @@
 'use client';
 
-import { getImageProps } from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 import { cachedBuildingPreview, prepareBuildingPreview } from '../lib/building-image-preview';
 import type { BuildingImageUrls } from '../model/building-types';
-
-export function buildingThumbnailUrl(image: BuildingImageUrls) {
-  if (image.thumbnailWebp) return image.thumbnailWebp;
-  // Older published photos have only originals. Use Next's existing image cache for a 640px WebP.
-  return getImageProps({ src: image.webp, alt: '', width: 320, height: 180 }).props.src;
-}
 
 interface CoverProps {
   image: BuildingImageUrls;
@@ -34,7 +27,7 @@ export function BuildingCover({
     const photo = { webp, jxl, thumbnailWebp, jxlPreviewBytes };
     let mounted = true;
     const display = (preview: string | null) => {
-      if (mounted) setSource(preview ?? buildingThumbnailUrl(photo));
+      if (mounted) setSource(preview ?? thumbnailWebp);
     };
     const visible = () => {
       const entry = filmstrip ? cachedBuildingPreview(jxl) : prepareBuildingPreview(photo);
@@ -72,7 +65,7 @@ export function BuildingCover({
     <span ref={container} className="absolute inset-0">
       <noscript>
         <img
-          src={buildingThumbnailUrl(image)}
+          src={thumbnailWebp}
           alt={alt}
           loading="lazy"
           className="h-full w-full object-cover"

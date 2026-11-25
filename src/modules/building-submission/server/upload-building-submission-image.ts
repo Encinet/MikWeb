@@ -47,9 +47,9 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const webp = form.get('webp');
     const jxl = form.get('jxl');
     const thumbnail = form.get('thumbnailWebp');
-    if (thumbnail !== null && (!(thumbnail instanceof File) || thumbnail.type !== 'image/webp' || !thumbnail.size ||
-      thumbnail.size > BUILDING_SUBMISSION_IMAGE_LIMITS.thumbnailBytes)) return uploadError('invalid_image', 422);
-    if (!(webp instanceof File) || !(jxl instanceof File) || [...form.keys()].length !== (thumbnail ? 3 : 2))
+    if (!(thumbnail instanceof File) || thumbnail.type !== 'image/webp' || !thumbnail.size ||
+      thumbnail.size > BUILDING_SUBMISSION_IMAGE_LIMITS.thumbnailBytes) return uploadError('invalid_image', 422);
+    if (!(webp instanceof File) || !(jxl instanceof File) || [...form.keys()].length !== 3)
       return uploadError('image_required', 400);
     if (webp.type !== 'image/webp' || (jxl.type && jxl.type !== 'image/jxl'))
       return uploadError('invalid_image', 415);
@@ -58,7 +58,7 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const variants = {
       webp: new Uint8Array(await webp.arrayBuffer()),
       jxl: new Uint8Array(await jxl.arrayBuffer()),
-      ...(thumbnail && { thumbnailWebp: new Uint8Array(await thumbnail.arrayBuffer()) }),
+      thumbnailWebp: new Uint8Array(await thumbnail.arrayBuffer()),
     };
     const dimensions = pixelOnlyWebpDimensions(variants.webp);
     if (!dimensions || variants.jxl[0] !== 0xff || variants.jxl[1] !== 0x0a)
@@ -70,7 +70,7 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const hashes = {
       webp: createHash('sha256').update(variants.webp).digest('hex'),
       jxl: createHash('sha256').update(variants.jxl).digest('hex'),
-      ...(variants.thumbnailWebp && { thumbnailWebp: createHash('sha256').update(variants.thumbnailWebp).digest('hex') }),
+      thumbnailWebp: createHash('sha256').update(variants.thumbnailWebp).digest('hex'),
     };
     const prepared = await callImageUploadService(request, 'prepare', { uploadId, hashes });
     if (!prepared.ok) return prepared;

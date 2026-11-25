@@ -10,12 +10,6 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
-  images: {
-    // Only catalog photos published before thumbnail uploads need the Next.js optimizer.
-    remotePatterns: [
-      new URL(`${(process.env.BUILDING_IMAGE_PUBLIC_BASE_URL || 'https://mcmik.s3.bitiful.net').replace(/\/$/, '')}/buildings/*/*.webp`),
-    ],
-  },
   // Bun misses Turbopack's generated Sharp alias in the development server.
   turbopack:
     process.env.NODE_ENV === 'development' && process.versions.bun

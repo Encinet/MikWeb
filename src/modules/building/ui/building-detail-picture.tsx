@@ -4,7 +4,6 @@ import { type Ref, type RefObject, useEffect, useEffectEvent, useState } from 'r
 
 import { cachedBuildingPreview, openBuildingOriginal } from '../lib/building-image-preview';
 import type { BuildingImageUrls } from '../model/building-types';
-import { buildingThumbnailUrl } from './building-cover';
 import { BuildingPicture } from './building-picture';
 
 export function BuildingDetailPicture({
@@ -87,7 +86,7 @@ export function BuildingDetailPicture({
     onError,
     className: 'absolute inset-0 h-full w-full object-contain',
   };
-  const thumbnail = preview === null ? buildingThumbnailUrl(image) : preview;
+  const thumbnail = preview === null ? image.thumbnailWebp : preview;
   return (
     <>
       {thumbnail && !loaded && !painted ? (

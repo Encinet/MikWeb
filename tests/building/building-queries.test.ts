@@ -18,7 +18,7 @@ const building = {
   coordinates: { world: 'world', x: 0, y: 64, z: 0 },
   builders: [{ name: 'Builder', uuid: '00000000-0000-4000-8000-000000000001', weight: 1 }],
   buildType: 'original',
-  images: [{ webp: 'b'.repeat(64), jxl: 'd'.repeat(64) }],
+  images: [{ webp: 'b'.repeat(64), jxl: 'd'.repeat(64), thumbnailWebp: 'e'.repeat(64), jxlPreviewBytes: 100 }],
   buildDate: '2026-11-01',
   tags: [{ en: 'Tower', 'zh-CN': '塔' }, { 'zh-CN': '木材' }],
   source: { originalAuthor: 'Builder', notes: { en: 'Source notes', 'zh-CN': '' } },
@@ -62,6 +62,8 @@ test('building detail localizes text and resolves image URLs from its single res
     assert.deepEqual(detail.images, [{
       webp: `${prefix}${building.images[0].webp}.webp`,
       jxl: `${prefix}${building.images[0].jxl}.jxl`,
+      thumbnailWebp: `${prefix}${building.images[0].thumbnailWebp}.webp`,
+      jxlPreviewBytes: building.images[0].jxlPreviewBytes,
     }]);
     assert.deepEqual(requests, [dataApiUrl(`/buildings/${building.id}`)]);
   } finally {
