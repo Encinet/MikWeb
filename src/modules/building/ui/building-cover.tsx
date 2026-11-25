@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { cachedBuildingPreview, prepareBuildingPreview } from '../lib/building-image-preview';
+import {
+  cachedBuildingPreview,
+  prepareBuildingPreview,
+  watchBuildingDetailCover,
+} from '../lib/building-image-preview';
 import type { BuildingImageUrls } from '../model/building-types';
 
 interface CoverProps {
@@ -26,13 +30,24 @@ export function BuildingCover({
   useEffect(() => {
     const photo = { webp, jxl, thumbnailWebp, jxlPreviewBytes };
     let mounted = true;
-    const display = (preview: string | null) => {
-      if (mounted) setSource(preview ?? thumbnailWebp);
-    };
+    let observer: IntersectionObserver | undefined;
+    let stopWatching: (() => void) | undefined;
+    let detailUrl: string | undefined;
     const visible = () => {
+      if (!mounted || stopWatching) return;
+      observer?.disconnect();
+      stopWatching = watchBuildingDetailCover(jxl, (cover) => {
+        if (detailUrl) URL.revokeObjectURL(detailUrl);
+        detailUrl = URL.createObjectURL(cover);
+        setSource(detailUrl);
+      });
+      if (detailUrl) return;
       const entry = filmstrip ? cachedBuildingPreview(jxl) : prepareBuildingPreview(photo);
-      if (entry) void entry.ready.then(display);
-      else display(null);
+      if (entry) {
+        void entry.ready.then((preview) => {
+          if (mounted && !detailUrl) setSource(preview ?? thumbnailWebp);
+        });
+      } else setSource(thumbnailWebp);
     };
     if (
       eager ||
@@ -40,36 +55,29 @@ export function BuildingCover({
       typeof ImageDecoder === 'undefined' ||
       !container.current ||
       typeof IntersectionObserver === 'undefined'
-    ) {
+    )
       visible();
-      return () => {
-        mounted = false;
-      };
+    else {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((item) => item.isIntersecting)) visible();
+        },
+        { rootMargin: '160px' },
+      );
+      observer.observe(container.current);
     }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((item) => item.isIntersecting)) {
-          visible();
-        }
-      },
-      { rootMargin: '160px' },
-    );
-    observer.observe(container.current);
     return () => {
       mounted = false;
-      observer.disconnect();
+      observer?.disconnect();
+      stopWatching?.();
+      if (detailUrl) URL.revokeObjectURL(detailUrl);
     };
   }, [webp, jxl, thumbnailWebp, jxlPreviewBytes, eager, filmstrip]);
 
   return (
     <span ref={container} className="absolute inset-0">
       <noscript>
-        <img
-          src={thumbnailWebp}
-          alt={alt}
-          loading="lazy"
-          className="h-full w-full object-cover"
-        />
+        <img src={thumbnailWebp} alt={alt} loading="lazy" className="h-full w-full object-cover" />
       </noscript>
       {source ? (
         <img
@@ -79,7 +87,10 @@ export function BuildingCover({
           loading={eager ? 'eager' : 'lazy'}
           fetchPriority={eager ? 'high' : 'auto'}
           decoding="async"
-          onError={onError}
+          onError={() => {
+            if (source.startsWith('blob:')) setSource(thumbnailWebp);
+            else onError?.();
+          }}
         />
       ) : null}
     </span>

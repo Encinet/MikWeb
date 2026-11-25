@@ -1,8 +1,20 @@
 'use client';
 
-import { type Ref, type RefObject, useEffect, useEffectEvent, useState } from 'react';
+import {
+  type Ref,
+  type RefObject,
+  type SyntheticEvent,
+  useEffect,
+  useEffectEvent,
+  useState,
+} from 'react';
 
-import { cachedBuildingPreview, openBuildingOriginal } from '../lib/building-image-preview';
+import {
+  cachedBuildingPreview,
+  hasBuildingOriginal,
+  openBuildingOriginal,
+  rememberBuildingDetailCover,
+} from '../lib/building-image-preview';
 import type { BuildingImageUrls } from '../model/building-types';
 import { BuildingPicture } from './building-picture';
 
@@ -21,25 +33,30 @@ export function BuildingDetailPicture({
   onLoad: () => void;
   onError: () => void;
 }) {
-  const [entry] = useState(() => cachedBuildingPreview(image.jxl));
+  const [{ entry, resume }] = useState(() => {
+    const entry = cachedBuildingPreview(image.jxl);
+    return { entry, resume: Boolean(entry) || hasBuildingOriginal(image.jxl) };
+  });
   const [preview, setPreview] = useState(entry?.source);
-  const [mode, setMode] = useState<'range' | 'native' | 'webp'>(entry ? 'range' : 'native');
+  const [mode, setMode] = useState<'range' | 'native' | 'webp'>(resume ? 'range' : 'native');
+  const [withCors, setWithCors] = useState(true);
   const [blobUrl, setBlobUrl] = useState<string>();
   const [painted, setPainted] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
-  const finished = () => {
+  const finished = (source: CanvasImageSource, width: number, height: number) => {
     setLoaded(true);
     onLoad();
+    rememberBuildingDetailCover(image.jxl, source, width, height);
   };
   const finishDecode = useEffectEvent(finished);
 
   useEffect(() => {
-    if (!entry) return;
+    if (!resume) return;
     let mounted = true;
-    let drawn = false;
+    let drawn: HTMLCanvasElement | undefined;
     let localUrl: string | undefined;
-    void entry.ready.then((source) => {
+    void entry?.ready.then((source) => {
       if (mounted) setPreview(source);
     });
     const request = openBuildingOriginal(image.jxl, entry, (frame) => {
@@ -53,15 +70,19 @@ export function BuildingDetailPicture({
       context.globalCompositeOperation = 'copy';
       context.drawImage(frame, 0, 0);
       if (!drawn) {
-        drawn = true;
+        drawn = canvas;
         setPainted(true);
       }
     });
+    if (!request) {
+      setMode('native');
+      return;
+    }
     request.result
       .then((blob) => {
         if (!mounted) return;
         if (!blob) setMode('native');
-        else if (drawn) finishDecode();
+        else if (drawn) finishDecode(drawn, drawn.width, drawn.height);
         else {
           localUrl = URL.createObjectURL(blob);
           setBlobUrl(localUrl);
@@ -75,16 +96,26 @@ export function BuildingDetailPicture({
       request.release();
       if (localUrl) URL.revokeObjectURL(localUrl);
     };
-  }, [entry, image.jxl, canvasRef]);
+  }, [entry, resume, image.jxl, canvasRef]);
 
   const props = {
     ref: imageRef,
     alt,
     draggable: false,
     fetchPriority: 'high' as const,
-    onLoad: finished,
-    onError,
+    onLoad: (event: SyntheticEvent<HTMLImageElement>) => {
+      const source = event.currentTarget;
+      finished(source, source.naturalWidth, source.naturalHeight);
+    },
     className: 'absolute inset-0 h-full w-full object-contain',
+  };
+  const remoteProps = {
+    ...props,
+    crossOrigin: withCors ? ('anonymous' as const) : undefined,
+    onError: () => {
+      if (withCors) setWithCors(false);
+      else onError();
+    },
   };
   const thumbnail = preview === null ? image.thumbnailWebp : preview;
   return (
@@ -100,7 +131,7 @@ export function BuildingDetailPicture({
           onLoad={() => setPreviewVisible(true)}
         />
       ) : null}
-      {entry && (mode === 'range' || (painted && !loaded)) ? (
+      {resume && (mode === 'range' || (painted && !loaded)) ? (
         <canvas
           ref={canvasRef}
           role="img"
@@ -115,9 +146,16 @@ export function BuildingDetailPicture({
           <img {...props} src={blobUrl} onError={() => setMode('webp')} />
         ) : null
       ) : mode === 'webp' ? (
-        <img {...props} src={image.webp} />
+        <img key={String(withCors)} {...remoteProps} src={image.webp} />
       ) : (
-        <BuildingPicture {...props} image={image} fill loading="eager" decoding="auto" />
+        <BuildingPicture
+          key={String(withCors)}
+          {...remoteProps}
+          image={image}
+          fill
+          loading="eager"
+          decoding="auto"
+        />
       )}
     </>
   );

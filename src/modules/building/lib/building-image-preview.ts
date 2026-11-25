@@ -5,6 +5,7 @@ import {
   type JxlPrefix,
   readJxlPrefix,
 } from './building-jxl-stream';
+import { downscaleBuildingImage } from './building-preview-canvas';
 
 type Paint = (frame: VideoFrame) => void;
 interface OriginalRequest {
@@ -18,21 +19,98 @@ export interface BuildingPreview {
   ready: Promise<string | null>;
   // undefined while the cover is pending, null when the small WebP took over.
   source?: string | null;
-  request?: OriginalRequest;
 }
 
-// Only encoded prefixes and small previews survive navigation. Never retain an idle 4K decoder.
+class ImageBlobCache {
+  private readonly entries = new Map<string, Blob>();
+  private size = 0;
+
+  constructor(private readonly limit: number) {}
+
+  has(url: string) {
+    return this.entries.has(url);
+  }
+
+  get(url: string) {
+    const blob = this.entries.get(url);
+    if (blob) {
+      this.entries.delete(url);
+      this.entries.set(url, blob);
+    }
+    return blob;
+  }
+
+  set(url: string, blob: Blob) {
+    if (!blob.size || blob.size > this.limit) return false;
+    this.remove(url);
+    this.entries.set(url, blob);
+    this.size += blob.size;
+    while (this.size > this.limit) this.remove(this.entries.keys().next().value!);
+    return true;
+  }
+
+  private remove(url: string) {
+    const blob = this.entries.get(url);
+    if (!blob) return;
+    this.entries.delete(url);
+    this.size -= blob.size;
+  }
+}
+
+const MIB = 1024 * 1024;
+const DETAIL_COVER_SIZE = 1024;
+// Only encoded images survive navigation.
 const previews = new Map<string, BuildingPreview>();
-const originals = new Map<string, Blob>();
-
-function remember<T>(cache: Map<string, T>, key: string, value: T, limit: number) {
-  cache.delete(key);
-  cache.set(key, value);
-  if (cache.size > limit) cache.delete(cache.keys().next().value!);
-}
+const originals = new ImageBlobCache(32 * MIB);
+const originalRequests = new Map<string, OriginalRequest>();
+const detailCovers = new ImageBlobCache(8 * MIB);
+const encodingCovers = new Set<string>();
+const coverListeners = new Map<string, Set<(blob: Blob) => void>>();
 
 export function cachedBuildingPreview(url: string) {
   return previews.get(url);
+}
+
+export function hasBuildingOriginal(url: string) {
+  return originals.has(url) || originalRequests.has(url);
+}
+
+export function watchBuildingDetailCover(url: string, listener: (blob: Blob) => void) {
+  const listeners = coverListeners.get(url) ?? new Set();
+  listeners.add(listener);
+  coverListeners.set(url, listeners);
+  const cover = detailCovers.get(url);
+  if (cover) listener(cover);
+  return () => {
+    listeners.delete(listener);
+    if (!listeners.size) coverListeners.delete(url);
+  };
+}
+
+export function rememberBuildingDetailCover(
+  url: string,
+  source: CanvasImageSource,
+  width: number,
+  height: number,
+) {
+  if (detailCovers.get(url) || encodingCovers.has(url)) return;
+  try {
+    const canvas = downscaleBuildingImage(source, width, height, DETAIL_COVER_SIZE, 'high');
+    if (!canvas) return;
+    encodingCovers.add(url);
+    canvas.toBlob(
+      (cover) => {
+        encodingCovers.delete(url);
+        if (!cover || !detailCovers.set(url, cover)) return;
+        for (const listener of coverListeners.get(url) ?? []) listener(cover);
+      },
+      'image/webp',
+      0.9,
+    );
+  } catch {
+    // A cross-origin picture can be viewable even when its pixels cannot be exported.
+    encodingCovers.delete(url);
+  }
 }
 
 // Decode at most two cover frames at once, including on a wide catalog.
@@ -45,9 +123,10 @@ function previewFrame(prefix: JxlPrefix) {
   return frame;
 }
 
-export function prepareBuildingPreview(image: BuildingImageUrls): BuildingPreview {
+export function prepareBuildingPreview(image: BuildingImageUrls) {
   let entry = previews.get(image.jxl);
   if (!entry) {
+    if (hasBuildingOriginal(image.jxl)) return;
     const prefix = readJxlPrefix(image.jxl, image.jxlPreviewBytes).catch(() => null);
     const ready = prefix.then((data) => data && previewFrame(data));
     const created: BuildingPreview = { prefix, ready };
@@ -56,18 +135,22 @@ export function prepareBuildingPreview(image: BuildingImageUrls): BuildingPrevie
     });
     entry = created;
   }
-  remember(previews, image.jxl, entry, 32);
+  previews.delete(image.jxl);
+  previews.set(image.jxl, entry);
+  if (previews.size > 32) previews.delete(previews.keys().next().value!);
   return entry;
 }
 
-export function openBuildingOriginal(url: string, entry: BuildingPreview, paint: Paint) {
+export function openBuildingOriginal(
+  url: string,
+  entry: BuildingPreview | undefined,
+  paint: Paint,
+) {
   const cached = originals.get(url);
-  if (cached) {
-    remember(originals, url, cached, 2);
-    return { result: Promise.resolve(cached), release() {} };
-  }
+  if (cached) return { result: Promise.resolve(cached), release() {} };
 
-  if (!entry.request) {
+  let request = originalRequests.get(url);
+  if (!request && entry) {
     const controller = new AbortController();
     const subscribers = new Set<Paint>();
     const { signal } = controller;
@@ -79,26 +162,28 @@ export function openBuildingOriginal(url: string, entry: BuildingPreview, paint:
         const blob = await decodeJxlOriginal(url, prefix, signal, (frame) => {
           for (const draw of subscribers) draw(frame);
         });
-        remember(originals, url, blob, 2);
+        originals.set(url, blob);
         return blob;
       })
       .finally(() => {
         clearTimeout(timeout);
-        if (entry.request?.controller === controller) entry.request = undefined;
+        if (originalRequests.get(url)?.controller === controller) originalRequests.delete(url);
       });
-    entry.request = { controller, subscribers, result };
+    request = { controller, subscribers, result };
+    originalRequests.set(url, request);
   }
-  const request = entry.request;
-  request.subscribers.add(paint);
+  if (!request) return null;
+  const active = request;
+  active.subscribers.add(paint);
   return {
-    result: request.result,
+    result: active.result,
     release() {
-      request.subscribers.delete(paint);
+      active.subscribers.delete(paint);
       // React can immediately remount the same stage during a navigation.
       queueMicrotask(() => {
-        if (request.subscribers.size || entry.request !== request) return;
-        entry.request = undefined;
-        request.controller.abort();
+        if (active.subscribers.size || originalRequests.get(url) !== active) return;
+        originalRequests.delete(url);
+        active.controller.abort();
       });
     },
   };

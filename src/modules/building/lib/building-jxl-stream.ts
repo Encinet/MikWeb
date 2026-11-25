@@ -1,6 +1,7 @@
 import { readLimitedResponse } from '@/shared/lib/read-limited-response';
 
 import { MAX_JXL_PREVIEW_BYTES } from '../model/building-types';
+import { downscaleBuildingImage } from './building-preview-canvas';
 
 const MIME = 'image/jxl';
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -11,10 +12,7 @@ export interface JxlPrefix {
   complete: boolean;
 }
 
-export async function readJxlPrefix(
-  url: string,
-  hint: number,
-): Promise<JxlPrefix | null> {
+export async function readJxlPrefix(url: string, hint: number): Promise<JxlPrefix | null> {
   if (!hint || typeof ImageDecoder === 'undefined') return null;
   support ??= ImageDecoder.isTypeSupported(MIME).catch(() => false);
   if (!(await support)) return null;
@@ -65,12 +63,8 @@ export async function decodeJxlPreview(prefix: JxlPrefix): Promise<string | null
     const { image, complete } = await decoder.decode({ completeFramesOnly: false });
     try {
       if (!complete && !hasVisiblePixels(image)) return null;
-      const scale = Math.min(1, 640 / Math.max(image.displayWidth, image.displayHeight));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(image.displayWidth * scale));
-      canvas.height = Math.max(1, Math.round(image.displayHeight * scale));
-      canvas.getContext('2d')!.drawImage(image, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/webp', 0.82);
+      const canvas = downscaleBuildingImage(image, image.displayWidth, image.displayHeight, 640);
+      return canvas?.toDataURL('image/webp', 0.82) ?? null;
     } finally {
       image.close();
     }
