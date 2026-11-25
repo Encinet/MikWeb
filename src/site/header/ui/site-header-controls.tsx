@@ -1,258 +1,70 @@
 'use client';
 
-import { Globe, Menu, Users, X } from 'lucide-react';
+import { Globe, Menu, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { CSSProperties, RefObject } from 'react';
-import { createPortal } from 'react-dom';
+import type { RefObject } from 'react';
 
-import type { Player } from '@/modules/player/model/player-types';
-import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 import { SiteHeaderAccount } from '@/site/header/ui/site-header-account';
 import { ThemeSettings } from '@/site/theme/ui/theme-settings';
 
 interface SiteHeaderControlsProps {
-  isLoadingPlayers: boolean;
   isMobileMenuOpen: boolean;
   mobileMenuId: string;
   mobileMenuButtonRef: RefObject<HTMLButtonElement | null>;
-  isOnline: boolean;
   localeLabel: string;
   localeTooltip: string;
   localeTarget: string;
-  mounted: boolean;
-  hasNetworkError: boolean;
   onLocaleSwitch: () => void;
   onMobileMenuToggle: () => void;
-  onPlayerDropdownClose: () => void;
-  onPlayerDropdownOpen: () => void;
-  playerCount: number;
-  playerDropdownAnchorRef: RefObject<HTMLDivElement | null>;
-  playerDropdownRect: DOMRect | null;
-  playerDropdownVisible: boolean;
-  players: Player[];
-  statusNetworkErrorLabel: string;
-  statusOfflineLabel: string;
-  statusOnlineLabel: string;
 }
 
 export function SiteHeaderControls({
-  isLoadingPlayers,
   isMobileMenuOpen,
   mobileMenuId,
   mobileMenuButtonRef,
-  isOnline,
   localeLabel,
   localeTooltip,
   localeTarget,
-  mounted,
-  hasNetworkError,
   onLocaleSwitch,
   onMobileMenuToggle,
-  onPlayerDropdownClose,
-  onPlayerDropdownOpen,
-  playerCount,
-  playerDropdownAnchorRef,
-  playerDropdownRect,
-  playerDropdownVisible,
-  players,
-  statusNetworkErrorLabel,
-  statusOfflineLabel,
-  statusOnlineLabel,
 }: SiteHeaderControlsProps) {
   const controlsT = useTranslations('nav.controls');
 
   return (
-    <>
-      <div className="project-navbar-controls flex shrink-0 items-center">
+    <div className="project-navbar-controls flex shrink-0 items-center">
+      <button
+        ref={mobileMenuButtonRef}
+        type="button"
+        onClick={onMobileMenuToggle}
+        className="inline-flex items-center justify-center xl:hidden"
+        aria-label={controlsT(isMobileMenuOpen ? 'closeMenu' : 'openMenu')}
+        aria-expanded={isMobileMenuOpen}
+        aria-controls={mobileMenuId}
+      >
+        {isMobileMenuOpen ? (
+          <X className="h-4 w-4" aria-hidden="true" />
+        ) : (
+          <Menu className="h-4 w-4" aria-hidden="true" />
+        )}
+      </button>
+
+      <fieldset className="project-navbar-control-cluster">
+        <legend className="sr-only">{controlsT('display')}</legend>
+        <ThemeSettings />
+
         <button
-          ref={mobileMenuButtonRef}
           type="button"
-          onClick={onMobileMenuToggle}
-          className="inline-flex items-center justify-center xl:hidden"
-          aria-label={controlsT(isMobileMenuOpen ? 'closeMenu' : 'openMenu')}
-          aria-expanded={isMobileMenuOpen}
-          aria-controls={mobileMenuId}
+          onClick={onLocaleSwitch}
+          className="project-locale-toggle ui-nav-link inline-flex items-center gap-1.5 py-2"
+          title={localeTooltip}
+          aria-label={controlsT('switchLanguage', { language: localeLabel })}
         >
-          {isMobileMenuOpen ? (
-            <X className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <Menu className="h-4 w-4" aria-hidden="true" />
-          )}
+          <Globe className="h-4 w-4" aria-hidden="true" />
+          <span lang={localeTarget}>{localeLabel}</span>
         </button>
+      </fieldset>
 
-        <fieldset className="project-navbar-control-cluster">
-          <legend className="sr-only">{controlsT('display')}</legend>
-          <ThemeSettings />
-
-          <button
-            type="button"
-            onClick={onLocaleSwitch}
-            className="project-locale-toggle ui-nav-link inline-flex items-center gap-1.5 py-2"
-            title={localeTooltip}
-            aria-label={controlsT('switchLanguage', { language: localeLabel })}
-          >
-            <Globe className="h-4 w-4" aria-hidden="true" />
-            <span lang={localeTarget}>{localeLabel}</span>
-          </button>
-        </fieldset>
-
-        <SiteHeaderAccount />
-
-        <div ref={playerDropdownAnchorRef} className="project-player-control relative">
-          <button
-            type="button"
-            className="ui-nav-link inline-flex items-center gap-1.5 cursor-pointer sm:gap-2"
-            aria-haspopup="true"
-            aria-expanded={playerDropdownVisible}
-            onMouseEnter={onPlayerDropdownOpen}
-            onMouseLeave={onPlayerDropdownClose}
-            onFocus={onPlayerDropdownOpen}
-            onBlur={onPlayerDropdownClose}
-          >
-            <div
-              style={{
-                width: '8px',
-                height: '8px',
-                background: isOnline ? 'var(--theme-status-online)' : 'var(--theme-status-offline)',
-                borderRadius: '50%',
-                boxShadow: isOnline
-                  ? '0 0 8px var(--theme-status-online-glow)'
-                  : '0 0 8px var(--theme-status-offline-glow)',
-              }}
-            />
-            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            {isLoadingPlayers || isOnline ? (
-              <>
-                <span
-                  style={{
-                    color: 'var(--theme-text-player-count)',
-                    fontWeight: 600,
-                    fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {isLoadingPlayers ? '-' : playerCount}
-                </span>
-                <span
-                  className="hidden text-xs sm:inline sm:text-sm"
-                  style={{ color: 'var(--theme-text-muted)' }}
-                >
-                  {statusOnlineLabel}
-                </span>
-              </>
-            ) : (
-              <span className="text-xs sm:text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-                {hasNetworkError ? statusNetworkErrorLabel : statusOfflineLabel}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      <PlayerDropdownPortal
-        isOpen={mounted && playerDropdownVisible}
-        players={players}
-        playerDropdownRect={playerDropdownRect}
-        statusOnlineLabel={statusOnlineLabel}
-        onMouseEnter={onPlayerDropdownOpen}
-        onMouseLeave={onPlayerDropdownClose}
-      />
-    </>
-  );
-}
-
-function PlayerDropdownPortal({
-  isOpen,
-  onMouseEnter,
-  onMouseLeave,
-  playerDropdownRect,
-  players,
-  statusOnlineLabel,
-}: {
-  isOpen: boolean;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  playerDropdownRect: DOMRect | null;
-  players: Player[];
-  statusOnlineLabel: string;
-}) {
-  if (!isOpen || !playerDropdownRect || players.length === 0) {
-    return null;
-  }
-
-  return createPortal(
-    <div
-      className="player-list-dropdown"
-      role="tooltip"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      style={
-        {
-          position: 'fixed',
-          top: playerDropdownRect.bottom + 8,
-          left: Math.min(Math.max(16, playerDropdownRect.right - 240), window.innerWidth - 256),
-          minWidth: '240px',
-          maxWidth: `min(320px, calc(100vw - 2rem - var(--viewport-right-inset)))`,
-          zIndex: 100,
-          opacity: 1,
-          transform: 'translateY(0)',
-          pointerEvents: 'auto',
-          transition: 'opacity 0.18s ease-out, transform 0.18s ease-out',
-        } as CSSProperties
-      }
-    >
-      <div className="player-list-dropdown-surface">
-        <div className="player-list-dropdown-scroll">
-          <div
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: 'var(--theme-text-muted)',
-              marginBottom: '8px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}
-          >
-            {statusOnlineLabel} ({players.length})
-          </div>
-          <div className="space-y-2">
-            {players.map((player) => (
-              <div
-                key={player.uuid}
-                className="ui-list-row rounded-lg"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '8px 10px',
-                  cursor: 'default',
-                }}
-              >
-                <MinecraftAvatar
-                  uuid={player.uuid}
-                  name={player.name}
-                  size={28}
-                  style={{
-                    borderRadius: '6px',
-                    boxShadow: '0 2px 8px var(--theme-shadow-glass)',
-                  }}
-                />
-                <span
-                  style={{
-                    color: 'var(--theme-text-heading)',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    flex: 1,
-                  }}
-                >
-                  {player.name}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body,
+      <SiteHeaderAccount />
+    </div>
   );
 }

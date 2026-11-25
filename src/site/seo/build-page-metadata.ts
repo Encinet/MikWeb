@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { SITE_NAME } from '@/shared/config/site-config';
-import type { AppLocale } from '@/shared/i18n/routing';
+import { type AppLocale, routing } from '@/shared/i18n/routing';
 import { formatPageTitle } from '@/site/seo/page-title';
 import { SOCIAL_IMAGE_SIZE } from '@/site/seo/social-image/social-image-config';
 
@@ -9,26 +9,22 @@ const OPEN_GRAPH_LOCALE_BY_APP_LOCALE: Record<AppLocale, string> = {
   en: 'en_US',
 };
 
-function getLocalePath(locale: AppLocale, pathname = '') {
-  return pathname ? `/${locale}${pathname}` : `/${locale}`;
-}
-
 export function buildPageMetadata({
   locale,
   title,
   description,
-  pathname = '',
-  imagePath = `/${locale}/opengraph-image`,
+  pathname,
+  imagePath,
   imageAlt = title,
 }: {
   locale: AppLocale;
   title: string;
   description: string;
-  pathname?: string;
-  imagePath?: string;
+  pathname: string;
+  imagePath: string;
   imageAlt?: string;
 }) {
-  const canonical = getLocalePath(locale, pathname);
+  const canonical = `/${locale}${pathname}`;
   const image = { url: imagePath, ...SOCIAL_IMAGE_SIZE, alt: imageAlt, type: 'image/png' };
   const documentTitle = formatPageTitle(title, { home: pathname === '' });
 
@@ -38,8 +34,9 @@ export function buildPageMetadata({
     alternates: {
       canonical,
       languages: {
-        'zh-CN': getLocalePath('zh-CN', pathname),
-        en: getLocalePath('en', pathname),
+        ...Object.fromEntries(
+          routing.locales.map((alternate) => [alternate, `/${alternate}${pathname}`]),
+        ),
         'x-default': pathname || '/',
       },
     },

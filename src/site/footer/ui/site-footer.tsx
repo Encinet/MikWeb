@@ -96,12 +96,7 @@ export default async function SiteFooter() {
                 rel="noopener noreferrer"
                 className="site-footer__organization"
               >
-                <Image
-                  src={ORGANIZATION_LOGO_PATH}
-                  alt={ORGANIZATION_NAME}
-                  width={18}
-                  height={18}
-                />
+                <Image src={ORGANIZATION_LOGO_PATH} alt="" width={18} height={18} />
                 <span>{ORGANIZATION_NAME}</span>
               </a>
             </li>

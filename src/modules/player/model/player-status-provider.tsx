@@ -16,7 +16,6 @@ const MAX_RETRIES = 3;
 export function PlayerStatusProvider({ children }: { children: ReactNode }) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [playerCount, setPlayerCount] = useState(0);
-  const [peakPlayerCount, setPeakPlayerCount] = useState<number | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [hasNetworkError, setHasNetworkError] = useState(false);
@@ -42,7 +41,6 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
     const resetPlayersState = () => {
       setPlayers((previous) => (previous.length === 0 ? previous : []));
       setPlayerCount(0);
-      setPeakPlayerCount(null);
     };
     const fetchPlayers = async () => {
       if (!active || document.hidden || fetching) return;
@@ -78,7 +76,6 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
               : status.players,
           );
           setPlayerCount(status.online);
-          setPeakPlayerCount(status.peakOnline ?? null);
         } else resetPlayersState();
         lastUpdatedAt = Date.now();
         retries = 0;
@@ -112,9 +109,7 @@ export function PlayerStatusProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PlayerStatusContext
-      value={{ players, playerCount, peakPlayerCount, isOnline, isLoading, hasNetworkError }}
-    >
+    <PlayerStatusContext value={{ players, playerCount, isOnline, isLoading, hasNetworkError }}>
       {children}
     </PlayerStatusContext>
   );

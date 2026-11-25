@@ -6,8 +6,8 @@ import { historyMessagePlayer } from '@/modules/chat/lib/history/chat-history-pl
 import { mayReadMessage } from '@/modules/chat/model/chat-protocol';
 import type { HistoryChannel } from '@/modules/chat/model/history/chat-history-sync';
 
-export const HISTORY_AGES = [0, 30, 90, 365] as const;
-export type HistoryAge = (typeof HISTORY_AGES)[number];
+export const HISTORY_AGES = [30, 90, 365] as const;
+export type HistoryAge = 0 | (typeof HISTORY_AGES)[number];
 export interface HistoryUsage {
   count: number;
   bytes: number;
@@ -40,6 +40,7 @@ export async function readHistoryStorageReport(
   if (!owner || signal?.aborted) return null;
   const db = await openChatHistoryDatabase();
   if (signal?.aborted) return null;
+  const cutoffs = HISTORY_AGES.map((days) => ({ days, through: now - days * 86_400_000 })).reverse();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(['state', 'messages'], 'readonly');
     let result: HistoryStorageReport | null = null;
@@ -91,9 +92,7 @@ export async function readHistoryStorageReport(
           const age =
             message.createdAt > now
               ? -1
-              : ([...HISTORY_AGES]
-                  .reverse()
-                  .find((days) => message.createdAt <= now - days * 86_400_000) ?? 0);
+              : (cutoffs.find(({ through }) => message.createdAt <= through)?.days ?? 0);
           const key = `${message.channel}:${player?.uuid ?? ''}:${age}`;
           const bucket = buckets.get(key) ?? {
             channel: message.channel,

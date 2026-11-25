@@ -63,7 +63,16 @@ export function useAnnouncementsFeed({ fallbackErrorMessage }: UseAnnouncementsF
 
       if (announcementsResult.status === 'success') {
         hasLoaded.current = true;
-        setAnnouncements(sortAnnouncements(announcementsResult.data));
+        const next = sortAnnouncements(announcementsResult.data);
+        setAnnouncements((previous) =>
+          previous.length === next.length &&
+          previous.every(
+            ({ timestamp, content }, index) =>
+              timestamp === next[index].timestamp && content === next[index].content,
+          )
+            ? previous
+            : next,
+        );
         setErrorMessage(null);
       } else {
         if (announcementsResult.status === 'network-error') {

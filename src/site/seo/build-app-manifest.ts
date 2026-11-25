@@ -8,16 +8,15 @@ import {
   SITE_SHORT_NAME,
   SITE_TRANSLATION_VALUES,
 } from '@/shared/config/site-config';
-import { DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import type { AppLocale } from '@/shared/i18n/routing';
-import { getAccentProperties } from '@/site/theme/lib/accent-color';
+import { DEFAULT_ACCENT_PROPERTIES } from '@/site/theme/lib/default-accent';
 
 export async function buildAppManifest(locale: AppLocale): Promise<MetadataRoute.Manifest> {
   const [messages, screenshotT] = await Promise.all([
     getMessages({ locale }),
     getTranslations({ locale, namespace: 'metadata.screenshots' }),
   ]);
-  const background = getAccentProperties(DEFAULT_ACCENT_COLOR)['--palette-dark-bg'];
+  const background = DEFAULT_ACCENT_PROPERTIES['--palette-dark-bg'];
   const shortcutIcons = [SITE_APP_ICONS[0]];
 
   return {

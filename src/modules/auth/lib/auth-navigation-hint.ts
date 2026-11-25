@@ -37,7 +37,7 @@ export function restoreAuthNavigation(): void {
   applyStoredNavigation(STORAGE_KEY, MAX_AGE_MS);
 }
 
-/** Same initialization before paint and on account changes; public HTML stays cacheable. */
+/** Restore the navigation hint before paint without reading the session on the server. */
 export function getAuthNavigationInitializationScript(): string {
   return `(${applyStoredNavigation.toString()})(${JSON.stringify(STORAGE_KEY)},${MAX_AGE_MS});`;
 }

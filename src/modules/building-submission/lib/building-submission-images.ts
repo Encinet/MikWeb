@@ -45,7 +45,6 @@ export async function createBuildingSubmissionImageDrafts(
         },
         width,
         height,
-        size: files.webp.size + files.jxl.size + files.thumbnailWebp.size,
       });
     }
     return drafts;
@@ -111,7 +110,6 @@ async function prepareImage(
   try {
     signal.throwIfAborted();
     if (width < limits.minWidth || height < limits.minHeight) throw new Error('image_too_small');
-    signal.throwIfAborted();
     context = drawResizedImage(bitmap, width, height);
   } finally {
     bitmap.close();

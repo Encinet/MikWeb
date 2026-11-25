@@ -20,21 +20,17 @@ export function useWikiPrefetch(
     return scheduleBackgroundWork(
       async () => {
         const pending = cache.pendingBackground();
+        if (pending) {
+          await pending.catch(() => undefined);
+          return true;
+        }
         const id = sectionIds.find(
-          (id) =>
-            !cache.getSnapshot().sections[`${locale}/${id}`] && !attempted.has(`section:${id}`),
+          (id) => !cache.getSection(locale, id) && !attempted.has(`section:${id}`),
         );
-        if (
-          !pending &&
-          !id &&
-          (cache.getSnapshot().searchIndexes[locale] || attempted.has('search'))
-        )
-          return false;
+        if (!id && (cache.getSearchIndex(locale) || attempted.has('search'))) return false;
         const key = id ? `section:${id}` : 'search';
-        if (!pending) attempted.add(key);
-        const request =
-          pending ??
-          (id ? cache.loadSection(locale, id, true) : cache.loadSearchIndex(locale, true));
+        attempted.add(key);
+        const request = id ? cache.loadSection(locale, id, true) : cache.loadSearchIndex(locale, true);
         // Speculative failures stay silent. A click/search still makes a normal retry.
         await request.catch((error: unknown) => {
           if (error instanceof DOMException && error.name === 'AbortError') attempted.delete(key);

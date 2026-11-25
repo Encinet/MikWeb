@@ -8,13 +8,14 @@ import { isBanItemArray } from '@/modules/ban/model/ban-validation';
 import { sortBuildersByWeight } from '@/modules/building/lib/building-builders';
 import { isBuildingCatalogResponse } from '@/modules/building/model/building-api';
 import { isPlayerStatusResponse } from '@/modules/player/lib/player-status-api';
-import { WIKI_LOCALES } from '@/modules/wiki/lib/wiki-grouping';
 import { normalizeWikiSearchPhrases, rankWikiBlocks } from '@/modules/wiki/lib/wiki-search';
 import { getPublicWikiSearchIndex } from '@/modules/wiki/server/public-wiki-search-index';
 import { dataApiUrl } from '@/shared/api/data-api-url';
 import { SITE_URL } from '@/shared/config/site-config';
 import type { LocalizedText } from '@/shared/i18n/localized-text';
 import { getLocalizedText } from '@/shared/i18n/localized-text';
+import { routing } from '@/shared/i18n/routing';
+import { isRecord } from '@/shared/lib/is-record';
 import {
   RequestBodyLimitError,
   readLimitedRequestBody,
@@ -41,12 +42,11 @@ export async function mcpHandler(request: Request): Promise<Response> {
     if (request.method === 'POST') {
       const body = await readLimitedRequestBody(request, 16 * 1024);
       const parsed: unknown = JSON.parse(new TextDecoder().decode(body));
-      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
-        return Response.json({ error: 'invalid_request' }, { status: 400 });
+      if (!isRecord(parsed)) return Response.json({ error: 'invalid_request' }, { status: 400 });
       request = new Request(request.url, {
         method: 'POST',
         headers: request.headers,
-        body: body as BodyInit,
+        body,
         signal: request.signal,
       });
     }
@@ -107,8 +107,8 @@ const sdkHandler = createMcpHandler(
           'Get the list of buildings from the Minecraft server. builders format: "name(contribution%)" sorted by contribution desc. Coordinates include the world name and x, y, z.',
         inputSchema: z.object({
           locale: z
-            .enum(WIKI_LOCALES)
-            .default('zh-CN')
+            .enum(routing.locales)
+            .default(routing.defaultLocale)
             .describe('Locale for localized fields (e.g. zh-CN, en).'),
         }),
       },
@@ -136,8 +136,10 @@ const sdkHandler = createMcpHandler(
           const sortedBuilders = sortBuildersByWeight(building.builders);
           const showContribution =
             sortedBuilders.length > 1 &&
-            sortedBuilders.some((builder) => builder.weight !== sortedBuilders[0].weight);
-          const totalWeight = sortedBuilders.reduce((sum, builder) => sum + builder.weight, 0);
+            sortedBuilders[0].weight !== sortedBuilders[sortedBuilders.length - 1].weight;
+          const totalWeight = showContribution
+            ? sortedBuilders.reduce((sum, builder) => sum + builder.weight, 0)
+            : 0;
           const builders = sortedBuilders
             .map((builder) =>
               showContribution
@@ -202,7 +204,7 @@ const sdkHandler = createMcpHandler(
           const expiry =
             ban.isPermanent || !ban.expiresAt
               ? 'permanent'
-              : new Date(ban.expiresAt) > new Date(now)
+              : Date.parse(ban.expiresAt) > now
                 ? `expires:${ban.expiresAt}`
                 : 'expired';
 
@@ -277,7 +279,10 @@ const sdkHandler = createMcpHandler(
             .describe(
               'Search with 1-5 interchangeable phrasings of the same question. Put the strongest wording first. Prefer 3-5 phrasings when the concept may be described in multiple ways, such as "规则", "规范", "制度"; "入服", "加入服务器", "白名单"; or "家", "home", "/sethome". Do not send loosely related keywords or topic expansion.',
             ),
-          locale: z.enum(WIKI_LOCALES).optional().describe('Language locale (default: zh-CN)'),
+          locale: z
+            .enum(routing.locales)
+            .optional()
+            .describe(`Language locale (default: ${routing.defaultLocale})`),
           limit: z
             .number()
             .int()
@@ -288,7 +293,7 @@ const sdkHandler = createMcpHandler(
         }),
       },
       async ({ searchPhrases, locale, limit }) => {
-        const loc = locale ?? 'zh-CN';
+        const loc = locale ?? routing.defaultLocale;
         const maxResults = limit ?? 5;
         const searchIndex = await getPublicWikiSearchIndex(loc);
         const results = rankWikiBlocks(

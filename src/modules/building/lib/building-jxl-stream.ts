@@ -138,11 +138,12 @@ export async function decodeJxlOriginal(
       controller.enqueue(value);
     },
   });
-  const decoder = new ImageDecoder({ type: MIME, data: stream });
-  const close = () => decoder.close();
-  signal.addEventListener('abort', close, { once: true });
+  let decoder: ImageDecoder | undefined;
+  const close = () => decoder?.close();
   try {
     signal.throwIfAborted();
+    decoder = new ImageDecoder({ type: MIME, data: stream });
+    signal.addEventListener('abort', close, { once: true });
     let visible = false;
     for (;;) {
       const { image, complete } = await decoder.decode({ completeFramesOnly: false });
@@ -158,8 +159,11 @@ export async function decodeJxlOriginal(
     return new Blob(chunks, { type: MIME });
   } finally {
     signal.removeEventListener('abort', close);
-    decoder.close();
-    await reader?.cancel().catch(() => {});
-    reader?.releaseLock();
+    try {
+      close();
+    } finally {
+      void reader?.cancel().catch(() => undefined);
+      reader?.releaseLock();
+    }
   }
 }

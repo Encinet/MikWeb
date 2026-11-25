@@ -41,7 +41,7 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
       return Response.json({ image, expiresAt }, { headers: { 'Cache-Control': 'no-store' } });
     if (typeof uploadId !== 'string') return uploadError('image_upload_unavailable', 502);
     const body = await readLimitedRequestBody(request, MAX_MULTIPART_BYTES);
-    const form = await new Response(body as BodyInit, {
+    const form = await new Response(body, {
       headers: { 'Content-Type': contentType },
     }).formData();
     const webp = form.get('webp');

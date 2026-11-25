@@ -24,11 +24,11 @@ export function readSocialImageBackdrop(path: string, style: SocialImageBackdrop
   return asset;
 }
 
-let logo: Promise<string> | undefined;
+let logo: Promise<{ png: Buffer; dataUrl: string }> | undefined;
 
 export function readSocialImageLogo() {
   logo ??= readFile(join(process.cwd(), 'public', SITE_APP_ICONS[0].src))
-    .then((image) => `data:image/png;base64,${image.toString('base64')}`)
+    .then((png) => ({ png, dataUrl: `data:image/png;base64,${png.toString('base64')}` }))
     .catch((error: unknown) => {
       logo = undefined;
       throw error;

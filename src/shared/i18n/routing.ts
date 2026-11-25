@@ -17,6 +17,6 @@ export const LOCALE_NAMES = {
   en: { label: 'English', name: 'English' },
 } as const satisfies Record<AppLocale, { label: string; name: string }>;
 
-export function isRoutingLocale(value: string): value is AppLocale {
+export function isRoutingLocale(value: unknown): value is AppLocale {
   return routing.locales.some((locale) => locale === value);
 }

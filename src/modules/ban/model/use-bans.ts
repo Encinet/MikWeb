@@ -28,12 +28,8 @@ export function useBans(errorMessage: string) {
         invalidDataMessage: errorMessage,
       });
       if (currentRequest !== requestId.current) return;
-      if (result.status === 'success') {
-        setEntries(result.data);
-        setError(null);
-      } else {
-        setError(result.error);
-      }
+      if (result.status === 'success') setEntries(result.data);
+      else setError(result.error);
       setIsLoading(false);
     },
     [errorMessage],

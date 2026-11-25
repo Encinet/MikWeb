@@ -1,5 +1,6 @@
 /** Public Cap endpoints only; the site secret must stay on the server. */
 export interface JoinCaptchaConfig {
+  /** HTTPS site endpoint with a trailing slash. */
   apiEndpoint: string;
 }
 

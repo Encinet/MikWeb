@@ -115,7 +115,6 @@
   --theme-text-nav: rgba(255, 255, 255, 0.7);
   --theme-text-nav-hover: rgba(255, 255, 255, 1);
   --theme-text-nav-active: rgba(255, 255, 255, 1);
-  --theme-text-player-count: #ffffff;
 
   /* Accent */
   --theme-accent: var(--palette-dark-accent);
@@ -129,9 +128,6 @@
   /* Status */
   --theme-status-success: #86efac;
   --theme-status-online: #55ff55;
-  --theme-status-online-glow: rgba(85, 255, 85, 0.5);
-  --theme-status-offline: #ff5555;
-  --theme-status-offline-glow: rgba(255, 85, 85, 0.5);
 
   /* Shadow */
   --theme-shadow-glass: rgba(0, 0, 0, 0.18);
@@ -187,7 +183,6 @@
   --theme-text-nav: color-mix(in srgb, var(--theme-neutral-ink) 74%, transparent);
   --theme-text-nav-hover: var(--theme-neutral-ink);
   --theme-text-nav-active: var(--theme-neutral-ink);
-  --theme-text-player-count: var(--theme-neutral-ink);
 
   /* Accent */
   --theme-accent: var(--palette-light-accent);
@@ -201,9 +196,6 @@
   /* Status */
   --theme-status-success: #28653a;
   --theme-status-online: #357b49;
-  --theme-status-online-glow: rgba(53, 123, 73, 0.32);
-  --theme-status-offline: #ac4848;
-  --theme-status-offline-glow: rgba(172, 72, 72, 0.28);
 
   /* Shadow */
   --theme-shadow-glass: rgba(26, 45, 34, 0.08);

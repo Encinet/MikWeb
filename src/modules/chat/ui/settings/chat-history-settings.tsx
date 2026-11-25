@@ -10,6 +10,7 @@ import type {
   HistoryStorageReport,
 } from '@/modules/chat/lib/history/chat-history-storage';
 import {
+  HISTORY_AGES,
   readHistoryStorageReport,
   selectHistoryUsage,
 } from '@/modules/chat/lib/history/chat-history-storage';
@@ -276,7 +277,7 @@ export function ChatHistorySettings({
                     setCleaned(false);
                   }}
                 >
-                  {[30, 90, 365].map((days) => (
+                  {HISTORY_AGES.map((days) => (
                     <option key={days} value={days}>
                       {t('data.olderThan', { days })}
                     </option>

@@ -1,11 +1,11 @@
 export const DEFAULT_PCL2_TIME_ZONE = 'UTC';
-export const PCL2_TIME_ZONE_PARAM = 'timezone';
+const PCL2_TIME_ZONE_PARAM = 'timezone';
 
 const MAX_PCL2_TIME_ZONE_LENGTH = 100;
 const FIXED_OFFSET_PATTERN = /^[+-]\d{2}(?::?\d{2})?$/;
 const timeFormatters = new Map<string, Intl.DateTimeFormat>();
 
-export function normalizePcl2TimeZone(value: string | null | undefined): string {
+function normalizePcl2TimeZone(value: string | null | undefined): string {
   const candidate = value?.trim();
 
   if (

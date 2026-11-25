@@ -7,7 +7,7 @@ import type {
 import { startRegistration, WebAuthnAbortService } from '@simplewebauthn/browser';
 import { KeyRound, LogOut, MonitorSmartphone, Plus, RefreshCw } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthRequestError, authRequest } from '@/modules/auth/lib/auth-request';
 import { authenticationErrorKey } from '@/modules/auth/lib/authentication-error-key';
 import { webAuthnError } from '@/modules/auth/lib/webauthn-error';
@@ -50,6 +50,10 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
   const authT = useTranslations('auth');
   const authenticationT = useTranslations('auth.authentication.errors');
   const locale = useLocale();
+  const formatDate = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+    return (value: string) => formatter.format(new Date(value));
+  }, [locale]);
   const router = useRouter();
   const { refresh, logout } = useAuth();
   const [security, setSecurity] = useState<AccountSecurityResponse | null>(null);
@@ -86,14 +90,10 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
         browserCache: { force, key: cacheKey, ttlMs: SECURITY_CACHE_TTL_MS },
         fallbackErrorMessage: 'Failed to load account security',
       });
-      if (current !== generation.current || request !== securityRequest.current) return false;
+      if (current !== generation.current || request !== securityRequest.current) return;
       setLoading(false);
-      if (result.status === 'success') {
-        setSecurity(result.data);
-        return true;
-      }
-      setMessage(t('states.loadFailed'));
-      return false;
+      if (result.status === 'success') setSecurity(result.data);
+      else setMessage(t('states.loadFailed'));
     },
     [cacheKey, playerUuid, t],
   );
@@ -284,7 +284,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
               <button
                 type="button"
                 className="ui-action-button ui-action-button--danger"
-                disabled={isMutating || !security?.sessions.length}
+                disabled={isMutating || !security.sessions.length}
                 onClick={() => openAction({ type: 'sign-out-all' })}
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -317,12 +317,12 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
                   <p>{t(`session.method.${session.authMethod}`)}</p>
                   <p>
                     <time dateTime={session.lastSeenAt}>
-                      {t('session.lastSeenAt', { time: formatDate(session.lastSeenAt, locale) })}
+                      {t('session.lastSeenAt', { time: formatDate(session.lastSeenAt) })}
                     </time>
                   </p>
                   <p className="security-item__secondary">
                     <time dateTime={session.idleExpiresAt}>
-                      {t('session.expiresAt', { time: formatDate(session.idleExpiresAt, locale) })}
+                      {t('session.expiresAt', { time: formatDate(session.idleExpiresAt) })}
                     </time>
                   </p>
                 </SecurityItem>
@@ -338,7 +338,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
               <button
                 type="button"
                 className="ui-action-button ui-action-button--primary"
-                disabled={isMutating || !security}
+                disabled={isMutating}
                 onClick={() => openAction({ type: 'add-passkey', displayName: '' })}
                 aria-busy={running?.type === 'add-passkey' || undefined}
               >
@@ -376,7 +376,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
                   <p>
                     {passkey.lastUsedAt ? (
                       <time dateTime={passkey.lastUsedAt}>
-                        {t('passkey.lastUsedAt', { time: formatDate(passkey.lastUsedAt, locale) })}
+                        {t('passkey.lastUsedAt', { time: formatDate(passkey.lastUsedAt) })}
                       </time>
                     ) : (
                       t('passkey.neverUsed')
@@ -384,7 +384,7 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
                   </p>
                   <p className="security-item__secondary">
                     <time dateTime={passkey.createdAt}>
-                      {t('passkey.createdAt', { time: formatDate(passkey.createdAt, locale) })}
+                      {t('passkey.createdAt', { time: formatDate(passkey.createdAt) })}
                     </time>
                   </p>
                 </SecurityItem>
@@ -426,11 +426,5 @@ function AccountSecurity({ account }: { account: AuthAccount }) {
         />
       ) : null}
     </>
-  );
-}
-
-function formatDate(value: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-    new Date(value),
   );
 }

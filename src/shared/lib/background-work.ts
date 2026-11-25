@@ -13,6 +13,10 @@ export function scheduleBackgroundWork(
   let running = false;
   let finished = false;
   let cancelScheduled: (() => void) | undefined;
+  const cancel = () => {
+    cancelScheduled?.();
+    cancelScheduled = undefined;
+  };
   const allowed = () =>
     current &&
     document.visibilityState !== 'hidden' &&
@@ -20,7 +24,7 @@ export function scheduleBackgroundWork(
     !connection?.saveData &&
     !['slow-2g', '2g', '3g'].includes(connection?.effectiveType ?? '');
   const schedule = () => {
-    cancelScheduled?.();
+    cancel();
     if (running || finished || !allowed() || document.readyState !== 'complete') return;
     if (typeof window.requestIdleCallback === 'function') {
       const handle = window.requestIdleCallback(run, { timeout: 2000 });
@@ -49,9 +53,11 @@ export function scheduleBackgroundWork(
       });
   };
   const resume = () => {
-    cancelScheduled?.();
-    if (!allowed()) onPause?.();
-    else schedule();
+    if (allowed()) schedule();
+    else {
+      cancel();
+      onPause?.();
+    }
   };
   window.addEventListener('load', resume);
   window.addEventListener('online', resume);
@@ -59,8 +65,9 @@ export function scheduleBackgroundWork(
   document.addEventListener('visibilitychange', resume);
   connection?.addEventListener('change', resume);
   const cleanup = () => {
+    if (!current) return;
     current = false;
-    cancelScheduled?.();
+    cancel();
     window.removeEventListener('load', resume);
     window.removeEventListener('online', resume);
     window.removeEventListener('offline', resume);

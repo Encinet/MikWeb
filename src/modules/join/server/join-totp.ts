@@ -1,11 +1,8 @@
 import 'server-only';
+import { JOIN_CODE_PERIOD_SECONDS } from '@/modules/join/model/join-code';
 
-/** RFC 6238 TOTP, HMAC-SHA1; matches the usual authenticator/bot defaults. */
 export function decodeBase32(input: string) {
-  const cleaned = String(input ?? '')
-    .toUpperCase()
-    .replace(/[\s-]/g, '')
-    .replace(/=+$/, '');
+  const cleaned = input.toUpperCase().replace(/[\s-]/g, '').replace(/=+$/, '');
   if (!cleaned || !/^[A-Z2-7]+$/.test(cleaned) || [1, 3, 6].includes(cleaned.length % 8)) {
     throw new Error('Invalid Base32 secret');
   }
@@ -27,22 +24,21 @@ export function decodeBase32(input: string) {
   return new Uint8Array(output);
 }
 
+/** RFC 6238 TOTP, HMAC-SHA1; matches the usual authenticator/bot defaults. */
 export async function createTotp(
-  secret: string,
+  secret: string | Uint8Array<ArrayBuffer>,
   nowMs = Date.now(),
-  { period = 30, digits = 6 } = {},
+  { digits = 6 } = {},
 ) {
-  if (!Number.isInteger(period) || period < 15 || period > 300) {
-    throw new Error('Unsupported TOTP period');
-  }
   if (!Number.isInteger(digits) || digits < 6 || digits > 8) {
     throw new Error('Unsupported TOTP digits');
   }
 
-  const rawSecret = decodeBase32(secret);
+  const rawSecret = typeof secret === 'string' ? decodeBase32(secret) : secret;
   if (rawSecret.length < 20) throw new Error('TOTP secret must contain at least 20 bytes');
 
-  const counter = Math.floor(nowMs / (period * 1_000));
+  const periodMs = JOIN_CODE_PERIOD_SECONDS * 1_000;
+  const counter = Math.floor(nowMs / periodMs);
   const message = new ArrayBuffer(8);
   new DataView(message).setBigUint64(0, BigInt(counter), false);
   const key = await crypto.subtle.importKey(
@@ -63,8 +59,7 @@ export async function createTotp(
 
   return {
     code,
-    expiresAt: (counter + 1) * period * 1_000,
+    expiresAt: (counter + 1) * periodMs,
     serverTime: nowMs,
-    period,
   };
 }

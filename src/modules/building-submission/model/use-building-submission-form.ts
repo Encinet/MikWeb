@@ -61,8 +61,9 @@ export function useBuildingSubmissionForm() {
   );
   const [submissions, setSubmissions] = useState<BuildingSubmissionSummary[]>([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [operation, setOperation] = useState<'idle' | 'preparing-images' | 'submitting'>('idle');
+  const isSubmitting = operation === 'submitting';
+  const isUploading = operation !== 'idle';
   const [playerInput, setPlayerInput] = useState('');
   const [isResolvingPlayer, setIsResolvingPlayer] = useState(false);
   const [tags, setTags] = useState<BuildingSubmissionTagDraft[]>([]);
@@ -91,8 +92,7 @@ export function useBuildingSubmissionForm() {
     setIsResolvingPlayer(false);
     setPlayerInput('');
     setSubmissions([]);
-    setIsSubmitting(false);
-    setIsUploading(false);
+    setOperation('idle');
     setFeedback({});
     setForm(createInitialBuildingSubmissionForm(new Date().toISOString().slice(0, 10)));
     setTags([]);
@@ -180,7 +180,6 @@ export function useBuildingSubmissionForm() {
   const canSubmit =
     authenticated &&
     pendingCount < MAX_PENDING_BUILDING_SUBMISSIONS &&
-    !isSubmitting &&
     !isUploading;
 
   const updateForm = (key: keyof typeof form, value: string) => {
@@ -283,7 +282,7 @@ export function useBuildingSubmissionForm() {
     }
 
     showFeedback('images', null);
-    setIsUploading(true);
+    setOperation('preparing-images');
     const controller = new AbortController();
     pendingImages.current = controller;
     try {
@@ -309,7 +308,7 @@ export function useBuildingSubmissionForm() {
     } finally {
       if (pendingImages.current === controller) {
         pendingImages.current = null;
-        setIsUploading(false);
+        setOperation('idle');
       }
     }
   };
@@ -338,8 +337,7 @@ export function useBuildingSubmissionForm() {
 
     const controller = new AbortController();
     pendingSubmission.current = controller;
-    setIsSubmitting(true);
-    setIsUploading(true);
+    setOperation('submitting');
     showFeedback('form', { message: t('states.uploading'), kind: 'loading' });
     try {
       draftKey.current ||= crypto.randomUUID();
@@ -394,10 +392,9 @@ export function useBuildingSubmissionForm() {
         kind: 'error',
       });
     } finally {
-      if (pendingSubmission.current === controller) pendingSubmission.current = null;
-      if (!controller.signal.aborted) {
-        setIsUploading(false);
-        setIsSubmitting(false);
+      if (pendingSubmission.current === controller) {
+        pendingSubmission.current = null;
+        setOperation('idle');
       }
     }
   };
@@ -406,7 +403,7 @@ export function useBuildingSubmissionForm() {
     if (pendingImages.current) {
       pendingImages.current.abort();
       pendingImages.current = null;
-      setIsUploading(false);
+      setOperation('idle');
     }
     draftKey.current = '';
     setFeedback((current) => ({ history: current.history }));

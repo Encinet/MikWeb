@@ -33,9 +33,7 @@ export async function getBuildingSocialImage(id: string, locale: AppLocale) {
 export async function getBuildingShareThumbnail(id: string) {
   'use cache';
   cacheLife('days');
-  return new Uint8Array(
-    await (await createBuildingShareThumbnail(await getBuilding(id, 86400))).arrayBuffer(),
-  );
+  return createBuildingShareThumbnail(await getBuilding(id, 86400));
 }
 
 export function socialImageResponse(image: Uint8Array<ArrayBuffer>) {

@@ -2,24 +2,27 @@ import type { WikiSectionPayload } from '@/modules/wiki/model/wiki-content-types
 import type { WikiSearchEntry } from '@/modules/wiki/model/wiki-search-types';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
-interface WikiResources {
-  sections: Record<string, WikiSectionPayload>;
-  searchIndexes: Record<string, WikiSearchEntry[]>;
-}
-
 interface PendingResource {
   controller: AbortController;
   background: boolean;
-  promise: Promise<unknown>;
+  promise: Promise<void>;
 }
 
 /** Public, visit-scoped resources. Foreground reads and prefetches share requests. */
 export class WikiResourceCache {
-  private snapshot: WikiResources = { sections: {}, searchIndexes: {} };
-  private listeners = new Set<() => void>();
-  private pending = new Map<string, PendingResource>();
+  private readonly sections = new Map<string, WikiSectionPayload>();
+  private readonly searchIndexes = new Map<string, WikiSearchEntry[]>();
+  private readonly listeners = new Set<() => void>();
+  private readonly pending = new Map<string, PendingResource>();
 
-  getSnapshot = () => this.snapshot;
+  getSection(locale: string, id: string) {
+    return this.sections.get(`${locale}/${id}`);
+  }
+
+  getSearchIndex(locale: string) {
+    return this.searchIndexes.get(locale);
+  }
+
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     return () => {
@@ -27,10 +30,9 @@ export class WikiResourceCache {
     };
   };
 
-  loadSection(locale: string, id: string, background = false): Promise<WikiSectionPayload> {
+  loadSection(locale: string, id: string, background = false): Promise<void> {
     const key = `${locale}/${id}`;
-    const cached = this.snapshot.sections[key];
-    if (cached) return Promise.resolve(cached);
+    if (this.sections.has(key)) return Promise.resolve();
     return this.load(
       `section:${key}`,
       `/api/wiki/section/${encodeURIComponent(locale)}/${encodeURIComponent(id)}`,
@@ -43,24 +45,20 @@ export class WikiResourceCache {
         ) {
           throw new Error('Invalid Wiki section');
         }
-        this.publish({ ...this.snapshot, sections: { ...this.snapshot.sections, [key]: value } });
+        this.sections.set(key, value);
       },
     );
   }
 
-  loadSearchIndex(locale: string, background = false): Promise<WikiSearchEntry[]> {
-    const cached = this.snapshot.searchIndexes[locale];
-    if (cached) return Promise.resolve(cached);
+  loadSearchIndex(locale: string, background = false): Promise<void> {
+    if (this.searchIndexes.has(locale)) return Promise.resolve();
     return this.load(
       `search:${locale}`,
       `/api/wiki/search-index/${encodeURIComponent(locale)}/compact`,
       background,
       (value: WikiSearchEntry[]) => {
         if (!Array.isArray(value)) throw new Error('Invalid Wiki search index');
-        this.publish({
-          ...this.snapshot,
-          searchIndexes: { ...this.snapshot.searchIndexes, [locale]: value },
-        });
+        this.searchIndexes.set(locale, value);
       },
     );
   }
@@ -85,7 +83,9 @@ export class WikiResourceCache {
   }
 
   pendingBackground() {
-    return [...this.pending.values()].find((request) => request.background)?.promise;
+    for (const request of this.pending.values()) {
+      if (request.background) return request.promise;
+    }
   }
 
   cancelLocale(locale: string) {
@@ -100,22 +100,17 @@ export class WikiResourceCache {
     request.controller.abort();
   }
 
-  private publish(snapshot: WikiResources) {
-    this.snapshot = snapshot;
-    for (const listener of this.listeners) listener();
-  }
-
   private load<T>(
     key: string,
     url: string,
     background: boolean,
     accept: (value: T) => void,
-  ): Promise<T> {
+  ): Promise<void> {
     if (!background) this.cancelBackground(key);
     const existing = this.pending.get(key);
     if (existing) {
       if (!background) existing.background = false;
-      return existing.promise as Promise<T>;
+      return existing.promise;
     }
     const controller = new AbortController();
     const promise = withRequestTimeout(
@@ -131,7 +126,7 @@ export class WikiResourceCache {
         // An aborted response may still finish parsing; it must not enter the cache.
         if (signal.aborted) throw signal.reason;
         accept(value);
-        return value;
+        for (const listener of this.listeners) listener();
       },
       controller.signal,
     ).finally(() => {

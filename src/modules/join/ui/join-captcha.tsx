@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { loadJoinCaptcha } from '@/modules/join/lib/load-join-captcha';
 import type { JoinCaptchaConfig } from '@/modules/join/model/join-captcha';
 import { isCapToken } from '@/modules/join/model/join-captcha';
+import { isRecord } from '@/shared/lib/is-record';
 
 export function JoinCaptcha({
   config,
@@ -27,41 +28,45 @@ export function JoinCaptcha({
   const errorLabel = t('failed');
 
   useEffect(() => {
-    let active = true;
-    const widget = document.createElement('cap-widget');
-    widget.setAttribute('data-cap-api-endpoint', config.apiEndpoint);
-    widget.setAttribute('data-cap-lang', locale.toLowerCase());
-    widget.setAttribute('data-cap-i18n-initial-state', label);
-    widget.setAttribute('data-cap-i18n-error-label', errorLabel);
-    const solve = (event: Event) => {
-      const detail: unknown = (event as CustomEvent<unknown>).detail;
-      if (
-        active &&
-        detail &&
-        typeof detail === 'object' &&
-        'token' in detail &&
-        isCapToken(detail.token)
-      )
-        verified(detail.token);
+    const container = host.current;
+    if (!container) return;
+    const lifetime = new AbortController();
+    const { signal } = lifetime;
+    const stop = () => {
+      lifetime.abort();
+      window.clearTimeout(timer);
     };
     const error = () => {
-      if (active) failed();
+      if (signal.aborted) return;
+      stop();
+      failed();
     };
-    widget.addEventListener('solve', solve);
-    widget.addEventListener('error', error);
     const timer = window.setTimeout(error, 12_000);
-    void loadJoinCaptcha().then(() => {
-      if (!active) return;
-      window.clearTimeout(timer);
-      host.current?.append(widget);
-      setLoaded(true);
-    }, error);
+    void loadJoinCaptcha(config.apiEndpoint)
+      .then(() => {
+        if (signal.aborted || host.current !== container) return;
+        window.clearTimeout(timer);
+        const widget: HTMLElement = document.createElement('cap-widget');
+        widget.setAttribute('data-cap-api-endpoint', config.apiEndpoint);
+        widget.setAttribute('data-cap-lang', locale.toLowerCase());
+        widget.setAttribute('data-cap-i18n-initial-state', label);
+        widget.setAttribute('data-cap-i18n-error-label', errorLabel);
+        widget.addEventListener(
+          'solve',
+          (event) => {
+            const detail: unknown = event instanceof CustomEvent ? event.detail : undefined;
+            if (isRecord(detail) && isCapToken(detail.token)) verified(detail.token);
+          },
+          { signal },
+        );
+        widget.addEventListener('error', error, { signal });
+        container.append(widget);
+        setLoaded(true);
+      })
+      .catch(error);
     return () => {
-      active = false;
-      window.clearTimeout(timer);
-      widget.removeEventListener('solve', solve);
-      widget.removeEventListener('error', error);
-      widget.remove();
+      stop();
+      container.replaceChildren();
     };
   }, [config.apiEndpoint, locale, label, errorLabel]);
 

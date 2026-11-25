@@ -14,7 +14,7 @@ import { getPcl2TimeZoneFromUrl } from '@/modules/pcl2/lib/pcl2-time-zone';
 import type { Pcl2HomepageData } from '@/modules/pcl2/model/pcl2-homepage';
 import { isPlayerStatusResponse, toPlayerStatus } from '@/modules/player/lib/player-status-api';
 import type { PlayerStatus } from '@/modules/player/model/player-types';
-import { dataApiUrl } from '@/shared/api/data-api-url';
+import { type DataApiPath, dataApiUrl } from '@/shared/api/data-api-url';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import { MINECRAFT_SERVER_ADDRESS } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
@@ -37,7 +37,7 @@ const FALLBACK_ONLINE_PLAYERS: PlayerStatus = {
 let pendingApiData: Promise<Pcl2HomepageApiData> | undefined;
 
 async function loadJson<TData>(
-  pathname: string,
+  pathname: DataApiPath,
   validate: (value: unknown) => value is TData,
   fallbackErrorMessage: string,
 ) {
@@ -64,7 +64,7 @@ async function loadJson<TData>(
 
 function isPcl2BuildingCatalog(value: unknown): value is BuildingCatalogResponse & { total: number } {
   return (
-    isBuildingCatalogResponse(value) &&
+    isBuildingCatalogResponse(value, MAX_PCL2_BUILDINGS) &&
     'total' in value &&
     typeof value.total === 'number' &&
     Number.isSafeInteger(value.total) &&

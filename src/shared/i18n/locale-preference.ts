@@ -1,6 +1,12 @@
 import type { AppLocale } from './routing';
 import { isRoutingLocale, routing } from './routing';
 
+const localeCandidates = routing.locales.map((locale) => ({
+  locale,
+  tag: locale.toLowerCase(),
+  language: new Intl.Locale(locale).language,
+}));
+
 /** Fallback for documents outside a locale root, including the global 404. */
 export function resolveLocalePreference({
   locale,
@@ -11,8 +17,8 @@ export function resolveLocalePreference({
   cookie?: string | null;
   acceptLanguage?: string | null;
 }): AppLocale {
-  if (locale && isRoutingLocale(locale)) return locale;
-  if (cookie && isRoutingLocale(cookie)) return cookie;
+  if (isRoutingLocale(locale)) return locale;
+  if (isRoutingLocale(cookie)) return cookie;
   const preferences = (acceptLanguage ?? '')
     .split(',')
     .map((entry) => {
@@ -26,13 +32,11 @@ export function resolveLocalePreference({
     if (language === '*') return routing.defaultLocale;
     try {
       const requested = new Intl.Locale(language);
-      const exact = routing.locales.find(
-        (candidate) => candidate.toLowerCase() === requested.baseName.toLowerCase(),
-      );
-      const related = routing.locales.find(
-        (candidate) => new Intl.Locale(candidate).language === requested.language,
-      );
-      if (exact || related) return exact ?? related ?? routing.defaultLocale;
+      const tag = requested.baseName.toLowerCase();
+      const match =
+        localeCandidates.find((candidate) => candidate.tag === tag) ??
+        localeCandidates.find((candidate) => candidate.language === requested.language);
+      if (match) return match.locale;
     } catch {
       /* Ignore malformed language ranges. */
     }

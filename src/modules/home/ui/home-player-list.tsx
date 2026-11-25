@@ -61,6 +61,7 @@ export default function HomePlayerList({
                 uuid={player.uuid}
                 name={player.name}
                 size={32}
+                decorative
                 className="home-player-list__avatar"
               />
               <span className="home-player-list__name">{player.name}</span>

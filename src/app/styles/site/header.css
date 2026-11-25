@@ -2,9 +2,9 @@
 .project-navbar-shell {
   --project-navbar-item-gap: 0.75rem;
   --project-navbar-control-gap: 0.75rem;
-  --project-navbar-glass-top: color-mix(in srgb, var(--theme-bg-dark) 74%, transparent);
-  --project-navbar-glass-mid: color-mix(in srgb, var(--theme-bg-dark) 46%, transparent);
-  --project-navbar-glass-bottom: color-mix(in srgb, var(--theme-bg-dark) 8%, transparent);
+  --project-navbar-glass-top: color-mix(in srgb, var(--palette-dark-bg) 74%, transparent);
+  --project-navbar-glass-mid: color-mix(in srgb, var(--palette-dark-bg) 46%, transparent);
+  --project-navbar-glass-bottom: color-mix(in srgb, var(--palette-dark-bg) 8%, transparent);
   --project-navbar-glass-blur: 18px;
   --project-navbar-glass-saturation: 165%;
   --project-navbar-glass-line: rgba(255, 255, 255, 0.08);
@@ -81,14 +81,6 @@
   }
 }
 
-.project-navbar-shell.is-scrolled {
-  --project-navbar-glass-top: color-mix(in srgb, var(--theme-bg-dark) 74%, transparent);
-  --project-navbar-glass-mid: color-mix(in srgb, var(--theme-bg-dark) 46%, transparent);
-  --project-navbar-glass-bottom: color-mix(in srgb, var(--theme-bg-dark) 8%, transparent);
-  --project-navbar-glass-blur: 18px;
-  --project-navbar-glass-shadow: rgba(0, 0, 0, 0.16);
-}
-
 [data-theme="light"] .project-navbar-shell {
   --project-navbar-glass-top: color-mix(in srgb, var(--theme-bg-base) 88%, transparent);
   --project-navbar-glass-mid: color-mix(in srgb, var(--theme-bg-base) 64%, transparent);
@@ -101,7 +93,6 @@
   --project-navbar-glass-top: color-mix(in srgb, var(--theme-bg-base) 92%, transparent);
   --project-navbar-glass-mid: color-mix(in srgb, var(--theme-bg-base) 70%, transparent);
   --project-navbar-glass-bottom: color-mix(in srgb, var(--theme-bg-base) 16%, transparent);
-  --project-navbar-glass-shadow: rgba(26, 45, 34, 0.1);
 }
 
 :root:has([data-page-appearance][data-page-active]) .project-navbar-shell:not(.is-scrolled) {
@@ -365,10 +356,6 @@
   }
 }
 
-.project-player-control {
-  display: none;
-}
-
 .project-navbar-control-cluster {
   display: inline-flex;
   min-width: 0;
@@ -378,7 +365,7 @@
   align-items: center;
   border: 1px solid rgba(243, 239, 231, 0.16);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-bg-dark) 68%, transparent);
+  background: color-mix(in srgb, var(--palette-dark-bg) 68%, transparent);
   color: #f3efe7;
 }
 
@@ -500,7 +487,7 @@
   padding: 0 0.62rem;
   border: 1px solid rgba(243, 239, 231, 0.16);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--theme-bg-dark) 68%, transparent);
+  background: color-mix(in srgb, var(--palette-dark-bg) 68%, transparent);
   color: #f3efe7;
   text-decoration: none;
   line-height: 1;
@@ -562,7 +549,7 @@
   height: 1.84rem;
   border-radius: 0.42rem;
   border: 1px solid rgba(243, 239, 231, 0.24);
-  background: color-mix(in srgb, var(--theme-bg-dark) 82%, transparent);
+  background: color-mix(in srgb, var(--palette-dark-bg) 82%, transparent);
   box-shadow:
     0 5px 14px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);

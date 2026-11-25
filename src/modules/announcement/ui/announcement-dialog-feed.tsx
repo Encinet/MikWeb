@@ -6,7 +6,6 @@ import {
   getAnnouncementKey,
   groupAnnouncementsByDate,
 } from '@/modules/announcement/lib/announcement-feed';
-import { parseAnnouncementDate } from '@/modules/announcement/lib/format-announcement-date';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 import { AnnouncementBody } from '@/modules/announcement/ui/announcement-body';
 
@@ -70,11 +69,11 @@ export function AnnouncementDialogFeed({
             )}
           </h3>
           <div className="announcement-date-group__entries">
-            {group.announcements.map((announcement) => {
+            {group.entries.map(({ announcement, date }) => {
               const key = getAnnouncementKey(announcement);
               const selected = key === selectedAnnouncementKey;
               const latest = announcement === announcements[0];
-              const date = parseAnnouncementDate(announcement.timestamp);
+              const time = date ? timeFormatter.format(date) : null;
               return (
                 <article
                   key={key}
@@ -83,14 +82,14 @@ export function AnnouncementDialogFeed({
                   data-dialog-initial-focus={selected || undefined}
                   aria-label={
                     date
-                      ? `${dateFormatter.format(date)} ${timeFormatter.format(date)}`
+                      ? `${dateFormatter.format(date)} ${time}`
                       : announcement.timestamp
                   }
                   className={`announcement-dialog-entry${latest ? ' announcement-dialog-entry--latest' : ''}${selected ? ' announcement-dialog-entry--selected' : ''}`}
                 >
                   <div className="announcement-dialog-entry__meta">
                     {date ? (
-                      <time dateTime={date.toISOString()}>{timeFormatter.format(date)}</time>
+                      <time dateTime={date.toISOString()}>{time}</time>
                     ) : (
                       <span>{announcement.timestamp}</span>
                     )}

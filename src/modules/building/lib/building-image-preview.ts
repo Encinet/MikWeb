@@ -123,11 +123,14 @@ function previewFrame(prefix: JxlPrefix) {
   return frame;
 }
 
-export function prepareBuildingPreview(image: BuildingImageUrls) {
-  let entry = previews.get(image.jxl);
+export function prepareBuildingPreview({
+  jxl,
+  jxlPreviewBytes,
+}: Pick<BuildingImageUrls, 'jxl' | 'jxlPreviewBytes'>) {
+  let entry = previews.get(jxl);
   if (!entry) {
-    if (hasBuildingOriginal(image.jxl)) return;
-    const prefix = readJxlPrefix(image.jxl, image.jxlPreviewBytes).catch(() => null);
+    if (hasBuildingOriginal(jxl)) return;
+    const prefix = readJxlPrefix(jxl, jxlPreviewBytes).catch(() => null);
     const ready = prefix.then((data) => data && previewFrame(data));
     const created: BuildingPreview = { prefix, ready };
     void ready.then((source) => {
@@ -135,8 +138,8 @@ export function prepareBuildingPreview(image: BuildingImageUrls) {
     });
     entry = created;
   }
-  previews.delete(image.jxl);
-  previews.set(image.jxl, entry);
+  previews.delete(jxl);
+  previews.set(jxl, entry);
   if (previews.size > 32) previews.delete(previews.keys().next().value!);
   return entry;
 }

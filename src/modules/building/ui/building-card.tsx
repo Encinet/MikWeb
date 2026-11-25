@@ -38,7 +38,9 @@ export function BuildingCard({ building, t, prioritizeCover = false }: BuildingC
           onMouseEnter={() => setPrefetch(true)}
           onFocus={() => setPrefetch(true)}
           onTouchStart={() => setPrefetch(true)}
-          onNavigate={() => { if (coverImage) prepareBuildingPreview(coverImage); }}
+          onNavigate={() => {
+            if (coverImage && coverImage === buildingImages[0]) prepareBuildingPreview(coverImage);
+          }}
           scroll={false}
           transitionTypes={['building-open']}
           className="building-archive-card__link"

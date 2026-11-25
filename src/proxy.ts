@@ -1,53 +1,74 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { randomBytes } from 'node:crypto';
+import { NextRequest, NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 
+import { getPcl2HomepagePath } from '@/modules/pcl2/lib/pcl2-homepage-path';
+import {
+  CSP_NONCE_HEADER,
+  documentCsp,
+  setDocumentResponseHeaders,
+} from '@/shared/config/document-security';
 import { isRoutingLocale, routing } from '@/shared/i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
 export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const [, locale] = pathname.split('/');
-  if (isRoutingLocale(locale) && pathname === `/${locale}/pcl2`) {
-    if (!isRawXmlRequest(request) && isBrowserRequest(request)) return NextResponse.next();
+  const [, locale] = pathname.split('/', 2);
+  const canonical = isRoutingLocale(locale);
+  if (canonical && pathname === getPcl2HomepagePath(locale) && wantsPcl2Xml(request)) {
     const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = `/${locale}/pcl2/source`;
-    return NextResponse.rewrite(rewriteUrl);
+    rewriteUrl.pathname = `${pathname}/source`;
+    return NextResponse.rewrite(rewriteUrl, {
+      // The public XML and the HTML document share this URL.
+      headers: { Vary: 'Accept, Sec-Fetch-Dest, User-Agent' },
+    });
   }
 
-  return intlMiddleware(request);
+  // Next can hide Flight headers in Proxy, so share this path with client navigation.
+  const nonce = randomBytes(16).toString('base64');
+  const policy = documentCsp(nonce);
+  const headers = new Headers(request.headers);
+  // Next.js uses the request policy to nonce its own scripts. Always replace client values.
+  headers.set('Content-Security-Policy', policy);
+  headers.set(CSP_NONCE_HEADER, nonce);
+  const isCapAsset = /^\/vendor\/cap(?:\/|$)/.test(pathname);
+  const response =
+    canonical || pathname === '/_not-found' || pathname.includes('.') || isCapAsset
+      ? NextResponse.next({ request: { headers } })
+      : intlMiddleware(new NextRequest(request, { headers }));
+  if (response.headers.has('location')) return response;
+
+  setDocumentResponseHeaders(response.headers, policy);
+  return response;
 }
 
-function isRawXmlRequest(request: NextRequest): boolean {
-  return (
-    request.nextUrl.searchParams.has('raw') || request.nextUrl.searchParams.get('format') === 'xml'
-  );
-}
+function wantsPcl2Xml(request: NextRequest): boolean {
+  const { searchParams } = request.nextUrl;
+  if (searchParams.has('raw') || searchParams.get('format') === 'xml') return true;
 
-function isBrowserRequest(request: NextRequest): boolean {
-  const accept = request.headers.get('accept')?.trim().toLowerCase() ?? '';
-  const userAgent = request.headers.get('user-agent') ?? '';
-  // App Router fetches may reach Proxy with a wildcard Accept. An explicit XML fetch
-  // can have the same Sec-Fetch-Dest and must still reach the launcher response.
-  const [mediaType] = accept.split(/[;,]/, 1);
-  const xmlFetch = mediaType.trim() === 'application/xml' || mediaType.trim() === 'text/xml';
+  const accept = request.headers.get('accept')?.toLowerCase() ?? '';
+  if (accept.includes('text/html')) return false;
+  // Next strips Flight headers before Proxy. Use Fetch Metadata for browser navigations
+  // with wildcard Accept, while honoring explicit XML requests from the browser.
+  if (request.headers.has('sec-fetch-dest')) {
+    const [mediaType] = accept.split(/[;,]/, 1);
+    const type = mediaType.trim();
+    if (type !== 'application/xml' && type !== 'text/xml') return false;
+  }
   // Link preview crawlers may send */*. They need HTML metadata, while launchers need XML.
-  return (
-    accept.includes('text/html') ||
-    (request.headers.has('sec-fetch-dest') && !xmlFetch) ||
-    /bot|crawler|spider|facebookexternalhit|WhatsApp|SkypeUriPreview|vkShare/i.test(userAgent)
-  );
+  const userAgent = request.headers.get('user-agent') ?? '';
+  return !/bot|crawler|spider|facebookexternalhit|WhatsApp|SkypeUriPreview|vkShare/i.test(userAgent);
 }
 
 export const config = {
   matcher: [
-    // Canonical locale URLs already carry the language in the root route param.
-    '/((?!_next|_vercel|api(?:/|$)|_not-found/?$|opengraph-image/?$|(?:en|zh-CN)(?:/|$)|.*\\..*).*)',
+    // Keep this literal for Next's build to analyze. Update it when adding non-HTML routes or locales.
+    '/((?!(?:api|_next|_vercel|__nextjs[^/]*|vendor/cap)(?:/|$)|(?:brand|fonts|images)/.*\\..*|(?:robots\\.txt|sitemap\\.xml|opengraph-image)/?$|(?:en|zh-CN)/(?:manifest\\.webmanifest|pcl2/(?:source|version)|opengraph-image|opengraph/[^/]+|thumbnails/[^/]+|buildings/[^/]+/(?:thumbnail|opengraph-image))/?$).*)',
     {
-      source: '/:locale(en|zh-CN)/pcl2',
-      // A Next.js navigation/prefetch must not be rewritten to the launcher's XML.
-      missing: [{ type: 'header', key: 'rsc', value: '1' }],
+      // A navigation to a missing file under a public asset path can render an HTML 404.
+      source: '/:asset(brand|fonts|images|vendor)/:path*',
+      has: [{ type: 'header', key: 'accept', value: '.*text/html.*' }],
     },
   ],
 };

@@ -3,9 +3,6 @@ import type {
   WikiSectionGroupDefinition,
   WikiSectionGroupId,
 } from '@/modules/wiki/model/wiki-section-types';
-import { routing } from '@/shared/i18n/routing';
-
-export const WIKI_LOCALES = routing.locales;
 
 export function sortWikiSections(sections: WikiSectionDefinition[]): WikiSectionDefinition[] {
   return [...sections].sort((left, right) => {

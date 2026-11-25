@@ -14,13 +14,16 @@ export function useCopyFeedback(value: string) {
   const resetTimerRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
-    setFeedback({ value, status: 'idle', copying: false });
+    setFeedback((current) =>
+      current.value === value && current.status === 'idle' && !current.copying
+        ? current
+        : { value, status: 'idle', copying: false },
+    );
     return () => {
       operationRef.current++;
       copyingRef.current = false;
       if (resetTimerRef.current !== null) window.clearTimeout(resetTimerRef.current);
       resetTimerRef.current = null;
-      setFeedback({ value, status: 'idle', copying: false });
     };
   }, [value]);
 

@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useDeferredValue, useMemo, useState } from 'react';
-import { BANS_PAGE_SIZE, filterBanEntries } from '@/modules/ban/lib/ban-catalog';
+import { BANS_PAGE_SIZE, filterBanEntries, prepareBanSearch } from '@/modules/ban/lib/ban-catalog';
 import { useBans } from '@/modules/ban/model/use-bans';
 import { BanRecordList } from '@/modules/ban/ui/ban-record-list';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';
@@ -17,9 +17,10 @@ export default function BansPage() {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const [visibleCount, setVisibleCount] = useState(BANS_PAGE_SIZE);
+  const catalog = useMemo(() => prepareBanSearch(entries), [entries]);
   const filtered = useMemo(
-    () => filterBanEntries(entries, deferredQuery),
-    [entries, deferredQuery],
+    () => filterBanEntries(catalog, deferredQuery),
+    [catalog, deferredQuery],
   );
 
   const updateQuery = (value: string) => {
@@ -85,7 +86,7 @@ export default function BansPage() {
                 <div className="bans-load-more">
                   <p className="bans-visible-count">
                     {t('shownCount', {
-                      count: Math.min(visibleCount, filtered.length),
+                      count: visibleCount,
                       total: filtered.length,
                     })}
                   </p>

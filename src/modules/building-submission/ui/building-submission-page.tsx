@@ -307,11 +307,7 @@ function BuildingSubmissionForm() {
                 <span>{t('actions.uploadImages')}</span>
                 <input
                   accept="image/png,image/jpeg,image/webp"
-                  disabled={
-                    isSubmitting ||
-                    isUploading ||
-                    draftImages.length >= MAX_BUILDING_SUBMISSION_IMAGES
-                  }
+                  disabled={isUploading || draftImages.length >= MAX_BUILDING_SUBMISSION_IMAGES}
                   multiple
                   type="file"
                   onChange={(event) => {

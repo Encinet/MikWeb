@@ -1,7 +1,8 @@
 import { isRecord } from '@/shared/lib/is-record';
+
 /** QQ verifies the current 30-second step and the immediately preceding step. */
 export const JOIN_CODE_PERIOD_SECONDS = 30;
-export const MAX_JOIN_CODE_LIFETIME_MS = JOIN_CODE_PERIOD_SECONDS * 2 * 1000;
+const MAX_JOIN_CODE_LIFETIME_MS = JOIN_CODE_PERIOD_SECONDS * 2 * 1000;
 
 export interface JoinCode {
   code: string;

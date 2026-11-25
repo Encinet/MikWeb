@@ -49,7 +49,8 @@ export function getAccentProperties(
   const labA = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
   const labB = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
   // Ignore numerical hue noise for white, black and neutral grays.
-  const seedChroma = Math.hypot(labA, labB) < 0.002 ? 0 : Math.hypot(labA, labB);
+  const measuredChroma = Math.hypot(labA, labB);
+  const seedChroma = measuredChroma < 0.002 ? 0 : measuredChroma;
   const hue =
     hueOverride === undefined
       ? seedChroma === 0
@@ -57,9 +58,11 @@ export function getAccentProperties(
         : ((Math.atan2(labB, labA) * 180) / Math.PI + 360) % 360
       : ((hueOverride % 360) + 360) % 360;
   const angle = (hue * Math.PI) / 180;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
   const linearRgb = (lightness: number, chroma: number): Rgb => {
-    const a = chroma * Math.cos(angle);
-    const b = chroma * Math.sin(angle);
+    const a = chroma * cos;
+    const b = chroma * sin;
     const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
     const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
     const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
@@ -100,8 +103,10 @@ export function getAccentProperties(
     target: number,
     lighter: boolean,
   ) => {
-    const passes = (value: number) =>
-      backgrounds.every((background) => contrast(tone(value, chroma), background) >= target);
+    const passes = (value: number) => {
+      const candidate = tone(value, chroma);
+      return backgrounds.every((background) => contrast(candidate, background) >= target);
+    };
     if (passes(lightness)) return tone(lightness, chroma);
     let fail = lightness;
     let pass = lighter ? 1 : 0;
@@ -136,7 +141,6 @@ export function getAccentProperties(
   const properties: Record<string, string> = {
     '--theme-seed': color,
     '--theme-seed-hue': hue.toFixed(2),
-    '--theme-bg-dark': darkBackground,
     '--theme-neutral-ink': tone(0.23, neutralChroma),
     '--theme-accent-on-dark': accessibleTone(0.8, chroma * 0.85, darkSurfaces, 5, true),
     '--theme-accent-on-light': accessibleTone(0.43, chroma * 0.95, lightSurfaces, 5, false),
@@ -164,7 +168,7 @@ export function getAccentProperties(
 }
 
 /** One shared calendar day in UTC+8, independent of browser/server time zones. */
-export function getDailyAccentHue(date = new Date()): number {
+function getDailyAccentHue(date = new Date()): number {
   const day = Math.floor((date.getTime() + 8 * 60 * 60 * 1000) / 86_400_000);
   // A golden-angle step distributes successive days around the hue wheel.
   return (day * 137.50776405003785) % 360;
@@ -181,9 +185,7 @@ export function getAccentInitializationScript(): string {
 const palette=(${getAccentProperties.toString()});
 const hue=(${getDailyAccentHue.toString()})();
 let color=palette(${JSON.stringify(DEFAULT_ACCENT_COLOR)},hue,${DAILY_ACCENT_CHROMA})['--theme-seed'];
-let mode='daily';
-try{const saved=localStorage.getItem(${JSON.stringify(ACCENT_COLOR_STORAGE_KEY)});if(saved&&/^#[\\da-f]{6}$/i.test(saved)){color=saved.toLowerCase();mode='custom'}}catch{}
+try{const saved=localStorage.getItem(${JSON.stringify(ACCENT_COLOR_STORAGE_KEY)});if(saved&&/^#[\\da-f]{6}$/i.test(saved)){color=saved.toLowerCase()}}catch{}
 for(const [name,value] of Object.entries(palette(color))){document.documentElement.style.setProperty(name,value)}
-document.documentElement.setAttribute('data-accent-mode',mode);
 }`;
 }

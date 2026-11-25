@@ -2,26 +2,25 @@
 
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
+import type { BanSearchEntry } from '@/modules/ban/lib/ban-catalog';
 import { getBanKey } from '@/modules/ban/lib/ban-catalog';
-import type { BanItem } from '@/modules/ban/model/ban-types';
 import MinecraftAvatar from '@/modules/player/ui/minecraft-avatar';
 
 interface BanRecordListProps {
-  entries: BanItem[];
+  entries: BanSearchEntry[];
   locale: string;
   summary: string;
 }
 
 function BanDate({
-  value,
+  timestamp,
   formatter,
   unknownLabel,
 }: {
-  value: string | null;
+  timestamp: number;
   formatter: Intl.DateTimeFormat;
   unknownLabel: string;
 }) {
-  const timestamp = value ? Date.parse(value) : Number.NaN;
   if (!Number.isFinite(timestamp))
     return <span className="bans-record__unknown">{unknownLabel}</span>;
   const date = new Date(timestamp);
@@ -59,7 +58,7 @@ export function BanRecordList({ entries, locale, summary }: BanRecordListProps) 
         </tr>
       </thead>
       <tbody>
-        {entries.map((entry) => (
+        {entries.map(({ entry, time }) => (
           <tr key={getBanKey(entry)} className="bans-record">
             <th scope="row" className="bans-record__player">
               <div className="bans-player">
@@ -87,7 +86,7 @@ export function BanRecordList({ entries, locale, summary }: BanRecordListProps) 
                   <dt className="sr-only">{t('fields.bannedAt')}</dt>
                   <dd>
                     <BanDate
-                      value={entry.bannedAt}
+                      timestamp={time}
                       formatter={formatter}
                       unknownLabel={t('states.notProvided')}
                     />

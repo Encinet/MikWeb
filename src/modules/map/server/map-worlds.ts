@@ -1,18 +1,19 @@
 import 'server-only';
 
 import { z } from 'zod';
-import { MAP_URL, mapWorldSchema } from '@/modules/map/model/map-world';
+import { mapWorldsSchema } from '@/modules/map/model/map-world';
+import { MAP_ORIGIN } from '@/shared/config/service-config';
 import { readLimitedResponse } from '@/shared/lib/read-limited-response';
 
-const settingsSchema = z.object({ worldSettings: z.array(mapWorldSchema).max(256) });
+const settingsSchema = z.object({ worldSettings: mapWorldsSchema });
 
 export async function getMapWorlds() {
-  const response = await fetch(`${MAP_URL}/tiles/settings.json`, {
+  const response = await fetch(`${MAP_ORIGIN}/tiles/settings.json`, {
     cache: 'no-store',
     signal: AbortSignal.timeout(3500),
   });
   if (!response.ok) {
-    await response.body?.cancel().catch(() => {});
+    void response.body?.cancel().catch(() => undefined);
     throw new Error('map_unavailable');
   }
 

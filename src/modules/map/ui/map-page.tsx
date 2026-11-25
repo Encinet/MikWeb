@@ -1,7 +1,7 @@
 import { ExternalLink } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
-import { MAP_URL } from '@/modules/map/model/map-world';
+import { MAP_ORIGIN } from '@/shared/config/service-config';
 
 export default async function MapPage() {
   const t = await getTranslations('map');
@@ -10,7 +10,7 @@ export default async function MapPage() {
     <div className="map-page">
       <section className="map-page__frame-shell" aria-label={t('title')}>
         <iframe
-          src={MAP_URL}
+          src={MAP_ORIGIN}
           title={t('title')}
           className="map-page__frame"
           loading="lazy"
@@ -19,7 +19,7 @@ export default async function MapPage() {
         />
 
         <a
-          href={MAP_URL}
+          href={MAP_ORIGIN}
           target="_blank"
           rel="noopener noreferrer"
           className="map-page__external-link"

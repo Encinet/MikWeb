@@ -7,13 +7,12 @@ import { z } from 'zod';
 import type {
   WikiAccess,
   WikiSectionDocument,
-  WikiSectionFrontMatter,
   WikiSectionGroupId,
   WikiSectionIcon,
   WikiSectionId,
 } from '@/modules/wiki/model/wiki-section-types';
 
-export const SUPPORTED_WIKI_SECTION_ICONS = [
+const SUPPORTED_WIKI_SECTION_ICONS = [
   'Home',
   'Wrench',
   'Shield',
@@ -29,7 +28,6 @@ export const SUPPORTED_WIKI_SECTION_ICONS = [
 
 const DEFAULT_WIKI_SECTION_ICON: WikiSectionIcon = 'Home';
 const DEFAULT_WIKI_ORDER_STEP = 10;
-const DEFAULT_WIKI_ORDER_FALLBACK = 999;
 const WIKI_GROUP_METADATA_FILENAME = '_group.mdx';
 const wikiGroupFrontMatterSchema = z.strictObject({
   label: z.string().trim().min(1),
@@ -94,7 +92,7 @@ function parseFrontMatterScalar(rawValue: string): string | number {
   return trimmedValue;
 }
 
-export function parseWikiFrontMatterBlock(rawSource: string): {
+function parseWikiFrontMatterBlock(rawSource: string): {
   attributes: Record<string, string | number>;
   body: string;
 } {
@@ -138,11 +136,7 @@ export function parseWikiFrontMatterBlock(rawSource: string): {
 
   return {
     attributes: frontMatterAttributes,
-    body: sourceLines
-      .slice(closingDelimiterIndex + 1)
-      .join('\n')
-      .replace(/^\n+/, '')
-      .trim(),
+    body: sourceLines.slice(closingDelimiterIndex + 1).join('\n').trim(),
   };
 }
 
@@ -334,60 +328,41 @@ function validateUniqueSectionIds(locale: string, wikiSectionSources: WikiSectio
   }
 }
 
-export function parseWikiSectionDocument({
+function parseWikiSectionDocument({
   groupMetadata,
   id,
   rawSource,
   sourceOrder,
   sourcePath,
-}: {
-  groupMetadata: WikiGroupMetadata;
-  id: WikiSectionId;
-  rawSource: string;
-  sourceOrder?: number;
-  sourcePath?: string;
-}): WikiSectionDocument {
+}: WikiSectionSource & { rawSource: string }): WikiSectionDocument {
   const { attributes, body } = parseWikiFrontMatterBlock(rawSource);
-  const fallbackWikiSectionOrder =
-    typeof sourceOrder === 'number'
-      ? (sourceOrder + 1) * DEFAULT_WIKI_ORDER_STEP
-      : DEFAULT_WIKI_ORDER_FALLBACK;
-  const parsedWikiSectionFrontMatterResult = wikiSectionFrontMatterSchema.safeParse({
+  const parsed = wikiSectionFrontMatterSchema.safeParse({
     title: attributes.title,
     description: attributes.description,
-    order: attributes.order ?? fallbackWikiSectionOrder,
+    order: attributes.order ?? (sourceOrder + 1) * DEFAULT_WIKI_ORDER_STEP,
     icon: attributes.icon ?? DEFAULT_WIKI_SECTION_ICON,
   });
 
-  if (!parsedWikiSectionFrontMatterResult.success) {
-    throw formatFrontMatterValidationError(
-      sourcePath ?? `wiki section "${id}"`,
-      parsedWikiSectionFrontMatterResult.error,
-      'wiki section',
-    );
+  if (!parsed.success) {
+    throw formatFrontMatterValidationError(sourcePath, parsed.error, 'wiki section');
   }
 
-  const wikiSectionFrontMatter: WikiSectionFrontMatter = {
-    title: parsedWikiSectionFrontMatterResult.data.title,
-    description: parsedWikiSectionFrontMatterResult.data.description,
-    order: parsedWikiSectionFrontMatterResult.data.order,
-    icon: parsedWikiSectionFrontMatterResult.data.icon,
-  };
+  const { title, description, order, icon } = parsed.data;
 
   return {
     section: {
       id,
-      icon: wikiSectionFrontMatter.icon,
-      label: wikiSectionFrontMatter.title,
-      description: wikiSectionFrontMatter.description,
+      icon,
+      label: title,
+      description,
       groupId: groupMetadata.groupId,
       groupLabel: groupMetadata.groupLabel,
       groupOrder: groupMetadata.groupOrder,
-      order: wikiSectionFrontMatter.order,
+      order,
       access: groupMetadata.access,
     },
-    content: [`# ${wikiSectionFrontMatter.title}`, body].filter(Boolean).join('\n\n'),
-    sourcePath: sourcePath ?? `<wiki:${id}>`,
+    content: body ? `# ${title}\n\n${body}` : `# ${title}`,
+    sourcePath,
   };
 }
 
@@ -405,21 +380,12 @@ export async function loadWikiSectionDocuments(
 
   validateUniqueSectionIds(locale, wikiSectionSources);
 
-  const wikiDocuments = await Promise.all(
+  return Promise.all(
     wikiSectionSources
       .filter((source) => audience === 'all' || source.groupMetadata.access === audience)
-      .map(async (wikiSectionSource) => {
-        const rawWikiSectionSource = await fs.readFile(wikiSectionSource.sourcePath, 'utf-8');
-
-        return parseWikiSectionDocument({
-          groupMetadata: wikiSectionSource.groupMetadata,
-          id: wikiSectionSource.id,
-          rawSource: rawWikiSectionSource,
-          sourceOrder: wikiSectionSource.sourceOrder,
-          sourcePath: wikiSectionSource.sourcePath,
-        });
+      .map(async (source) => {
+        const rawSource = await fs.readFile(source.sourcePath, 'utf-8');
+        return parseWikiSectionDocument({ ...source, rawSource });
       }),
   );
-
-  return wikiDocuments;
 }

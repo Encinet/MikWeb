@@ -4,10 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { lazy, Suspense, useLayoutEffect, useState } from 'react';
 import { getAnnouncementKey } from '@/modules/announcement/lib/announcement-feed';
-import {
-  formatAnnouncementDate,
-  getAnnouncementDateTimeValue,
-} from '@/modules/announcement/lib/format-announcement-date';
+import { formatAnnouncementTime } from '@/modules/announcement/lib/format-announcement-date';
 import { useAnnouncementsFeed } from '@/modules/announcement/model/use-announcements-feed';
 import { AnnouncementFeedDialog } from '@/modules/announcement/ui/announcement-feed-dialog';
 import {
@@ -24,6 +21,7 @@ import { SkeletonLine } from '@/shared/ui/feedback/async-state';
 const AnnouncementPreview = lazy(() =>
   loadAnnouncementBody().then((module) => ({ default: module.AnnouncementPreview })),
 );
+const warmAnnouncementFeed = () => void loadAnnouncementFeedContent().catch(() => undefined);
 
 export default function HomeLiveOverview({ children }: { children: ReactNode }) {
   const locale = useLocale();
@@ -66,8 +64,8 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
               type="button"
               aria-haspopup="dialog"
               onClick={() => openAnnouncements()}
-              onPointerEnter={() => void loadAnnouncementFeedContent().catch(() => undefined)}
-              onFocus={() => void loadAnnouncementFeedContent().catch(() => undefined)}
+              onPointerEnter={warmAnnouncementFeed}
+              onFocus={warmAnnouncementFeed}
             >
               {announcementsT('actions.viewAll')}
             </button>
@@ -87,29 +85,31 @@ export default function HomeLiveOverview({ children }: { children: ReactNode }) 
                 {errorMessage}
               </p>
             ) : announcements.length > 0 ? (
-              announcements.slice(0, 2).map((announcement) => (
-                <button
-                  key={getAnnouncementKey(announcement)}
-                  type="button"
-                  aria-haspopup="dialog"
-                  onClick={() => openAnnouncements(getAnnouncementKey(announcement))}
-                  onPointerEnter={() => void loadAnnouncementFeedContent().catch(() => undefined)}
-                  onFocus={() => void loadAnnouncementFeedContent().catch(() => undefined)}
-                >
-                  <time dateTime={getAnnouncementDateTimeValue(announcement.timestamp)}>
-                    {formatAnnouncementDate(announcement.timestamp, locale)}
-                  </time>
-                  <Suspense
-                    fallback={
-                      <span className="announcement-preview" role="status">
-                        {commonT('states.loading')}
-                      </span>
-                    }
+              announcements.slice(0, 2).map((announcement) => {
+                const key = getAnnouncementKey(announcement);
+                const { dateTime, label } = formatAnnouncementTime(announcement.timestamp, locale);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-haspopup="dialog"
+                    onClick={() => openAnnouncements(key)}
+                    onPointerEnter={warmAnnouncementFeed}
+                    onFocus={warmAnnouncementFeed}
                   >
-                    <AnnouncementPreview content={announcement.content} />
-                  </Suspense>
-                </button>
-              ))
+                    <time dateTime={dateTime}>{label}</time>
+                    <Suspense
+                      fallback={
+                        <span className="announcement-preview" role="status">
+                          {commonT('states.loading')}
+                        </span>
+                      }
+                    >
+                      <AnnouncementPreview content={announcement.content} />
+                    </Suspense>
+                  </button>
+                );
+              })
             ) : (
               <p className="home-inline-state">{announcementsT('states.empty')}</p>
             )}

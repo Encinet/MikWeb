@@ -1,9 +1,5 @@
 import { createProcessor } from '@mdx-js/mdx';
-import {
-  createWikiSectionGroups,
-  sortWikiSections,
-  WIKI_LOCALES,
-} from '@/modules/wiki/lib/wiki-grouping';
+import { createWikiSectionGroups, sortWikiSections } from '@/modules/wiki/lib/wiki-grouping';
 import { parseWikiMarkdownBlocks } from '@/modules/wiki/lib/wiki-search';
 import type {
   WikiLocale,
@@ -13,6 +9,7 @@ import type {
 } from '@/modules/wiki/model/wiki-section-types';
 import { createWikiContentBundle } from '@/modules/wiki/server/create-wiki-content-bundle';
 import { loadWikiSectionDocuments } from '@/modules/wiki/server/load-wiki-documents';
+import { routing } from '@/shared/i18n/routing';
 import { formatEnglishHeading } from './lib/english-headings';
 
 function createWikiCheckError(title: string, details: string[], suggestion?: string): Error {
@@ -242,7 +239,7 @@ async function runWikiCheck(): Promise<void> {
   const wikiSectionIdsByLocale = new Map<WikiLocale, Set<WikiSectionId>>();
   const wikiDocumentsByLocale = new Map<WikiLocale, Map<WikiSectionId, WikiSectionDocument>>();
 
-  for (const locale of WIKI_LOCALES) {
+  for (const locale of routing.locales) {
     const wikiDocuments = await loadWikiSectionDocuments(locale, 'all');
     const wikiSections = sortWikiSections(
       wikiDocuments.map((wikiDocument) => wikiDocument.section),

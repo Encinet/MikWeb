@@ -10,6 +10,7 @@ interface MinecraftAvatarProps {
   uuid?: string;
   name: string;
   size: number;
+  decorative?: boolean;
   className?: string;
   style?: CSSProperties;
   fallback?: ReactNode;
@@ -20,6 +21,7 @@ export default function MinecraftAvatar({
   uuid,
   name,
   size,
+  decorative = false,
   className = '',
   style = {},
   fallback,
@@ -33,6 +35,7 @@ export default function MinecraftAvatar({
       <div
         role="img"
         aria-label={`${name} avatar placeholder`}
+        aria-hidden={decorative || undefined}
         className={className}
         style={{
           display: 'inline-flex',
@@ -64,7 +67,7 @@ export default function MinecraftAvatar({
     <Image
       key={avatar.src}
       src={avatar.src}
-      alt={name}
+      alt={decorative ? '' : name}
       width={size}
       height={size}
       className={className}

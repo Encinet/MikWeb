@@ -64,7 +64,9 @@ export function HomeBuildingUpdates({
               <Link
                 key={building.id}
                 href={getBuildingPath(building.id)}
-                onNavigate={() => { if (cover) prepareBuildingPreview(cover); }}
+                onNavigate={() => {
+                  if (cover && cover === building.images[0]) prepareBuildingPreview(cover);
+                }}
                 scroll={false}
                 className="home-building-preview"
                 aria-label={t('open', { name: building.name })}

@@ -1,7 +1,3 @@
-function getBrowserTimeZone() {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone;
-}
-
 export function parseAnnouncementDate(timestamp: string) {
   const trimmedTimestamp = timestamp.trim();
   if (!trimmedTimestamp) {
@@ -13,30 +9,26 @@ export function parseAnnouncementDate(timestamp: string) {
     : trimmedTimestamp;
   const parsedTimestamp = Number(trimmedTimestamp);
   const date =
-    Number.isFinite(parsedTimestamp) && trimmedTimestamp !== ''
+    Number.isFinite(parsedTimestamp)
       ? new Date(trimmedTimestamp.length <= 10 ? parsedTimestamp * 1000 : parsedTimestamp)
       : new Date(normalizedTimestamp);
 
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export function formatAnnouncementDate(timestamp: string, locale: string) {
+export function formatAnnouncementTime(timestamp: string, locale: string) {
   const announcementDate = parseAnnouncementDate(timestamp);
 
-  if (!announcementDate) {
-    return timestamp;
-  }
+  if (!announcementDate) return { dateTime: timestamp, label: timestamp };
 
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: getBrowserTimeZone(),
-  }).format(announcementDate);
-}
-
-export function getAnnouncementDateTimeValue(timestamp: string) {
-  return parseAnnouncementDate(timestamp)?.toISOString() ?? timestamp;
+  return {
+    dateTime: announcementDate.toISOString(),
+    label: new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(announcementDate),
+  };
 }

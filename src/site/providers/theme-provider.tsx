@@ -1,7 +1,7 @@
 'use client';
 
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { ACCENT_COLOR_STORAGE_KEY, DEFAULT_ACCENT_COLOR } from '@/shared/config/theme-config';
 import {
@@ -9,13 +9,6 @@ import {
   getDailyAccentColor,
   normalizeAccentColor,
 } from '@/site/theme/lib/accent-color';
-
-function applyAccentColor(color: string, isDailyColor: boolean) {
-  for (const [name, value] of Object.entries(getAccentProperties(color))) {
-    document.documentElement.style.setProperty(name, value);
-  }
-  document.documentElement.setAttribute('data-accent-mode', isDailyColor ? 'daily' : 'custom');
-}
 
 const AccentColorContext = createContext<{
   accentColor: string;
@@ -30,16 +23,27 @@ export function useAccentColor() {
   return context;
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({
+  children,
+  nonce,
+}: {
+  children: React.ReactNode;
+  nonce: string | undefined;
+}) {
   const [accentColor, setColor] = useState(DEFAULT_ACCENT_COLOR);
   const [isDailyColor, setIsDailyColor] = useState(true);
+  const applyColor = useCallback((color: string, daily: boolean) => {
+    setColor(color);
+    setIsDailyColor(daily);
+    const { style } = document.documentElement;
+    // The document and its startup script set the same palette for this seed.
+    if (style.getPropertyValue('--theme-seed') === color) return;
+    for (const [name, value] of Object.entries(getAccentProperties(color))) {
+      style.setProperty(name, value);
+    }
+  }, []);
 
   useEffect(() => {
-    const applyColor = (color: string, daily: boolean) => {
-      setColor(color);
-      setIsDailyColor(daily);
-      applyAccentColor(color, daily);
-    };
     let custom: string | null = null;
     try {
       custom = normalizeAccentColor(localStorage.getItem(ACCENT_COLOR_STORAGE_KEY) ?? '');
@@ -55,14 +59,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener('storage', syncColor);
     return () => window.removeEventListener('storage', syncColor);
-  }, []);
+  }, [applyColor]);
 
   const setAccentColor = (value: string) => {
     const color = normalizeAccentColor(value);
     if (!color) return;
-    setColor(color);
-    setIsDailyColor(false);
-    applyAccentColor(color, false);
+    applyColor(color, false);
     try {
       localStorage.setItem(ACCENT_COLOR_STORAGE_KEY, color);
     } catch {
@@ -72,9 +74,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const resetAccentColor = () => {
     const color = getDailyAccentColor();
-    setColor(color);
-    setIsDailyColor(true);
-    applyAccentColor(color, true);
+    applyColor(color, true);
     try {
       localStorage.removeItem(ACCENT_COLOR_STORAGE_KEY);
     } catch {
@@ -87,8 +87,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     <NextThemesProvider
       attribute="data-theme"
       defaultTheme="dark"
-      enableSystem={true}
-      themes={['light', 'dark', 'system']}
+      nonce={nonce}
       scriptProps={{
         // Client mounts apply the theme through effects; server HTML needs the bootstrap.
         type: typeof window === 'undefined' ? 'text/javascript' : 'text/plain',

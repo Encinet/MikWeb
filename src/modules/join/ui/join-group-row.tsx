@@ -19,7 +19,7 @@ export function JoinGroupRow({
   const t = useTranslations('join');
   const commonT = useTranslations('common');
   const { state, remaining, request, verify, cancelVerification, failVerification, markCopied } =
-    useJoinCode(group.id, captcha);
+    useJoinCode(group.id, captcha !== null);
   const captchaArea = useRef<HTMLDivElement>(null);
   const copyButton = useRef<HTMLButtonElement>(null);
   const requestButton = useRef<HTMLButtonElement>(null);

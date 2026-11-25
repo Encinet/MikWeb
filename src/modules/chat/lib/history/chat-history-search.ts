@@ -23,11 +23,10 @@ export async function searchChatHistory(
   const result: HistorySearchPage = { messages: [], hasMore: false };
   let before = query.before;
   while (current()) {
-    const batch = await readHistoryBatch(query.lease, before);
+    const { messages, hasMore } = await readHistoryBatch(query.lease, before);
     if (!current()) break;
-    const records = [...batch.messages].reverse();
-    for (let i = 0; i < records.length; i++) {
-      const message = records[i];
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
       if (message.channel === 'staff' && !query.staff) continue;
       const content = message.content;
       const text = Array.isArray(content)
@@ -52,11 +51,11 @@ export async function searchChatHistory(
         return {
           ...result,
           before: message.order,
-          hasMore: i < records.length - 1 || batch.hasMore,
+          hasMore: i > 0 || hasMore,
         };
     }
-    if (!batch.hasMore) return result;
-    before = batch.messages[0]?.order;
+    if (!hasMore) return result;
+    before = messages[0]?.order;
     if (!before) return result;
     await new Promise((resolve) => setTimeout(resolve, 0));
   }

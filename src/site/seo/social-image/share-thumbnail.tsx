@@ -40,8 +40,8 @@ export async function createSiteShareThumbnail(locale: AppLocale, page: SitePage
         <img
           src={`data:image/jpeg;base64,${photo.toString('base64')}`}
           alt=""
-          width={600}
-          height={600}
+          width={SHARE_THUMBNAIL_SIZE.width}
+          height={SHARE_THUMBNAIL_SIZE.height}
         />
       ) : null}
       <div
@@ -60,7 +60,7 @@ export async function createSiteShareThumbnail(locale: AppLocale, page: SitePage
             : SOCIAL_IMAGE_COLORS.background,
         }}
       >
-        <img src={logo} alt="" width={photo ? 80 : 192} height={photo ? 80 : 192} />
+        <img src={logo.dataUrl} alt="" width={photo ? 80 : 192} height={photo ? 80 : 192} />
         <div
           style={{
             display: 'block',
@@ -79,27 +79,22 @@ export async function createSiteShareThumbnail(locale: AppLocale, page: SitePage
 }
 
 export async function createBuildingShareThumbnail(building: BuildingWithImageUrls) {
-  if (!building.images[0]) {
-    const logo = await readSocialImageLogo();
-    return new Response(
-      new Uint8Array(
-        await sharp({
-          create: {
-            ...SHARE_THUMBNAIL_SIZE,
-            channels: 3,
-            background: SOCIAL_IMAGE_COLORS.background,
-          },
-        })
-          .composite([{ input: Buffer.from(logo.split(',')[1], 'base64'), gravity: 'centre' }])
-          .png()
-          .toBuffer(),
-      ),
-      { headers: { 'Content-Type': 'image/png' } },
-    );
+  const cover = building.images[0];
+  if (cover) {
+    const source = await readBuildingImage(cover.webp);
+    return new Uint8Array(await frameSocialImagePhoto(source, SHARE_THUMBNAIL_SIZE));
   }
-  const photo = await frameSocialImagePhoto(
-    await readBuildingImage(building.images[0].webp),
-    SHARE_THUMBNAIL_SIZE,
-  );
-  return new Response(new Uint8Array(photo), { headers: { 'Content-Type': 'image/png' } });
+
+  const { png } = await readSocialImageLogo();
+  const image = await sharp({
+    create: {
+      ...SHARE_THUMBNAIL_SIZE,
+      channels: 3,
+      background: SOCIAL_IMAGE_COLORS.background,
+    },
+  })
+    .composite([{ input: png, gravity: 'centre' }])
+    .png()
+    .toBuffer();
+  return new Uint8Array(image);
 }

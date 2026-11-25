@@ -34,7 +34,6 @@ test('reselecting identical bytes reuses the prepared file and uploads within it
       thumbnailWebp: new File([suffix], 'thumbnail.webp', { type: 'image/webp' }),
     },
     preview: { webp: `blob:${suffix}-webp`, jxl: `blob:${suffix}-jxl` },
-    size: 1,
     width: 960,
     height: 540,
   }));

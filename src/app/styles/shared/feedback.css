@@ -70,11 +70,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .progress-ring {
-    animation: progress-ring-turn 2.4s linear infinite;
-  }
-
-  .progress-ring circle {
-    animation: progress-ring-sweep 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: progress-ring-turn 1.2s linear infinite;
   }
 
   .loading-state {
@@ -83,7 +79,7 @@
 
   .copy-button[aria-busy="true"] .progress-ring {
     animation:
-      progress-ring-turn 2.4s linear infinite,
+      progress-ring-turn 1.2s linear infinite,
       loading-state-reveal 120ms ease-out 120ms both;
   }
 }
@@ -91,21 +87,6 @@
 @keyframes progress-ring-turn {
   to {
     transform: rotate(270deg);
-  }
-}
-
-@keyframes progress-ring-sweep {
-  0% {
-    stroke-dasharray: 4 96;
-    stroke-dashoffset: 0;
-  }
-  50% {
-    stroke-dasharray: 64 36;
-    stroke-dashoffset: -18;
-  }
-  100% {
-    stroke-dasharray: 4 96;
-    stroke-dashoffset: -100;
   }
 }
 

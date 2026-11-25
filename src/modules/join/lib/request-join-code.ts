@@ -1,6 +1,7 @@
 import type { JoinCode, JoinCodeError } from '@/modules/join/model/join-code';
 import { isJoinCode } from '@/modules/join/model/join-code';
 import type { JoinGroupId } from '@/modules/join/model/join-group';
+import { isRecord } from '@/shared/lib/is-record';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 export class JoinCodeRequestError extends Error {
@@ -34,10 +35,7 @@ export async function requestJoinCode(
           if (response.status === 503) {
             const body: unknown = await response.json();
             throw new JoinCodeRequestError(
-              body &&
-                typeof body === 'object' &&
-                'error' in body &&
-                body.error === 'captcha_unavailable'
+              isRecord(body) && body.error === 'captcha_unavailable'
                 ? 'captcha_unavailable'
                 : 'unavailable',
             );
@@ -58,9 +56,10 @@ export async function requestJoinCode(
   signal.throwIfAborted();
   // Conservatively subtract the whole request; a client clock cannot extend validity.
   const finishedAt = performance.now();
-  const elapsed = Math.max(finishedAt - startedAt, Date.now() - startedWallTime);
+  const finishedWallTime = Date.now();
+  const elapsed = Math.max(finishedAt - startedAt, finishedWallTime - startedWallTime);
   const remaining = value.expiresAt - value.serverTime - elapsed;
   if (remaining <= 0) throw new JoinCodeRequestError('code_expired');
   // Some browsers pause performance.now() during device sleep; either clock may expire the code.
-  return { value, deadline: finishedAt + remaining, wallDeadline: Date.now() + remaining };
+  return { value, deadline: finishedAt + remaining, wallDeadline: finishedWallTime + remaining };
 }

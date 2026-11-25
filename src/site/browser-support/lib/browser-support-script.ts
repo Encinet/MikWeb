@@ -24,10 +24,12 @@ export function getBrowserSupportScript(): string {
   var storageKey = 'mik-browser-warning-dismissed-v1';
   try { if (sessionStorage.getItem(storageKey) === '1') return; } catch (error) {}
   document.documentElement.setAttribute('data-browser-warning', 'visible');
-  document.addEventListener('click', function (event) {
+  function dismiss(event) {
     if (!event.target || event.target.id !== 'browser-support-dismiss') return;
+    document.removeEventListener('click', dismiss);
     document.documentElement.removeAttribute('data-browser-warning');
     try { sessionStorage.setItem(storageKey, '1'); } catch (error) {}
-  });
+  }
+  document.addEventListener('click', dismiss);
 })();`;
 }

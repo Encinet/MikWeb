@@ -50,7 +50,11 @@ export async function createBuildingSocialImage(building: LocalizedBuilding, loc
           left: SOCIAL_IMAGE_BRAND_LAYOUT.left,
         }}
       >
-        <SocialImageBrand logo={logo} color={palette.brandColor} outline={palette.brandOutline} />
+        <SocialImageBrand
+          logo={logo.dataUrl}
+          color={palette.brandColor}
+          outline={palette.brandOutline}
+        />
       </div>
       <div
         style={{

@@ -1,10 +1,10 @@
 import { parseAnnouncementDate } from '@/modules/announcement/lib/format-announcement-date';
 import type { AnnouncementItem } from '@/modules/announcement/model/announcement-types';
 
-export interface AnnouncementDateGroup {
+interface AnnouncementDateGroup {
   key: string;
   date: Date | null;
-  announcements: AnnouncementItem[];
+  entries: { announcement: AnnouncementItem; date: Date | null }[];
 }
 
 export function getAnnouncementKey(announcement: AnnouncementItem) {
@@ -12,17 +12,19 @@ export function getAnnouncementKey(announcement: AnnouncementItem) {
 }
 
 export function sortAnnouncements(announcements: AnnouncementItem[]) {
-  return [...announcements].sort(
-    (left, right) =>
-      (parseAnnouncementDate(right.timestamp)?.getTime() ?? Number.NEGATIVE_INFINITY) -
-      (parseAnnouncementDate(left.timestamp)?.getTime() ?? Number.NEGATIVE_INFINITY),
-  );
+  return announcements
+    .map((announcement) => ({
+      announcement,
+      time: parseAnnouncementDate(announcement.timestamp)?.getTime() ?? Number.NEGATIVE_INFINITY,
+    }))
+    .sort((left, right) => right.time - left.time)
+    .map(({ announcement }) => announcement);
 }
 
 /** Group in the reader's time zone, including announcements that cross a UTC date boundary. */
 export function groupAnnouncementsByDate(
   announcements: AnnouncementItem[],
-  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+  timeZone?: string,
 ) {
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -36,8 +38,9 @@ export function groupAnnouncementsByDate(
     const date = parseAnnouncementDate(announcement.timestamp);
     const key = date ? formatter.format(date) : 'unknown';
     const group = groups.get(key);
-    if (group) group.announcements.push(announcement);
-    else groups.set(key, { key, date, announcements: [announcement] });
+    const entry = { announcement, date };
+    if (group) group.entries.push(entry);
+    else groups.set(key, { key, date, entries: [entry] });
   }
 
   return [...groups.values()];

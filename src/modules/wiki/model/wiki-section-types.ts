@@ -38,13 +38,6 @@ export interface WikiSectionGroupDefinition {
   sections: WikiSectionDefinition[];
 }
 
-export interface WikiSectionFrontMatter {
-  title: string;
-  description: string;
-  order: number;
-  icon: WikiSectionIcon;
-}
-
 export interface WikiSectionDocument {
   section: WikiSectionDefinition;
   content: string;

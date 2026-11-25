@@ -3,10 +3,8 @@
 import { BookOpen, Building2, Heart, Home, MapIcon, Shield } from 'lucide-react';
 import { domAnimation, LazyMotion } from 'motion/react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import { usePlayerStatus } from '@/modules/player/model/use-player-status';
-import { useHasMounted } from '@/shared/hooks/use-has-mounted';
 import { getPathname, usePathname } from '@/shared/i18n/navigation';
 import { LOCALE_NAMES, routing } from '@/shared/i18n/routing';
 import type { SiteHeaderNavItem } from '@/site/header/lib/site-header-nav-item';
@@ -22,13 +20,6 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const t = useTranslations();
   const locale = useLocale();
-  const {
-    players,
-    playerCount,
-    isOnline,
-    isLoading: isLoadingPlayers,
-    hasNetworkError,
-  } = usePlayerStatus();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [menuPathname, setMenuPathname] = useState(pathname);
@@ -38,17 +29,10 @@ export default function SiteHeader() {
   }
   const mobileMenuId = useId();
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
-  const [isPlayerDropdownOpen, setIsPlayerDropdownOpen] = useState(false);
-  const [isPlayerDropdownVisible, setIsPlayerDropdownVisible] = useState(false);
-  const [playerDropdownRect, setPlayerDropdownRect] = useState<DOMRect | null>(null);
-  const playerDropdownAnchorRef = useRef<HTMLDivElement | null>(null);
-  const playerDropdownAnimationFrameRef = useRef<number | null>(null);
   const navbarProgressCurrentRef = useRef(0);
   const previousActiveNavIndexRef = useRef<number | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   useSiteHeaderBoundary(headerRef);
-
-  const mounted = useHasMounted();
 
   const localeTarget =
     routing.locales[(routing.locales.indexOf(locale) + 1) % routing.locales.length];
@@ -93,23 +77,6 @@ export default function SiteHeader() {
     window.location.replace(`${target}${window.location.search}${window.location.hash}`);
   };
 
-  const updatePlayerDropdownRect = useCallback(() => {
-    if (playerDropdownAnchorRef.current) {
-      setPlayerDropdownRect(playerDropdownAnchorRef.current.getBoundingClientRect());
-    }
-  }, []);
-
-  const openPlayerDropdown = () => {
-    setIsPlayerDropdownVisible(false);
-    updatePlayerDropdownRect();
-    setIsPlayerDropdownOpen(true);
-  };
-
-  const closePlayerDropdown = () => {
-    setIsPlayerDropdownVisible(false);
-    setIsPlayerDropdownOpen(false);
-  };
-
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
@@ -146,38 +113,6 @@ export default function SiteHeader() {
   }, []);
 
   useEffect(() => {
-    if (!isPlayerDropdownOpen) {
-      if (playerDropdownAnimationFrameRef.current !== null) {
-        cancelAnimationFrame(playerDropdownAnimationFrameRef.current);
-        playerDropdownAnimationFrameRef.current = null;
-      }
-      return;
-    }
-
-    const syncDropdownPosition = () => {
-      updatePlayerDropdownRect();
-    };
-
-    syncDropdownPosition();
-    playerDropdownAnimationFrameRef.current = requestAnimationFrame(() => {
-      playerDropdownAnimationFrameRef.current = requestAnimationFrame(() => {
-        setIsPlayerDropdownVisible(true);
-      });
-    });
-    window.addEventListener('resize', syncDropdownPosition);
-    window.addEventListener('scroll', syncDropdownPosition, true);
-
-    return () => {
-      if (playerDropdownAnimationFrameRef.current !== null) {
-        cancelAnimationFrame(playerDropdownAnimationFrameRef.current);
-        playerDropdownAnimationFrameRef.current = null;
-      }
-      window.removeEventListener('resize', syncDropdownPosition);
-      window.removeEventListener('scroll', syncDropdownPosition, true);
-    };
-  }, [isPlayerDropdownOpen, updatePlayerDropdownRect]);
-
-  useEffect(() => {
     previousActiveNavIndexRef.current = activeDesktopNavIndex >= 0 ? activeDesktopNavIndex : null;
   }, [activeDesktopNavIndex]);
 
@@ -203,28 +138,14 @@ export default function SiteHeader() {
               />
 
               <SiteHeaderControls
-                isLoadingPlayers={isLoadingPlayers}
                 isMobileMenuOpen={isMobileMenuOpen}
                 mobileMenuId={mobileMenuId}
                 mobileMenuButtonRef={mobileMenuButtonRef}
-                isOnline={isOnline}
                 localeLabel={localeChoice.label}
                 localeTarget={localeTarget}
                 localeTooltip={localeChoice.name}
-                mounted={mounted}
-                hasNetworkError={hasNetworkError}
                 onLocaleSwitch={switchLocale}
                 onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                onPlayerDropdownClose={closePlayerDropdown}
-                onPlayerDropdownOpen={openPlayerDropdown}
-                playerCount={playerCount}
-                playerDropdownAnchorRef={playerDropdownAnchorRef}
-                playerDropdownRect={playerDropdownRect}
-                playerDropdownVisible={isPlayerDropdownOpen && isPlayerDropdownVisible}
-                players={players}
-                statusNetworkErrorLabel={t('common.states.networkError')}
-                statusOfflineLabel={t('common.states.offline')}
-                statusOnlineLabel={t('common.states.online')}
               />
             </div>
 

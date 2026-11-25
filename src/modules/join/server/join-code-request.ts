@@ -5,10 +5,8 @@ import { JOIN_CODE_PERIOD_SECONDS } from '@/modules/join/model/join-code';
 import { isJoinGroupId } from '@/modules/join/model/join-group';
 import { verifyJoinCaptcha } from '@/modules/join/server/join-captcha';
 import { createTotp, decodeBase32 } from '@/modules/join/server/join-totp';
-import {
-  RequestBodyLimitError,
-  readLimitedRequestBody,
-} from '@/shared/server/limited-request-body';
+import { isRecord } from '@/shared/lib/is-record';
+import { RequestBodyLimitError, readLimitedJson } from '@/shared/server/limited-request-body';
 
 function json(body: unknown, status = 200, headers?: Record<string, string>) {
   return Response.json(body, {
@@ -28,21 +26,15 @@ export async function joinCodeRequest(request: Request): Promise<Response> {
     return json({ error: 'invalid_request' }, 415);
   let body: unknown;
   try {
-    body = JSON.parse(
-      new TextDecoder('utf-8', { fatal: true }).decode(await readLimitedRequestBody(request, 4096)),
-    );
+    body = await readLimitedJson(request, 4096);
   } catch (error) {
     return json({ error: 'invalid_request' }, error instanceof RequestBodyLimitError ? 413 : 400);
   }
   if (
-    !body ||
-    typeof body !== 'object' ||
-    Array.isArray(body) ||
+    !isRecord(body) ||
     Object.keys(body).length !== 2 ||
     !Object.hasOwn(body, 'group') ||
-    !('group' in body) ||
-    !Object.hasOwn(body, 'token') ||
-    !('token' in body)
+    !Object.hasOwn(body, 'token')
   )
     return json({ error: 'invalid_request' }, 400);
   const group = body.group;
@@ -51,15 +43,14 @@ export async function joinCodeRequest(request: Request): Promise<Response> {
   const secret = process.env[`QQ_GROUP_${group}_TOTP_SECRET`];
   if (!secret) return json({ error: 'unavailable' }, 503);
   try {
-    const first = process.env.QQ_GROUP_1_TOTP_SECRET;
-    const second = process.env.QQ_GROUP_2_TOTP_SECRET;
-    if (first && second) {
-      const firstBytes = decodeBase32(first);
-      const secondBytes = decodeBase32(second);
-      if (firstBytes.length === secondBytes.length && timingSafeEqual(firstBytes, secondBytes))
+    const secretBytes = decodeBase32(secret);
+    if (secretBytes.length < 20) return json({ error: 'unavailable' }, 503);
+    const otherSecret = process.env[`QQ_GROUP_${group === '1' ? '2' : '1'}_TOTP_SECRET`];
+    if (otherSecret) {
+      const otherBytes = decodeBase32(otherSecret);
+      if (secretBytes.length === otherBytes.length && timingSafeEqual(secretBytes, otherBytes))
         return json({ error: 'unavailable' }, 503);
     }
-    if (decodeBase32(secret).length < 20) return json({ error: 'unavailable' }, 503);
     const verification = await verifyJoinCaptcha(body.token, request.signal);
     if (verification !== 'verified')
       return json(
@@ -68,12 +59,12 @@ export async function joinCodeRequest(request: Request): Promise<Response> {
       );
     request.signal.throwIfAborted();
     // Time, period, digits and secret are never read from request fields or headers.
-    const code = await createTotp(secret, Date.now(), { period: JOIN_CODE_PERIOD_SECONDS });
+    const { code, serverTime, expiresAt } = await createTotp(secretBytes);
     return json({
-      code: code.code,
-      serverTime: code.serverTime,
+      code,
+      serverTime,
       // The existing QQ verifier also accepts this code throughout the next step.
-      expiresAt: code.expiresAt + JOIN_CODE_PERIOD_SECONDS * 1000,
+      expiresAt: expiresAt + JOIN_CODE_PERIOD_SECONDS * 1000,
     });
   } catch {
     return json({ error: 'unavailable' }, 503);

@@ -116,10 +116,12 @@ export default function WikiContent({
   });
   const activeCode = compiled[activeSection] ?? resources.section?.compiled;
   const activeOutline = outlines[activeSection] ?? resources.section?.outline ?? emptyOutline;
-  const fullSearchIndex = useMemo(
-    () => [...(resources.searchIndex ?? []), ...searchIndex],
-    [resources.searchIndex, searchIndex],
-  );
+  const fullSearchIndex = useMemo(() => {
+    const publicSearchIndex = resources.searchIndex;
+    if (!publicSearchIndex?.length) return searchIndex;
+    if (!searchIndex.length) return publicSearchIndex;
+    return [...publicSearchIndex, ...searchIndex];
+  }, [resources.searchIndex, searchIndex]);
   useEffect(() => {
     if (isSearching) setNavigationPanel(null);
   }, [isSearching]);

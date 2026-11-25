@@ -5,32 +5,33 @@ import { NextRequest } from 'next/server';
 import proxy, { config } from '@/proxy';
 import { routing } from '@/shared/i18n/routing';
 
-test('Proxy only negotiates unprefixed and noncanonical URLs and PCL2 documents', () => {
+test('Proxy matches documents and excludes public assets and data endpoints', () => {
   const matches = (url: string, headers?: Record<string, string>) =>
     unstable_doesMiddlewareMatch({ config, nextConfig: {}, url, headers });
   for (const url of [
     '/api/wiki/section/en/rules',
     '/api/mcp',
     '/_next/image',
-    '/_not-found',
     '/opengraph-image',
+    '/brand/mik/logo.svg',
+    '/vendor/cap/cap.wasm',
+    '/robots.txt',
   ]) {
     assert.equal(matches(url), false, url);
   }
-  for (const url of ['/', '/wiki', '/EN/map', '/zh-cn']) {
+  for (const url of ['/', '/wiki', '/EN/map', '/zh-cn', '/_not-found']) {
     assert.equal(matches(url), true, url);
   }
   for (const locale of routing.locales) {
     const pcl2 = `/${locale}/pcl2`;
-    assert.equal(matches(pcl2), true, pcl2);
-    assert.equal(matches(pcl2, { rsc: '1' }), false, `${pcl2} RSC`);
-    assert.equal(matches(`/${locale}`), false, `/${locale}`);
+    assert.equal(matches(pcl2, { rsc: '1' }), true, `${pcl2} RSC`);
+    assert.equal(matches(`/${locale}`), true, `/${locale}`);
+    for (const path of ['wiki?section=rules', 'buildings', 'buildings/example', 'chat', 'account']) {
+      const url = `/${locale}/${path}`;
+      assert.equal(matches(url), true, url);
+    }
     for (const path of [
-      'wiki?section=rules',
-      'buildings',
-      'buildings/example',
-      'chat',
-      'account',
+      'manifest.webmanifest',
       'pcl2/source',
       'pcl2/version',
       'opengraph-image',

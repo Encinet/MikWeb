@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 import { SESSION_COOKIE_NAME } from './src/modules/auth/model/auth-cookies';
-import { CHAT_WEBSOCKET_URL, DATA_API_ORIGIN } from './src/shared/config/service-config';
+import { SITE_HOSTNAME } from './src/shared/config/site-config';
 import { routing } from './src/shared/i18n/routing';
 
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
@@ -35,17 +35,21 @@ const nextConfig: NextConfig = {
     };
   },
   async headers() {
-    const headers = [
-      {
-        key: 'Content-Security-Policy',
-        value: `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}; script-src-attr 'none'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; connect-src 'self' ${DATA_API_ORIGIN} ${new URL(CHAT_WEBSOCKET_URL).origin}; upgrade-insecure-requests`,
-      },
-      { key: 'X-Frame-Options', value: 'DENY' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'Referrer-Policy', value: 'no-referrer' },
-      { key: 'Cache-Control', value: 'no-store' },
-    ];
+    const privatePageHeaders = [{ key: 'Referrer-Policy', value: 'no-referrer' }];
     return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+        ],
+      },
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: SITE_HOSTNAME.replaceAll('.', '\\.') }],
+        headers: [{ key: 'Strict-Transport-Security', value: 'max-age=63072000' }],
+      },
       {
         source: '/api/mcp',
         headers: [
@@ -68,9 +72,8 @@ const nextConfig: NextConfig = {
         source: '/_next/static/chunks/chat-notifications-worker.:path*',
         headers: [{ key: 'Service-Worker-Allowed', value: '/' }],
       },
-      { source: '/:locale/login', headers },
-      { source: '/:locale/chat', headers },
-      { source: '/:locale/account/:path*', headers },
+      { source: '/:locale/:page(login|chat)', headers: privatePageHeaders },
+      { source: '/:locale/account/:path*', headers: privatePageHeaders },
     ];
   },
   experimental: {

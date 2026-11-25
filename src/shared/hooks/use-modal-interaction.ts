@@ -2,8 +2,81 @@
 
 import type { RefObject } from 'react';
 import { useEffect, useEffectEvent } from 'react';
-import { captureFocusReturn } from '@/shared/lib/focus-return';
+import { captureFocusReturn, type FocusReturn } from '@/shared/lib/focus-return';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
+
+interface OpenModal {
+  dialog: HTMLElement;
+  surface: HTMLElement;
+  opener: HTMLElement | null;
+  focusReturn: FocusReturn;
+}
+
+interface ModalScope {
+  open: Set<OpenModal>;
+  top: OpenModal | undefined;
+  first: OpenModal;
+  madeInert: Set<HTMLElement>;
+  previousOverflow: string;
+}
+
+const modalScopes = new WeakMap<Document, ModalScope>();
+
+function syncModalBackground(body: HTMLElement, scope: ModalScope) {
+  let top: OpenModal | undefined;
+  for (const modal of scope.open) {
+    if (modal.surface.parentElement !== body || modal.surface.style.display === 'none') continue;
+    // Portals share a z-index. DOM order also survives an Activity effect reconnect.
+    if (
+      !top ||
+      top.surface.compareDocumentPosition(modal.surface) & Node.DOCUMENT_POSITION_FOLLOWING
+    ) {
+      top = modal;
+    }
+  }
+  scope.top = top;
+
+  for (const element of scope.madeInert) {
+    if (!top || element === top.surface || element.parentElement !== body) {
+      element.inert = false;
+      scope.madeInert.delete(element);
+    }
+  }
+
+  if (!top) return;
+  for (const element of body.children) {
+    if (
+      element instanceof HTMLElement &&
+      element !== top.surface &&
+      !element.inert &&
+      !element.matches('script, style, nextjs-portal')
+    ) {
+      element.inert = true;
+      scope.madeInert.add(element);
+    }
+  }
+}
+
+function focusInitialControl(dialog: HTMLElement) {
+  const control =
+    dialog.querySelector<HTMLElement>('[data-dialog-initial-focus]:not(:disabled)') ??
+    dialog.querySelector<HTMLElement>('[data-dialog-close]:not(:disabled)');
+  control?.focus({ preventScroll: true });
+  if (!dialog.contains(dialog.ownerDocument.activeElement)) dialog.focus({ preventScroll: true });
+}
+
+function restoreModalFocus({ opener, focusReturn }: OpenModal, within?: HTMLElement) {
+  if (
+    !opener?.isConnected ||
+    (within && !within.contains(opener)) ||
+    opener.closest('[inert]') ||
+    opener.getClientRects().length === 0
+  ) {
+    return false;
+  }
+  focusReturn.restore();
+  return opener.ownerDocument.activeElement === opener;
+}
 
 /** Shared keyboard, focus and background handling for both window and immersive dialogs. */
 export function useModalInteraction(
@@ -17,20 +90,29 @@ export function useModalInteraction(
     const dialog = ref.current;
     if (!isOpen || !dialog) return;
 
+    const document = dialog.ownerDocument;
+    const surface = dialog.closest<HTMLElement>('body > *');
+    if (!surface) return;
+
     const previousFocus = document.activeElement;
-    const focusReturn = captureFocusReturn(
-      previousFocus instanceof HTMLElement ? previousFocus : null,
-    );
-    const previousOverflow = document.documentElement.style.overflow;
-    const background = Array.from(document.body.children).filter(
-      (element): element is HTMLElement =>
-        element instanceof HTMLElement &&
-        !element.contains(dialog) &&
-        !element.matches('script, style, nextjs-portal'),
-    );
-    const previousInert = background.map((element) => element.inert);
-    for (const element of background) element.inert = true;
-    document.documentElement.style.overflow = 'hidden';
+    const opener =
+      previousFocus instanceof HTMLElement && previousFocus !== document.body ? previousFocus : null;
+    const modal = { dialog, surface, opener, focusReturn: captureFocusReturn(opener) };
+    let scope = modalScopes.get(document);
+    if (!scope) {
+      scope = {
+        open: new Set(),
+        top: undefined,
+        first: modal,
+        madeInert: new Set(),
+        previousOverflow: document.documentElement.style.overflow,
+      };
+      modalScopes.set(document, scope);
+      document.documentElement.style.overflow = 'hidden';
+    }
+    scope.open.add(modal);
+    syncModalBackground(document.body, scope);
+    if (scope.top === modal) focusInitialControl(dialog);
 
     const focusableElements = () =>
       Array.from(
@@ -39,14 +121,15 @@ export function useModalInteraction(
         ),
       ).filter((element) => !element.closest('[inert]') && element.getClientRects().length > 0);
 
-    (
-      dialog.querySelector<HTMLElement>('[data-dialog-initial-focus]') ??
-      dialog.querySelector<HTMLElement>('[data-dialog-close]') ??
-      dialog
-    ).focus({ preventScroll: true });
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || isImeComposing(event) || dialog.closest('[inert]')) return;
+      if (
+        scope.top !== modal ||
+        event.defaultPrevented ||
+        isImeComposing(event) ||
+        dialog.closest('[inert]')
+      ) {
+        return;
+      }
       if (event.key === 'Escape') {
         event.preventDefault();
         close();
@@ -87,11 +170,20 @@ export function useModalInteraction(
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.documentElement.style.overflow = previousOverflow;
-      background.forEach((element, index) => {
-        element.inert = previousInert[index];
-      });
-      focusReturn.restore();
+      const wasTop = scope.top === modal;
+      scope.open.delete(modal);
+      syncModalBackground(document.body, scope);
+
+      if (scope.open.size === 0) {
+        document.documentElement.style.overflow = scope.previousOverflow;
+        modalScopes.delete(document);
+        restoreModalFocus(scope.first);
+        scope.first.focusReturn.dispose();
+      } else if (wasTop && scope.top && !restoreModalFocus(modal, scope.top.dialog)) {
+        focusInitialControl(scope.top.dialog);
+      }
+
+      if (modal !== scope.first) modal.focusReturn.dispose();
     };
   }, [isOpen, ref]);
 }

@@ -26,9 +26,8 @@ export function BuildingCover({
 }: CoverProps) {
   const container = useRef<HTMLSpanElement>(null);
   const [source, setSource] = useState<string>();
-  const { webp, jxl, thumbnailWebp, jxlPreviewBytes } = image;
+  const { jxl, thumbnailWebp, jxlPreviewBytes } = image;
   useEffect(() => {
-    const photo = { webp, jxl, thumbnailWebp, jxlPreviewBytes };
     let mounted = true;
     let observer: IntersectionObserver | undefined;
     let stopWatching: (() => void) | undefined;
@@ -42,7 +41,9 @@ export function BuildingCover({
         setSource(detailUrl);
       });
       if (detailUrl) return;
-      const entry = filmstrip ? cachedBuildingPreview(jxl) : prepareBuildingPreview(photo);
+      const entry = filmstrip
+        ? cachedBuildingPreview(jxl)
+        : prepareBuildingPreview({ jxl, jxlPreviewBytes });
       if (entry) {
         void entry.ready.then((preview) => {
           if (mounted && !detailUrl) setSource(preview ?? thumbnailWebp);
@@ -72,7 +73,7 @@ export function BuildingCover({
       stopWatching?.();
       if (detailUrl) URL.revokeObjectURL(detailUrl);
     };
-  }, [webp, jxl, thumbnailWebp, jxlPreviewBytes, eager, filmstrip]);
+  }, [jxl, thumbnailWebp, jxlPreviewBytes, eager, filmstrip]);
 
   return (
     <span ref={container} className="absolute inset-0">

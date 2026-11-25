@@ -20,7 +20,6 @@ export interface BuildingSubmissionImageDraft {
   preview: BuildingImagePair<BuildingImageUrl>;
   width: number;
   height: number;
-  size: number;
 }
 
 export interface BuildingSubmissionFormState {

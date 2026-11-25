@@ -20,7 +20,7 @@ import {
   SocialImageCanvas,
 } from '@/site/seo/social-image/social-image-layout';
 
-export async function createSocialImage(locale: AppLocale, page: SitePage = 'home') {
+export async function createSocialImage(locale: AppLocale, page: SitePage) {
   const content = await getSitePageContent(locale, page);
   const scene = Boolean(content.cover);
   const [fonts, logo, backdrop] = await Promise.all([
@@ -44,7 +44,7 @@ export async function createSocialImage(locale: AppLocale, page: SitePage = 'hom
           padding: '52px 60px',
         }}
       >
-        <SocialImageBrand logo={logo} />
+        <SocialImageBrand logo={logo.dataUrl} />
         <div
           style={{
             display: 'flex',

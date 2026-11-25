@@ -28,11 +28,11 @@ export function useWikiPublicContent({
   const sectionKey = sectionId ? `${locale}/${sectionId}` : null;
   // Background chapters must not re-render the article currently being read.
   const readSection = useCallback(
-    () => (sectionKey ? cache.getSnapshot().sections[sectionKey] : undefined),
-    [cache, sectionKey],
+    () => (sectionId ? cache.getSection(locale, sectionId) : undefined),
+    [cache, locale, sectionId],
   );
   const readSearchIndex = useCallback(
-    () => cache.getSnapshot().searchIndexes[locale] ?? null,
+    () => cache.getSearchIndex(locale) ?? null,
     [cache, locale],
   );
   const cachedSection = useSyncExternalStore(cache.subscribe, readSection, readSection);

@@ -9,7 +9,7 @@ import type {
 } from '@/modules/wiki/model/wiki-search-types';
 import type { WikiLocale, WikiSectionId } from '@/modules/wiki/model/wiki-section-types';
 
-export function prepareWikiQuery(query: string): PreparedWikiQuery {
+function prepareWikiQuery(query: string): PreparedWikiQuery {
   const lower = query.trim().toLowerCase();
 
   return {
@@ -79,7 +79,7 @@ function decodeWikiHtmlEntities(text: string): string {
 }
 
 /** Retain readable Markdown for MCP consumers while removing layout-only JSX. */
-export function formatWikiMdxForSearch(text: string): string {
+function formatWikiMdxForSearch(text: string): string {
   return text
     .replace(/<Card\b([^>]+)>/g, (_match, attributes: string) => {
       const title = attributes.match(/\btitle="([^"]+)"/)?.[1] ?? '';
@@ -94,8 +94,8 @@ export function formatWikiMdxForSearch(text: string): string {
     .replace(/<(\/?)WikiTable>/g, '<$1table>');
 }
 
-export function stripWikiMarkdown(text: string): string {
-  return formatWikiMdxForSearch(text)
+function stripWikiMarkdown(text: string): string {
+  return text
     .replace(/\r\n?/g, '\n')
     .replace(/```([^\n]*)\n([\s\S]*?)```/g, (_, __, code: string) => code.trim())
     .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
@@ -216,34 +216,31 @@ export function parseWikiMarkdownBlocks(sectionId: string, raw: string): WikiMar
 export function buildWikiSearchIndex(
   locale: WikiLocale,
   content: WikiSectionContentMap,
-  baseUrl?: string,
 ): SearchableWikiBlock[] {
   const blocks: SearchableWikiBlock[] = [];
-  const normalizedBaseUrl = baseUrl?.replace(/\/$/, '') ?? '';
 
   for (const [sectionId, raw] of Object.entries(content) as [WikiSectionId, string][]) {
     const parsedBlocks = parseWikiMarkdownBlocks(sectionId, raw);
     const pageTitle = parsedBlocks.find((block) => block.level === 1)?.heading ?? sectionId;
 
     for (const block of parsedBlocks) {
-      const directText = stripWikiMarkdown(block.directRaw);
-      const subtreeText =
-        block.subtreeRaw === block.directRaw ? directText : stripWikiMarkdown(block.subtreeRaw);
+      const markdown = formatWikiMdxForSearch(block.subtreeRaw);
+      const subtreeText = stripWikiMarkdown(markdown);
+      const directText =
+        block.directRaw === block.subtreeRaw
+          ? subtreeText
+          : stripWikiMarkdown(formatWikiMdxForSearch(block.directRaw));
       const searchableText = subtreeText || directText;
 
       if (!searchableText && !block.heading) continue;
 
       const hash = block.slug ? `#${block.slug}` : '';
-      const wikiPath = `/${locale}/wiki?section=${sectionId}${hash}`;
 
       blocks.push({
         sectionId,
         path: block.heading === pageTitle ? pageTitle : `${pageTitle} › ${block.heading}`,
-        url: normalizedBaseUrl ? `${normalizedBaseUrl}${wikiPath}` : wikiPath,
-        content: [
-          `${'#'.repeat(block.level)} ${block.heading}`,
-          formatWikiMdxForSearch(block.subtreeRaw),
-        ]
+        url: `/${locale}/wiki?section=${sectionId}${hash}`,
+        content: [`${'#'.repeat(block.level)} ${block.heading}`, markdown]
           .filter(Boolean)
           .join('\n\n'),
         heading: block.heading,

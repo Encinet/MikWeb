@@ -125,7 +125,7 @@ async function forwardAuthRequest(
       redirect: 'error',
       signal: AbortSignal.timeout(path === '/me/images/complete' ? 20_000 : 8000),
     });
-    const responseBody = await upstream.text();
+    const responseBody = upstream.body === null ? null : await upstream.arrayBuffer();
     const headers = new Headers({
       'Cache-Control': 'no-store',
       'Content-Type': upstream.headers.get('Content-Type') ?? 'application/json; charset=utf-8',

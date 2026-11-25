@@ -5,6 +5,7 @@ import { HomeBuildingUpdatesSkeleton } from '@/modules/home/ui/home-building-upd
 import { HomeBuildingUpdatesSection } from '@/modules/home/ui/home-building-updates-section';
 import HomeLiveOverview from '@/modules/home/ui/home-live-overview';
 import { HomeWorldNavigation } from '@/modules/home/ui/home-world-navigation';
+import { PlayerStatusProvider } from '@/modules/player/model/player-status-provider';
 import { SITE_NAME } from '@/shared/config/site-config';
 import { Link } from '@/shared/i18n/navigation';
 import { PageAppearance } from '@/shared/ui/page/page-appearance';
@@ -40,9 +41,11 @@ export default async function HomePage() {
       </section>
 
       <div className="home-project-container home-project-flow">
-        <HomeLiveOverview>
-          <HomeWorldNavigation />
-        </HomeLiveOverview>
+        <PlayerStatusProvider>
+          <HomeLiveOverview>
+            <HomeWorldNavigation />
+          </HomeLiveOverview>
+        </PlayerStatusProvider>
         <Suspense fallback={<HomeBuildingUpdatesSkeleton />}>
           <HomeBuildingUpdatesSection />
         </Suspense>

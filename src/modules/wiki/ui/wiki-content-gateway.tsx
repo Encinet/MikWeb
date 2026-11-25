@@ -12,10 +12,11 @@ export default function WikiContentGateway(props: ComponentProps<typeof WikiCont
   const locale = useLocale();
   const t = useTranslations('wiki');
   const staff = useWikiStaffContent(locale);
-  const bundle = useMemo(() => {
+  const contentProps = useMemo(() => {
     if (!staff.bundle) return props;
     const sections = sortWikiSections([...props.sections, ...staff.bundle.sections]);
     return {
+      ...props,
       sections,
       sectionGroups: createWikiSectionGroups(sections),
       compiled: { ...props.compiled, ...staff.bundle.compiled },
@@ -27,8 +28,7 @@ export default function WikiContentGateway(props: ComponentProps<typeof WikiCont
   return (
     <WikiContentView
       key={locale}
-      {...props}
-      {...bundle}
+      {...contentProps}
       staffStatus={
         staff.loading ? (
           <div className="wiki-access-status" role="status" aria-atomic="true">

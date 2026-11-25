@@ -3,7 +3,7 @@ import './globals.css';
 import { getTranslations } from 'next-intl/server';
 import { cache } from 'react';
 import { getRequestLocale } from '@/shared/i18n/request-locale';
-import SiteDocument from '@/site/layout/site-document';
+import SiteDocument, { getDocumentNonce } from '@/site/layout/site-document';
 import NotFoundView from '@/site/not-found/ui/not-found-view';
 import { formatPageTitle } from '@/site/seo/page-title';
 import { siteMetadata } from '@/site/seo/site-metadata';
@@ -33,9 +33,12 @@ export async function generateMetadata() {
 }
 
 export default async function GlobalNotFound() {
-  const { locale, title, description, homeLabel } = await getNotFoundContent();
+  const [{ locale, title, description, homeLabel }, nonce] = await Promise.all([
+    getNotFoundContent(),
+    getDocumentNonce(),
+  ]);
   return (
-    <SiteDocument locale={locale}>
+    <SiteDocument locale={locale} nonce={nonce} variant="standalone">
       <main className="relative z-10 flex min-h-0 flex-1 flex-col">
         <NotFoundView
           title={title}

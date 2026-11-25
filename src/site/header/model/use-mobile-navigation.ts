@@ -50,6 +50,10 @@ export function useMobileNavigation(
       if (desktop.matches) close();
       else position();
     };
+    const scroll = (event: Event) => {
+      if (event.target instanceof Node && surface.contains(event.target)) return;
+      position();
+    };
     const isInside = (target: EventTarget | null) =>
       target instanceof Node && (surface.contains(target) || openerRef.current?.contains(target));
     const leave = (event: Event) => {
@@ -74,14 +78,14 @@ export function useMobileNavigation(
       if (openerRef.current.parentElement) observer?.observe(openerRef.current.parentElement);
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('scroll', position, true);
+    window.addEventListener('scroll', scroll, true);
     window.visualViewport?.addEventListener('resize', position);
     window.visualViewport?.addEventListener('scroll', position);
     resize();
     return () => {
       observer?.disconnect();
       window.removeEventListener('resize', resize);
-      window.removeEventListener('scroll', position, true);
+      window.removeEventListener('scroll', scroll, true);
       window.visualViewport?.removeEventListener('resize', position);
       window.visualViewport?.removeEventListener('scroll', position);
       document.removeEventListener('keydown', keydown);

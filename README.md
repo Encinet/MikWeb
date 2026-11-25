@@ -37,6 +37,14 @@ bun dev
 
 网站部署在 Vercel，Next.js 构建和非 Edge 函数使用 Bun。Vercel 的 Bun 运行时仍处于 Beta，切换后先在 Preview 验证再部署生产。浏览器支持范围见 [.browserslistrc](./.browserslistrc)。
 
+## 浏览器安全策略
+
+页面使用每个请求独立的 CSP nonce，HTML 由服务器按请求渲染，不能跨请求缓存。Cache Components 继续缓存可复用的数据。若建筑目录切换图片存储，更新 `CSP_BUILDING_IMAGE_ORIGIN`。验证码 API 的来源取自 `CAP_API_ENDPOINT`，与服务器校验验证码共用端点配置。
+
+生产构建对 Trusted Types 使用 Report-Only。浏览器开发者工具会显示违规记录。配置 `CSP_REPORT_ENDPOINT` 后，支持 Reporting API 的浏览器也会将报告发给该公开 HTTPS 端点。上线前在 Vercel Preview 检查实际 HTML 与 CSP 的 nonce 是否一致，并验证验证码、Vercel Analytics 和客户端导航。清理 Trusted Types 违规后再切换为强制策略。
+
+主域的 HSTS 有效期为两年。启用 `includeSubDomains` 之前，需确认所有子域都能持续提供 HTTPS。
+
 ## MCP
 
 端点为 `https://mcmik.top/api/mcp`，使用 Streamable HTTP，提供在线玩家、公告、建筑、封禁和公开 Wiki 查询。
