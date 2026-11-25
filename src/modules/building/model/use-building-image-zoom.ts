@@ -28,6 +28,7 @@ export function useBuildingImageZoom({
 }) {
   const viewportRef = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const transformRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState(INITIAL_IMAGE_TRANSFORM);
   const [smooth, setSmooth] = useState(false);
@@ -60,8 +61,8 @@ export function useBuildingImageZoom({
     return {
       width: rect?.width || 1,
       height: rect?.height || 1,
-      imageWidth: imageRef.current?.naturalWidth || 0,
-      imageHeight: imageRef.current?.naturalHeight || 0,
+      imageWidth: imageRef.current?.naturalWidth || canvasRef.current?.width || 0,
+      imageHeight: imageRef.current?.naturalHeight || canvasRef.current?.height || 0,
     };
   };
   const update = (value: ImageTransform, animate = false) => {
@@ -271,6 +272,7 @@ export function useBuildingImageZoom({
   return {
     viewportRef,
     imageRef,
+    canvasRef,
     transformRef,
     transform,
     smooth,

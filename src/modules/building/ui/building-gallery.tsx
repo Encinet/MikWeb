@@ -18,7 +18,7 @@ import { useBuildingGalleryControls } from '@/modules/building/model/use-buildin
 import { BuildingGalleryDetails } from '@/modules/building/ui/building-gallery-details';
 import { BuildingGalleryFrame } from '@/modules/building/ui/building-gallery-frame';
 import { BuildingGalleryViewer } from '@/modules/building/ui/building-gallery-viewer';
-import { BuildingPicture } from '@/modules/building/ui/building-picture';
+import { BuildingCover } from '@/modules/building/ui/building-cover';
 import { BuildingShareActions } from '@/modules/building/ui/building-share-actions';
 import { Link, useRouter } from '@/shared/i18n/navigation';
 import { isImeComposing } from '@/shared/lib/keyboard-composition';
@@ -166,16 +166,7 @@ export function BuildingGallery({
                       className={index === gallery.imageIndex ? 'is-active' : ''}
                     >
                       {seenThumbnails.has(key) && gallery.shouldShowThumbnail(image) ? (
-                        <BuildingPicture
-                          image={image}
-                          fill
-                          alt=""
-                          className="object-cover"
-                          loading="lazy"
-                          fetchPriority="low"
-                          onLoad={() => gallery.handleImageLoad(image)}
-                          onError={() => gallery.handleImageError(image)}
-                        />
+                        <BuildingCover image={image} alt="" filmstrip />
                       ) : (
                         <span>{index + 1}</span>
                       )}

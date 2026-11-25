@@ -11,7 +11,7 @@ import {
 } from '@/shared/server/limited-request-body';
 
 const MAX_UPLOAD_BYTES = BUILDING_SUBMISSION_IMAGE_LIMITS.maxBytes;
-const MAX_MULTIPART_BYTES = MAX_UPLOAD_BYTES + 16 * 1024;
+const MAX_MULTIPART_BYTES = MAX_UPLOAD_BYTES + BUILDING_SUBMISSION_IMAGE_LIMITS.thumbnailBytes + 16 * 1024;
 let activeUploads = 0;
 
 export async function uploadBuildingSubmissionImage(request: Request): Promise<Response> {
@@ -46,7 +46,10 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     }).formData();
     const webp = form.get('webp');
     const jxl = form.get('jxl');
-    if (!(webp instanceof File) || !(jxl instanceof File) || [...form.keys()].length !== 2)
+    const thumbnail = form.get('thumbnailWebp');
+    if (thumbnail !== null && (!(thumbnail instanceof File) || thumbnail.type !== 'image/webp' || !thumbnail.size ||
+      thumbnail.size > BUILDING_SUBMISSION_IMAGE_LIMITS.thumbnailBytes)) return uploadError('invalid_image', 422);
+    if (!(webp instanceof File) || !(jxl instanceof File) || [...form.keys()].length !== (thumbnail ? 3 : 2))
       return uploadError('image_required', 400);
     if (webp.type !== 'image/webp' || (jxl.type && jxl.type !== 'image/jxl'))
       return uploadError('invalid_image', 415);
@@ -55,6 +58,7 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const variants = {
       webp: new Uint8Array(await webp.arrayBuffer()),
       jxl: new Uint8Array(await jxl.arrayBuffer()),
+      ...(thumbnail && { thumbnailWebp: new Uint8Array(await thumbnail.arrayBuffer()) }),
     };
     const dimensions = pixelOnlyWebpDimensions(variants.webp);
     if (!dimensions || variants.jxl[0] !== 0xff || variants.jxl[1] !== 0x0a)
@@ -66,17 +70,18 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
     const hashes = {
       webp: createHash('sha256').update(variants.webp).digest('hex'),
       jxl: createHash('sha256').update(variants.jxl).digest('hex'),
+      ...(variants.thumbnailWebp && { thumbnailWebp: createHash('sha256').update(variants.thumbnailWebp).digest('hex') }),
     };
     const prepared = await callImageUploadService(request, 'prepare', { uploadId, hashes });
     if (!prepared.ok) return prepared;
     const { put } = (await prepared.json()) as {
-      put: Record<'webp' | 'jxl', { url: string; headers: Record<string, string> }>;
+      put: Record<string, { url: string; headers: Record<string, string> }>;
     };
-    const uploads = await Promise.allSettled((['webp', 'jxl'] as const).map(async (format) => {
+    const uploads = await Promise.allSettled(Object.entries(variants).map(async ([format, bytes]) => {
       const stored = await fetch(put[format].url, {
         method: 'PUT',
         headers: put[format].headers,
-        body: variants[format],
+        body: bytes,
         redirect: 'error',
         signal: AbortSignal.timeout(20_000),
       });
@@ -87,7 +92,7 @@ export async function uploadBuildingSubmissionImage(request: Request): Promise<R
       return uploadError('image_upload_unavailable', 502);
     return await callImageUploadService(request, 'complete', {
       uploadId,
-      sizes: { webp: variants.webp.length, jxl: variants.jxl.length },
+      sizes: Object.fromEntries(Object.entries(variants).map(([format, bytes]) => [format, bytes.length])),
     });
   } catch (error) {
     return uploadError(

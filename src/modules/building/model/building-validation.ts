@@ -5,7 +5,7 @@ import type {
   BuildingImageRef,
   BuildingSource,
 } from '@/modules/building/model/building-types';
-import { BUILDING_TYPES } from '@/modules/building/model/building-types';
+import { BUILDING_TYPES, MAX_JXL_PREVIEW_BYTES } from '@/modules/building/model/building-types';
 import { isPlayerIdentity } from '@/modules/player/model/player-validation';
 import { isLocalizedText, type LocalizedText } from '@/shared/i18n/localized-text';
 import { isRecord } from '@/shared/lib/is-record';
@@ -30,7 +30,10 @@ export const MAX_BUILDING_WORLD_NAME_LENGTH = 128;
 export function isBuildingImageRef(value: unknown): value is BuildingImageRef {
   return (
     isRecord(value) &&
-    Object.keys(value).length === 2 &&
+    Object.keys(value).every(key => key === 'webp' || key === 'jxl' || key === 'thumbnailWebp' || key === 'jxlPreviewBytes') &&
+    (value.thumbnailWebp === undefined || (typeof value.thumbnailWebp === 'string' && IMAGE_HASH_PATTERN.test(value.thumbnailWebp))) &&
+    (value.jxlPreviewBytes === undefined || (typeof value.jxlPreviewBytes === 'number' &&
+      Number.isInteger(value.jxlPreviewBytes) && value.jxlPreviewBytes >= 0 && value.jxlPreviewBytes <= MAX_JXL_PREVIEW_BYTES)) &&
     typeof value.webp === 'string' && IMAGE_HASH_PATTERN.test(value.webp) &&
     typeof value.jxl === 'string' && IMAGE_HASH_PATTERN.test(value.jxl)
   );

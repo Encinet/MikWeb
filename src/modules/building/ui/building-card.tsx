@@ -5,7 +5,8 @@ import { useState, ViewTransition } from 'react';
 import { getBuildingPath } from '@/modules/building/lib/building-links';
 import type { LocalizedBuilding } from '@/modules/building/model/building-types';
 import type { BuildingsTranslator } from '@/modules/building/ui/building-metadata';
-import { BuildingPicture } from '@/modules/building/ui/building-picture';
+import { prepareBuildingPreview } from '@/modules/building/lib/building-image-preview';
+import { BuildingCover } from '@/modules/building/ui/building-cover';
 import { BuilderSummary } from '@/modules/building/ui/building-metadata';
 import { Link } from '@/shared/i18n/navigation';
 
@@ -37,19 +38,18 @@ export function BuildingCard({ building, t, prioritizeCover = false }: BuildingC
           onMouseEnter={() => setPrefetch(true)}
           onFocus={() => setPrefetch(true)}
           onTouchStart={() => setPrefetch(true)}
+          onNavigate={() => { if (coverImage) prepareBuildingPreview(coverImage); }}
           scroll={false}
           transitionTypes={['building-open']}
           className="building-archive-card__link"
         >
           <div className="building-archive-card__media">
             {coverImage ? (
-              <BuildingPicture
+              <BuildingCover
+                key={coverImage.jxl}
                 image={coverImage}
-                fill
                 alt={building.name}
-                className="object-cover"
-                loading={prioritizeCover ? 'eager' : 'lazy'}
-                fetchPriority={prioritizeCover ? 'high' : 'auto'}
+                eager={prioritizeCover}
                 onError={() => setImageErrors((previous) => [...previous, coverImage.webp])}
               />
             ) : (

@@ -111,9 +111,11 @@ export function resolveBuildingImages<Text>(
   const prefix = `${imageBaseUrl}/buildings/${building.id}/` as const;
   return {
     ...building,
-    images: building.images.map(({ webp, jxl }) => ({
+    images: building.images.map(({ webp, jxl, thumbnailWebp, jxlPreviewBytes }) => ({
       webp: `${prefix}${webp}.webp`,
       jxl: `${prefix}${jxl}.jxl`,
+      ...(thumbnailWebp && { thumbnailWebp: `${prefix}${thumbnailWebp}.webp` as const }),
+      ...(jxlPreviewBytes !== undefined && { jxlPreviewBytes }),
     })),
   };
 }

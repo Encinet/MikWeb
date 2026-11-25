@@ -17,7 +17,8 @@ bun dev
 | 功能 | 配置 |
 |------|------|
 | 登录与账号 | `MIKWEB_AUTH_CLIENT_SECRET`，与 Mik Data 保持一致；`MIKDATA_AUTH_ORIGIN` 默认指向 `https://data.mcmik.top` |
-| 建筑投稿图片上传 | 复用登录配置。浏览器将图片最长边缩放至最多 3840 像素，再从同一份像素生成 WebP 和渐进式 JPEG XL。每张图的两个文件合计最多 4 MiB。MikWeb 使用 MikData 签发的两个签名原样上传。MikData 检查文件结构、尺寸和哈希后完成上传。预览优先 JPEG XL，浏览器不支持或加载失败时使用 WebP。 |
+| 建筑投稿图片上传 | 浏览器生成最长边 3840 像素以内的 WebP、渐进式 JXL 原图（合计最多 4 MiB），以及最长边 800 像素、最多 128 KiB 的 WebP 缩略图。MikWeb 将三个文件原样上传，MikData 校验后返回哈希和 JXL 封面的字节数。 |
+| 建筑封面和详情 | 支持 JXL 增量解码的浏览器在列表只取前段，打开详情后从同一位置续传。其他浏览器先显示小 WebP，进入详情后加载原图。已有图片缺少缩略图时，使用 Next.js 的图片缓存生成 640 像素预览。使用自定义图片域名时，将 `BUILDING_IMAGE_PUBLIC_BASE_URL` 配置为与 MikData 相同的公开地址。 |
 | 网页聊天 | `NEXT_PUBLIC_WEB_CHAT_PUBLIC_KEY`，取自 Mik 插件启动日志中的 `Web chat public key` |
 | 加入社区 | `MATRIX_JOIN_URL` 与 QQ 群入口；QQ 入群码还需配置 Cap 和两组独立的 TOTP 密钥。加入后绑定游戏账号即可入服 |
 

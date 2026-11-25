@@ -21,7 +21,11 @@ export async function createBuildingSubmissionImageDrafts(
   async function encodeCanvas(context: CanvasRenderingContext2D, tryLossless: boolean) {
     worker ??= new Worker(new URL('../worker/encode-building-image.worker.ts', import.meta.url));
     const { width, height } = context.canvas;
-    return encodeInWorker(worker, context.getImageData(0, 0, width, height), tryLossless, signal);
+    const scale = Math.min(1, BUILDING_SUBMISSION_IMAGE_LIMITS.thumbnailDimension / Math.max(width, height));
+    const small = drawResizedImage(context.canvas, Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale)));
+    const thumbnail = small.getImageData(0, 0, small.canvas.width, small.canvas.height);
+    small.canvas.width = 0;
+    return encodeInWorker(worker, context.getImageData(0, 0, width, height), thumbnail, tryLossless, signal);
   }
 
   try {
@@ -41,7 +45,7 @@ export async function createBuildingSubmissionImageDrafts(
         },
         width,
         height,
-        size: files.webp.size + files.jxl.size,
+        size: files.webp.size + files.jxl.size + (files.thumbnailWebp?.size ?? 0),
       });
     }
     return drafts;
@@ -58,7 +62,7 @@ export function releaseBuildingImagePreview({ preview }: BuildingSubmissionImage
   URL.revokeObjectURL(preview.jxl);
 }
 
-type EncodedImage = BuildingImagePair<ArrayBuffer>;
+type EncodedImage = BuildingImagePair<ArrayBuffer> & { thumbnailWebp: ArrayBuffer };
 
 async function findPreparedSource(
   source: File,
@@ -136,6 +140,7 @@ async function prepareImage(
       files: {
         webp: new File([encoded.webp], 'building.webp', { type: 'image/webp' }),
         jxl: new File([encoded.jxl], 'building.jxl', { type: 'image/jxl' }),
+        thumbnailWebp: new File([encoded.thumbnailWebp], 'thumbnail.webp', { type: 'image/webp' }),
       },
       width: context.canvas.width,
       height: context.canvas.height,
@@ -159,6 +164,7 @@ function drawResizedImage(source: ImageBitmap | HTMLCanvasElement, width: number
 function encodeInWorker(
   worker: Worker,
   pixels: ImageData,
+  thumbnail: ImageData,
   tryLossless: boolean,
   signal: AbortSignal,
 ) {
@@ -177,7 +183,7 @@ function encodeInWorker(
       },
       options,
     );
-    worker.postMessage({ pixels, tryLossless }, [pixels.data.buffer]);
+    worker.postMessage({ pixels, thumbnail, tryLossless }, [pixels.data.buffer, thumbnail.data.buffer]);
   }).finally(() => listeners.abort());
 }
 
@@ -221,6 +227,7 @@ async function uploadImage(
   const formData = new FormData();
   formData.set('webp', files.webp);
   formData.set('jxl', files.jxl);
+  if (files.thumbnailWebp) formData.set('thumbnailWebp', files.thumbnailWebp);
   const response = await fetch('/api/account/images/upload', {
     method: 'POST',
     headers: { 'X-Building-Draft': draftKey, 'X-Upload-Request': requestKey },

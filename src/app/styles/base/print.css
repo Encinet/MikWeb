@@ -498,7 +498,7 @@
     transform: none !important;
   }
 
-  .building-archive-stage-image img {
+  .building-archive-stage-image :is(img, canvas) {
     position: static !important;
     width: 100% !important;
     height: 100% !important;

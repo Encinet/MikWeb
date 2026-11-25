@@ -15,7 +15,7 @@ import { useId, ViewTransition } from 'react';
 import { MAX_IMAGE_SCALE } from '@/modules/building/lib/building-image-transform';
 import type { BuildingGalleryState } from '@/modules/building/model/use-building-gallery';
 import { useBuildingImageZoom } from '@/modules/building/model/use-building-image-zoom';
-import { BuildingPicture } from '@/modules/building/ui/building-picture';
+import { BuildingDetailPicture } from '@/modules/building/ui/building-detail-picture';
 import { LoadingState } from '@/shared/ui/feedback/loading-state';
 
 export function BuildingGalleryViewer({
@@ -71,7 +71,7 @@ export function BuildingGalleryViewer({
           >
             <div
               ref={zoom.transformRef}
-              key={activeImage?.webp ?? 'empty'}
+              key={activeImage ? activeImage.webp + activeImage.jxl : 'empty'}
               className="building-archive-stage-image"
               data-smooth-zoom={zoom.smooth || undefined}
               style={{ transform: `translate3d(${x}px, ${y}px, 0px) scale(${scale})` }}
@@ -83,16 +83,11 @@ export function BuildingGalleryViewer({
                       <LoadingState message={commonT('states.loading')} />
                     </div>
                   ) : null}
-                  <BuildingPicture
-                    ref={zoom.imageRef}
+                  <BuildingDetailPicture
+                    imageRef={zoom.imageRef}
+                    canvasRef={zoom.canvasRef}
                     image={activeImage}
                     alt={name}
-                    fill
-                    className="object-contain"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="auto"
-                    draggable={false}
                     onLoad={() => handleImageLoad(activeImage)}
                     onError={() => handleImageError(activeImage)}
                   />

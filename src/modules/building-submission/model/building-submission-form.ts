@@ -16,7 +16,7 @@ export interface BuildingSubmissionTagDraft {
 export interface BuildingSubmissionImageDraft {
   id: string;
   source: File;
-  files: { webp: File; jxl: File };
+  files: { webp: File; jxl: File; thumbnailWebp?: File };
   preview: BuildingImageUrls;
   width: number;
   height: number;

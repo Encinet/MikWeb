@@ -19,4 +19,6 @@ export const BUILDING_SUBMISSION_IMAGE_LIMITS = {
   maxDimension: 3840,
   maxBytes: 4 * 1024 * 1024,
   webpQuality: 92,
+  thumbnailDimension: 800,
+  thumbnailBytes: 128 * 1024,
 } as const;

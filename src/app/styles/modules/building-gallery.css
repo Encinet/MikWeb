@@ -367,7 +367,7 @@ html[data-building-gallery-mode="page"] :is(.project-navbar-shell, .site-footer)
   transform-origin: center;
 }
 
-.building-archive-stage-image img {
+.building-archive-stage-image :is(img, canvas) {
   pointer-events: none;
 }
 
@@ -417,6 +417,10 @@ html[data-building-gallery-mode="page"] :is(.project-navbar-shell, .site-footer)
   display: grid;
   place-items: center;
   pointer-events: none;
+}
+
+.building-archive-stage-image:has([data-preview-visible]) .building-archive-stage-loader {
+  visibility: hidden;
 }
 
 .building-archive-nav {

@@ -10,7 +10,8 @@ import {
   isLocalizedBuildingCatalogResponse,
   resolveBuildingCatalog,
 } from '@/modules/building/model/building-api';
-import { BuildingPicture } from '@/modules/building/ui/building-picture';
+import { prepareBuildingPreview } from '@/modules/building/lib/building-image-preview';
+import { BuildingCover } from '@/modules/building/ui/building-cover';
 import {
   HOME_BUILDING_LIMIT,
   type HomeBuildingPreview,
@@ -63,17 +64,17 @@ export function HomeBuildingUpdates({
               <Link
                 key={building.id}
                 href={getBuildingPath(building.id)}
+                onNavigate={() => { if (cover) prepareBuildingPreview(cover); }}
                 scroll={false}
                 className="home-building-preview"
                 aria-label={t('open', { name: building.name })}
               >
                 <span className="home-building-preview__image">
                   {cover ? (
-                    <BuildingPicture
+                    <BuildingCover
+                      key={cover.jxl}
                       image={cover}
-                      fill
                       alt=""
-                      className="object-cover"
                       onError={() => setImageErrors((previous) => [...previous, cover.webp])}
                     />
                   ) : (
