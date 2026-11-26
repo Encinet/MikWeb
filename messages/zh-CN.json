@@ -580,7 +580,8 @@
     },
     "errors": {
       "default": "聊天暂时不可用，请稍后重试。",
-      "webtransport_required": "此浏览器缺少 WebTransport，请使用支持 HTTP/3 WebTransport 的浏览器进入聊天。",
+      "websocket_required": "网页聊天需要浏览器支持安全 WebSocket 和 Web Crypto。",
+      "chat_key_unconfigured": "网页聊天的加密公钥未配置或无效。",
       "connection_failed": "聊天连接失败。",
       "chat_unavailable": "聊天服务暂时不可用。",
       "auth_upstream_unavailable": "登录验证暂时不可用。",

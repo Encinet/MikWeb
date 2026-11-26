@@ -210,7 +210,7 @@ export class ChatHistoryRequests {
           ? cause.message
           : 'history_unavailable';
     } finally {
-      // FIN arrives after every server-side admission in this batch, even across variable RTTs.
+      // The completion record arrives after every server-side admission in this batch, even across variable RTTs.
       credit.expires = this.now() + 1000;
       if (this.jobs.has(job)) this.end(job, error);
       else this.pump();

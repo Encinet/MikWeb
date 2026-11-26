@@ -1,191 +1,158 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { afterEach, test } from 'node:test';
+import { Aes256Gcm, CipherSuite, DhkemP256HkdfSha256, HkdfSha256 } from '@hpke/core';
 
-import { MAX_CHAT_BYTES } from '@/modules/chat/lib/connection/chat-compression';
-import { chatRecords, encodeChatRecord } from '@/modules/chat/lib/connection/chat-stream';
+import { ChatTransport } from '@/modules/chat/lib/connection/chat-transport';
+import { CHAT_PROTOCOL_VERSION, CHAT_TRANSPORT_URL } from '@/shared/config/service-config';
 
-async function records(chunks: Uint8Array[]) {
-  const stream = new ReadableStream<Uint8Array>({
-    start(controller) {
-      for (const chunk of chunks) controller.enqueue(chunk);
-      controller.close();
-    },
-  });
-  const output = [];
-  for await (const record of chatRecords(stream)) output.push([...record]);
-  return output;
+const websocket = Object.getOwnPropertyDescriptor(globalThis, 'WebSocket')!;
+const location = Object.getOwnPropertyDescriptor(globalThis, 'location');
+const origin = 'https://mcmik.top';
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+const suite = new CipherSuite({
+  kem: new DhkemP256HkdfSha256(),
+  kdf: new HkdfSha256(),
+  aead: new Aes256Gcm(),
+});
+const id = 'a'.repeat(32);
+
+class Socket {
+  static instance: Socket;
+  binaryType = 'blob';
+  protocol = CHAT_PROTOCOL_VERSION;
+  bufferedAmount = 0;
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  onclose: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  writes: Uint8Array<ArrayBuffer>[] = [];
+  private changed = Promise.withResolvers<void>();
+
+  constructor(readonly url: string, readonly version: string) {
+    Socket.instance = this;
+  }
+
+  async next() {
+    while (!this.writes.length) await this.changed.promise;
+    return this.writes.shift()!;
+  }
+
+  send(value: ArrayBuffer | Uint8Array<ArrayBuffer>) {
+    this.writes.push(value instanceof ArrayBuffer ? new Uint8Array(value) : value);
+    this.changed.resolve();
+    this.changed = Promise.withResolvers();
+  }
+
+  receive(data: string | ArrayBuffer) {
+    this.onmessage?.(new MessageEvent('message', { data }));
+  }
+
+  close() {}
 }
 
-test('frames survive every split across a length, a UTF-8 body or the next record', async () => {
-  const body = new TextEncoder().encode('消息 🌍');
-  const first = encodeChatRecord(0, body);
-  const second = encodeChatRecord(1, Uint8Array.of(5));
-  const joined = new Uint8Array([...first, ...second]);
-  for (let split = 0; split <= joined.length; ++split) {
-    assert.deepEqual(await records([joined.subarray(0, split), joined.subarray(split)]), [
-      [0, ...body],
-      [1, 5],
-    ]);
-  }
-});
+function encode(bytes: ArrayBuffer) {
+  return Buffer.from(bytes).toString('base64url');
+}
 
-test('rejects incomplete and oversized stream records before dispatch', async () => {
-  const frame = encodeChatRecord(0, Uint8Array.of(5));
-  for (let size = 1; size < frame.length; ++size)
-    await assert.rejects(records([frame.subarray(0, size)]), /truncated_record/);
-  for (const size of [0, 1, MAX_CHAT_BYTES + 2, 0xffffffff]) {
-    const header = new Uint8Array(4);
-    new DataView(header.buffer).setUint32(0, size);
-    await assert.rejects(records([header]), /invalid_record_length/);
-  }
-});
+function record(kind: number, body: unknown, exchange?: number) {
+  const bytes = body === undefined ? new Uint8Array() : encoder.encode(JSON.stringify(body));
+  const prefix = exchange === undefined ? 1 : 5;
+  const frame = new Uint8Array(prefix + bytes.length);
+  frame[0] = kind;
+  if (exchange !== undefined) new DataView(frame.buffer).setUint32(1, exchange);
+  frame.set(bytes, prefix);
+  return frame;
+}
 
-test('a server-initiated live stream proves possession once and survives FIN, reset and cancellation of history streams', async () => {
-  const { ChatTransport } = await import('@/modules/chat/lib/connection/chat-transport');
-  const { CHAT_TRANSPORT_URL } = await import('@/shared/config/service-config');
-  const encoder = new TextEncoder();
-  const origin = 'https://example.test';
-  const location = Object.getOwnPropertyDescriptor(globalThis, 'location');
-  const transport = Object.getOwnPropertyDescriptor(globalThis, 'WebTransport');
-  const opened = Promise.withResolvers<void>();
-  const authorized = Promise.withResolvers<void>();
-  const stream = () => {
-    const finished = Promise.withResolvers<void>();
-    const cancelled = Promise.withResolvers<void>();
-    const writes: Uint8Array[] = [];
-    let input!: ReadableStreamDefaultController<Uint8Array>;
-    const readable = new ReadableStream<Uint8Array>({
-      start(controller) {
-        input = controller;
-      },
-      cancel() {
-        cancelled.resolve();
-      },
-    });
-    const writable = new WritableStream<Uint8Array>({
-      write(chunk) {
-        writes.push(chunk);
-      },
-      close() {
-        finished.resolve();
-      },
-    });
-    return {
-      readable,
-      writable,
-      writes,
-      finished,
-      cancelled,
-      input,
-      send(event: unknown) {
-        input.enqueue(encodeChatRecord(0, encoder.encode(JSON.stringify(event))));
-      },
-    };
-  };
-  const live = stream();
-  const histories: ReturnType<typeof stream>[] = [];
-  const closed = Promise.withResolvers<void>();
-  let created = Promise.withResolvers<void>();
-  const incoming = new ReadableStream({
-    start(controller) {
-      controller.enqueue(live);
-    },
-  });
-  class Connection {
-    ready = Promise.resolve();
-    closed = closed.promise;
-    incomingBidirectionalStreams = incoming;
-    createBidirectionalStream() {
-      const history = stream();
-      histories.push(history);
-      created.resolve();
-      return Promise.resolve(history);
-    }
-    close() {
-      closed.resolve();
-    }
-  }
-  Object.defineProperty(globalThis, 'WebTransport', { configurable: true, value: Connection });
+async function connect() {
+  Object.defineProperty(globalThis, 'WebSocket', { configurable: true, value: Socket });
   Object.defineProperty(globalThis, 'location', { configurable: true, value: { origin } });
-  const client = new ChatTransport();
+  const identity = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']);
+  const trust = encode(await crypto.subtle.exportKey('raw', identity.publicKey));
+  const server = await suite.kem.generateKeyPair();
+  const serverKey = encode(await suite.kem.serializePublicKey(server.publicKey));
+  const context = [CHAT_PROTOCOL_VERSION, new URL(CHAT_TRANSPORT_URL).pathname, origin, id, serverKey].join('\0');
+  const signature = encode(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, identity.privateKey, encoder.encode(context)));
+  const transport = new ChatTransport(trust);
+  const socket = Socket.instance;
+  const announce = () => socket.receive(JSON.stringify({ type: 'hello', connectionId: id, serverKey, signature }));
+  return { transport, socket, announce, context, server, serverKey, signature };
+}
+
+afterEach(() => {
+  Object.defineProperty(globalThis, 'WebSocket', websocket);
+  if (location) Object.defineProperty(globalThis, 'location', location);
+  else Reflect.deleteProperty(globalThis, 'location');
+});
+
+test('authenticates both directions and multiplexes cancellable history with live traffic', async () => {
+  const { transport, socket, announce, context, server } = await connect();
+  const ready = Promise.withResolvers<void>();
+  const events: unknown[] = [];
+  transport.onmessage = (event) => {
+    events.push(event);
+    if (events.length === 2) ready.resolve();
+  };
   try {
-    client.onmessage = (event) => {
-      if ((event as { type: string }).type === 'hello') opened.resolve();
-      if ((event as { type: string }).type === 'authorized') authorized.resolve();
-    };
-    const connectionId = 'a'.repeat(32);
-    live.send({ type: 'hello', connectionId });
-    await opened.promise;
-    assert.equal(histories.length, 0);
-    assert.equal(live.writes.length, 1);
-    const proof = Uint8Array.from(live.writes[0]);
-    assert.equal(proof.length, 65);
-    const publicKey = await crypto.subtle.importKey(
-      'raw',
-      Uint8Array.fromBase64(client.authorizationKey, { alphabet: 'base64url' }),
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      false,
-      ['verify'],
-    );
-    const context = [new URL(CHAT_TRANSPORT_URL).pathname, origin, connectionId, proof[0]].join(
-      '\0',
-    );
-    assert.ok(
-      await crypto.subtle.verify(
-        { name: 'ECDSA', hash: 'SHA-256' },
-        publicKey,
-        proof.subarray(1),
-        encoder.encode(context),
-      ),
-    );
-    live.send({ type: 'authorized' });
-    await authorized.promise;
+    assert.equal(socket.url, CHAT_TRANSPORT_URL);
+    assert.equal(socket.version, CHAT_PROTOCOL_VERSION);
+    assert.equal(socket.binaryType, 'arraybuffer');
+    announce();
+    const proof = await socket.next();
+    const client = await suite.kem.deserializePublicKey(proof.slice(0, 65));
+    const incoming = await suite.createRecipientContext({
+      recipientKey: server, senderPublicKey: client, enc: proof.slice(65, 130), info: encoder.encode(context + '\0client'),
+    });
+    assert.ok([0, 1].includes(new Uint8Array(await incoming.open(proof.slice(130)))[0]));
+    assert.equal(transport.authorizationKey, encode(proof.slice(0, 65).buffer));
+    const outgoing = await suite.createSenderContext({
+      recipientPublicKey: client, senderKey: server, info: encoder.encode(context + '\0server'),
+    });
+    socket.receive(outgoing.enc);
+    const deliver = async (frame: Uint8Array<ArrayBuffer>) => socket.receive(await outgoing.seal(frame));
+    await deliver(record(0, { type: 'authorized' }));
+    await ready.promise;
+    assert.deepEqual(events, [{ type: 'hello', connectionId: id }, { type: 'authorized' }]);
+
     const replies: unknown[] = [];
-    for (const ending of ['fin', 'reset', 'cancel'] as const) {
-      created = Promise.withResolvers<void>();
-      const cancel = new AbortController();
-      const request = {
-        type: 'history',
-        requestId: crypto.randomUUID(),
-        channel: 'public',
-      } as const;
-      const result = client.history(request, cancel.signal, (event) => replies.push(event));
-      await created.promise;
-      const history = histories.at(-1)!;
-      await history.finished.promise;
-      assert.equal(history.writes.length, 1);
-      assert.deepEqual(
-        JSON.parse(new TextDecoder().decode(history.writes[0].subarray(5))),
-        request,
-      );
-      if (ending === 'fin') {
-        history.send({ type: 'historyCurrent', requestId: request.requestId });
-        history.input.close();
-        await result;
-      } else if (ending === 'reset') {
-        history.input.error(new Error('reset'));
-        await assert.rejects(result, /reset/);
-      } else {
-        cancel.abort();
-        await Promise.all([assert.rejects(result), history.cancelled.promise]);
-      }
-      assert.equal(client.readyState, 'open');
-    }
-    assert.equal(histories.length, 3);
-    assert.equal(replies.length, 1);
-    const ended = Promise.withResolvers<void>();
-    client.onclose = ended.resolve;
-    live.input.close();
-    await ended.promise;
-    assert.equal(client.readyState, 'closed');
+    const cancel = new AbortController();
+    const first = transport.history({ type: 'history', requestId: 'one', channel: 'public' }, cancel.signal, () => {
+      throw new Error('Cancelled history delivered a response');
+    });
+    const result = first.catch((e: Error) => e.message);
+    const second = transport.history(
+      { type: 'history', requestId: 'two', channel: 'private' }, new AbortController().signal,
+      (event) => replies.push(event),
+    );
+    const a = new Uint8Array(await incoming.open(await socket.next()));
+    const b = new Uint8Array(await incoming.open(await socket.next()));
+    assert.deepEqual([...a.slice(0, 5)], [2, 0, 0, 0, 1]);
+    assert.deepEqual([...b.slice(0, 5)], [2, 0, 0, 0, 2]);
+    assert.equal(JSON.parse(decoder.decode(b.subarray(5))).requestId, 'two');
+
+    cancel.abort(new Error('cancelled'));
+    assert.equal(await result, 'cancelled');
+    assert.deepEqual([...new Uint8Array(await incoming.open(await socket.next()))], [5, 0, 0, 0, 1]);
+    await deliver(record(2, { type: 'history', requestId: 'one' }, 1));
+    await deliver(record(0, { type: 'presence', players: [] }));
+    await deliver(record(2, { type: 'history', requestId: 'two' }, 2));
+    await deliver(record(4, undefined, 2));
+    await second;
+    assert.deepEqual(replies, [{ type: 'history', requestId: 'two' }]);
+    assert.deepEqual(events[2], { type: 'presence', players: [] });
   } finally {
-    client.close();
-    for (const [key, previous] of [
-      ['WebTransport', transport],
-      ['location', location],
-    ] as const) {
-      if (previous) Object.defineProperty(globalThis, key, previous);
-      else Reflect.deleteProperty(globalThis, key);
-    }
+    transport.close();
   }
+});
+
+test('rejects a forged server hello before exposing the browser key', async () => {
+  const { transport, socket, serverKey, signature } = await connect();
+  const failed = Promise.withResolvers<string>();
+  transport.onerror = failed.resolve;
+  socket.receive(JSON.stringify({
+    type: 'hello', connectionId: 'b'.repeat(32), serverKey, signature,
+  }));
+  assert.equal(await failed.promise, 'protocol');
+  assert.deepEqual(socket.writes, []);
+  assert.equal(transport.authorizationKey, '');
 });

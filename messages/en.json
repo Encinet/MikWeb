@@ -580,7 +580,8 @@
     },
     "errors": {
       "default": "Chat is unavailable. Please try again later.",
-      "webtransport_required": "This browser needs WebTransport to connect to chat. Use a browser that supports HTTP/3 WebTransport.",
+      "websocket_required": "This browser needs secure WebSocket and Web Crypto support for chat.",
+      "chat_key_unconfigured": "The chat encryption key is missing or invalid.",
       "connection_failed": "Chat connection failed.",
       "chat_unavailable": "Chat is temporarily unavailable.",
       "auth_upstream_unavailable": "Account verification is unavailable.",

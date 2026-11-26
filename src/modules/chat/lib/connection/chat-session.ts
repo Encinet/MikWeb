@@ -1,6 +1,6 @@
 import type { ChatAuthorizationResult } from '@/modules/chat/lib/connection/chat-authorization';
 import { authorizeChat } from '@/modules/chat/lib/connection/chat-authorization';
-import { ChatTransport, UnsupportedChatTransport } from '@/modules/chat/lib/connection/chat-transport';
+import { ChatTransport, UnconfiguredChatTransport, UnsupportedChatTransport } from '@/modules/chat/lib/connection/chat-transport';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
 import { isTerminalChatClose } from '@/modules/chat/model/chat-connection';
 import type { ChatSendResult } from '@/modules/chat/model/chat-delivery';
@@ -303,7 +303,7 @@ export class ChatSession {
       transport = this.environment.createTransport();
     } catch (error) {
       this.wanted = false;
-      this.update({ status: 'error', error: error instanceof UnsupportedChatTransport ? 'webtransport_required' : 'connection_failed' });
+      this.update({ status: 'error', error: error instanceof UnsupportedChatTransport ? 'websocket_required' : error instanceof UnconfiguredChatTransport ? 'chat_key_unconfigured' : 'connection_failed' });
       return;
     }
     const connection: Connection = {
