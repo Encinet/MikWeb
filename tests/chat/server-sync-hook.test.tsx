@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import assert from 'node:assert/strict';
+import { HistoryStreams } from './history-stream-fixture';
 import { afterEach, beforeEach, test } from 'node:test';
 import { act } from 'react';
 import { AuthStateContext } from '@/modules/auth/model/auth-state-context';
@@ -23,19 +24,40 @@ class Socket implements ChatSessionTransport {
   onmessage: ChatSessionTransport['onmessage'] = null;
   onclose: ChatSessionTransport['onclose'] = null;
   onerror: ChatSessionTransport['onerror'] = null;
-  readyState: number = WebSocket.OPEN;
+  readyState: ChatSessionTransport['readyState'] = 'open';
   bufferedAmount = 0;
   authorizationKey = 'test-key';
   constructor(readonly server: Server) {}
-  send(json: string) {
-    this.server.request(this, JSON.parse(json));
+  send(request: Parameters<ChatSessionTransport['send']>[0]) {
+    if (request.type === 'send') this.server.request(this, request);
+    else {
+      const items: { requestId: string; messageId: string }[] = [];
+      for (const { message } of this.server.rows) {
+        if (message.kind === 'user' && message.sender.playerUuid === OWNER &&
+            message.requestId && request.requestIds.includes(message.requestId)) {
+          items.push({ requestId: message.requestId, messageId: message.id });
+        }
+      }
+      queueMicrotask(() => this.receive({ type: 'receipts', items }));
+    }
+  }
+  private streams = new HistoryStreams();
+  history(...[request, signal, receive]: Parameters<ChatSessionTransport['history']>) {
+    return this.streams.run(request, signal, receive, () => {
+      if (request.type === 'resume') {
+        for (const channel of ['public', 'private', 'staff'] as const) {
+          const since = request.positions[channel];
+          if (since) this.server.request(this, { type: 'history', requestId: request.requestId + '-' + channel, channel, since });
+        }
+      } else this.server.request(this, request);
+    });
   }
   receive(event: unknown) {
-    this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(event) }));
+    if (!this.streams.receive(event)) this.onmessage?.(event);
   }
   close() {
-    if (this.readyState === WebSocket.CLOSED) return;
-    this.readyState = WebSocket.CLOSED;
+    if (this.readyState === 'closed') return;
+    this.readyState = 'closed';
     this.onclose?.();
   }
 }
@@ -65,10 +87,8 @@ class Server {
         socket.receive({
           type: 'authorized',
           playerUuid: OWNER,
-          name: 'Owner',
           staff: this.staff,
-          expiresAt: Date.now() + 60_000,
-          history: true,
+          validForMs: 60_000,
         });
         socket.receive({ type: 'presence', players: [], staffPlayers: [] });
       });
@@ -341,7 +361,7 @@ test('a new staff grant backfills staff history and revocation clears it from me
   );
   await act(async () => {
     server.staff = true;
-    server.sockets.at(-1)?.receive({ type: 'permissions', staff: true });
+    server.sockets.at(-1)?.receive({ type: 'lease', validForMs: 60_000, staff: true });
   });
   await until(
     () =>
@@ -350,7 +370,7 @@ test('a new staff grant backfills staff history and revocation clears it from me
   );
   await act(async () => {
     server.staff = false;
-    server.sockets.at(-1)?.receive({ type: 'permissions', staff: false });
+    server.sockets.at(-1)?.receive({ type: 'lease', validForMs: 60_000, staff: false });
   });
   assert.equal(
     state().messages.some((record) => record.channel === 'staff'),
@@ -456,4 +476,95 @@ test('unavailable browser storage keeps live chat and history synchronization us
   } finally {
     indexedDB.open = open;
   }
+});
+
+test('renewing an unchanged lease keeps history quiet; a backend visibility change catches up', async () => {
+  server.hold = false;
+  await mount();
+  await until(complete);
+  const count = server.requests.length;
+  await act(async () => {
+    server.sockets[0].receive({ type: 'lease', validForMs: 60_000 });
+  });
+  assert.equal(server.requests.length, count);
+  server.add(message({id:'recovered', createdAt:Date.now()}));
+  await act(async () => server.sockets[0].receive({type:'historyChanged'}));
+  await until(() => complete() && state().messages.some(record => record.id === 'recovered'));
+  assert.ok(server.requests.length > count);
+});
+
+test('a reload requests only offline messages after committed live progress', async () => {
+  server.hold = false;
+  await mount();
+  await until(complete);
+  const lease = state().historyLease;
+  assert.ok(lease);
+  const from = (await loadHistory(lease)).syncPositions.public?.checkpoint;
+  assert.ok(from);
+  const socket = server.sockets[0];
+  let to = '';
+  await act(async () => {
+    for (let n = 0; n < 32; n++) {
+      server.add(message({ id: 'live-' + n }));
+      socket.receive({ type: 'message', message: server.rows.at(-1)?.message });
+    }
+    to = server.token({ head: server.rows.length, after: server.rows.length, before: Number.MAX_SAFE_INTEGER });
+    socket.receive({ type: 'checkpoint', channel: 'public', from, to });
+  });
+  await act(async () => {
+    let saved = await loadHistory(lease);
+    for (let n = 0; n < 50 && saved.syncPositions.public?.checkpoint !== to; n++)
+      saved = await loadHistory(lease);
+    assert.equal(saved.syncPositions.public?.checkpoint, to);
+    assert.equal(saved.messages.filter(row => row.id.startsWith('live-')).length, 32);
+  });
+  await browser.close();
+  for (let n = 0; n < 3; n++) server.add(message({ id: 'missed-' + n }));
+  const start = server.requests.length;
+  browser = createBrowserEnvironment();
+  current = null;
+  await mount();
+  await until(complete);
+  assert.deepEqual(server.requests.slice(start).filter(q => q.channel === 'public').map(q => q.since), [to]);
+  assert.equal(state().serverHistory.public.count, 3);
+});
+
+test('channel-scoped gaps during a history read trigger one more catchup and leave quiet channels alone', async () => {
+  server.hold = false;
+  await mount();
+  await until(complete);
+  const count = server.requests.length;
+  server.hold = true;
+  await act(async () => server.sockets[0].receive({ type: 'historyChanged', channels: ['public'] }));
+  await until(() => server.pending.length === 1);
+  server.add(message({ id: 'after-first-gap', createdAt: Date.now() }));
+  await act(async () => {
+    for (let i = 0; i < 3; i++)
+      server.sockets[0].receive({ type: 'historyChanged', channels: ['public'] });
+    server.release();
+  });
+  await until(() => complete() && state().messages.some(row => row.id === 'after-first-gap'));
+  assert.deepEqual(server.requests.slice(count).map(query => query.channel), ['public', 'public']);
+});
+
+
+test('a committed private send recovers its receipt and then merges its historical echo into one row', async () => {
+  server.hold = false;
+  await mount();
+  await until(complete);
+  const first = server.sockets[0];
+  await act(async () => {
+    first.receive({ type: 'presence', players: [{ playerUuid: PEER, name: 'Alex', game: true, webConnections: 0 }], staffPlayers: [] });
+    assert.ok(state().send({ channel: 'private', targetUuid: PEER, name: 'Alex' }, 'ack lost'));
+  });
+  const sent = server.sends.at(-1)!;
+  server.add(message({ id: 'committed-private', channel: 'private', sender: player(OWNER), targetUuid: PEER,
+    source: { kind: 'web' }, requestId: sent.requestId }));
+  server.hold = true;
+  await act(async () => first.close());
+  await until(() => state().pending.some(item => item.messageId === 'committed-private' && item.status === 'accepted'));
+  assert.equal(server.sends.length, 1);
+  await act(async () => server.release());
+  await until(() => complete() && !state().pending.length);
+  assert.equal(state().messages.filter(record => record.id === 'committed-private').length, 1);
 });

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ChatDestination } from '@/modules/chat/model/chat-destination';
+import { isRecord } from '@/shared/lib/is-record';
 
 export const CHAT_MESSAGE_MAX_LENGTH = 256;
 
@@ -189,40 +190,98 @@ const presenceSchema = z.object({
   staffPlayers: z.array(uuid).max(512),
 });
 
-export const chatServerEventSchema = z.discriminatedUnion('type', [
+// Expand only the wire representation. All derived fields go through the normal message validators.
+function expandMessage(value: unknown, channel?: unknown) {
+  if (!isRecord(value)) return value;
+  const message = channel !== undefined && !('channel' in value) ? { ...value, channel } : value;
+  if (message.kind === 'user') {
+    const sender = message.sender;
+    if (isRecord(sender) && !('id' in sender) && !('name' in sender) &&
+        isRecord(message.source) && (message.source.kind === 'game' || message.source.kind === 'web'))
+      return { mentioned: false, ...message, sender: { ...sender, id: sender.playerUuid, name: sender.playerName } };
+    if (!('mentioned' in message)) return { ...message, mentioned: false };
+  }
+  if (message.kind === 'server' && typeof message.content === 'string' && isRecord(message.subject))
+    return {
+      ...message,
+      countsAsUnread: false,
+      content: { template: message.content, values: { name: message.subject.name } },
+    };
+  return message;
+}
+
+const historyChannels = z.array(z.enum(['public', 'private', 'staff'])).min(1).max(3)
+  .refine(channels => new Set(channels).size === channels.length);
+const receiptItem = z.object({
+  requestId: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
+  messageId: z.string().min(1).max(128),
+});
+
+const serverEvent = z.discriminatedUnion('type', [
   z.object({ type: z.literal('hello'), connectionId: z.string().regex(/^[A-Za-z0-9_-]{32}$/) }),
   z.object({
     type: z.literal('authorized'),
     playerUuid: uuid,
-    name,
     staff: z.boolean(),
-    expiresAt: z.number().int(),
-    history: z.boolean().optional(),
+    validForMs: z.number().int().min(0).max(60_000),
   }),
-  z.object({ type: z.literal('permissions'), staff: z.boolean() }),
-  z.object({ type: z.literal('reauthorize') }),
+  z.object({ type: z.literal('lease'), validForMs: z.number().int().min(0).max(60_000), staff: z.boolean().optional() }),
+  z.object({
+    type: z.literal('checkpoint'),
+    channel: z.enum(['public', 'private', 'staff']),
+    from: historyToken,
+    to: historyToken,
+  }),
+  z.object({ type: z.literal('historyChanged'), channels: historyChannels.optional() }),
+  z.object({
+    type: z.literal('presenceDelta'),
+    base: z.number().int().positive(),
+    revision: z.number().int().positive(),
+    upsert: z.array(z.object({index: z.number().int().min(0).max(511), player: peerSchema})).max(512),
+    remove: z.array(uuid).max(512),
+    staffPlayers: z.array(uuid).max(512).optional(),
+  }),
   z.object({
     type: z.literal('presence'),
     ...presenceSchema.shape,
+    revision: z.number().int().positive().optional(),
   }),
   z.object({ type: z.literal('message'), message: chatMessageSchema }),
+  z.object({
+    type: z.literal('historyCurrent'),
+    channels: historyChannels.optional(),
+    requestId: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
+  }),
   z.object({
     type: z.literal('history'),
     requestId: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
     channel: z.enum(['public', 'staff', 'private']),
     messages: z.array(chatMessageSchema).max(256),
-    checkpoint: historyToken,
+    checkpoint: historyToken.optional(),
     nextPage: historyToken.optional(),
+    aligned: z.literal(true).optional(),
     reset: z.boolean(),
-  }),
+  }).refine((page) => page.nextPage ? !page.aligned : Boolean(page.checkpoint) && !(page.reset && page.aligned)),
   z.object({
     type: z.literal('accepted'),
     requestId: z.string().max(64),
     messageId: z.string().max(128),
   }),
+  z.object({
+    type: z.literal('receipts'),
+    items: z.array(receiptItem).max(20).refine(items => new Set(items.map(item => item.requestId)).size === items.length),
+  }),
   z.object({ type: z.literal('error'), requestId: z.string().max(64), error: z.string().max(64) }),
   z.object({ type: z.literal('closed'), reason: z.string().max(64) }),
 ]);
+
+export const chatServerEventSchema = z.preprocess((event) => {
+  if (!isRecord(event)) return event;
+  if (event.type === 'message') return { ...event, message: expandMessage(event.message) };
+  if (event.type === 'history' && Array.isArray(event.messages) && event.messages.length <= 256)
+    return { ...event, messages: event.messages.map((message) => expandMessage(message, event.channel)) };
+  return event;
+}, serverEvent);
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
 export type ChatServerEvent = z.infer<typeof chatServerEventSchema>;

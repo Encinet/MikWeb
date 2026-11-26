@@ -5,12 +5,14 @@ export async function authorizeChat(
   connectionId: string,
   clientPublicKey: string,
   signal: AbortSignal,
+  chatScope?: string,
 ): Promise<ChatAuthorizationResult> {
-  const response = await fetch('/api/account/chat/authorize', {
+  const response = await fetch('/api/chat/connect', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ connectionId, clientPublicKey }),
+    body: JSON.stringify({ connectionId, clientPublicKey, chatScope }),
     cache: 'no-store',
+    redirect: 'error',
     signal,
   });
   if (response.ok) return { ok: true };

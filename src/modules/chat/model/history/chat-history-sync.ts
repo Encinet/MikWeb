@@ -22,10 +22,10 @@ export function advanceHistorySync(
   previous: HistorySyncPosition | undefined,
   page: Extract<ChatServerEvent, { type: 'history' }>,
 ): HistorySyncPosition {
-  return page.nextPage
-    ? {
-        ...(page.reset ? {} : previous?.checkpoint ? { checkpoint: previous.checkpoint } : {}),
-        page: page.nextPage,
-      }
-    : { checkpoint: page.checkpoint };
+  if (page.nextPage) return {
+    ...(!page.reset && previous?.checkpoint ? { checkpoint: previous.checkpoint } : {}),
+    page: page.nextPage,
+  };
+  if (!page.checkpoint) throw new Error('missing_history_checkpoint');
+  return { checkpoint: page.checkpoint };
 }

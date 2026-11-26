@@ -81,3 +81,18 @@ test('MCP routing sets the protocol CORS headers without running Proxy', async (
   assert.ok(headers.get('access-control-expose-headers')?.includes('Mcp-Session-Id'));
   assert.equal(headers.get('access-control-max-age'), '86400');
 });
+
+test('chat admission and signed-in identity go directly to MikData and anonymous chat uses the static response', async () => {
+  for (const [path, signedIn, target] of [
+    ['/api/chat/session', false, 'https://example.test/api/auth/guest.json'],
+    ['/api/chat/session', true, 'https://data.mcmik.top/chat/session'],
+    ['/api/chat/connect', true, 'https://data.mcmik.top/chat/connect'],
+  ] as const) {
+    const response = await unstable_getResponseFromNextConfig({
+      url: 'https://example.test' + path, nextConfig,
+      cookies: signedIn ? { [SESSION_COOKIE_NAME]: 'session' } : {},
+    });
+    assert.equal(getRewrittenUrl(response), target);
+    assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  }
+});

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, test } from 'node:test';
 import {
   clearHistoryThrough,
+  clearRevokedHistory,
+  currentHistoryLease,
   loadChatWorkspace,
   loadHistory,
   readHistoryBatch,
@@ -27,6 +29,8 @@ import { chatServerEventSchema } from '@/modules/chat/model/chat-protocol';
 import { messageCursor } from '@/modules/chat/model/chat-reading';
 import { emptyChatSearch } from '@/modules/chat/model/chat-search';
 import type { HistorySyncPosition } from '@/modules/chat/model/history/chat-history-sync';
+import { ChatLiveProgress } from '@/modules/chat/model/history/chat-live-progress';
+import { ChatHistoryRunner } from '@/modules/chat/model/history/chat-history-runner';
 import { advanceHistorySync } from '@/modules/chat/model/history/chat-history-sync';
 import { createBrowserEnvironment } from '../support/browser-environment';
 import { message, OWNER, order } from './fixtures';
@@ -64,6 +68,26 @@ test('opaque checkpoints advance only after the last page and reset drops an obs
     page: token('90'),
   });
   assert.equal(chatServerEventSchema.safeParse(page({ checkpoint: 'invalid' })).success, false);
+  assert.equal(chatServerEventSchema.safeParse(page({ nextPage: token('90'), checkpoint: undefined })).success, true);
+  assert.equal(chatServerEventSchema.safeParse(page({ checkpoint: undefined })).success, false);
+  assert.equal(chatServerEventSchema.safeParse(page({ nextPage: token('90'), aligned: true })).success, false);
+});
+
+test('only a final page covered by this subscription can skip the catch-up request', async () => {
+  for (const aligned of [true, undefined] as const) {
+    const requests: (HistorySyncPosition | undefined)[] = [];
+    const partial = { page: token('90') };
+    const replies = [page({ nextPage: partial.page, checkpoint: undefined }), page({ aligned }), page()];
+    await new ChatHistoryRunner({
+      current: () => true,
+      read: async (cursor) => { requests.push(cursor); return replies.shift()!; },
+      accept: (response) => response.messages,
+      commit: async () => 'saved',
+      reload: async () => undefined,
+      state: () => {}, advanced: () => {}, stale: () => {},
+    }).run();
+    assert.deepEqual(requests, aligned ? [undefined, partial] : [undefined, partial, position('150')]);
+  }
 });
 
 test('all pages persist while initial reads stay bounded and older records remain addressable', async () => {
@@ -359,4 +383,62 @@ test('paged archive search finds records outside memory and checks cancellation,
   assert.deepEqual((await searchChatHistory(query, () => false)).messages, []);
   await resetHistory(OWNER);
   assert.deepEqual((await searchChatHistory(query)).messages, []);
+});
+
+test('live checkpoints wait for disk and a failed write preserves the previous cursor', async () => {
+  const progress = new ChatLiveProgress();
+  let finish!: (saved: boolean) => void;
+  progress.track(new Promise(resolve => { finish = resolve; }));
+  let committed = false;
+  progress.checkpoint(async () => { committed = true; }, error => assert.fail(String(error)));
+  await Promise.resolve();
+  assert.equal(committed, false);
+  finish(false);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(committed, false);
+  assert.equal(await progress.needsCatchup(async () => 'first', 1), false);
+  assert.equal(await progress.needsCatchup(async () => 'second', 30_001), false);
+  assert.equal(await progress.needsCatchup(async () => 'second', 60_001), true);
+});
+
+test('unchanged checkpoints use a read-only transaction and still verify permissions, cursor and epoch', async () => {
+  const lease = await syncHistoryAccount(OWNER);
+  const sync = position('one');
+  await setStaffHistoryPermission(OWNER, true);
+  assert.equal(await saveHistorySync(lease, 'staff', [], undefined, sync, new Set()), 'saved');
+  const db = await openChatHistoryDatabase();
+  const transaction = db.transaction.bind(db);
+  const modes: (IDBTransactionMode | undefined)[] = [];
+  db.transaction = (stores, mode, options) => {
+    modes.push(mode);
+    return transaction(stores, mode, options);
+  };
+  try {
+    const unchanged = (at: HistorySyncPosition) => saveHistorySync(lease, 'staff', [], at, at, new Set());
+    assert.equal(await unchanged(sync), 'saved');
+    assert.equal(await unchanged(position('older')), 'conflict');
+    assert.deepEqual(modes, ['readonly', 'readonly']);
+    const next = position('two');
+    assert.equal(await saveHistorySync(lease, 'staff', [], sync, next, new Set()), 'saved');
+    assert.equal(await saveHistorySync(lease, 'staff', [], sync, next, new Set()), 'saved');
+    assert.equal(await unchanged(sync), 'conflict');
+    await setStaffHistoryPermission(OWNER, false);
+    assert.equal(await unchanged(sync), 'forbidden');
+    await resetHistory(OWNER);
+    assert.equal(await unchanged(sync), 'stale');
+  } finally {
+    db.transaction = transaction;
+  }
+});
+
+test('revocation clears the matching cache after disconnect and leaves a replacement epoch usable', async () => {
+  const old = await syncHistoryAccount(OWNER);
+  await saveHistorySync(old, 'public', [archived('old', 1)], undefined, position('one'), new Set());
+  await clearRevokedHistory(old);
+  assert.equal(await currentHistoryLease(OWNER), null);
+  const fresh = await syncHistoryAccount(OWNER);
+  assert.notEqual(fresh.epoch, old.epoch);
+  await saveHistorySync(fresh, 'public', [archived('fresh', 2)], undefined, position('two'), new Set());
+  await clearRevokedHistory(old);
+  assert.deepEqual((await loadHistory(fresh)).messages.map(row => row.id), ['fresh']);
 });

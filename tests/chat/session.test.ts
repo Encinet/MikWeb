@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { HistoryStreams } from './history-stream-fixture';
 import { test } from 'node:test';
 import type { ChatAuthorizationResult } from '@/modules/chat/lib/connection/chat-authorization';
 import { authorizeChat } from '@/modules/chat/lib/connection/chat-authorization';
@@ -37,18 +38,23 @@ class Transport implements ChatSessionTransport {
   onmessage: ChatSessionTransport['onmessage'] = null;
   onclose: ChatSessionTransport['onclose'] = null;
   onerror: ChatSessionTransport['onerror'] = null;
-  readyState: number = WebSocket.OPEN;
+  readyState: ChatSessionTransport['readyState'] = 'open';
   bufferedAmount = 0;
   authorizationKey = 'test-public-key';
   sent: string[] = [];
 
-  send(value: string) {
-    this.sent.push(value);
+  send(value: Parameters<ChatSessionTransport['send']>[0]) {
+    this.sent.push(JSON.stringify(value));
+  }
+
+  private streams = new HistoryStreams();
+  history(...[request, signal, receive]: Parameters<ChatSessionTransport['history']>) {
+    return this.streams.run(request, signal, receive, () => this.sent.push(JSON.stringify(request)));
   }
 
   close() {
-    if (this.readyState === WebSocket.CLOSED) return;
-    this.readyState = WebSocket.CLOSED;
+    if (this.readyState === 'closed') return;
+    this.readyState = 'closed';
     this.onclose?.();
   }
 
@@ -57,7 +63,7 @@ class Transport implements ChatSessionTransport {
       event && typeof event === 'object' && 'type' in event && event.type === 'history'
         ? { checkpoint: 'a'.repeat(91), reset: false, ...event }
         : event;
-    this.onmessage?.(new MessageEvent('message', { data: JSON.stringify(payload) }));
+    if (!this.streams.receive(payload)) this.onmessage?.(payload);
   }
 }
 
@@ -106,15 +112,13 @@ function harness(
     transport.receive({ type: 'hello', connectionId: 'a'.repeat(32) });
     return transport;
   };
-  const online = (staff = false, history = false) => {
+  const online = (staff = false) => {
     const transport = hello();
     transport.receive({
       type: 'authorized',
       playerUuid: OWNER,
-      name: 'Owner',
       staff,
-      expiresAt: clock.now + 60_000,
-      history,
+      validForMs: 60_000,
     });
     return transport;
   };
@@ -137,13 +141,13 @@ async function until(check: () => boolean) {
   assert.ok(check(), 'The asynchronous operation did not settle');
 }
 
-test('history requests are serialized and throttled while live traffic keeps its own path', async () => {
+test('history requests for distinct channels run independently while live traffic keeps its own path', async () => {
   const h = harness();
   h.session.retry();
-  const transport = h.online(true, true);
+  const transport = h.online(true);
   const first = h.session.readHistory({ channel: 'public' });
   const second = h.session.readHistory({ channel: 'private', targetUuid: PEER });
-  assert.equal(transport.sent.length, 1);
+  assert.equal(transport.sent.length, 2);
   const request = JSON.parse(transport.sent[0] ?? '{}');
   transport.receive({ type: 'message', message: message({ id: 'live' }) });
   transport.receive({
@@ -155,10 +159,6 @@ test('history requests are serialized and throttled while live traffic keeps its
   });
   assert.equal((await first).messages[0]?.id, 'old');
   assert.equal(h.events.filter(({ event }) => event.type === 'message').length, 1);
-  assert.equal(transport.sent.length, 1);
-  h.clock.advance(249);
-  assert.equal(transport.sent.length, 1);
-  h.clock.advance(1);
   assert.equal(transport.sent.length, 2);
   const next = JSON.parse(transport.sent[1] ?? '{}');
   assert.equal(next.targetUuid, PEER);
@@ -173,11 +173,34 @@ test('history requests are serialized and throttled while live traffic keeps its
   assert.equal(h.clock.timers.size, 0);
 });
 
+test('an empty delta reuses only the checkpoint from its matching incremental query', async () => {
+  const since = 'a'.repeat(91);
+  const page = 'b'.repeat(91);
+  for (const cursor of [{ since }, { page, since }, {}, { since: 'invalid' }]) {
+    const h = harness();
+    h.session.retry();
+    const transport = h.online(false);
+    const reading = h.session.readHistory({ channel: 'private', targetUuid: PEER, ...cursor });
+    const request = JSON.parse(transport.sent[0]);
+    assert.equal(request.since, cursor.page ? undefined : cursor.since);
+    transport.receive({ type: 'historyCurrent', requestId: request.requestId });
+    if (cursor.since === since && !cursor.page) {
+      assert.deepEqual(await reading, {
+        type: 'history', requestId: request.requestId, channel: 'private', messages: [], reset: false, checkpoint: since,
+      });
+    } else {
+      await assert.rejects(reading, /invalid_response/);
+      assert.equal(h.state().status, 'online');
+    }
+    h.session.stop();
+  }
+});
+
 test('bounded history pages accept 256 short messages and reject a larger page', async () => {
   for (const count of [256, 257]) {
     const h = harness();
     h.session.retry();
-    const transport = h.online(false, true);
+    const transport = h.online(false);
     const reading = h.session.readHistory({ channel: 'public' });
     const request = JSON.parse(transport.sent[0]);
     transport.receive({
@@ -198,14 +221,14 @@ test('history never exposes another private conversation or staff content after 
   for (const downgrade of [false, true]) {
     const h = harness();
     h.session.retry();
-    const transport = h.online(true, true);
+    const transport = h.online(true);
     const reading = h.session.readHistory({
       channel: downgrade ? 'staff' : 'private',
       targetUuid: downgrade ? undefined : PEER,
     });
-    const rejected = assert.rejects(reading, /connection_failed/);
+    const rejected = assert.rejects(reading, downgrade ? /staff_required/ : /invalid_response/);
     const request = JSON.parse(transport.sent[0] ?? '{}');
-    if (downgrade) transport.receive({ type: 'permissions', staff: false });
+    if (downgrade) transport.receive({ type: 'lease', validForMs: 60_000, staff: false });
     transport.receive({
       type: 'history',
       requestId: request.requestId,
@@ -219,7 +242,8 @@ test('history never exposes another private conversation or staff content after 
       ],
     });
     await rejected;
-    assert.equal(h.state().error, 'invalid_response');
+    if (downgrade) assert.deepEqual(h.session.access, {owner: OWNER, staff: false});
+    else assert.equal(h.state().status, 'online');
     h.session.stop();
   }
 });
@@ -227,7 +251,7 @@ test('history never exposes another private conversation or staff content after 
 test('history failures and late timed-out pages preserve the live connection and stopping cancels queued reads', async () => {
   const h = harness();
   h.session.retry();
-  const transport = h.online(false, true);
+  const transport = h.online(false);
   const reading = h.session.readHistory({ channel: 'public' });
   const rejected = assert.rejects(reading, /history_unavailable/);
   const request = JSON.parse(transport.sent[0] ?? '{}');
@@ -283,7 +307,7 @@ test('a late HTTP error body cannot stop a replacement chat connection', async (
     for (let i = 0; i < 10; i++) await Promise.resolve();
     assert.equal(h.state().status, 'online');
     assert.equal(h.transports.length, 2);
-    assert.equal(h.transports[1].readyState, WebSocket.OPEN);
+    assert.equal(h.transports[1].readyState, 'open');
     assert.equal(h.refreshes(), 0);
     assert.equal(h.session.send({ channel: 'public' }, 'Still here').ok, true);
   } finally {
@@ -371,11 +395,7 @@ test('disconnect recovery keeps one retry, invalidates old events and never rese
     assert.equal(h.transports.length, 2);
     assert.equal(guard(), false);
     const count = h.events.length;
-    lateMessage?.(
-      new MessageEvent('message', {
-        data: JSON.stringify({ type: 'message', message: message() }),
-      }),
-    );
+    lateMessage?.({ type: 'message', message: message() });
     assert.equal(h.events.length, count);
     h.clock.advance(1800);
     assert.equal(h.transports.length, 2);
@@ -449,7 +469,7 @@ test('stopping aborts authorization and cancels retries, watchdogs and outstandi
   assert.equal(authorizationSignal?.aborted, false);
   h.session.stop();
   assert.equal(authorizationSignal?.aborted, true);
-  assert.equal(transport.readyState, WebSocket.CLOSED);
+  assert.equal(transport.readyState, 'closed');
   assert.equal(h.clock.timers.size, 0);
   assert.equal(guard(), false);
   h.clock.advance(100_000);
@@ -458,27 +478,33 @@ test('stopping aborts authorization and cancels retries, watchdogs and outstandi
   assert.equal(h.disconnects(), 1);
 });
 
-test('renewal stays on the existing connection and replaces its authorization watchdog', async () => {
-  const h = harness();
+test('backend renewal updates permissions and expiry without another browser authorization', async () => {
+  let grants = 0;
+  const h = harness(async () => { grants++; return { ok: true }; });
   try {
     h.session.retry();
     const transport = h.online();
     await until(() => h.clock.timers.size === 1);
     h.clock.advance(45_000);
-    transport.receive({ type: 'reauthorize' });
+
     transport.receive({
-      type: 'authorized',
-      playerUuid: OWNER,
-      name: 'Owner',
+      type: 'lease',
       staff: true,
-      expiresAt: 105_000,
+      validForMs: 60_000,
     });
     await until(() => h.clock.timers.size === 1);
+    assert.equal(grants, 1);
     h.clock.advance(20_000);
     h.session.recover();
     assert.equal(h.transports.length, 1);
     assert.equal(h.state().status, 'online');
     assert.equal(h.session.send({ channel: 'staff' }, 'Authorized again').ok, true);
+    transport.receive({ type: 'lease', validForMs: 60_000 });
+    h.clock.advance(45_000);
+    h.session.recover();
+    assert.equal(h.state().status, 'online');
+    assert.equal(grants, 1);
+    assert.equal(h.transports.length, 1);
   } finally {
     h.session.stop();
   }
@@ -496,18 +522,17 @@ test('invalid traffic, mismatched identities and staff traffic after a downgrade
         h.transports[0].receive({
           type: 'authorized',
           playerUuid: OTHER,
-          name: 'Other',
           staff: false,
-          expiresAt: 60_000,
+          validForMs: 60_000,
         });
       } else {
         const transport = h.online(true);
-        transport.receive({ type: 'permissions', staff: false });
+        transport.receive({ type: 'lease', validForMs: 60_000, staff: false });
         transport.receive({ type: 'message', message: message({ channel: 'staff' }) });
       }
       assert.equal(h.state().status, 'error', scenario);
       assert.equal(h.session.access, null, scenario);
-      assert.equal(h.transports[0].readyState, WebSocket.CLOSED, scenario);
+      assert.equal(h.transports[0].readyState, 'closed', scenario);
       assert.equal(
         h.events.some(({ event }) => event.type === 'message'),
         false,
@@ -531,7 +556,7 @@ test('deferred message consumers lose access immediately when permissions or con
     transport.receive({ type: 'message', message: record });
     const current = h.events.at(-1)?.current;
     assert.deepEqual(h.session.accessFor(record), { owner: OWNER, staff: true });
-    transport.receive({ type: 'permissions', staff: false });
+    transport.receive({ type: 'lease', validForMs: 60_000, staff: false });
     assert.equal(current?.(), true);
     assert.equal(h.session.accessFor(record), null);
     assert.equal(
@@ -561,4 +586,191 @@ test('social authors flow through an authorized session without disconnecting or
   assert.equal(h.state().status, 'online');
   assert.equal(h.events.filter(({ event }) => event.type === 'message').length, 1);
   h.session.stop();
+});
+
+test('presence deltas retain server order and recover a missing revision through a fresh connection', () => {
+  const h = harness();
+  h.session.retry();
+  const transport = h.online(true);
+  const self = {playerUuid:OWNER,name:'Owner',game:false,webConnections:1};
+  const peer = {playerUuid:PEER,name:'é',game:true,webConnections:0};
+  transport.receive({type:'presence',players:[self,peer],staffPlayers:[PEER],revision:1});
+  transport.receive({type:'presenceDelta',base:1,revision:2,upsert:[{index:0,player:{...peer,name:'A'}}],remove:[]});
+  assert.deepEqual(h.events.at(-1)?.event, {type:'presence',players:[{...peer,name:'A'},self],staffPlayers:[PEER]});
+  transport.receive({type:'presenceDelta',base:2,revision:3,upsert:[],remove:[PEER],staffPlayers:[]});
+  assert.deepEqual(h.events.at(-1)?.event, {type:'presence',players:[self],staffPlayers:[]});
+  transport.receive({type:'presenceDelta',base:4,revision:5,upsert:[],remove:[]});
+  assert.equal(transport.readyState, 'closed');
+  assert.equal(h.state().status, 'reconnecting');
+  h.session.stop();
+});
+
+test('resuming three cached channels shares one request and keeps changed, quiet and denied replies separate', async () => {
+  const h = harness();
+  h.session.retry();
+  const socket = h.online(true);
+  const cursor = 'a'.repeat(91);
+  const [changed, quiet, denied] = h.session.readHistories([
+    { channel: 'public', since: cursor }, { channel: 'private', since: cursor }, { channel: 'staff', since: cursor },
+  ]);
+  const failure = assert.rejects(denied, /staff_required/);
+  assert.equal(socket.sent.length, 1);
+  const batch = JSON.parse(socket.sent[0]);
+  assert.deepEqual(batch.positions, { public: cursor, private: cursor, staff: cursor });
+  assert.equal(batch.type, 'resume');
+  socket.receive({ type: 'history', channel: 'public', requestId: batch.requestId + '-public',
+    messages: [message({ id: 'new' })], checkpoint: 'b'.repeat(91), reset: false });
+  socket.receive({ type: 'error', requestId: batch.requestId + '-staff', error: 'staff_required' });
+  socket.receive({ type: 'historyCurrent', requestId: batch.requestId, channels: ['private'] });
+  assert.equal((await changed).messages[0].id, 'new');
+  assert.equal((await quiet).checkpoint, cursor);
+  await failure;
+  assert.equal(socket.sent.length, 1);
+  h.session.stop();
+});
+
+test('grouped replies reject unknown channels and discard only revoked staff history', async () => {
+  for (const demote of [false, true]) {
+    const h = harness();
+    h.session.retry();
+    const socket = h.online(true);
+    const since = 'a'.repeat(91);
+    const pages = h.session.readHistories([{ channel: 'private', since }, { channel: 'staff', since }]);
+    const staffDenied = assert.rejects(pages[1]);
+    const privateResult = demote ? pages[0].then(page => assert.equal(page.checkpoint, since)) : assert.rejects(pages[0]);
+    if (demote) socket.receive({ type: 'lease', validForMs: 60_000, staff: false });
+    socket.receive({ type: 'historyCurrent', requestId: JSON.parse(socket.sent[0]).requestId,
+      channels: ['private', demote ? 'staff' : 'public'] });
+    await Promise.all([privateResult, staffDenied]);
+    if (demote) assert.deepEqual(h.session.access, {owner: OWNER, staff: false});
+    else assert.equal(h.state().status, 'online');
+    h.session.stop();
+  }
+});
+
+test('an ambiguous private send can be confirmed after its recipient went offline without resending its text', () => {
+  const h = harness();
+  h.session.retry();
+  const first = h.online(true);
+  first.receive({
+    type: 'presence', players: [{ playerUuid: PEER, name: 'Alex', game: true, webConnections: 0 }], staffPlayers: [],
+  });
+  const privateSend = h.session.send({ channel: 'private', targetUuid: PEER, name: 'Alex' }, 'only once');
+  const missing = h.session.send({ channel: 'public' }, 'uncertain');
+  const restricted = h.session.send({ channel: 'staff' }, 'staff only');
+  assert.ok(privateSend.ok && missing.ok && restricted.ok);
+  first.close();
+  h.session.recover();
+  const second = h.online(false);
+  assert.deepEqual(second.sent.map(line => JSON.parse(line)), [
+    { type: 'receipts', requestIds: [privateSend.requestId, missing.requestId] },
+  ]);
+  second.receive({ type: 'receipts', items: [{ requestId: privateSend.requestId, messageId: 'committed' }] });
+  assert.deepEqual(h.events.filter(({event}) => event.type === 'accepted').map(({event}) => event), [
+    { type: 'accepted', requestId: privateSend.requestId, messageId: 'committed' },
+  ]);
+  assert.equal(h.events.some(({event}) => event.type === 'error'), false);
+  second.close();
+  h.session.recover();
+  assert.deepEqual(h.online(false).sent, []);
+  h.session.stop();
+});
+
+test('a cancelled history query releases the channel immediately without releasing another channel', async () => {
+  const h = harness();
+  h.session.retry();
+  const socket = h.online(true);
+  const controller = new AbortController();
+  const cancelled = h.session.readHistory({ channel: 'public' }, controller.signal);
+  const replacement = h.session.readHistory({ channel: 'public' });
+  const other = h.session.readHistory({ channel: 'private' });
+  assert.deepEqual(socket.sent.map(line => JSON.parse(line).channel), ['public', 'private']);
+  controller.abort();
+  await assert.rejects(cancelled, /history_unavailable/);
+  assert.deepEqual(socket.sent.map(line => JSON.parse(line).channel), ['public', 'private', 'public']);
+  for (const line of socket.sent) {
+    const { channel, requestId } = JSON.parse(line);
+    socket.receive({ type: 'history', channel, requestId, messages: [] });
+  }
+  await Promise.all([replacement, other]);
+  assert.equal(h.state().status, 'online');
+  h.session.stop();
+});
+
+test('a page cannot advance its checkpoint before FIN or survive a trailing stream error', async () => {
+  for (const ending of ['fin', 'reset', 'duplicate'] as const) {
+    const h = harness();
+    h.session.retry();
+    const socket = h.online();
+    const end = Promise.withResolvers<void>();
+    const since = 'a'.repeat(91);
+    socket.history = async (request, _signal, receive) => {
+      const page = { type: 'historyCurrent', requestId: request.requestId };
+      receive(page);
+      await end.promise;
+      if (ending === 'duplicate') receive(page);
+    };
+    let saved = false;
+    const reading = h.session.readHistory({ channel: 'public', since }).then(page => { saved = true; return page; });
+    await Promise.resolve();
+    assert.equal(saved, false);
+    if (ending === 'reset') end.reject(new Error('truncated_record'));
+    else end.resolve();
+    if (ending === 'fin') assert.equal((await reading).checkpoint, since);
+    else {
+      await assert.rejects(reading, ending === 'duplicate' ? /invalid_response/ : /history_unavailable/);
+      assert.equal(saved, false);
+    }
+    assert.equal(h.state().status, 'online');
+    h.session.stop();
+  }
+});
+
+
+test('a server-busy channel retries alone after backoff and the wait is cancellable', async () => {
+  for (const cancelWait of [true, false]) {
+    const h = harness();
+    h.session.retry();
+    const socket = h.online();
+    const controller = new AbortController();
+    const since = 'a'.repeat(91);
+    const [quiet, busy] = h.session.readHistories([{channel: 'public', since}, {channel: 'private', since}], controller.signal);
+    const first = JSON.parse(socket.sent[0]);
+    socket.receive({ type: 'historyCurrent', requestId: first.requestId, channels: ['public'] });
+    socket.receive({ type: 'error', requestId: first.requestId + '-private', error: 'chat_busy' });
+    assert.equal((await quiet).checkpoint, since);
+    h.clock.advance(999);
+    assert.equal(socket.sent.length, 1);
+    if (cancelWait) {
+      controller.abort();
+      await assert.rejects(busy, /history_unavailable/);
+      h.clock.advance(5000);
+      assert.equal(socket.sent.length, 1);
+    } else {
+      h.clock.advance(1);
+      assert.deepEqual(JSON.parse(socket.sent[1]), { type: 'resume', requestId: first.requestId, positions: { private: since } });
+      socket.receive({ type: 'historyCurrent', requestId: first.requestId, channels: ['private'] });
+      assert.equal((await busy).checkpoint, since);
+    }
+    h.session.stop();
+  }
+});
+
+test('a busy reconnect receipt lookup retries only its original unresolved IDs', () => {
+  const h = harness();
+  h.session.retry();
+  const first = h.online();
+  const sent = h.session.send({ channel: 'public' }, 'ambiguous');
+  assert.ok(sent.ok);
+  first.close();
+  h.session.recover();
+  const socket = h.online();
+  socket.receive({ type: 'error', requestId: '', error: 'chat_busy' });
+  const newer = h.session.send({ channel: 'public' }, 'new');
+  assert.ok(newer.ok);
+  h.clock.advance(1000);
+  assert.deepEqual(JSON.parse(socket.sent.at(-1)!), { type: 'receipts', requestIds: [sent.requestId] });
+  assert.equal(h.events.some(({event}) => event.type === 'error'), false);
+  h.session.stop();
+  assert.equal(h.clock.timers.size, 0);
 });

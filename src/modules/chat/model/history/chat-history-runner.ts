@@ -46,11 +46,13 @@ export class ChatHistoryRunner {
           position = await p.reload();
           continue;
         }
+        // A persisted continuation may predate this socket's live subscription.
+        const align = Boolean(position?.page) && !page.nextPage && !page.aligned;
         position = next;
         p.advanced(next);
         count += records.length;
-        p.state(Boolean(page.nextPage), false, count);
-        if (!page.nextPage) return;
+        p.state(Boolean(page.nextPage) || align, false, count);
+        if (!page.nextPage && !align) return;
       }
     } catch {
       if (p.current()) p.state(false, true, count);

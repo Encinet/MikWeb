@@ -1,4 +1,5 @@
 export interface AuthAccount {
+  chatScope?: string;
   playerUuid: string;
   currentName: string;
   role: 'default' | 'member' | 'moderator' | 'custodian';

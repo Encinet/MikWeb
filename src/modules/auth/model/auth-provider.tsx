@@ -14,6 +14,7 @@ import {
   announceAccountChange,
   onOtherTabAccountChange,
 } from '@/shared/lib/account-browser-events';
+import { isRoutingLocale } from '@/shared/i18n/routing';
 import { withRequestTimeout } from '@/shared/lib/request-timeout';
 
 interface AuthProviderProps {
@@ -32,7 +33,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       const payload = await withRequestTimeout(10_000, async (signal) => {
-        const response = await fetch('/api/auth/me', {
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        const chatPage = parts.length === 2 && isRoutingLocale(parts[0]) && parts[1] === 'chat';
+        const response = await fetch(chatPage ? '/api/chat/session' : '/api/auth/me', {
           cache: 'no-store',
           signal,
         });

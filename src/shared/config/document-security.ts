@@ -1,5 +1,5 @@
 import { getCapApiEndpoint, parseHttpsEndpoint } from './https-endpoints';
-import { CHAT_WEBSOCKET_URL, DATA_API_ORIGIN, MAP_ORIGIN } from './service-config';
+import { CHAT_TRANSPORT_URL, DATA_API_ORIGIN, MAP_ORIGIN } from './service-config';
 
 export const CSP_NONCE_HEADER = 'x-mikweb-csp-nonce';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -11,7 +11,7 @@ const buildingImageOrigin =
 const connections = [
   "'self'",
   DATA_API_ORIGIN,
-  new URL(CHAT_WEBSOCKET_URL).origin,
+  new URL(CHAT_TRANSPORT_URL).origin,
   buildingImageOrigin,
   getCapApiEndpoint()?.origin,
   ...(isDevelopment ? ['ws:', 'wss:'] : []),

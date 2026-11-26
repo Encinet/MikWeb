@@ -122,6 +122,31 @@ function transaction<T>(
   });
 }
 
+function replaceHistoryOwner(state: IDBObjectStore, messages: IDBObjectStore, owner: string | null): StoredState {
+  messages.clear();
+  const next: StoredState = {
+    owner, epoch: crypto.randomUUID(), persist: true, staff: false, readPositions: new Map(),
+  };
+  writeState(state, next);
+  return next;
+}
+
+/** A revocation can outlive its connection. Only the revoked cache generation may be cleared. */
+export async function clearRevokedHistory(lease: HistoryLease): Promise<void> {
+  const db = await openDatabase();
+  const changed = await transaction<boolean>(db, 'readwrite', (state, messages, done) => {
+    done(false);
+    const check = state.get('current');
+    check.onsuccess = () => {
+      const active = readState(check.result);
+      if (!active || active.owner !== lease.owner || active.epoch !== lease.epoch) return;
+      replaceHistoryOwner(state, messages, null);
+      done(true);
+    };
+  });
+  if (changed) announceHistoryChange();
+}
+
 /** One browser cookie account owns the store. Switching accounts clears the previous owner's data. */
 export async function syncHistoryAccount(
   owner: string | null,
@@ -141,17 +166,7 @@ export async function syncHistoryAccount(
         state.transaction.abort();
         return;
       }
-      if (!lease || lease.owner !== owner) {
-        messages.clear();
-        lease = {
-          owner,
-          epoch: crypto.randomUUID(),
-          persist: true,
-          staff: false,
-          readPositions: new Map(),
-        };
-        writeState(state, lease);
-      }
+      if (!lease || lease.owner !== owner) lease = replaceHistoryOwner(state, messages, owner);
       done(lease);
     };
   });
@@ -164,6 +179,18 @@ export async function currentHistoryLease(owner: string): Promise<HistoryLease |
     request.onsuccess = () => {
       const lease = readState(request.result);
       done(lease?.owner === owner ? lease : null);
+    };
+  });
+}
+
+export async function storedHistoryPosition(lease: HistoryLease, channel: HistoryChannel) {
+  const db = await openDatabase();
+  return transaction<HistorySyncPosition | undefined>(db, 'readonly', (state, _messages, done) => {
+    const request = state.get('current');
+    request.onsuccess = () => {
+      const active = request.result as StoredState | undefined;
+      done(active?.owner === lease.owner && active?.epoch === lease.epoch && active.persist
+        ? readHistorySyncPositions(active.syncPositions)[channel] : undefined);
     };
   });
 }
@@ -535,12 +562,12 @@ export async function loadHistory(lease: HistoryLease): Promise<ChatHistorySnaps
   });
 }
 
-export async function saveHistory(lease: HistoryLease, message: ChatMessage): Promise<void> {
+export async function saveHistory(lease: HistoryLease, message: ChatMessage): Promise<boolean> {
   const owner = lease.owner;
-  if (!owner || !lease.persist) return;
+  if (!owner || !lease.persist) return false;
   const db = await openDatabase();
-  await transaction<void>(db, 'readwrite', (state, messages, done) => {
-    done(undefined);
+  return transaction<boolean>(db, 'readwrite', (state, messages, done) => {
+    done(false);
     const check = state.get('current');
     check.onsuccess = () => {
       const active = readState(check.result);
@@ -552,6 +579,7 @@ export async function saveHistory(lease: HistoryLease, message: ChatMessage): Pr
         !mayReadMessage(message, owner, active.staff)
       )
         return;
+      done(true);
       messages.put(storedMessage(owner, message));
       const key = messageConversation(message, owner);
       const positions = !isPassiveMessage(message)
@@ -580,7 +608,8 @@ export async function saveHistorySync(
   const owner = lease.owner;
   if (!owner || !lease.persist) return 'stale';
   const db = await openDatabase();
-  const saved = await transaction<HistorySyncWrite>(db, 'readwrite', (state, messages, done) => {
+  const unchanged = records.length === 0 && next.checkpoint === expected?.checkpoint && next.page === expected?.page;
+  return transaction<HistorySyncWrite>(db, unchanged ? 'readonly' : 'readwrite', (state, messages, done) => {
     done('stale');
     const check = state.get('current');
     check.onsuccess = () => {
@@ -598,8 +627,17 @@ export async function saveHistorySync(
       }
       const positions = readHistorySyncPositions(active.syncPositions);
       const stored = positions[channel];
+      // Multiple pages can observe the same live checkpoint after the shared write finishes.
+      if (!records.length && stored && next.checkpoint && stored.checkpoint === next.checkpoint && !stored.page && !next.page) {
+        done('saved');
+        return;
+      }
       if (stored?.checkpoint !== expected?.checkpoint || stored?.page !== expected?.page) {
         done('conflict');
+        return;
+      }
+      if (unchanged) {
+        done('saved');
         return;
       }
       for (const message of records) {
@@ -618,7 +656,6 @@ export async function saveHistorySync(
       done('saved');
     };
   });
-  return saved;
 }
 
 export async function saveReadPosition(

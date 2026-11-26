@@ -11,6 +11,7 @@ import { isRecord } from '@/shared/lib/is-record';
 export function isAuthAccount(value: unknown): value is AuthAccount {
   return (
     isRecord(value) &&
+    (value.chatScope === undefined || (typeof value.chatScope === 'string' && /^[A-Za-z0-9_-]{43}$/.test(value.chatScope))) &&
     typeof value.playerUuid === 'string' &&
     typeof value.currentName === 'string' &&
     (value.role === 'default' || isMemberRole(value.role)) &&

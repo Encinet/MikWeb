@@ -1,6 +1,6 @@
 import type { ChatAuthorizationResult } from '@/modules/chat/lib/connection/chat-authorization';
 import { authorizeChat } from '@/modules/chat/lib/connection/chat-authorization';
-import { ChatTransport } from '@/modules/chat/lib/connection/chat-transport';
+import { ChatTransport, UnsupportedChatTransport } from '@/modules/chat/lib/connection/chat-transport';
 import type { ChatConnection } from '@/modules/chat/model/chat-connection';
 import { isTerminalChatClose } from '@/modules/chat/model/chat-connection';
 import type { ChatSendResult } from '@/modules/chat/model/chat-delivery';
@@ -15,19 +15,14 @@ import {
   chatServerEventSchema,
   isValidChatInput,
   mayReadMessage,
-  messageConversation,
 } from '@/modules/chat/model/chat-protocol';
 
-export type ChatHistoryPage = Extract<ChatServerEvent, { type: 'history' }>;
-export interface ChatHistoryQuery {
-  channel: 'public' | 'staff' | 'private';
-  targetUuid?: string;
-  since?: string;
-  page?: string;
-}
-export type ChatSessionEvent = Exclude<
+import { ChatHistoryRequests, type ChatHistoryQuery, type ChatHistoryPage } from './chat-history-requests';
+export type { ChatHistoryQuery, ChatHistoryPage } from './chat-history-requests';
+
+export type ChatSessionEvent = { type: 'permissions'; staff: boolean } | Exclude<
   ChatServerEvent,
-  { type: 'hello' | 'reauthorize' | 'history' }
+  { type: 'hello' | 'presenceDelta' | 'history' | 'historyCurrent' | 'receipts' | 'lease' }
 >;
 export type ChatSessionTransport = Pick<
   ChatTransport,
@@ -38,10 +33,12 @@ export type ChatSessionTransport = Pick<
   | 'bufferedAmount'
   | 'authorizationKey'
   | 'send'
+  | 'history'
   | 'close'
 >;
 
-interface SessionObserver {
+export interface ChatSessionObserver {
+  onLease?: (deadline: number) => void;
   onConnection: (connection: ChatConnection) => void;
   onEvent: (event: ChatSessionEvent, current: () => boolean) => void;
   onDisconnect: () => void;
@@ -49,7 +46,7 @@ interface SessionObserver {
   onRefreshAccount: () => void;
 }
 
-interface SessionEnvironment {
+export interface ChatSessionEnvironment {
   createTransport: () => ChatSessionTransport;
   authorize: (
     connectionId: string,
@@ -60,33 +57,35 @@ interface SessionEnvironment {
   schedule: (callback: () => void, delay: number) => () => void;
 }
 
-const browserEnvironment: SessionEnvironment = {
-  createTransport: () => new ChatTransport(),
-  authorize: authorizeChat,
-  now: () => Date.now(),
-  schedule: (callback, delay) => {
-    const timer = setTimeout(callback, delay);
-    return () => clearTimeout(timer);
-  },
-};
+export function browserChatEnvironment(chatScope?: string): ChatSessionEnvironment {
+  return {
+    createTransport: () => new ChatTransport(),
+    authorize: (id, key, signal) => authorizeChat(id, key, signal, chatScope),
+    now: () => Date.now(),
+    schedule: (callback, delay) => {
+      const timer = setTimeout(callback, delay);
+      return () => clearTimeout(timer);
+    },
+  };
+}
+
+interface UnconfirmedDelivery {
+  channel: ChatDestination['channel'];
+}
 
 interface Connection {
   transport: ChatSessionTransport;
   generation: number;
   id: string;
   confirmed: boolean;
+  history: ChatHistoryRequests;
+  queriedReceipts?: Map<string, UnconfirmedDelivery>;
+  receiptRetries: number;
+  cancelReceiptRetry?: () => void;
   staff: boolean;
   deadline: number;
   cancelExpiry?: () => void;
   authorizing?: { controller: AbortController; cancelTimeout: () => void };
-}
-
-interface HistoryRequest {
-  query: ChatHistoryQuery;
-  sent: boolean;
-  resolve: (page: ChatHistoryPage) => void;
-  reject: (error: Error) => void;
-  cancel: () => void;
 }
 
 /** Owns connection authority, retries and delivery deadlines; React and storage consume its events. */
@@ -94,21 +93,19 @@ export class ChatSession {
   private connection: Connection | null = null;
   private state: ChatConnection = { status: 'idle' };
   private presence: ChatPresence = { players: [], staffPlayers: [] };
+  private presenceRevision = 0;
   private generation = 0;
   private wanted = false;
   private attempts = 0;
   private cancelReconnect?: () => void;
   private deliveries = new Map<string, () => void>();
-  private historyAvailable = false;
-  private historyRequests = new Map<string, HistoryRequest>();
-  private expiredHistoryRequests = new Set<string>();
-  private lastHistoryAt = Number.NEGATIVE_INFINITY;
-  private cancelHistoryWait?: () => void;
+  // Only IDs and channel permissions survive a disconnect. Message bodies stay in the originating UI.
+  private unconfirmed = new Map<string, UnconfirmedDelivery>();
 
   constructor(
     private readonly owner: string,
-    private readonly observer: SessionObserver,
-    private readonly environment: SessionEnvironment = browserEnvironment,
+    private readonly observer: ChatSessionObserver,
+    private readonly environment: ChatSessionEnvironment = browserChatEnvironment(),
   ) {}
 
   get hasConnection(): boolean {
@@ -116,78 +113,20 @@ export class ChatSession {
   }
 
   get hasHistory(): boolean {
-    return this.historyAvailable && Boolean(this.access);
+    return Boolean(this.access);
   }
 
-  readHistory(query: ChatHistoryQuery): Promise<ChatHistoryPage> {
-    if (!this.hasHistory) return Promise.reject(new Error('history_unavailable'));
-    if (query.channel === 'staff' && !this.access?.staff)
-      return Promise.reject(new Error('staff_required'));
-    if (this.historyRequests.size >= 8) return Promise.reject(new Error('chat_busy'));
-    return new Promise((resolve, reject) => {
-      const id = crypto.randomUUID();
-      const cancel = this.environment.schedule(() => {
-        if (this.expiredHistoryRequests.size >= 32)
-          this.expiredHistoryRequests.delete(
-            this.expiredHistoryRequests.values().next().value ?? '',
-          );
-        this.expiredHistoryRequests.add(id);
-        this.finishHistory(id, new Error('history_unavailable'));
-      }, 15_000);
-      this.historyRequests.set(id, { query, sent: false, resolve, reject, cancel });
-      this.pumpHistory();
-    });
+  get accessDeadline(): number {
+    return this.access ? this.connection!.deadline : 0;
   }
 
-  private pumpHistory(): void {
-    if (
-      this.cancelHistoryWait ||
-      [...this.historyRequests.values()].some((request) => request.sent)
-    )
-      return;
-    const first = this.historyRequests.entries().next().value;
-    if (!first) return;
-    const [id, request] = first;
-    const connection = this.connection;
-    if (
-      !connection ||
-      !this.hasHistory ||
-      (request.query.channel === 'staff' && !this.access?.staff)
-    ) {
-      this.finishHistory(id, new Error('history_unavailable'));
-      return;
-    }
-    const delay = this.lastHistoryAt + 250 - this.environment.now();
-    if (delay > 0) {
-      this.cancelHistoryWait = this.environment.schedule(() => {
-        this.cancelHistoryWait = undefined;
-        this.pumpHistory();
-      }, delay);
-      return;
-    }
-    request.sent = true;
-    this.lastHistoryAt = this.environment.now();
-    try {
-      connection.transport.send(
-        JSON.stringify({
-          type: 'history',
-          requestId: id,
-          ...request.query,
-        }),
-      );
-    } catch {
-      this.finishHistory(id, new Error('history_unavailable'));
-    }
+  readHistory(query: ChatHistoryQuery, signal?: AbortSignal): Promise<ChatHistoryPage> {
+    return this.readHistories([query], signal)[0];
   }
 
-  private finishHistory(id: string, result: ChatHistoryPage | Error): void {
-    const request = this.historyRequests.get(id);
-    if (!request) return;
-    this.historyRequests.delete(id);
-    request.cancel();
-    if (result instanceof Error) request.reject(result);
-    else request.resolve(result);
-    this.pumpHistory();
+  readHistories(queries: ChatHistoryQuery[], signal?: AbortSignal): Promise<ChatHistoryPage>[] {
+    return this.connection?.history.read(queries, signal) ??
+      queries.map(() => Promise.reject(new Error('history_unavailable')));
   }
 
   get access(): ChatAccess | null {
@@ -195,7 +134,8 @@ export class ChatSession {
     return this.wanted &&
       this.state.status === 'online' &&
       connection?.confirmed &&
-      connection.transport.readyState === WebSocket.OPEN
+      this.environment.now() < connection.deadline &&
+      connection.transport.readyState === 'open'
       ? { owner: this.owner, staff: connection.staff }
       : null;
   }
@@ -210,7 +150,7 @@ export class ChatSession {
     if (this.connection && this.wanted) return;
     this.wanted = true;
     this.attempts = 0;
-    this.dial();
+    if (!this.connection) this.dial();
   }
 
   recover(): void {
@@ -218,8 +158,8 @@ export class ChatSession {
     const connection = this.connection;
     if (
       connection &&
-      (connection.transport.readyState === WebSocket.OPEN ||
-        connection.transport.readyState === WebSocket.CONNECTING) &&
+      (connection.transport.readyState === 'open' ||
+        connection.transport.readyState === 'connecting') &&
       this.environment.now() < connection.deadline
     )
       return;
@@ -228,6 +168,7 @@ export class ChatSession {
 
   stop(): void {
     this.wanted = false;
+    this.unconfirmed.clear();
     this.generation++;
     this.cancelReconnect?.();
     this.cancelReconnect = undefined;
@@ -251,21 +192,25 @@ export class ChatSession {
     if (connection.transport.bufferedAmount > 16 * 1024) return { ok: false, error: 'chat_busy' };
     const requestId = retryId ?? crypto.randomUUID();
     try {
-      connection.transport.send(
-        JSON.stringify({
-          type: 'send',
-          requestId,
-          channel: destination.channel,
-          text: value,
-          ...(destination.channel === 'private' ? { targetUuid: destination.targetUuid } : {}),
-        }),
-      );
+      connection.transport.send({
+        type: 'send',
+        requestId,
+        text: value,
+        channel: destination.channel,
+        ...(destination.channel === 'private' ? { targetUuid: destination.targetUuid } : {}),
+      });
     } catch {
       this.update({ status: 'reconnecting', error: 'connection_failed' });
       connection.transport.close();
       return { ok: false };
     }
-    if (this.deliveries.size >= 20) this.finishDelivery(this.deliveries.keys().next().value ?? '');
+    if (this.unconfirmed.size >= 20 && !this.unconfirmed.has(requestId)) {
+      const oldest = this.unconfirmed.keys().next().value!;
+      this.finishDelivery(oldest);
+      this.observer.onDeliveryTimeout(oldest);
+    }
+    this.unconfirmed.set(requestId, { channel: destination.channel });
+    this.deliveries.get(requestId)?.();
     this.deliveries.set(
       requestId,
       this.environment.schedule(() => {
@@ -288,20 +233,13 @@ export class ChatSession {
   private release(): void {
     const previous = this.connection;
     this.connection = null;
+    this.presenceRevision = 0;
     this.presence = { players: [], staffPlayers: [] };
     for (const cancel of this.deliveries.values()) cancel();
     this.deliveries.clear();
-    this.historyAvailable = false;
-    this.cancelHistoryWait?.();
-    this.cancelHistoryWait = undefined;
-    this.lastHistoryAt = Number.NEGATIVE_INFINITY;
-    for (const request of this.historyRequests.values()) {
-      request.cancel();
-      request.reject(new Error('connection_failed'));
-    }
-    this.historyRequests.clear();
-    this.expiredHistoryRequests.clear();
     if (!previous) return;
+    previous.history.close();
+    previous.cancelReceiptRetry?.();
     previous.cancelExpiry?.();
     previous.authorizing?.cancelTimeout();
     previous.authorizing?.controller.abort();
@@ -363,9 +301,9 @@ export class ChatSession {
     let transport: ChatSessionTransport;
     try {
       transport = this.environment.createTransport();
-    } catch {
+    } catch (error) {
       this.wanted = false;
-      this.update({ status: 'error', error: 'connection_failed' });
+      this.update({ status: 'error', error: error instanceof UnsupportedChatTransport ? 'webtransport_required' : 'connection_failed' });
       return;
     }
     const connection: Connection = {
@@ -373,12 +311,14 @@ export class ChatSession {
       generation,
       id: '',
       confirmed: false,
+      receiptRetries: 0,
+      history: new ChatHistoryRequests(transport, () => this.access, this.environment.now, this.environment.schedule),
       staff: false,
       deadline: 0,
     };
     this.connection = connection;
     this.expire(connection, 16_000);
-    transport.onmessage = (event) => this.receive(connection, event.data);
+    transport.onmessage = (record) => this.receive(connection, record);
     transport.onclose = () => {
       if (!this.current(connection)) return;
       this.release();
@@ -399,24 +339,27 @@ export class ChatSession {
   }
 
   private finishDelivery(requestId: string): void {
+    this.unconfirmed.delete(requestId);
     this.deliveries.get(requestId)?.();
     this.deliveries.delete(requestId);
   }
 
+  private queryReceipts(connection: Connection, candidates: Map<string, UnconfirmedDelivery>): void {
+    const lookup = new Map([...candidates].filter(([id, attempt]) =>
+      this.unconfirmed.get(id) === attempt && (attempt.channel !== 'staff' || connection.staff)));
+    if (lookup.size === 0) return;
+    connection.queriedReceipts = lookup;
+    connection.history.recordReceiptLookup();
+    try {
+      connection.transport.send({ type: 'receipts', requestIds: [...lookup.keys()] });
+    } catch {
+      connection.transport.close();
+    }
+  }
+
   private receive(connection: Connection, data: unknown): void {
     if (!this.current(connection)) return;
-    if (typeof data !== 'string' || data.length > 128 * 1024) {
-      this.fail(connection, 'invalid_response');
-      return;
-    }
-    let input: unknown;
-    try {
-      input = JSON.parse(data);
-    } catch {
-      this.fail(connection, 'invalid_response');
-      return;
-    }
-    const parsed = chatServerEventSchema.safeParse(input);
+    const parsed = chatServerEventSchema.safeParse(data);
     if (!parsed.success) {
       this.fail(connection, 'invalid_response');
       return;
@@ -432,7 +375,7 @@ export class ChatSession {
       return;
     }
     if (event.type === 'authorized') {
-      if (!connection.id) {
+      if (!connection.id || connection.confirmed) {
         this.fail(connection, 'invalid_response');
         return;
       }
@@ -441,25 +384,80 @@ export class ChatSession {
         this.observer.onRefreshAccount();
         return;
       }
+      if (!event.validForMs) {
+        connection.transport.close();
+        return;
+      }
       connection.confirmed = true;
       connection.staff = event.staff;
-      this.historyAvailable = event.history === true;
       this.attempts = 0;
-      this.expire(connection, 65_000);
+      this.expire(connection, event.validForMs);
+      for (const [id, { channel }] of this.unconfirmed) {
+        if (channel === 'staff' && !event.staff) this.finishDelivery(id);
+      }
+      this.queryReceipts(connection, this.unconfirmed);
+      if (!this.current(connection)) return;
       this.update({ status: 'online' });
     } else if (event.type === 'closed') {
       const terminal = isTerminalChatClose(event.reason);
-      if (terminal) this.wanted = false;
+      if (terminal) {
+        this.unconfirmed.clear();
+        this.wanted = false;
+      }
       this.update({ status: terminal ? 'error' : 'reconnecting', error: event.reason });
     } else if (!connection.confirmed) {
       this.fail(connection, 'invalid_response');
       return;
-    } else if (event.type === 'reauthorize') {
-      void this.authorize(connection);
+    } else if (this.environment.now() >= connection.deadline) {
+      connection.transport.close();
       return;
-    } else if (event.type === 'permissions') connection.staff = event.staff;
-    else if (event.type === 'presence') this.presence = event;
-    else if (event.type === 'message') {
+    } else if (event.type === 'lease') {
+      if (!event.validForMs) {
+        connection.transport.close();
+        return;
+      }
+      this.expire(connection, event.validForMs);
+      if (event.staff !== undefined && event.staff !== connection.staff) {
+        connection.staff = event.staff;
+        if (!event.staff) {
+          connection.history.revokeStaff();
+          for (const [id, { channel }] of this.unconfirmed)
+            if (channel === 'staff') this.finishDelivery(id);
+        }
+        this.observer.onEvent({ type: 'permissions', staff: event.staff }, () => this.current(connection));
+      }
+      this.observer.onLease?.(connection.deadline);
+      return;
+    } else if (event.type === 'presence') {
+      this.presence = event;
+      this.presenceRevision = event.revision ?? 0;
+    } else if (event.type === 'presenceDelta') {
+      if (event.base !== this.presenceRevision || event.revision !== event.base + 1) {
+        connection.transport.close();
+        return;
+      }
+      const replaced = new Set([...event.remove, ...event.upsert.map(({ player }) => player.playerUuid)]);
+      const players = this.presence.players.filter((peer) => !replaced.has(peer.playerUuid));
+      let previousIndex = -1;
+      for (const { index, player } of event.upsert) {
+        if (index <= previousIndex || index > players.length) {
+          this.fail(connection, 'invalid_response');
+          return;
+        }
+        players.splice(index, 0, player);
+        previousIndex = index;
+      }
+      const visible = new Set(players.map((peer) => peer.playerUuid));
+      const staffPlayers = event.staffPlayers ?? this.presence.staffPlayers;
+      if (players.length > 512 || visible.size !== players.length || staffPlayers.some((id) => !visible.has(id))) {
+        this.fail(connection, 'invalid_response');
+        return;
+      }
+      this.presence = {players, staffPlayers};
+      this.presenceRevision = event.revision;
+      this.observer.onEvent({ type: 'presence', ...this.presence }, () => this.current(connection));
+      return;
+    } else if (event.type === 'message') {
       if (!mayReadMessage(event.message, this.owner, connection.staff)) {
         this.fail(connection, 'invalid_response');
         return;
@@ -470,32 +468,34 @@ export class ChatSession {
         event.message.requestId
       )
         this.finishDelivery(event.message.requestId);
-    } else if (event.type === 'history') {
-      if (this.expiredHistoryRequests.delete(event.requestId)) return;
-      const request = this.historyRequests.get(event.requestId);
-      if (
-        !request?.sent ||
-        request.query.channel !== event.channel ||
-        event.messages.some(
-          (message) =>
-            message.channel !== event.channel ||
-            !mayReadMessage(message, this.owner, connection.staff) ||
-            Boolean(
-              request.query.targetUuid &&
-                messageConversation(message, this.owner) !== `private:${request.query.targetUuid}`,
-            ),
-        ) ||
-        (event.nextPage && event.nextPage === request.query.page)
-      ) {
+    } else if (event.type === 'error' && !event.requestId && event.error === 'chat_busy' && connection.queriedReceipts) {
+      const lookup = connection.queriedReceipts;
+      connection.queriedReceipts = undefined;
+      if (connection.receiptRetries < 2) {
+        connection.receiptRetries++;
+        connection.cancelReceiptRetry = this.environment.schedule(() => {
+          if (this.current(connection) && this.access) this.queryReceipts(connection, lookup);
+        }, 1000 * connection.receiptRetries);
+      }
+      return;
+    } else if (event.type === 'receipts') {
+      const queried = connection.queriedReceipts;
+      if (!queried || event.items.some(item => !queried.has(item.requestId))) {
         this.fail(connection, 'invalid_response');
         return;
       }
-      this.finishHistory(event.requestId, event);
+      connection.queriedReceipts = undefined;
+      for (const item of event.items) {
+        if (!this.unconfirmed.has(item.requestId)) continue;
+        this.finishDelivery(item.requestId);
+        this.observer.onEvent({ type: 'accepted', ...item }, () => this.current(connection));
+      }
+      // A miss remains unknown in the UI. Probe the ID again only if another send became ambiguous.
+      for (const [id, attempt] of queried)
+        if (this.unconfirmed.get(id) === attempt) this.unconfirmed.delete(id);
       return;
-    } else if (event.type === 'error' && this.expiredHistoryRequests.delete(event.requestId))
-      return;
-    else if (event.type === 'error' && this.historyRequests.has(event.requestId)) {
-      this.finishHistory(event.requestId, new Error(event.error));
+    } else if (event.type === 'history' || event.type === 'historyCurrent') {
+      this.fail(connection, 'invalid_response');
       return;
     } else if (event.type === 'accepted' || event.type === 'error')
       this.finishDelivery(event.requestId);

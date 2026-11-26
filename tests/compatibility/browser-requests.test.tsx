@@ -70,6 +70,7 @@ function SessionProbe() {
 test('session verification and logout work without AbortSignal.timeout', async () => {
   await withoutStaticTimeout(async () => {
     const environment = createBrowserEnvironment();
+    environment.window.happyDOM.setURL('https://example.test/en/account');
     const requests: string[] = [];
     globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
       requests.push(String(input));

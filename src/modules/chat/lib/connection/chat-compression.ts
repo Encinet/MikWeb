@@ -1,13 +1,48 @@
 export const MAX_CHAT_BYTES = 128 * 1024;
-export const COMPRESSED_APPLICATION_RECORD_TYPE = 2;
+export const COMPRESSED_APPLICATION_RECORD_TYPE = 1;
 
-export function supportedChatCompression(): 'deflate' | undefined {
+export const MAX_CHAT_REQUEST_BYTES = 8192;
+
+export function supportsChatDecompression(): boolean {
   try {
     const probe = new DecompressionStream('deflate');
     void probe.readable.cancel().catch(() => {});
-    return 'deflate';
+    return true;
   } catch {
-    return undefined;
+    return false;
+  }
+}
+
+/** The four-byte original length is part of the candidate's wire cost. */
+export async function compressChatRequest(
+  clear: Uint8Array<ArrayBuffer>,
+  signal: AbortSignal,
+): Promise<Uint8Array<ArrayBuffer> | null> {
+  signal.throwIfAborted();
+  if (clear.length > MAX_CHAT_REQUEST_BYTES) throw new Error('chat_record_too_large');
+  let stream;
+  try {
+    stream = new CompressionStream('deflate');
+  } catch {
+    return null;
+  }
+  const source = new ReadableStream<Uint8Array<ArrayBuffer>>({
+    start(controller) {
+      controller.enqueue(clear);
+      controller.close();
+    },
+  });
+  const response = new Response(source.pipeThrough(stream, { signal }));
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  try {
+    signal.throwIfAborted();
+    if (bytes.length + 4 >= clear.length) return null;
+    const packet = new Uint8Array(bytes.length + 4);
+    new DataView(packet.buffer).setUint32(0, clear.length);
+    packet.set(bytes, 4);
+    return packet;
+  } finally {
+    bytes.fill(0);
   }
 }
 

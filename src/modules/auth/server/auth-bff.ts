@@ -24,7 +24,6 @@ const ACCOUNT_POST_PATHS = new Set([
   '/security',
   '/sessions/revoke',
   '/players/resolve',
-  '/chat/authorize',
   '/building-submissions',
   '/building-submissions/mine',
 ]);
@@ -154,11 +153,6 @@ function buildUpstreamBody({
 }): Record<string, unknown> | undefined {
   if (request.method === 'PATCH') return { displayName: requestBody.displayName };
   if (kind === 'account') {
-    if (routePath === '/chat/authorize')
-      return {
-        connectionId: requestBody.connectionId,
-        clientPublicKey: requestBody.clientPublicKey,
-      };
     if (routePath === '/players/resolve') return { name: requestBody.name };
     if (routePath === '/building-submissions') return requestBody;
     if (routePath === '/sessions/revoke') {

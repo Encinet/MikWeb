@@ -54,12 +54,12 @@ test('newcomers can load their account security response', () => {
   assert.ok(isAccountSecurityResponse({ account, session, sessions: [session], passkeys: [] }));
 });
 
-test('session refresh accepts default accounts and keeps the authenticated navigation state', async () => {
+test('chat session refresh accepts default accounts and keeps the authenticated navigation state', async () => {
   const environment = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
   let requests = 0;
   globalThis.fetch = Object.assign(async (input: RequestInfo | URL, init?: RequestInit) => {
-    assert.equal(input, '/api/auth/me');
+    assert.equal(input, '/api/chat/session');
     assert.equal(init?.method ?? 'GET', 'GET');
     requests++;
     return Response.json({ authenticated: true, account });

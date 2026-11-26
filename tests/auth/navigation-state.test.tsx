@@ -186,7 +186,7 @@ test('successful logout clears the hint and ignores an older in-flight verificat
     await env.mount();
     const response = deferredResponse();
     env.mockFetch(async (input) =>
-      input === '/api/auth/me' ? response.promise : new Response(null, { status: 204 }),
+      input === '/api/chat/session' ? response.promise : new Response(null, { status: 204 }),
     );
     let refresh!: Promise<AuthAccount | null>;
     await act(async () => {

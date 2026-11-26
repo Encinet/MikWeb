@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { isStaffRole } from '@/modules/auth/model/auth-access';
 import { useAuth } from '@/modules/auth/model/use-auth';
-import { ChatSession } from '@/modules/chat/lib/connection/chat-session';
+import type { ChatHistoryQuery, ChatHistoryPage } from '@/modules/chat/lib/connection/chat-session';
+import { createPageChat } from '@/modules/chat/lib/connection/shared-chat-client';
+import type { PageChatSession } from '@/modules/chat/lib/connection/chat-port';
 import type { HistoryCleanup, HistoryLease } from '@/modules/chat/lib/history/chat-history';
 import {
   announceHistoryChange,
   clearHistoryThrough,
+  clearRevokedHistory,
   currentHistoryLease,
   enableHistory,
   historyAllowsMessage,
@@ -19,6 +22,7 @@ import {
   saveHistory,
   saveHistorySync,
   saveReadPosition,
+  storedHistoryPosition,
   setStaffHistoryPermission,
   syncHistoryAccount,
 } from '@/modules/chat/lib/history/chat-history';
@@ -49,6 +53,7 @@ import {
   messageCursor,
   unreadMessages,
 } from '@/modules/chat/model/chat-reading';
+import { ChatLiveProgress } from '@/modules/chat/model/history/chat-live-progress';
 import { ChatHistoryRunner } from '@/modules/chat/model/history/chat-history-runner';
 import type {
   HistoryChannel,
@@ -108,7 +113,13 @@ function mergeLatest(
   return [...latest.values()];
 }
 
+function historyChannels(staff: boolean): HistoryChannel[] {
+  return staff ? ['public', 'private', 'staff'] : ['public', 'private'];
+}
+
 interface ServerHistoryState {
+  attempts?: number;
+  retryAt?: number;
   loading: boolean;
   failed: boolean;
   count: number;
@@ -120,6 +131,7 @@ type LiveMessageListener = (message: ChatUserMessage, access: () => ChatAccess |
 export function useWebChat() {
   const { account, verified, refresh } = useAuth();
   const owner = account?.playerUuid ?? null;
+  const chatScope = account?.chatScope;
   const accountStaff = isStaffRole(account?.role);
   const [connection, setConnection] = useState<ChatConnection>({ status: 'idle' });
   const [hasConnected, setHasConnected] = useState(false);
@@ -139,14 +151,22 @@ export function useWebChat() {
   const [serverHistory, setServerHistory] = useState<Record<string, ServerHistoryState>>({});
   const serverPages = useRef<Record<string, ServerHistoryState>>({});
   const serverGeneration = useRef(0);
+  const historyReads = useRef<AbortController | null>(null);
+  const invalidateHistoryReads = useCallback(() => {
+    serverGeneration.current++;
+    historyReads.current?.abort();
+    historyReads.current = null;
+  }, []);
+  const resyncAfterPage = useRef(new Set<HistoryChannel>());
   const historicalIds = useRef(new Set<string>());
   const liveIds = useRef(new Set<string>());
   const syncPositions = useRef<HistorySyncPositions>({});
-  const syncStorageFailed = useRef(false);
+  const liveProgress = useRef<Partial<Record<HistoryChannel, ChatLiveProgress>>>({});
+  const storageFailures = useRef(new Set<HistoryChannel>());
   const displayedIds = useRef(new Set<string>());
   const historyScope = useMemo(() => ({ owner, verified }), [owner, verified]);
   const historyAccess = useRef<'loading' | 'ready'>('loading');
-  const session = useRef<ChatSession | null>(null);
+  const session = useRef<PageChatSession | null>(null);
   const lease = useRef<HistoryLease | null>(null);
   const reading = useRef<ChatReadPositions>(new Map());
   const historyOwner = useRef<string | null>(null);
@@ -173,7 +193,9 @@ export function useWebChat() {
   }, []);
 
   const releaseConnection = useCallback(() => {
-    serverGeneration.current++;
+    invalidateHistoryReads();
+    liveProgress.current = {};
+    resyncAfterPage.current.clear();
     serverPages.current = {};
     setServerHistory({});
     setPresence(EMPTY_PRESENCE);
@@ -182,7 +204,7 @@ export function useWebChat() {
         message.status === 'sending' ? { ...message, status: 'unknown' } : message,
       ),
     );
-  }, []);
+  }, [invalidateHistoryReads]);
 
   const stop = useCallback(() => session.current?.stop(), []);
   const retry = useCallback(() => {
@@ -210,22 +232,33 @@ export function useWebChat() {
     });
   }, []);
   const loadServerHistory = useCallback(
-    async (channel: HistoryChannel) => {
+    async (channel: HistoryChannel, read?: (query: ChatHistoryQuery) => Promise<ChatHistoryPage>): Promise<void> => {
       const activeSession = session.current;
       if (!activeSession?.hasHistory || serverPages.current[channel]?.loading) return;
+      const signal = (historyReads.current ??= new AbortController()).signal;
+      storageFailures.current.delete(channel);
       const generation = serverGeneration.current;
+      const progress = liveProgress.current[channel] ??= new ChatLiveProgress();
       const epoch = lease.current?.epoch;
       const current = () =>
         generation === serverGeneration.current &&
+        liveProgress.current[channel] === progress &&
         session.current === activeSession &&
         lease.current?.epoch === epoch &&
         (channel !== 'staff' || allowedStaff.current);
-      const initial = syncPositions.current[channel];
+      let initial = syncPositions.current[channel];
       const backfilling = !initial || Boolean(initial.page);
+      const attempts = serverPages.current[channel]?.attempts ?? 0;
       const update = (loading: boolean, failed = false, count = 0) => {
         serverPages.current = {
           ...serverPages.current,
-          [channel]: { loading, failed, count, backfilling },
+          [channel]: {
+            loading, failed, count, backfilling,
+            ...(failed && {
+              attempts: attempts + 1,
+              retryAt: Date.now() + Math.min(60_000, 5000 * 2 ** Math.min(attempts, 4)) + Math.random() * 1000,
+            }),
+          },
         };
         setServerHistory(serverPages.current);
       };
@@ -234,18 +267,46 @@ export function useWebChat() {
         if (channel === 'staff' && lease.current?.owner)
           await setStaffHistoryPermission(lease.current.owner, allowedStaff.current);
         if (!current()) return;
-        await new ChatHistoryRunner({
+        const reload = async () => {
+          const history = lease.current;
+          if (!history) return;
+          const snapshot = await loadHistory(history);
+          if (!current()) return;
+          if (owner) {
+            setLatestMessages(existing => mergeLatest(existing, snapshot.latest.filter(message => activeSession.accessFor(message)), owner, history));
+            setStoredUnread(new Map([...snapshot.unread].filter(([key]) => key !== 'staff' || allowedStaff.current)));
+          }
+          for (const id of snapshot.historicalIds)
+            if (!liveIds.current.has(id)) historicalIds.current.add(id);
+          setMessages((existing) =>
+            mergeMessages(
+              existing,
+              snapshot.messages.filter((message) => activeSession.accessFor(message)),
+              lease.current,
+            ),
+          );
+          return snapshot.syncPositions[channel];
+        };
+        const history = lease.current;
+        if (history?.persist) {
+          const shared = await storedHistoryPosition(history, channel);
+          if (initial?.checkpoint !== shared?.checkpoint || initial?.page !== shared?.page)
+            initial = await reload();
+        }
+        if (!current()) return;
+        progress.history = new ChatHistoryRunner({
           position: initial,
           current,
           state: update,
           stale: announceHistoryChange,
           read: (position) =>
-            activeSession.readHistory({
+            (read ?? ((query) => activeSession.readHistory(query, signal)))({
               channel,
-              ...(position?.checkpoint ? { since: position.checkpoint } : {}),
-              ...(position?.page ? { page: position.page } : {}),
+              since: position?.checkpoint,
+              page: position?.page,
             }),
           accept: (page) => {
+            if (!page.messages.length) return [];
             const records = page.messages.filter(
               (message) =>
                 activeSession.accessFor(message) && historyAllowsMessage(lease.current, message),
@@ -256,13 +317,15 @@ export function useWebChat() {
               displayedIds.current.add(message.id);
             }
             setMessages((existing) => mergeMessages(existing, records, lease.current));
-            if (owner)
+            if (owner) {
               setLatestMessages((existing) => mergeLatest(existing, records, owner, lease.current));
+              setPending((existing) => unconfirmedChatDeliveries(existing, records, owner));
+            }
             return records;
           },
           commit: async (records, expected, next) => {
             const history = lease.current;
-            if (!history?.persist || syncStorageFailed.current) return 'saved';
+            if (!history?.persist) return 'saved';
             try {
               return await saveHistorySync(
                 history,
@@ -273,43 +336,92 @@ export function useWebChat() {
                 historicalIds.current,
               );
             } catch (error) {
-              syncStorageFailed.current = true;
+              storageFailures.current.add(channel);
               historyError(error, current);
-              return 'saved';
+              throw error;
             }
           },
-          reload: async () => {
-            const history = lease.current;
-            if (!history) return;
-            const snapshot = await loadHistory(history);
-            if (!current()) return;
-            for (const id of snapshot.historicalIds)
-              if (!liveIds.current.has(id)) historicalIds.current.add(id);
-            setMessages((existing) =>
-              mergeMessages(
-                existing,
-                snapshot.messages.filter((message) => activeSession.accessFor(message)),
-                lease.current,
-              ),
-            );
-            return snapshot.syncPositions[channel];
-          },
+          reload,
           advanced: (position) => {
             syncPositions.current[channel] = position;
           },
         }).run();
+        await progress.history;
       } catch {
         if (current()) update(false, true);
+      } finally {
+        if (current() && resyncAfterPage.current.delete(channel)) void loadServerHistory(channel);
       }
     },
     [owner, historyError],
   );
+
+  // Cursor lookup and staff permission checks may finish in different IndexedDB tasks.
+  // Collect each runner's first read, including runners that exit before issuing a query.
+  const loadServerHistories = useCallback((channels: HistoryChannel[]) => {
+    const active = session.current;
+    if (!active || !channels.length) return;
+    const generation = serverGeneration.current;
+    const signal = (historyReads.current ??= new AbortController()).signal;
+    const epoch = lease.current?.epoch;
+    const current = () => generation === serverGeneration.current && session.current === active && epoch === lease.current?.epoch;
+    const run = async () => {
+      if (!current()) return;
+      const waiting = new Set(channels);
+      const ready: { query: ChatHistoryQuery; resolve: (page: Promise<ChatHistoryPage>) => void }[] = [];
+      const arrived = (channel: HistoryChannel) => {
+        if (!waiting.delete(channel) || waiting.size) return;
+        const pages = current() ? active.readHistories(ready.map(item => item.query), signal)
+          : ready.map(() => Promise.reject(new Error('connection_failed')));
+        ready.forEach((item, index) => item.resolve(pages[index]));
+      };
+      await Promise.all(channels.map(channel => loadServerHistory(channel, query => {
+        if (!waiting.has(channel)) return active.readHistory(query, signal);
+        return new Promise(resolve => {
+          ready.push({ query, resolve });
+          arrived(channel);
+        });
+      }).finally(() => arrived(channel))));
+    };
+    const history = lease.current;
+    const backfill = channels.some(channel => !syncPositions.current[channel]?.checkpoint || syncPositions.current[channel]?.page);
+    if (!backfill || !history?.persist) {
+      void run();
+      return;
+    }
+    // The next tab reads the newly committed cursor after acquiring the lock. A
+    // suspended owner must not indefinitely block an independent authorized reader.
+    const name = `mik-chat-backfill-${history.owner}-${epoch}`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    let acquired = false;
+    const coordinate = async () => {
+      try {
+        if (navigator.locks) {
+          await navigator.locks.request(name, { signal: controller.signal }, () => {
+            acquired = true;
+            clearTimeout(timer);
+            return run();
+          });
+        }
+      } catch {
+        // Restricted storage contexts and a timed-out lock can still use a direct read.
+      } finally {
+        clearTimeout(timer);
+      }
+      if (!acquired) await run();
+    };
+    void coordinate();
+  }, [loadServerHistory]);
 
   const applyPermissions = useCallback(
     (staff: boolean, current: () => boolean) => {
       if (!current() || !owner) return;
       const gainedStaff = staff && !allowedStaff.current;
       if (!staff) {
+        setPending(existing => existing.filter(item => item.destination.channel !== 'staff'));
+        resyncAfterPage.current.delete('staff');
+        delete liveProgress.current.staff;
         syncPositions.current.staff = undefined;
         delete serverPages.current.staff;
         setServerHistory({ ...serverPages.current });
@@ -366,15 +478,15 @@ export function useWebChat() {
 
   useEffect(() => {
     if (connection.status !== 'online') return;
-    const synchronize = () => {
-      void loadServerHistory('public');
-      void loadServerHistory('private');
-      if (staff) void loadServerHistory('staff');
-    };
-    synchronize();
-    const timer = setInterval(synchronize, 30_000);
-    return () => clearInterval(timer);
-  }, [connection.status, staff, loadServerHistory]);
+    const failed = historyChannels(staff).filter(channel =>
+      serverHistory[channel]?.failed && !storageFailures.current.has(channel));
+    if (!failed.length) return;
+    const next = Math.min(...failed.map(channel => serverHistory[channel].retryAt ?? 0));
+    const timer = setTimeout(() => {
+      loadServerHistories(failed.filter(channel => (serverHistory[channel].retryAt ?? 0) <= Date.now()));
+    }, Math.max(0, Math.ceil(next - Date.now())));
+    return () => clearTimeout(timer);
+  }, [connection.status, staff, serverHistory, loadServerHistories]);
 
   useEffect(() => {
     const recover = () => {
@@ -404,13 +516,14 @@ export function useWebChat() {
     setMessages([]);
     setLatestMessages([]);
     setStoredUnread(new Map());
-    serverGeneration.current++;
+    invalidateHistoryReads();
+    liveProgress.current = {};
     serverPages.current = {};
     setServerHistory({});
     historicalIds.current.clear();
     liveIds.current.clear();
     syncPositions.current = {};
-    syncStorageFailed.current = false;
+    storageFailures.current.clear();
     displayedIds.current.clear();
     updateReading(() => new Map());
     setHistoryEpoch('');
@@ -423,7 +536,7 @@ export function useWebChat() {
     setStaff(false);
     if (!owner || !verified) return;
     historyOwner.current = owner;
-    const activeSession = new ChatSession(owner, {
+    const activeSession = createPageChat(owner, chatScope, {
       onConnection: setConnection,
       onDisconnect: releaseConnection,
       onRefreshAccount: refreshAccount,
@@ -441,9 +554,15 @@ export function useWebChat() {
             applyPermissions(event.staff, current);
             setHasConnected(true);
             setError(null);
-            void loadServerHistory('public');
-            void loadServerHistory('private');
-            if (event.staff) void loadServerHistory('staff');
+            loadServerHistories(historyChannels(event.staff));
+            break;
+          case 'historyChanged':
+            loadServerHistories(historyChannels(allowedStaff.current).filter(channel => {
+              if (event.channels && !event.channels.includes(channel)) return false;
+              if (!serverPages.current[channel]?.loading) return true;
+              resyncAfterPage.current.add(channel);
+              return false;
+            }));
             break;
           case 'permissions':
             applyPermissions(event.staff, current);
@@ -455,6 +574,28 @@ export function useWebChat() {
               staffPlayers: allowedStaff.current ? event.staffPlayers : [],
             });
             break;
+          case 'checkpoint': {
+            const { channel, from, to } = event;
+            const progress = liveProgress.current[channel];
+            const history = lease.current;
+            const valid = () => current() && liveProgress.current[channel] === progress &&
+              lease.current?.epoch === history?.epoch && (channel !== 'staff' || allowedStaff.current);
+            if (progress && valid()) progress.checkpoint(async () => {
+              const position = syncPositions.current[channel];
+              if (!valid() || position?.page || serverPages.current[channel]?.loading) return;
+              const next = { checkpoint: to };
+              if (position?.checkpoint !== from ||
+                  (history?.persist && await saveHistorySync(history, channel, [], position, next, new Set()) !== 'saved')) {
+                if (history?.persist && await progress.needsCatchup(async () =>
+                  (await storedHistoryPosition(history, channel))?.checkpoint) && valid())
+                  void loadServerHistory(channel);
+                return;
+              }
+              if (valid() && syncPositions.current[channel]?.checkpoint === from)
+                syncPositions.current[channel] = next;
+            }, error => historyError(error, valid));
+            break;
+          }
           case 'message': {
             const record = event.message;
             if (!historyAllowsMessage(lease.current, record)) break;
@@ -474,10 +615,13 @@ export function useWebChat() {
             if (record.kind === 'user' && record.sender.playerUuid === owner)
               setPending((existing) => unconfirmedChatDeliveries(existing, [record], owner));
             const history = lease.current;
-            if (history)
-              void saveHistory(history, record)
+            if (history?.persist) {
+              const write = activeSession.persistLive?.(history, record) ?? saveHistory(history, record);
+              (liveProgress.current[record.channel] ??= new ChatLiveProgress()).track(write);
+              void write
                 .then(() => refreshUnread(history, messageConversation(record, owner)))
                 .catch((error) => historyError(error, current));
+            }
             break;
           }
           case 'accepted':
@@ -502,9 +646,12 @@ export function useWebChat() {
               setStoredUnread(new Map());
               updateReading(() => new Map());
               setPending([]);
+              const revoked = lease.current;
+              allowedStaff.current = false;
+              setStaff(false);
               lease.current = null;
               setHistoryLease(null);
-              void syncHistoryAccount(null, current).catch(() => undefined);
+              if (revoked) void clearRevokedHistory(revoked).catch(error => historyError(error, current));
               refreshAccount();
             }
             break;
@@ -522,11 +669,12 @@ export function useWebChat() {
         if (!current) return;
         const epochChanged = Boolean(lease.current && lease.current.epoch !== next?.epoch);
         if (epochChanged) {
-          serverGeneration.current++;
+          invalidateHistoryReads();
+          liveProgress.current = {};
           serverPages.current = {};
           setServerHistory({});
           syncPositions.current = {};
-          syncStorageFailed.current = false;
+          storageFailures.current.clear();
           historicalIds.current.clear();
           liveIds.current.clear();
           displayedIds.current.clear();
@@ -580,9 +728,7 @@ export function useWebChat() {
           return merged;
         });
         if (epochChanged && !initialize) {
-          void loadServerHistory('public');
-          void loadServerHistory('private');
-          if (allowedStaff.current) void loadServerHistory('staff');
+          loadServerHistories(historyChannels(allowedStaff.current));
         }
       } catch (error) {
         historyError(error, () => current);
@@ -624,6 +770,8 @@ export function useWebChat() {
     };
   }, [
     historyScope,
+    chatScope,
+    invalidateHistoryReads,
     retry,
     stop,
     updateReading,
@@ -631,6 +779,7 @@ export function useWebChat() {
     releaseConnection,
     historyError,
     loadServerHistory,
+    loadServerHistories,
     refreshUnread,
   ]);
 
@@ -675,11 +824,12 @@ export function useWebChat() {
       setHistoryLease(next);
       setHistoryEpoch(next.epoch);
       setPersist(next.persist);
-      serverGeneration.current++;
+      invalidateHistoryReads();
+      liveProgress.current = {};
       serverPages.current = {};
       setServerHistory({});
       syncPositions.current = {};
-      syncStorageFailed.current = false;
+      storageFailures.current.clear();
       if (clear) {
         historicalIds.current.clear();
         liveIds.current.clear();
@@ -712,11 +862,9 @@ export function useWebChat() {
         return merged;
       });
       setStorageFailed(false);
-      void loadServerHistory('public');
-      void loadServerHistory('private');
-      if (allowedStaff.current) void loadServerHistory('staff');
+      loadServerHistories(historyChannels(allowedStaff.current));
     },
-    [updateReading, loadServerHistory],
+    [updateReading, loadServerHistories, invalidateHistoryReads],
   );
 
   const clearHistory = useCallback(async () => {

@@ -21,6 +21,20 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         {
+          source: '/api/chat/session',
+          missing: [{ type: 'cookie', key: SESSION_COOKIE_NAME }],
+          destination: '/api/auth/guest.json',
+        },
+        {
+          source: '/api/chat/session',
+          has: [{ type: 'cookie', key: SESSION_COOKIE_NAME }],
+          destination: 'https://data.mcmik.top/chat/session',
+        },
+        {
+          source: '/api/chat/connect',
+          destination: 'https://data.mcmik.top/chat/connect',
+        },
+        {
           source: '/api/auth/me',
           missing: [{ type: 'cookie', key: SESSION_COOKIE_NAME }],
           destination: '/api/auth/guest.json',
@@ -63,6 +77,10 @@ const nextConfig: NextConfig = {
           { key: 'Access-Control-Expose-Headers', value: 'MCP-Protocol-Version, Mcp-Session-Id' },
           { key: 'Access-Control-Max-Age', value: '86400' },
         ],
+      },
+      {
+        source: '/api/chat/:action(session|connect)',
+        headers: [{ key: 'Cache-Control', value: 'private, no-store' }],
       },
       {
         source: '/api/auth/me',
