@@ -1,6 +1,7 @@
 import '../globals.css';
 
 import type { Metadata, Viewport } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 import { AuthProvider } from '@/modules/auth/model/auth-provider';
 import { ChatAccountGuard } from '@/modules/chat/model/chat-account-guard';
@@ -11,6 +12,7 @@ import { routing } from '@/shared/i18n/routing';
 import SiteBackground from '@/site/background/ui/site-background';
 import SiteFooter from '@/site/footer/ui/site-footer';
 import SiteHeader from '@/site/header/ui/site-header';
+import { SkipToContent } from '@/site/header/ui/skip-to-content';
 import SiteDocument, { getDocumentNonce } from '@/site/layout/site-document';
 import { PrintFooter, PrintHeader } from '@/site/print/ui/print-chrome';
 import { PrintPreparation } from '@/site/print/ui/print-preparation';
@@ -25,6 +27,8 @@ import { DEFAULT_ACCENT_PROPERTIES } from '@/site/theme/lib/default-accent';
 
 // The document and Next.js startup scripts need the current request's CSP nonce.
 export const instant = false;
+
+const MAIN_CONTENT_ID = 'main-content';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -82,7 +86,10 @@ export default async function LocaleLayout({
 }) {
   const { locale: rawLocale } = await params;
   const locale = requireRouteLocale(rawLocale);
-  const nonce = await getDocumentNonce();
+  const [nonce, navigation] = await Promise.all([
+    getDocumentNonce(),
+    getTranslations({ locale, namespace: 'nav.controls' }),
+  ]);
 
   return (
     <SiteDocument locale={locale} nonce={nonce} variant="site">
@@ -94,12 +101,19 @@ export default async function LocaleLayout({
             <ThemeColor />
             <StructuredData locale={locale} />
             <SiteBackground />
+            <SkipToContent targetId={MAIN_CONTENT_ID}>
+              {navigation('skipToContent')}
+            </SkipToContent>
             <Suspense>
               <SiteHeader />
             </Suspense>
             <PrintHeader locale={locale} />
             <PrintPreparation />
-            <main className="app-main relative z-10 flex flex-1 flex-col">
+            <main
+              id={MAIN_CONTENT_ID}
+              tabIndex={-1}
+              className="app-main relative z-10 flex flex-1 flex-col"
+            >
               {children}
               {building}
             </main>

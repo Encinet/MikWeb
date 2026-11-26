@@ -8,7 +8,7 @@ export type ShareTarget =
   | { kind: 'site'; locale: AppLocale; page: SitePage }
   | { kind: 'building'; locale: AppLocale; id: string };
 
-const pagesBySpecificity = [...SITE_PAGE_IDS].sort(
+const pagesBySpecificity = SITE_PAGE_IDS.toSorted(
   (a, b) => SITE_PAGES[b].pathname.length - SITE_PAGES[a].pathname.length,
 );
 

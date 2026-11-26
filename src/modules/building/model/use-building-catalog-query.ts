@@ -16,13 +16,13 @@ import {
   writeBuildingCatalogQuery,
 } from '@/modules/building/lib/building-catalog-query';
 
-export function useBuildingCatalogQuery() {
-  const [catalogSearch, setCatalogSearch] = useState<string | null>(null);
+export function useBuildingCatalogQuery(initialSearch = '') {
+  const [catalogSearch, setCatalogSearch] = useState(initialSearch);
   const selection = useMemo(
-    () => readBuildingCatalogQuery(new URLSearchParams(catalogSearch ?? '')),
+    () => readBuildingCatalogQuery(new URLSearchParams(catalogSearch)),
     [catalogSearch],
   );
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(selection.query);
   const pendingQuery = useRef<{ value: string; href: string } | null>(null);
   const queryTimer = useRef<number | null>(null);
   const clearTimer = useCallback(() => {
@@ -85,7 +85,6 @@ export function useBuildingCatalogQuery() {
   return {
     selection,
     query,
-    ready: catalogSearch !== null,
     syncLocation,
     handleSearchChange(query: string) {
       setQuery(query);

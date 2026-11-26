@@ -40,7 +40,8 @@ export function BuildingCover({
         detailUrl = URL.createObjectURL(cover);
         setSource(detailUrl);
       });
-      if (detailUrl) return;
+      // The prioritized thumbnail is already in the HTML. Its JXL prefix starts on navigation.
+      if (detailUrl || eager) return;
       const entry = filmstrip
         ? cachedBuildingPreview(jxl)
         : prepareBuildingPreview({ jxl, jxlPreviewBytes });
@@ -75,21 +76,24 @@ export function BuildingCover({
     };
   }, [jxl, thumbnailWebp, jxlPreviewBytes, eager, filmstrip]);
 
+  const displayedSource = source ?? (eager ? thumbnailWebp : undefined);
   return (
     <span ref={container} className="absolute inset-0">
-      <noscript>
-        <img src={thumbnailWebp} alt={alt} loading="lazy" className="h-full w-full object-cover" />
-      </noscript>
-      {source ? (
+      {!eager ? (
+        <noscript>
+          <img src={thumbnailWebp} alt={alt} loading="lazy" className="h-full w-full object-cover" />
+        </noscript>
+      ) : null}
+      {displayedSource ? (
         <img
-          src={source}
+          src={displayedSource}
           alt={alt}
           className="h-full w-full object-cover"
           loading={eager ? 'eager' : 'lazy'}
-          fetchPriority={eager ? 'high' : 'auto'}
+          fetchPriority={eager ? 'high' : undefined}
           decoding="async"
           onError={() => {
-            if (source.startsWith('blob:')) setSource(thumbnailWebp);
+            if (displayedSource.startsWith('blob:')) setSource(thumbnailWebp);
             else onError?.();
           }}
         />

@@ -1,4 +1,17 @@
 /* Site header */
+.site-skip-link:focus {
+  position: fixed;
+  top: calc(0.5rem + var(--viewport-top-inset));
+  left: calc(0.5rem + var(--viewport-left-inset));
+  z-index: var(--z-modal);
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.5rem;
+  outline: 2px solid var(--theme-text-heading);
+  outline-offset: 2px;
+  color: var(--theme-text-heading);
+  background: var(--theme-surface-modal);
+}
+
 .project-navbar-shell {
   --project-navbar-item-gap: 0.75rem;
   --project-navbar-control-gap: 0.75rem;

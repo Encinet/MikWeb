@@ -3,25 +3,18 @@
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { memo, Suspense, use, useLayoutEffect, ViewTransition } from 'react';
-import { browser, preload } from 'react-dom';
+import { browser } from 'react-dom';
 import type { BuildingCatalogQuery } from '@/modules/building/lib/building-catalog-query';
-import { getPublicBuildingCatalogUrl } from '@/modules/building/model/building-api';
 import { useBuildingCatalog } from '@/modules/building/model/use-building-catalog';
 import { useBuildingCatalogQuery } from '@/modules/building/model/use-building-catalog-query';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { BuildingCatalogControls } from '@/modules/building/ui/building-catalog-controls';
 import { BuildingsContentArea } from '@/modules/building/ui/buildings-content-area';
-import { BuildingsLoadingState } from '@/modules/building/ui/buildings-status-states';
 
-export default function BuildingsPage() {
-  const locale = useLocale();
-  // The provider can reuse its in-memory catalog on client navigation.
-  if (typeof window === 'undefined') {
-    preload(getPublicBuildingCatalogUrl({ locale }), { as: 'fetch', crossOrigin: 'anonymous' });
-  }
+export default function BuildingsPage({ initialSearch }: { initialSearch: string }) {
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');
-  const controls = useBuildingCatalogQuery();
+  const controls = useBuildingCatalogQuery(initialSearch);
   const filterOptions = (['all', 'original', 'derivative', 'replica'] as const).map((id) => ({
     id,
     label: t(`filters.options.${id}`),
@@ -65,11 +58,7 @@ export default function BuildingsPage() {
           update={{ 'building-catalog': 'building-results', default: 'none' }}
         >
           <div className="page-state-region">
-            {controls.ready ? (
-              <CatalogResults selection={controls.selection} />
-            ) : (
-              <BuildingsLoadingState message={commonT('states.loading')} />
-            )}
+            <CatalogResults selection={controls.selection} />
           </div>
         </ViewTransition>
       </div>
@@ -101,7 +90,7 @@ const CatalogResults = memo(function CatalogResults({
   const t = useTranslations('buildings');
   const commonT = useTranslations('common');
   const { buildings, isLoading, error, fetchBuildings } = useBuildings();
-  const catalog = useBuildingCatalog(buildings, selection);
+  const catalog = useBuildingCatalog(buildings, selection, useLocale());
   return (
     <BuildingsContentArea
       buildings={catalog.displayed}

@@ -277,3 +277,42 @@
     transition: none;
   }
 }
+
+@media print {
+  .bans-action {
+    display: none !important;
+  }
+
+  .bans-table {
+    display: table !important;
+  }
+
+  .bans-table thead {
+    position: static;
+    display: table-header-group;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .bans-table tbody {
+    display: table-row-group !important;
+  }
+
+  .bans-record {
+    display: table-row !important;
+    break-inside: avoid-page;
+  }
+
+  .bans-record > th,
+  .bans-record > td {
+    display: table-cell !important;
+    padding: 0.6rem 0.4rem;
+  }
+
+  .bans-record__mobile-label {
+    display: none;
+  }
+}

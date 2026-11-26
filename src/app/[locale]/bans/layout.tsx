@@ -1,3 +1,5 @@
+import '../../styles/modules/bans.css';
+
 import type { Metadata } from 'next';
 
 import { ClientMessages } from '@/shared/i18n/client-messages';

@@ -7,6 +7,7 @@ import {
   getPublicBuildingCatalogUrl,
   isLocalizedBuildingCatalogResponse,
   resolveBuildingCatalog,
+  type BuildingCatalogResponse,
 } from '@/modules/building/model/building-api';
 import { fetchValidatedJson } from '@/shared/api/fetch-validated-json';
 import type { AppLocale } from '@/shared/i18n/routing';
@@ -17,6 +18,7 @@ const BUILDINGS_CACHE_TTL_MS = 300_000;
 
 interface BuildingsProviderProps {
   children: ReactNode;
+  initialCatalog?: BuildingCatalogResponse<string> | null;
 }
 
 interface BuildingsCatalogState {
@@ -32,14 +34,15 @@ export function BuildingsProvider(props: BuildingsProviderProps) {
 
 function LocalizedBuildingsProvider({
   children,
+  initialCatalog,
   locale,
 }: BuildingsProviderProps & { locale: AppLocale }) {
-  const [catalog, setCatalog] = useState<BuildingsCatalogState>({
-    buildings: [],
+  const [catalog, setCatalog] = useState<BuildingsCatalogState>(() => ({
+    buildings: initialCatalog ? resolveBuildingCatalog(initialCatalog) : [],
     error: null,
-    updatedAt: null,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+    updatedAt: initialCatalog ? Date.now() : null,
+  }));
+  const [isLoading, setIsLoading] = useState(!initialCatalog);
   const generation = useRef(0);
   const inFlight = useRef<Promise<void> | null>(null);
 

@@ -1,3 +1,5 @@
+import '../../styles/modules/map.css';
+
 import type { Metadata } from 'next';
 
 import MapPage from '@/modules/map/ui/map-page';

@@ -1,4 +1,5 @@
 import type { BuildingType, LocalizedBuilding } from '@/modules/building/model/building-types';
+import type { AppLocale } from '@/shared/i18n/routing';
 
 export type BuildingFilterId = 'all' | BuildingType;
 export type BuildingSortKey = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc' | 'random';
@@ -46,13 +47,10 @@ function newestFirst(left: LocalizedBuilding, right: LocalizedBuilding) {
   return right.buildDate.localeCompare(left.buildDate);
 }
 
-function nameAscending(left: LocalizedBuilding, right: LocalizedBuilding) {
-  return left.name.toLowerCase().localeCompare(right.name.toLowerCase());
-}
-
 export function sortBuildings(
   buildings: LocalizedBuilding[],
   sortKey: BuildingSortKey,
+  locale: AppLocale,
 ): LocalizedBuilding[] {
   if (sortKey === 'random') {
     const seededRandom = (seed: number) => {
@@ -74,16 +72,12 @@ export function sortBuildings(
     return shuffledBuildings;
   }
 
-  return [...buildings].sort((leftBuilding, rightBuilding) => {
-    switch (sortKey) {
-      case 'date-desc':
-        return newestFirst(leftBuilding, rightBuilding);
-      case 'date-asc':
-        return newestFirst(rightBuilding, leftBuilding);
-      case 'name-asc':
-        return nameAscending(leftBuilding, rightBuilding);
-      case 'name-desc':
-        return nameAscending(rightBuilding, leftBuilding);
-    }
-  });
+  if (sortKey === 'date-desc') return buildings.toSorted(newestFirst);
+  if (sortKey === 'date-asc') return buildings.toSorted((left, right) => newestFirst(right, left));
+
+  const names = new Intl.Collator(locale);
+  const direction = sortKey === 'name-asc' ? 1 : -1;
+  return buildings.toSorted(
+    (left, right) => direction * names.compare(left.name.toLowerCase(), right.name.toLowerCase()),
+  );
 }

@@ -1,3 +1,6 @@
+import '../../../../styles/modules/building-archive.css';
+import '../../../../styles/modules/building-gallery.css';
+
 import type { ReactNode } from 'react';
 import { ClientMessages } from '@/shared/i18n/client-messages';
 import { requireRouteLocale } from '@/shared/i18n/route-locale';

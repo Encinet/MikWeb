@@ -141,7 +141,11 @@ async function until(check: () => boolean) {
   assert.ok(check(), 'The asynchronous operation did not settle');
 }
 
-test('history requests for distinct channels run independently while live traffic keeps its own path', async () => {
+test('history requests and live traffic stay independent without Promise.withResolvers', async (t) => {
+  const native = Object.getOwnPropertyDescriptor(Promise, 'withResolvers')!;
+  t.after(() => Object.defineProperty(Promise, 'withResolvers', native));
+  Object.defineProperty(Promise, 'withResolvers', { ...native, value: undefined });
+
   const h = harness();
   h.session.retry();
   const transport = h.online(true);

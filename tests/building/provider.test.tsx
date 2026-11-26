@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { NextIntlClientProvider } from 'next-intl';
 import { Activity, act, type ComponentProps } from 'react';
+import { isLocalizedBuildingCatalogResponse } from '@/modules/building/model/building-api';
 import { BuildingsProvider } from '@/modules/building/model/buildings-provider';
 import { useBuildings } from '@/modules/building/model/use-buildings';
 import { dataApiUrl } from '@/shared/api/data-api-url';
@@ -43,7 +44,9 @@ const building = {
   source: { notes: 'Source notes' },
 };
 
-test('the archive loads its localized catalog directly and reuses a successful retry', async () => {
+test('the archive reuses its server catalog and can retry a client load', async () => {
+  const serverCatalog = { imageBaseUrl, buildings: [building] };
+  assert.ok(isLocalizedBuildingCatalogResponse(serverCatalog));
   const env = createBrowserEnvironment();
   const previousFetch = globalThis.fetch;
   const requests: [string, RequestCache | undefined][] = [];
@@ -52,10 +55,10 @@ test('the archive loads its localized catalog directly and reuses a successful r
     assert.ok(latest);
     return latest;
   };
-  const mount = () =>
+  const mount = (initialCatalog?: ComponentProps<typeof BuildingsProvider>['initialCatalog']) =>
     act(async () => {
       env.root.render(
-        <TestBuildingsProvider>
+        <TestBuildingsProvider initialCatalog={initialCatalog}>
           <Consumer
             onState={(value) => {
               latest = value;
@@ -69,9 +72,15 @@ test('the archive loads its localized catalog directly and reuses a successful r
     requests.push([String(input), init?.cache]);
     return requests.length === 1
       ? Response.json({}, { status: 503 })
-      : Response.json({ imageBaseUrl, buildings: [building] });
+      : Response.json(serverCatalog);
   }, previousFetch);
   try {
+    await mount(serverCatalog);
+    assert.equal(current().isLoading, false);
+    assert.equal(current().buildings[0]?.id, building.id);
+    assert.equal(requests.length, 0);
+    await act(async () => env.root.render(null));
+
     await mount();
     const url = dataApiUrl('/buildings?locale=en');
     assert.deepEqual(requests, [[url, 'default']]);

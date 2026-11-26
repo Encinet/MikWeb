@@ -74,6 +74,7 @@
     },
     "controls": {
       "display": "Display and language",
+      "skipToContent": "Skip to main content",
       "openMenu": "Open navigation",
       "closeMenu": "Close navigation",
       "language": "Language",

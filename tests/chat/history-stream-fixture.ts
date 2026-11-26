@@ -1,6 +1,8 @@
 import type { ChatHistoryRequest } from '@/modules/chat/lib/connection/chat-transport';
 import { isRecord } from '@/shared/lib/is-record';
 
+const createResult = Promise.withResolvers.bind(Promise);
+
 /** A server FIN follows the last reply. Late records stay on the cancelled stream. */
 export class HistoryStreams {
   private streams = new Map<string, (event: Record<string, unknown>) => void>();
@@ -16,7 +18,7 @@ export class HistoryStreams {
         ? Object.keys(request.positions).map((channel) => request.requestId + '-' + channel)
         : [request.requestId];
     const pending = new Set(ids);
-    const result = Promise.withResolvers<void>();
+    const result = createResult<void>();
     const abort = () => result.reject(new Error('cancelled'));
     const push = (event: Record<string, unknown>) => {
       if (signal.aborted) return;

@@ -1,4 +1,5 @@
 import { CHAT_PROTOCOL_VERSION } from '@/shared/config/service-config';
+import { createDeferred } from '@/shared/lib/deferred';
 import { saveHistory, type HistoryLease } from '../history/chat-history';
 import type { ChatConnection } from '../../model/chat-connection';
 import type { ChatDestination } from '../../model/chat-destination';
@@ -7,7 +8,7 @@ import { isValidChatInput, mayReadMessage, type ChatAccess, type ChatMessage } f
 import { browserChatEnvironment, ChatSession, type ChatHistoryPage, type ChatHistoryQuery, type ChatSessionObserver } from './chat-session';
 import type { PageChatSession, PageCommand, WorkerUpdate } from './chat-port';
 
-type PageResult = ReturnType<typeof Promise.withResolvers<ChatHistoryPage>>;
+type PageResult = ReturnType<typeof createDeferred<ChatHistoryPage>>;
 
 export function createPageChat(owner: string, scope: string | undefined, observer: ChatSessionObserver): PageChatSession {
   if (!scope || typeof SharedWorker === 'undefined') return new ChatSession(owner, observer, browserChatEnvironment(scope));
@@ -23,7 +24,7 @@ class SharedPageChat implements PageChatSession {
   private staff?: boolean;
   private state: ChatConnection = { status: 'idle' };
   private readonly reads = new Map<number, { results: PageResult[]; pending: Set<number>; cleanup: () => void }>();
-  private readonly writes = new Map<number, ReturnType<typeof Promise.withResolvers<boolean | 'evicted'>>>();
+  private readonly writes = new Map<number, ReturnType<typeof createDeferred<boolean | 'evicted'>>>();
 
   constructor(private readonly owner: string, private readonly scope: string, private readonly observer: ChatSessionObserver) {}
 
@@ -174,7 +175,7 @@ class SharedPageChat implements PageChatSession {
     if (!this.access || signal?.aborted || this.reads.size >= 8 || queries.length > 8)
       return queries.map(() => Promise.reject(new Error('history_unavailable')));
     const id = ++this.serial;
-    const results = queries.map(() => Promise.withResolvers<ChatHistoryPage>());
+    const results = queries.map(() => createDeferred<ChatHistoryPage>());
     const cancel = () => {
       if (!this.reads.delete(id)) return;
       for (const result of results) result.reject(new Error('history_unavailable'));
@@ -192,7 +193,7 @@ class SharedPageChat implements PageChatSession {
   persistLive(lease: HistoryLease, message: ChatMessage): Promise<boolean> {
     if (lease.owner !== this.owner || !lease.persist || !this.accessFor(message) || this.writes.size >= 256) return Promise.resolve(false);
     const id = ++this.serial;
-    const write = Promise.withResolvers<boolean | 'evicted'>();
+    const write = createDeferred<boolean | 'evicted'>();
     this.writes.set(id, write);
     this.post({ type: 'persist', id, epoch: lease.epoch, messageId: message.id });
     return write.promise.then(saved => {

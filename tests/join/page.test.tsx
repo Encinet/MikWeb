@@ -3,11 +3,19 @@ import { test } from 'node:test';
 import { NextIntlClientProvider } from 'next-intl';
 import { act } from 'react';
 import type { JoinPageData } from '@/modules/join/model/join-group';
-import { JoinPage } from '@/modules/join/ui/join-page';
 import en from '../../messages/en.json';
 import zh from '../../messages/zh-CN.json';
 import { createBrowserEnvironment } from '../support/browser-environment';
 import { joinPageData } from './join-fixture';
+
+const bunTestModule: string = 'bun:test';
+const { mock } = (await import(bunTestModule)) as {
+  mock: { module: (specifier: string, factory: () => unknown) => void };
+};
+mock.module('@/modules/join/lib/load-join-captcha', () => ({
+  loadJoinCaptcha: async () => {},
+}));
+const { JoinPage } = await import('@/modules/join/ui/join-page');
 
 function code(value = '123456', milliseconds = 60000) {
   return Response.json({

@@ -70,3 +70,37 @@ html[data-fullscreen-page="map"] .site-footer {
   border-color: color-mix(in srgb, var(--theme-accent-strong) 32%, transparent);
   background: color-mix(in srgb, var(--theme-accent) 12%, var(--theme-surface-modal));
 }
+
+@media print {
+  /* The embedded map cannot be printed reliably; retain its direct URL. */
+  .map-page,
+  .map-page__frame-shell {
+    position: static !important;
+    width: 100%;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .map-page__frame {
+    display: none !important;
+  }
+
+  .map-page__external-link {
+    position: static !important;
+    display: block;
+    width: fit-content;
+    padding: 0;
+    border: 0 !important;
+  }
+
+  .map-page__external-link::after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    overflow-wrap: anywhere;
+  }
+
+  .map-page__external-link svg {
+    display: none;
+  }
+}

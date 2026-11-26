@@ -6,6 +6,7 @@ import {
   type ChatAccess,
   type ChatServerEvent,
 } from '@/modules/chat/model/chat-protocol';
+import { createDeferred } from '@/shared/lib/deferred';
 import type { ChatHistoryRequest, ChatTransport } from './chat-transport';
 
 export type ChatHistoryPage = Extract<ChatServerEvent, { type: 'history' }>;
@@ -88,7 +89,7 @@ export class ChatHistoryRequests {
       const id = crypto.randomUUID();
       const batch = items.length > 1;
       const reads = items.map(({ query, index }) => {
-        const { promise, resolve, reject } = Promise.withResolvers<ChatHistoryPage>();
+        const { promise, resolve, reject } = createDeferred<ChatHistoryPage>();
         results[index] = promise;
         return {
           id: batch ? id + '-' + query.channel : id,

@@ -74,6 +74,7 @@
     },
     "controls": {
       "display": "显示与语言",
+      "skipToContent": "跳到正文",
       "openMenu": "打开导航",
       "closeMenu": "关闭导航",
       "language": "语言",

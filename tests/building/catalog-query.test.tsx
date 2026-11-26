@@ -47,7 +47,6 @@ test('catalog deep links, debounced edits and intercepted galleries share the co
         />,
       ),
     );
-    assert.equal(controls().ready, true);
     assert.deepEqual(controls().selection, { query: 'hall', filter: 'replica', sort: 'random' });
 
     await act(async () => controls().handleSearchChange('bridge'));

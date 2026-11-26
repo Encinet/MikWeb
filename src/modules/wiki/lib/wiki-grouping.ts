@@ -5,7 +5,7 @@ import type {
 } from '@/modules/wiki/model/wiki-section-types';
 
 export function sortWikiSections(sections: WikiSectionDefinition[]): WikiSectionDefinition[] {
-  return [...sections].sort((left, right) => {
+  return sections.toSorted((left, right) => {
     if (left.order !== right.order) {
       return left.order - right.order;
     }

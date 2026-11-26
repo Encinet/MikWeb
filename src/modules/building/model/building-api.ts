@@ -2,7 +2,7 @@ import { dataApiUrl } from '@/shared/api/data-api-url';
 import { getLocalizedText, type LocalizedText } from '@/shared/i18n/localized-text';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { isRecord } from '@/shared/lib/is-record';
-import type { Building, BuildingWithImageUrls, LocalizedBuilding } from './building-types';
+import type { Building, BuildingWithImageUrls } from './building-types';
 import { isBuilding, isLocalizedBuildingRecord } from './building-validation';
 
 export interface BuildingCatalogResponse<Text = LocalizedText> {
@@ -83,10 +83,10 @@ export function isBuildingDetailResponse(value: unknown): value is BuildingDetai
   );
 }
 
-export function localizeBuilding(
-  { name, description, tags, source, ...building }: BuildingWithImageUrls,
+export function localizeBuilding<Image>(
+  { name, description, tags, source, ...building }: Building<LocalizedText, Image>,
   locale: AppLocale,
-): LocalizedBuilding {
+): Building<string, Image> {
   return {
     ...building,
     name: getLocalizedText(name, locale),

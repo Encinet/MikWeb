@@ -1,3 +1,4 @@
+import '../../../styles/modules/building-archive.css';
 import '../../../styles/modules/building-submission.css';
 
 import type { Metadata } from 'next';

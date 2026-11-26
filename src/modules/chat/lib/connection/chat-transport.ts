@@ -1,6 +1,8 @@
 import type { RecipientContext, SenderContext } from '@hpke/core';
 
 import { CHAT_PROTOCOL_VERSION, CHAT_TRANSPORT_URL } from '@/shared/config/service-config';
+import { combineAbortSignals } from '@/shared/lib/combine-abort-signals';
+import { createDeferred } from '@/shared/lib/deferred';
 import { isRecord } from '@/shared/lib/is-record';
 import {
   compressChatRequest,
@@ -44,7 +46,7 @@ export type ChatTransportFailure = 'network' | 'protocol';
 type HistoryExchange = {
   signal: AbortSignal;
   receive: (record: unknown) => void;
-  complete: ReturnType<typeof Promise.withResolvers<void>>;
+  complete: ReturnType<typeof createDeferred<void>>;
   pending: Promise<void>;
   sent: boolean;
 };
@@ -273,11 +275,12 @@ export class ChatTransport {
     cancel: AbortSignal,
     receive: (record: unknown) => void,
   ): Promise<void> {
-    const signal = AbortSignal.any([cancel, this.lifetime.signal]);
-    signal.throwIfAborted();
+    cancel.throwIfAborted();
+    this.lifetime.signal.throwIfAborted();
     const bytes = this.encode(request);
+    const { signal, dispose } = combineAbortSignals([cancel, this.lifetime.signal]);
     const id = ++this.exchangeId;
-    const job: HistoryExchange = { signal, receive, complete: Promise.withResolvers(), pending: Promise.resolve(), sent: false };
+    const job: HistoryExchange = { signal, receive, complete: createDeferred(), pending: Promise.resolve(), sent: false };
     const abort = () => job.complete.reject(signal.reason);
     this.exchanges.set(id, job);
     signal.addEventListener('abort', abort, { once: true });
@@ -286,6 +289,7 @@ export class ChatTransport {
       await job.complete.promise;
     } finally {
       signal.removeEventListener('abort', abort);
+      dispose();
       if (this.exchanges.delete(id) && job.sent && !this.lifetime.signal.aborted) {
         try {
           this.write(HISTORY_ABORT, new Uint8Array(), id);

@@ -85,7 +85,7 @@ afterEach(() => {
   else Reflect.deleteProperty(globalThis, 'location');
 });
 
-test('authenticates both directions and multiplexes cancellable history with live traffic', async () => {
+test('authenticates both directions and multiplexes history without the newer Promise or AbortSignal APIs', async () => {
   const { transport, socket, announce, context, server } = await connect();
   const ready = Promise.withResolvers<void>();
   const events: unknown[] = [];
@@ -116,14 +116,25 @@ test('authenticates both directions and multiplexes cancellable history with liv
 
     const replies: unknown[] = [];
     const cancel = new AbortController();
-    const first = transport.history({ type: 'history', requestId: 'one', channel: 'public' }, cancel.signal, () => {
-      throw new Error('Cancelled history delivered a response');
-    });
+    const withResolvers = Object.getOwnPropertyDescriptor(Promise, 'withResolvers')!;
+    const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any')!;
+    let first: Promise<void>;
+    let second: Promise<void>;
+    try {
+      Object.defineProperty(Promise, 'withResolvers', { ...withResolvers, value: undefined });
+      Object.defineProperty(AbortSignal, 'any', { ...any, value: undefined });
+      first = transport.history({ type: 'history', requestId: 'one', channel: 'public' }, cancel.signal, () => {
+        throw new Error('Cancelled history delivered a response');
+      });
+      second = transport.history(
+        { type: 'history', requestId: 'two', channel: 'private' }, new AbortController().signal,
+        (event) => replies.push(event),
+      );
+    } finally {
+      Object.defineProperty(Promise, 'withResolvers', withResolvers);
+      Object.defineProperty(AbortSignal, 'any', any);
+    }
     const result = first.catch((e: Error) => e.message);
-    const second = transport.history(
-      { type: 'history', requestId: 'two', channel: 'private' }, new AbortController().signal,
-      (event) => replies.push(event),
-    );
     const a = new Uint8Array(await incoming.open(await socket.next()));
     const b = new Uint8Array(await incoming.open(await socket.next()));
     assert.deepEqual([...a.slice(0, 5)], [2, 0, 0, 0, 1]);
@@ -140,6 +151,11 @@ test('authenticates both directions and multiplexes cancellable history with liv
     await second;
     assert.deepEqual(replies, [{ type: 'history', requestId: 'two' }]);
     assert.deepEqual(events[2], { type: 'presence', players: [] });
+
+    const last = transport.history({ type: 'history', requestId: 'three', channel: 'public' }, new AbortController().signal, () => {});
+    const closed = assert.rejects(last, { name: 'AbortError' });
+    transport.close();
+    await closed;
   } finally {
     transport.close();
   }

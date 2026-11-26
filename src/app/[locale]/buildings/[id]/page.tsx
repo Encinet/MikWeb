@@ -1,3 +1,5 @@
+import '../../../styles/modules/building-gallery.css';
+
 import { BuildingDetailPage } from '@/site/pages/building-detail-page';
 
 export { generateBuildingMetadata as generateMetadata } from '@/site/seo/build-building-metadata';
