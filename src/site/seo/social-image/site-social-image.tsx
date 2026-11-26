@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { ImageResponse } from 'next/og';
+
 import type { AppLocale } from '@/shared/i18n/routing';
 import { getSitePageContent } from '@/site/seo/site-page-metadata';
 import type { SitePage } from '@/site/seo/site-pages';
@@ -26,10 +27,7 @@ export async function createSocialImage(locale: AppLocale, page: SitePage) {
   const [fonts, logo, backdrop] = await Promise.all([
     readSocialImageFonts(),
     readSocialImageLogo(),
-    readSocialImageBackdrop(
-      content.cover ?? '/images/home/hero-city-daylight.webp',
-      scene ? 'scene' : 'ambient',
-    ),
+    readSocialImageBackdrop(content.cover ?? 'city', scene ? 'scene' : 'ambient'),
   ]);
 
   return new ImageResponse(

@@ -1,16 +1,18 @@
 import 'server-only';
 
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import sharp from 'sharp';
+
 import type { BuildingWithImageUrls } from '@/modules/building/model/building-types';
 import { SITE_NAME } from '@/shared/config/site-config';
 import type { AppLocale } from '@/shared/i18n/routing';
 import { getSitePageContent } from '@/site/seo/site-page-metadata';
 import type { SitePage } from '@/site/seo/site-pages';
 import { readBuildingImage } from '@/site/seo/social-image/read-building-image';
-import { readSocialImageLogo } from '@/site/seo/social-image/social-image-assets';
+import {
+  readSocialImageCover,
+  readSocialImageLogo,
+} from '@/site/seo/social-image/social-image-assets';
 import { frameSocialImagePhoto } from '@/site/seo/social-image/social-image-backdrop';
 import {
   SHARE_THUMBNAIL_SIZE,
@@ -25,7 +27,7 @@ export async function createSiteShareThumbnail(locale: AppLocale, page: SitePage
     readSocialImageFonts(),
     readSocialImageLogo(),
     content.cover
-      ? readFile(join(process.cwd(), 'public', content.cover)).then((source) =>
+      ? readSocialImageCover(content.cover).then((source) =>
           sharp(source)
             .resize(SHARE_THUMBNAIL_SIZE.width, SHARE_THUMBNAIL_SIZE.height, { fit: 'cover' })
             .jpeg({ quality: 85 })

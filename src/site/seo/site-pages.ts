@@ -1,4 +1,6 @@
 // Metadata and image copy share the same translation keys and route definitions.
+export type SocialImageCover = 'city' | 'library' | 'map';
+
 export const SITE_PAGES = {
   home: {
     sitemap: true,
@@ -7,7 +9,7 @@ export const SITE_PAGES = {
     description: 'metadata.description',
     imageTitle: 'metadata.social.title',
     imageDescription: 'metadata.social.description',
-    cover: '/images/home/hero-city-daylight.webp',
+    cover: 'city',
   },
   join: {
     sitemap: true,
@@ -21,7 +23,7 @@ export const SITE_PAGES = {
     title: 'map.title',
     description: 'map.meta.description',
     imageDescription: 'map.meta.imageDescription',
-    cover: '/images/map/world-preview.webp',
+    cover: 'map',
   },
   buildings: {
     sitemap: true,
@@ -29,7 +31,7 @@ export const SITE_PAGES = {
     title: 'buildings.title',
     description: 'buildings.meta.description',
     imageDescription: 'buildings.meta.imageDescription',
-    cover: '/images/home/hero-city-daylight.webp',
+    cover: 'city',
   },
   wiki: {
     sitemap: true,
@@ -37,7 +39,7 @@ export const SITE_PAGES = {
     title: 'wiki.title',
     description: 'wiki.meta.description',
     imageDescription: 'wiki.meta.imageDescription',
-    cover: '/images/home/hero-library.webp',
+    cover: 'library',
   },
   bans: {
     sitemap: true,
