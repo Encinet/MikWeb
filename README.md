@@ -49,6 +49,8 @@ bun dev
 
 端点为 `https://mcmik.top/api/mcp`，使用 Streamable HTTP，提供在线玩家、公告、建筑、封禁和公开 Wiki 查询。
 
+公开工具的定义、参数校验和查询实现在 `src/modules/mcp/server/public-mcp-tools.ts`。`/api/mcp` 负责协议接入。等浏览器正式开放 WebMCP 后，可新增浏览器适配层并复用这份工具目录。
+
 ## 贡献
 
 代码约定、Wiki 编辑与提交流程见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
