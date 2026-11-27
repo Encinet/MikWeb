@@ -62,3 +62,84 @@ test('the shared chat client reads history and persists live messages without Pr
     else Reflect.deleteProperty(globalThis, 'window');
   }
 });
+
+test('a tab keeps a responsive shared worker and redials locally when it stops answering during reconnect', (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 0 });
+  const commands: PageCommand[] = [];
+  let portClosed = false;
+  let dials = 0;
+  const port = Object.assign(new EventTarget(), {
+    onmessage: null as ((event: MessageEvent<WorkerUpdate>) => void) | null,
+    postMessage(command: PageCommand) {
+      commands.push(command);
+    },
+    close() {
+      portClosed = true;
+    },
+  });
+  const globals = {
+    window: new EventTarget(),
+    SharedWorker: class {
+      readonly port = port;
+    },
+    WebSocket: class {
+      constructor() {
+        dials++;
+      }
+      close() {}
+    },
+  };
+  for (const [key, value] of Object.entries(globals)) {
+    const original = Object.getOwnPropertyDescriptor(globalThis, key);
+    Object.defineProperty(globalThis, key, { configurable: true, value });
+    t.after(() => {
+      if (original) Object.defineProperty(globalThis, key, original);
+      else Reflect.deleteProperty(globalThis, key);
+    });
+  }
+  const key = 'NEXT_PUBLIC_WEB_CHAT_PUBLIC_KEY';
+  const original = process.env[key];
+  process.env[key] = Buffer.alloc(65).toString('base64url');
+  const states: string[] = [];
+  const tab = createPageChat(OWNER, 'a'.repeat(43), {
+    onConnection(state) {
+      states.push(state.status);
+    },
+    onDisconnect() {},
+    onEvent() {},
+    onRefreshAccount() {},
+    onDeliveryTimeout() {},
+  });
+  t.after(() => {
+    tab.stop();
+    if (original === undefined) delete process.env[key];
+    else process.env[key] = original;
+    t.mock.timers.reset();
+  });
+
+  tab.retry();
+  const update = port.onmessage!;
+  update(
+    new MessageEvent('message', {
+      data: { type: 'connection', state: { status: 'reconnecting' } },
+    }),
+  );
+  t.mock.timers.tick(15_000);
+  assert.deepEqual(commands.at(-1), { type: 'probe' });
+  update(new MessageEvent('message', { data: { type: 'probe' } }));
+  t.mock.timers.tick(15_000);
+  assert.equal(dials, 0);
+  assert.deepEqual(commands.at(-1), { type: 'probe' });
+
+  t.mock.timers.tick(5000);
+  assert.equal(portClosed, true);
+  assert.equal(dials, 1);
+  assert.equal(states.at(-1), 'connecting');
+  update(
+    new MessageEvent('message', { data: { type: 'connection', state: { status: 'online' } } }),
+  );
+  assert.equal(states.at(-1), 'connecting');
+  tab.stop();
+  t.mock.timers.tick(60_000);
+  assert.equal(dials, 1);
+});

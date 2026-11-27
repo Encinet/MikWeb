@@ -117,6 +117,9 @@ test('two pages share a history read and release it only after its last subscrib
   try {
     for (const view of [first, second]) await view.command({ type: 'attach', owner: OWNER, scope });
     assert.equal(sessions.length, 1);
+    const probe = first.next();
+    await first.command({ type: 'probe' });
+    assert.deepEqual(await probe, { type: 'probe' });
     const read: PageCommand = { type: 'read', id: 1, queries: [{ channel: 'public' }] };
     for (const view of [first, second]) await view.command(read);
     assert.equal(reads.length, 1);

@@ -107,6 +107,9 @@ export class SharedChatHost {
       case 'detach': this.detach(port); break;
       case 'retry': session.retry(); break;
       case 'recover': session.recover(); break;
+      case 'probe':
+        postUpdate(port, { type: 'probe' });
+        break;
       case 'cancel': this.ports.get(port)?.get(cmd.id)?.(); break;
       case 'send': {
         const sent = session.send(cmd.destination, cmd.text, cmd.requestId);

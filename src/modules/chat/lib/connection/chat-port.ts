@@ -11,7 +11,7 @@ export type PageChatSession = Pick<ChatSession,
 
 export type PageCommand =
   | { type: 'attach'; owner: string; scope: string }
-  | { type: 'retry' | 'recover' | 'detach' }
+  | { type: 'retry' | 'recover' | 'detach' | 'probe' }
   | { type: 'send'; destination: ChatDestination; text: string; requestId: string }
   | { type: 'read'; id: number; queries: ChatHistoryQuery[] }
   | { type: 'cancel'; id: number }
@@ -20,7 +20,7 @@ export type PageCommand =
 export type WorkerUpdate =
   | { type: 'connection'; state: ChatConnection }
   | { type: 'event'; event: ChatSessionEvent }
-  | { type: 'disconnect' | 'refresh' }
+  | { type: 'disconnect' | 'refresh' | 'probe' }
   | { type: 'lease'; deadline: number }
   | { type: 'timeout'; requestId: string }
   | { type: 'page'; id: number; index: number; page?: ChatHistoryPage; error?: string }

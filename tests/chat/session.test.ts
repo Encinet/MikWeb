@@ -320,6 +320,61 @@ test('a late HTTP error body cannot stop a replacement chat connection', async (
   }
 });
 
+test('a rate-limited reconnect waits for the cooldown and restores history access automatically', async (t) => {
+  const responses = [
+    Response.json({ ok: true }),
+    Response.json({ error: 'rate_limited', retryAfterSeconds: 42 }, { status: 429 }),
+    Response.json({ ok: true }),
+  ];
+  t.mock.method(globalThis, 'fetch', async () => {
+    const response = responses.shift();
+    assert.ok(response);
+    return response;
+  });
+  const h = harness(authorizeChat);
+  t.after(() => h.session.stop());
+
+  h.session.retry();
+  const first = h.online();
+  await until(() => h.clock.timers.size === 1);
+  first.close();
+  h.session.recover();
+  h.hello();
+  await until(() => h.state().error === 'rate_limited');
+  assert.deepEqual(h.state(), { status: 'reconnecting', error: 'rate_limited' });
+  h.clock.advance(41_999);
+  h.session.recover();
+  h.session.retry();
+  assert.equal(h.transports.length, 2);
+  assert.equal(h.session.hasHistory, false);
+
+  h.clock.advance(751);
+  assert.equal(h.transports.length, 3);
+  h.online();
+  assert.equal(h.session.hasHistory, true);
+  assert.equal(responses.length, 0);
+  assert.equal(h.refreshes(), 0);
+});
+
+test('a stalled authorization response is aborted and the next attempt can connect', (t) => {
+  let stalled: AbortSignal | undefined;
+  const h = harness(async (_id, _key, signal) => {
+    if (stalled) return { ok: true };
+    stalled = signal;
+    return new Promise(() => {});
+  });
+  t.after(() => h.session.stop());
+  h.session.retry();
+  const first = h.hello();
+  h.clock.advance(8000);
+  assert.equal(stalled?.aborted, true);
+  assert.equal(first.readyState, 'closed');
+  h.clock.advance(1750);
+  assert.equal(h.transports.length, 2);
+  h.online();
+  assert.equal(h.state().status, 'online');
+});
+
 test('sending requires an authorized identity, current permissions, an online recipient and capacity', () => {
   const h = harness();
   try {

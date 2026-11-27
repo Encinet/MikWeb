@@ -20,6 +20,8 @@ import {
 import { ChatHistoryRequests, type ChatHistoryQuery, type ChatHistoryPage } from './chat-history-requests';
 export type { ChatHistoryQuery, ChatHistoryPage } from './chat-history-requests';
 
+const DEFAULT_RATE_LIMIT_RETRY_MS = 30_000;
+
 export type ChatSessionEvent = { type: 'permissions'; staff: boolean } | Exclude<
   ChatServerEvent,
   { type: 'hello' | 'presenceDelta' | 'history' | 'historyCurrent' | 'receipts' | 'lease' }
@@ -97,6 +99,7 @@ export class ChatSession {
   private generation = 0;
   private wanted = false;
   private attempts = 0;
+  private rateLimitDelayMs = 0;
   private cancelReconnect?: () => void;
   private deliveries = new Map<string, () => void>();
   // Only IDs and channel permissions survive a disconnect. Message bodies stay in the originating UI.
@@ -147,7 +150,10 @@ export class ChatSession {
   }
 
   retry(): void {
-    if (this.connection && this.wanted) return;
+    if (this.connection && this.wanted) {
+      this.recover();
+      return;
+    }
     this.wanted = true;
     this.attempts = 0;
     if (!this.connection) this.dial();
@@ -168,6 +174,7 @@ export class ChatSession {
 
   stop(): void {
     this.wanted = false;
+    this.rateLimitDelayMs = 0;
     this.unconfirmed.clear();
     this.generation++;
     this.cancelReconnect?.();
@@ -267,7 +274,10 @@ export class ChatSession {
   private async authorize(connection: Connection): Promise<void> {
     if (!connection.id || !this.current(connection) || connection.authorizing) return;
     const controller = new AbortController();
-    const cancelTimeout = this.environment.schedule(() => controller.abort(), 8000);
+    const cancelTimeout = this.environment.schedule(() => {
+      if (this.current(connection) && !connection.confirmed) connection.transport.close();
+      else controller.abort();
+    }, 8000);
     const request = { controller, cancelTimeout };
     connection.authorizing = request;
     try {
@@ -276,11 +286,13 @@ export class ChatSession {
         connection.transport.authorizationKey,
         controller.signal,
       );
-      if (!this.current(connection) || result.ok) return;
-      const terminal = [401, 403, 429].includes(result.status);
+      if (!this.current(connection) || connection.confirmed || result.ok) return;
+      const terminal = result.status === 401 || result.status === 403;
+      if (result.status === 429)
+        this.rateLimitDelayMs = result.retryAfterMs ?? DEFAULT_RATE_LIMIT_RETRY_MS;
       if (terminal) this.wanted = false;
       this.update({ status: terminal ? 'error' : 'reconnecting', error: result.error });
-      if (result.status === 401 || result.status === 403) this.observer.onRefreshAccount();
+      if (terminal) this.observer.onRefreshAccount();
       connection.transport.close();
     } catch {
       if (this.current(connection) && !connection.confirmed) connection.transport.close();
@@ -291,7 +303,7 @@ export class ChatSession {
   }
 
   private dial(): void {
-    if (!this.wanted) return;
+    if (!this.wanted || this.rateLimitDelayMs) return;
     const reconnecting = Boolean(this.connection || this.attempts);
     const generation = ++this.generation;
     this.cancelReconnect?.();
@@ -327,9 +339,13 @@ export class ChatSession {
         return;
       }
       this.update({ status: 'reconnecting', error: this.state.error });
-      const delay =
-        Math.min(30_000, 1000 * 2 ** Math.min(this.attempts++, 5)) + Math.random() * 750;
-      this.cancelReconnect = this.environment.schedule(() => this.dial(), delay);
+      const backoff = Math.min(30_000, 1000 * 2 ** Math.min(this.attempts++, 5));
+      const delay = Math.max(backoff, this.rateLimitDelayMs) + Math.random() * 750;
+      this.cancelReconnect = this.environment.schedule(() => {
+        this.cancelReconnect = undefined;
+        this.rateLimitDelayMs = 0;
+        this.dial();
+      }, delay);
     };
     transport.onerror = (failure) => {
       if (!this.current(connection) || !this.wanted) return;
